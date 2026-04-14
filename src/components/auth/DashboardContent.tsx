@@ -15,6 +15,25 @@ import {
   YAxis,
 } from "recharts";
 import { AppNav } from "@/components/AppNav";
+import {
+  appContainer,
+  appShell,
+  card,
+  cardLarge,
+  divider,
+  emptyCard,
+  inputH10,
+  label,
+  logoOnDark,
+  pageCopy,
+  pageHeader,
+  pageTitle,
+  primaryButton,
+  secondaryButton,
+  sectionCopy,
+  sectionTitle,
+} from "@/components/brand-styles";
+import { PrizeMapLogo } from "@/components/PrizeMapLogo";
 import { createClient } from "@/lib/supabase";
 
 type DeckSummary = {
@@ -103,9 +122,9 @@ function StatCard({
   value: string | number;
 }) {
   return (
-    <div className="rounded-md border border-zinc-200 bg-white p-5">
-      <p className="text-sm font-medium text-zinc-500">{label}</p>
-      <p className="mt-2 text-3xl font-semibold tracking-tight text-zinc-950">
+    <div className={card}>
+      <p className="text-sm font-medium text-[#94A3B8]">{label}</p>
+      <p className="mt-2 text-3xl font-semibold tracking-tight text-[#F8FAFC]">
         {value}
       </p>
     </div>
@@ -115,8 +134,8 @@ function StatCard({
 function RecordPill({ result }: { result: "win" | "loss" }) {
   const className =
     result === "win"
-      ? "bg-emerald-50 text-emerald-700"
-      : "bg-rose-50 text-rose-700";
+      ? "bg-emerald-500/15 text-emerald-300"
+      : "bg-[#F43F5E]/15 text-rose-200";
 
   return (
     <span
@@ -153,22 +172,22 @@ export function DashboardContent({
   }
 
   return (
-    <main className="min-h-screen bg-zinc-50 px-4 py-8 sm:px-6 sm:py-12">
-      <section className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-        <div className="flex flex-col gap-4 border-b border-zinc-200 pb-6 lg:flex-row lg:items-start lg:justify-between">
+    <main className={appShell}>
+      <section className={`${appContainer} max-w-6xl`}>
+        <div className={pageHeader}>
           <div>
-            <p className="text-sm font-medium text-zinc-500">TCG Tracker</p>
-            <h1 className="text-3xl font-semibold tracking-tight text-zinc-950">
+            <PrizeMapLogo {...logoOnDark} />
+            <h1 className={pageTitle}>
               Dashboard
             </h1>
-            <p className="mt-2 break-words text-sm text-zinc-600">{email}</p>
+            <p className={pageCopy}>{email}</p>
           </div>
           <div className="flex flex-col gap-3 lg:items-end">
             <AppNav current="dashboard" />
             <button
               type="button"
               onClick={handleSignOut}
-              className="h-10 rounded-md border border-zinc-300 px-4 text-sm font-medium text-zinc-900 transition hover:bg-white lg:w-fit"
+              className={`${secondaryButton} lg:w-fit`}
             >
               Sign out
             </button>
@@ -177,13 +196,13 @@ export function DashboardContent({
 
         <form
           action="/dashboard"
-          className="rounded-md border border-zinc-200 bg-white p-5"
+          className={card}
         >
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div className="flex flex-col gap-2 sm:min-w-80">
               <label
                 htmlFor="format"
-                className="text-sm font-medium text-zinc-800"
+                className={label}
               >
                 Format
               </label>
@@ -191,7 +210,7 @@ export function DashboardContent({
                 id="format"
                 name="format"
                 defaultValue={selectedFormat}
-                className="h-10 rounded-md border border-zinc-300 bg-white px-3 text-zinc-950 outline-none focus:border-zinc-950"
+                className={inputH10}
               >
                 {formatOptions.map((format) => (
                   <option key={format} value={format}>
@@ -203,7 +222,7 @@ export function DashboardContent({
             </div>
             <button
               type="submit"
-              className="h-10 rounded-md bg-zinc-950 px-4 text-sm font-medium text-white transition hover:bg-zinc-800"
+              className={primaryButton}
             >
               Apply
             </button>
@@ -222,28 +241,28 @@ export function DashboardContent({
             </section>
 
             <section className="grid gap-6 lg:grid-cols-2">
-              <div className="rounded-md border border-zinc-200 bg-white p-5 sm:p-6">
+              <div className={cardLarge}>
                 <div className="flex flex-col gap-1">
-                  <h2 className="text-xl font-semibold text-zinc-950">
+                  <h2 className={sectionTitle}>
                     Result Trend
                   </h2>
-                  <p className="text-sm text-zinc-600">
+                  <p className={sectionCopy}>
                     Daily wins and losses for {selectedFormatLabel}.
                   </p>
                 </div>
                 <div className="mt-5 h-72">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={trendData}>
-                      <CartesianGrid stroke="#e4e4e7" vertical={false} />
+                      <CartesianGrid stroke="rgba(148,163,184,0.22)" vertical={false} />
                       <XAxis
                         dataKey="label"
-                        tick={{ fill: "#71717a", fontSize: 12 }}
+                        tick={{ fill: "#94A3B8", fontSize: 12 }}
                         tickLine={false}
                         axisLine={false}
                       />
                       <YAxis
                         allowDecimals={false}
-                        tick={{ fill: "#71717a", fontSize: 12 }}
+                        tick={{ fill: "#94A3B8", fontSize: 12 }}
                         tickLine={false}
                         axisLine={false}
                       />
@@ -252,14 +271,14 @@ export function DashboardContent({
                       <Line
                         type="monotone"
                         dataKey="wins"
-                        stroke="#047857"
+                        stroke="#22C55E"
                         strokeWidth={2}
                         dot={false}
                       />
                       <Line
                         type="monotone"
                         dataKey="losses"
-                        stroke="#be123c"
+                        stroke="#F43F5E"
                         strokeWidth={2}
                         dot={false}
                       />
@@ -268,24 +287,24 @@ export function DashboardContent({
                 </div>
               </div>
 
-              <div className="rounded-md border border-zinc-200 bg-white p-5 sm:p-6">
+              <div className={cardLarge}>
                 <div className="flex flex-col gap-1">
-                  <h2 className="text-xl font-semibold text-zinc-950">
+                  <h2 className={sectionTitle}>
                     Deck Comparison
                   </h2>
-                  <p className="text-sm text-zinc-600">
+                  <p className={sectionCopy}>
                     Win rate by deck version, sorted by matches played.
                   </p>
                 </div>
                 <div className="mt-5 h-72">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={deckPerformanceChart} layout="vertical">
-                      <CartesianGrid stroke="#e4e4e7" horizontal={false} />
+                      <CartesianGrid stroke="rgba(148,163,184,0.22)" horizontal={false} />
                       <XAxis
                         type="number"
                         domain={[0, 100]}
                         tickFormatter={(value) => `${value}%`}
-                        tick={{ fill: "#71717a", fontSize: 12 }}
+                        tick={{ fill: "#94A3B8", fontSize: 12 }}
                         tickLine={false}
                         axisLine={false}
                       />
@@ -293,48 +312,48 @@ export function DashboardContent({
                         type="category"
                         dataKey="name"
                         width={120}
-                        tick={{ fill: "#71717a", fontSize: 12 }}
+                        tick={{ fill: "#94A3B8", fontSize: 12 }}
                         tickLine={false}
                         axisLine={false}
                       />
                       <Tooltip formatter={(value) => `${value}%`} />
-                      <Bar dataKey="winRate" fill="#18181b" radius={[0, 4, 4, 0]} />
+                      <Bar dataKey="winRate" fill="#4F8CFF" radius={[0, 4, 4, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
               </div>
             </section>
 
-            <section className="rounded-md border border-zinc-200 bg-white p-5 sm:p-6">
+            <section className={cardLarge}>
               <div className="flex flex-col gap-1">
-                <h2 className="text-xl font-semibold text-zinc-950">
+                <h2 className={sectionTitle}>
                   Recent Matches
                 </h2>
-                <p className="text-sm text-zinc-600">
+                <p className={sectionCopy}>
                   Your 10 most recent logged matches for {selectedFormatLabel}.
                 </p>
               </div>
-              <div className="mt-5 divide-y divide-zinc-200">
+              <div className={`mt-5 ${divider}`}>
                 {recentMatches.map((match) => (
                   <div
                     key={match.id}
                     className="grid gap-2 py-4 sm:grid-cols-[120px_minmax(0,1fr)_minmax(0,1fr)_90px_120px] sm:items-center"
                   >
-                    <p className="text-sm text-zinc-500">
+                    <p className="text-sm text-[#94A3B8]">
                       {formatDate(match.playedAt)}
                     </p>
-                    <p className="font-medium text-zinc-950">
+                    <p className="font-medium text-[#F8FAFC]">
                       {match.deckVersionName}
                     </p>
-                    <p className="text-sm text-zinc-700">
+                    <p className="text-sm text-[#94A3B8]">
                       vs {match.opponentArchetype}
                     </p>
                     <RecordPill result={match.result} />
-                    <p className="text-sm capitalize text-zinc-500">
+                    <p className="text-sm capitalize text-[#94A3B8]">
                       {match.eventType ?? "No event"}
                     </p>
                     {selectedFormat === "all" ? (
-                      <p className="text-sm text-zinc-500">
+                      <p className="text-sm text-[#94A3B8]">
                         {match.format ?? "No format"}
                       </p>
                     ) : null}
@@ -344,37 +363,37 @@ export function DashboardContent({
             </section>
 
             <section className="grid gap-6 lg:grid-cols-2">
-              <div className="rounded-md border border-zinc-200 bg-white p-5 sm:p-6">
+              <div className={cardLarge}>
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <h2 className="text-xl font-semibold text-zinc-950">
+                  <h2 className={sectionTitle}>
                     Matchups
                   </h2>
                   <Link
                     href="/matchups"
-                    className="text-sm font-medium text-zinc-600 underline underline-offset-4"
+                    className="text-sm font-medium text-[#F5C84C] underline underline-offset-4"
                   >
                     Analyze matchups
                   </Link>
                 </div>
-                <div className="mt-5 divide-y divide-zinc-200">
+                <div className={`mt-5 ${divider}`}>
                   {matchupSummary.map((matchup) => (
                     <div
                       key={matchup.opponentArchetype}
                       className="grid gap-2 py-4 sm:grid-cols-[minmax(0,1fr)_80px_80px_80px_80px] sm:items-center"
                     >
-                      <p className="font-medium text-zinc-950">
+                      <p className="font-medium text-[#F8FAFC]">
                         {matchup.opponentArchetype}
                       </p>
-                      <p className="text-sm text-zinc-600">
+                      <p className="text-sm text-[#94A3B8]">
                         {matchup.matches} played
                       </p>
-                      <p className="text-sm text-zinc-600">
+                      <p className="text-sm text-[#94A3B8]">
                         {matchup.wins} W
                       </p>
-                      <p className="text-sm text-zinc-600">
+                      <p className="text-sm text-[#94A3B8]">
                         {matchup.losses} L
                       </p>
-                      <p className="text-sm font-medium text-zinc-950">
+                      <p className="text-sm font-medium text-[#F8FAFC]">
                         {matchup.winRate}
                       </p>
                     </div>
@@ -382,29 +401,29 @@ export function DashboardContent({
                 </div>
               </div>
 
-              <div className="rounded-md border border-zinc-200 bg-white p-5 sm:p-6">
-                <h2 className="text-xl font-semibold text-zinc-950">
+              <div className={cardLarge}>
+                <h2 className={sectionTitle}>
                   Deck Performance
                 </h2>
-                <div className="mt-5 divide-y divide-zinc-200">
+                <div className={`mt-5 ${divider}`}>
                   {deckPerformance.map((deckVersion) => (
                     <div
                       key={deckVersion.deckVersionId}
                       className="grid gap-2 py-4 sm:grid-cols-[minmax(0,1fr)_80px_80px_80px_80px] sm:items-center"
                     >
-                      <p className="font-medium text-zinc-950">
+                      <p className="font-medium text-[#F8FAFC]">
                         {deckVersion.deckVersionName}
                       </p>
-                      <p className="text-sm text-zinc-600">
+                      <p className="text-sm text-[#94A3B8]">
                         {deckVersion.matches} played
                       </p>
-                      <p className="text-sm text-zinc-600">
+                      <p className="text-sm text-[#94A3B8]">
                         {deckVersion.wins} W
                       </p>
-                      <p className="text-sm text-zinc-600">
+                      <p className="text-sm text-[#94A3B8]">
                         {deckVersion.losses} L
                       </p>
-                      <p className="text-sm font-medium text-zinc-950">
+                      <p className="text-sm font-medium text-[#F8FAFC]">
                         {deckVersion.winRate}
                       </p>
                     </div>
@@ -414,77 +433,77 @@ export function DashboardContent({
             </section>
           </>
         ) : !hasAnyMatches ? (
-          <section className="rounded-md border border-dashed border-zinc-300 bg-white p-6 sm:p-8">
-            <h2 className="text-2xl font-semibold tracking-tight text-zinc-950">
+          <section className={emptyCard}>
+            <h2 className="text-2xl font-semibold tracking-tight text-[#F8FAFC]">
               No matches logged yet.
             </h2>
-            <p className="mt-3 max-w-xl text-sm leading-6 text-zinc-600">
+            <p className={`mt-3 max-w-xl ${sectionCopy}`}>
               Log your first match to see win rates, matchup records, recent
               results, and deck performance.
             </p>
             <Link
               href="/matches/new"
-              className="mt-6 inline-flex h-10 items-center justify-center rounded-md bg-zinc-950 px-4 text-sm font-medium text-white transition hover:bg-zinc-800"
+              className={`mt-6 ${primaryButton}`}
             >
               Log your first match
             </Link>
             <Link
               href="/decks"
-              className="mt-3 inline-flex h-10 items-center justify-center rounded-md border border-zinc-300 px-4 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50 sm:ml-3 sm:mt-6"
+              className={`mt-3 sm:ml-3 sm:mt-6 ${secondaryButton}`}
             >
               Manage decks
             </Link>
           </section>
         ) : (
-          <section className="rounded-md border border-dashed border-zinc-300 bg-white p-6 sm:p-8">
-            <h2 className="text-2xl font-semibold tracking-tight text-zinc-950">
+          <section className={emptyCard}>
+            <h2 className="text-2xl font-semibold tracking-tight text-[#F8FAFC]">
               No matches in {selectedFormatLabel}.
             </h2>
-            <p className="mt-3 max-w-xl text-sm leading-6 text-zinc-600">
+            <p className={`mt-3 max-w-xl ${sectionCopy}`}>
               Choose another format or log a match in this format to populate
               the dashboard.
             </p>
             <Link
               href="/matches/new"
-              className="mt-6 inline-flex h-10 items-center justify-center rounded-md bg-zinc-950 px-4 text-sm font-medium text-white transition hover:bg-zinc-800"
+              className={`mt-6 ${primaryButton}`}
             >
               Log match
             </Link>
             <Link
               href="/dashboard?format=all"
-              className="mt-3 inline-flex h-10 items-center justify-center rounded-md border border-zinc-300 px-4 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50 sm:ml-3 sm:mt-6"
+              className={`mt-3 sm:ml-3 sm:mt-6 ${secondaryButton}`}
             >
               View all formats
             </Link>
           </section>
         )}
 
-        <section className="rounded-md border border-zinc-200 bg-white p-5 sm:p-6">
+        <section className={cardLarge}>
           <div className="flex flex-col gap-1">
-            <h2 className="text-xl font-semibold text-zinc-950">Decks</h2>
-            <p className="text-sm text-zinc-600">
+            <h2 className={sectionTitle}>Decks</h2>
+            <p className={sectionCopy}>
               Manage saved lists and versions.
             </p>
           </div>
           {decks.length ? (
-            <div className="mt-5 divide-y divide-zinc-200">
+            <div className={`mt-5 ${divider}`}>
               {decks.map((deck) => (
                 <Link
                   key={deck.id}
                   href={`/decks/${deck.id}`}
-                  className="block py-4 transition hover:bg-zinc-50"
+                  className="block rounded-md px-3 py-4 transition hover:bg-[#0B1020]/45"
                 >
                   <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                      <h3 className="font-medium text-zinc-950">
+                      <h3 className="font-medium text-[#F8FAFC]">
                         {deck.name}
                       </h3>
-                      <p className="text-sm text-zinc-600">
+                      <p className="text-sm text-[#94A3B8]">
                         {deck.archetype}
                         {deck.format ? ` · ${deck.format}` : ""}
                       </p>
                     </div>
-                    <span className="text-sm font-medium text-zinc-500">
+                    <span className="text-sm font-medium text-[#F5C84C]">
                       Manage versions
                     </span>
                   </div>
@@ -492,11 +511,11 @@ export function DashboardContent({
               ))}
             </div>
           ) : (
-            <div className="mt-5 rounded-md border border-dashed border-zinc-300 p-4">
-              <p className="text-sm text-zinc-600">No decks found yet.</p>
+            <div className="mt-5 rounded-md border border-dashed border-[#4F8CFF]/30 p-4">
+              <p className={sectionCopy}>No decks found yet.</p>
               <Link
                 href="/decks"
-                className="mt-3 inline-flex h-9 items-center justify-center rounded-md bg-zinc-950 px-3 text-sm font-medium text-white transition hover:bg-zinc-800"
+                className={`mt-3 h-9 px-3 ${primaryButton}`}
               >
                 Create a deck
               </Link>

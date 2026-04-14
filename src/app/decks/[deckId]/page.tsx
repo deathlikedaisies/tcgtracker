@@ -1,5 +1,22 @@
 import { notFound, redirect } from "next/navigation";
 import { AppNav } from "@/components/AppNav";
+import {
+  appContainer,
+  appShell,
+  card,
+  emptyCard,
+  inputH10,
+  label,
+  logoOnDark,
+  pageCopy,
+  pageTitle,
+  primaryButton,
+  secondaryButton,
+  sectionCopy,
+  sectionTitle,
+  textarea,
+} from "@/components/brand-styles";
+import { PrizeMapLogo } from "@/components/PrizeMapLogo";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { createDeckVersion, markDeckVersionActive } from "./actions";
 
@@ -55,20 +72,23 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
   const createVersion = createDeckVersion.bind(null, deck.id);
 
   return (
-    <main className="min-h-screen bg-zinc-50 px-6 py-12">
-      <section className="mx-auto flex w-full max-w-4xl flex-col gap-8">
+    <main className={appShell}>
+      <section className={`${appContainer} max-w-4xl gap-8`}>
         <div>
-          <AppNav current="decks" />
-          <div className="mt-5 border-b border-zinc-200 pb-6">
-            <p className="text-sm font-medium text-zinc-500">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <PrizeMapLogo {...logoOnDark} />
+            <AppNav current="decks" />
+          </div>
+          <div className="mt-5 border-b border-white/10 pb-6">
+            <p className="text-sm font-medium text-[#94A3B8]">
               {deck.archetype}
               {deck.format ? ` · ${deck.format}` : ""}
             </p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-zinc-950">
+            <h1 className={pageTitle}>
               {deck.name}
             </h1>
             {deck.notes ? (
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-600">
+              <p className={pageCopy}>
                 {deck.notes}
               </p>
             ) : null}
@@ -78,10 +98,10 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
           <section className="flex flex-col gap-4">
             <div>
-              <h2 className="text-xl font-semibold text-zinc-950">
+              <h2 className={sectionTitle}>
                 Versions
               </h2>
-              <p className="mt-1 text-sm text-zinc-600">
+              <p className={`mt-1 ${sectionCopy}`}>
                 Keep history for each list and choose the current active build.
               </p>
             </div>
@@ -98,21 +118,21 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                   return (
                     <article
                       key={version.id}
-                      className="rounded-md border border-zinc-200 bg-white p-5"
+                      className={card}
                     >
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div>
                           <div className="flex flex-wrap items-center gap-2">
-                            <h3 className="text-lg font-medium text-zinc-950">
+                            <h3 className="text-lg font-medium text-[#F8FAFC]">
                               {version.name}
                             </h3>
                             {version.is_active ? (
-                              <span className="rounded-md bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700">
+                              <span className="rounded-md bg-emerald-500/15 px-2 py-1 text-xs font-medium text-emerald-300">
                                 Active
                               </span>
                             ) : null}
                           </div>
-                          <p className="mt-1 text-xs text-zinc-500">
+                          <p className="mt-1 text-xs text-[#94A3B8]">
                             Created{" "}
                             {new Intl.DateTimeFormat("en", {
                               dateStyle: "medium",
@@ -123,7 +143,7 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                           <form action={markActive}>
                             <button
                               type="submit"
-                              className="h-9 rounded-md border border-zinc-300 px-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
+                              className={`${secondaryButton} h-9 px-3`}
                             >
                               Mark active
                             </button>
@@ -132,12 +152,12 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                       </div>
 
                       {version.decklist ? (
-                        <pre className="mt-4 max-h-80 overflow-auto whitespace-pre-wrap rounded-md bg-zinc-50 p-4 text-sm leading-6 text-zinc-800">
+                        <pre className="mt-4 max-h-80 overflow-auto whitespace-pre-wrap rounded-md border border-white/10 bg-[#0B1020]/70 p-4 text-sm leading-6 text-[#F8FAFC]">
                           {version.decklist}
                         </pre>
                       ) : null}
                       {version.notes ? (
-                        <p className="mt-4 text-sm leading-6 text-zinc-600">
+                        <p className={`mt-4 ${sectionCopy}`}>
                           {version.notes}
                         </p>
                       ) : null}
@@ -146,8 +166,8 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                 })}
               </div>
             ) : (
-              <div className="rounded-md border border-dashed border-zinc-300 bg-white p-6">
-                <p className="text-sm text-zinc-600">
+              <div className={emptyCard}>
+                <p className={sectionCopy}>
                   No versions yet. Create the first list for this deck.
                 </p>
               </div>
@@ -157,16 +177,16 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
           <aside>
             <form
               action={createVersion}
-              className="rounded-md border border-zinc-200 bg-white p-5"
+              className={card}
             >
-              <h2 className="text-lg font-semibold text-zinc-950">
+              <h2 className="text-lg font-semibold text-[#F8FAFC]">
                 New Version
               </h2>
               <div className="mt-5 flex flex-col gap-4">
                 <div className="flex flex-col gap-2">
                   <label
                     htmlFor="name"
-                    className="text-sm font-medium text-zinc-800"
+                    className={label}
                   >
                     Name
                   </label>
@@ -174,13 +194,13 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                     id="name"
                     name="name"
                     required
-                    className="h-10 rounded-md border border-zinc-300 px-3 text-zinc-950 outline-none focus:border-zinc-950"
+                    className={inputH10}
                   />
                 </div>
                 <div className="flex flex-col gap-2">
                   <label
                     htmlFor="decklist"
-                    className="text-sm font-medium text-zinc-800"
+                    className={label}
                   >
                     Decklist
                   </label>
@@ -188,13 +208,13 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                     id="decklist"
                     name="decklist"
                     rows={8}
-                    className="rounded-md border border-zinc-300 px-3 py-2 text-zinc-950 outline-none focus:border-zinc-950"
+                    className={textarea}
                   />
                 </div>
                 <div className="flex flex-col gap-2">
                   <label
                     htmlFor="notes"
-                    className="text-sm font-medium text-zinc-800"
+                    className={label}
                   >
                     Notes
                   </label>
@@ -202,20 +222,20 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                     id="notes"
                     name="notes"
                     rows={4}
-                    className="rounded-md border border-zinc-300 px-3 py-2 text-zinc-950 outline-none focus:border-zinc-950"
+                    className={textarea}
                   />
                 </div>
-                <label className="flex items-center gap-2 text-sm text-zinc-700">
+                <label className="flex items-center gap-2 text-sm text-[#94A3B8]">
                   <input
                     type="checkbox"
                     name="is_active"
-                    className="h-4 w-4 rounded border-zinc-300"
+                    className="h-4 w-4 rounded border-white/20 accent-[#F5C84C]"
                   />
                   Make this version active
                 </label>
                 <button
                   type="submit"
-                  className="h-10 rounded-md bg-zinc-950 px-4 text-sm font-medium text-white transition hover:bg-zinc-800"
+                  className={primaryButton}
                 >
                   Create version
                 </button>

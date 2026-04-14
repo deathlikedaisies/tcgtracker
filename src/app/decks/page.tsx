@@ -1,6 +1,24 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AppNav } from "@/components/AppNav";
+import {
+  appContainer,
+  appShell,
+  card,
+  dangerButton,
+  emptyCard,
+  inputH10,
+  label,
+  logoOnDark,
+  pageCopy,
+  pageHeader,
+  pageTitle,
+  primaryButton,
+  sectionCopy,
+  sectionTitle,
+  textarea,
+} from "@/components/brand-styles";
+import { PrizeMapLogo } from "@/components/PrizeMapLogo";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { getArchetypeOptions } from "@/lib/archetypes";
 import { LATEST_FORMAT, MATCH_FORMATS } from "@/lib/formats";
@@ -50,15 +68,15 @@ export default async function DecksPage() {
   );
 
   return (
-    <main className="min-h-screen bg-zinc-50 px-4 py-8 sm:px-6 sm:py-12">
-      <section className="mx-auto flex w-full max-w-5xl flex-col gap-8">
-        <header className="flex flex-col gap-4 border-b border-zinc-200 pb-6 lg:flex-row lg:items-start lg:justify-between">
+    <main className={appShell}>
+      <section className={`${appContainer} max-w-5xl gap-8`}>
+        <header className={pageHeader}>
           <div>
-            <p className="text-sm font-medium text-zinc-500">TCG Tracker</p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-zinc-950">
+            <PrizeMapLogo {...logoOnDark} />
+            <h1 className={pageTitle}>
               Decks
             </h1>
-            <p className="mt-2 text-sm leading-6 text-zinc-600">
+            <p className={pageCopy}>
               Create decks, manage lists, and keep version history organized.
             </p>
           </div>
@@ -68,10 +86,10 @@ export default async function DecksPage() {
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_340px]">
           <section className="flex flex-col gap-4">
             <div>
-              <h2 className="text-xl font-semibold text-zinc-950">
+              <h2 className={sectionTitle}>
                 Your Decks
               </h2>
-              <p className="mt-1 text-sm text-zinc-600">
+              <p className={`mt-1 ${sectionCopy}`}>
                 Select a deck to manage its versions.
               </p>
             </div>
@@ -84,22 +102,22 @@ export default async function DecksPage() {
                   return (
                     <article
                       key={deck.id}
-                      className="rounded-md border border-zinc-200 bg-white p-5"
+                      className={card}
                     >
                       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                         <div>
-                          <p className="text-xs font-medium uppercase text-zinc-500">
+                          <p className="text-xs font-medium uppercase text-[#94A3B8]">
                             {deck.archetype}
                             {deck.format ? ` · ${deck.format}` : ""}
                           </p>
-                          <h3 className="mt-2 text-lg font-semibold text-zinc-950">
+                          <h3 className="mt-2 text-lg font-semibold text-[#F8FAFC]">
                             {deck.name}
                           </h3>
-                          <p className="mt-1 text-xs text-zinc-500">
+                          <p className="mt-1 text-xs text-[#94A3B8]">
                             Created {formatDate(deck.created_at)}
                           </p>
                           {deck.notes ? (
-                            <p className="mt-3 text-sm leading-6 text-zinc-600">
+                            <p className={`mt-3 ${sectionCopy}`}>
                               {deck.notes}
                             </p>
                           ) : null}
@@ -107,14 +125,14 @@ export default async function DecksPage() {
                         <div className="flex flex-col gap-2 sm:min-w-32">
                           <Link
                             href={`/decks/${deck.id}`}
-                            className="inline-flex h-10 items-center justify-center rounded-md bg-zinc-950 px-4 text-sm font-medium text-white transition hover:bg-zinc-800"
+                            className={primaryButton}
                           >
                             Manage
                           </Link>
                           <form action={removeDeck}>
                             <button
                               type="submit"
-                              className="h-10 w-full rounded-md border border-rose-200 px-4 text-sm font-medium text-rose-700 transition hover:bg-rose-50"
+                              className={`w-full ${dangerButton}`}
                             >
                               Delete
                             </button>
@@ -126,11 +144,11 @@ export default async function DecksPage() {
                 })}
               </div>
             ) : (
-              <div className="rounded-md border border-dashed border-zinc-300 bg-white p-6">
-                <h3 className="text-lg font-semibold text-zinc-950">
+              <div className={emptyCard}>
+                <h3 className="text-lg font-semibold text-[#F8FAFC]">
                   No decks yet.
                 </h3>
-                <p className="mt-2 text-sm leading-6 text-zinc-600">
+                <p className={`mt-2 ${sectionCopy}`}>
                   Create your first deck, then add versions for match logging.
                 </p>
               </div>
@@ -140,16 +158,16 @@ export default async function DecksPage() {
           <aside>
             <form
               action={createDeck}
-              className="rounded-md border border-zinc-200 bg-white p-5"
+              className={card}
             >
-              <h2 className="text-lg font-semibold text-zinc-950">
+              <h2 className="text-lg font-semibold text-[#F8FAFC]">
                 New Deck
               </h2>
               <div className="mt-5 flex flex-col gap-4">
                 <div className="flex flex-col gap-2">
                   <label
                     htmlFor="name"
-                    className="text-sm font-medium text-zinc-800"
+                    className={label}
                   >
                     Name
                   </label>
@@ -157,13 +175,13 @@ export default async function DecksPage() {
                     id="name"
                     name="name"
                     required
-                    className="h-10 rounded-md border border-zinc-300 px-3 text-zinc-950 outline-none focus:border-zinc-950"
+                    className={inputH10}
                   />
                 </div>
                 <div className="flex flex-col gap-2">
                   <label
                     htmlFor="archetype"
-                    className="text-sm font-medium text-zinc-800"
+                    className={label}
                   >
                     Archetype
                   </label>
@@ -173,7 +191,7 @@ export default async function DecksPage() {
                     list="deck-archetypes"
                     required
                     placeholder="Choose or type an archetype"
-                    className="h-10 rounded-md border border-zinc-300 px-3 text-zinc-950 outline-none focus:border-zinc-950"
+                    className={inputH10}
                   />
                   <datalist id="deck-archetypes">
                     {archetypeOptions.map((archetype) => (
@@ -184,7 +202,7 @@ export default async function DecksPage() {
                 <div className="flex flex-col gap-2">
                   <label
                     htmlFor="format"
-                    className="text-sm font-medium text-zinc-800"
+                    className={label}
                   >
                     Format
                   </label>
@@ -193,7 +211,7 @@ export default async function DecksPage() {
                     name="format"
                     list="deck-formats"
                     defaultValue={LATEST_FORMAT}
-                    className="h-10 rounded-md border border-zinc-300 px-3 text-zinc-950 outline-none focus:border-zinc-950"
+                    className={inputH10}
                   />
                   <datalist id="deck-formats">
                     {MATCH_FORMATS.map((format) => (
@@ -204,7 +222,7 @@ export default async function DecksPage() {
                 <div className="flex flex-col gap-2">
                   <label
                     htmlFor="notes"
-                    className="text-sm font-medium text-zinc-800"
+                    className={label}
                   >
                     Notes
                   </label>
@@ -212,12 +230,12 @@ export default async function DecksPage() {
                     id="notes"
                     name="notes"
                     rows={4}
-                    className="rounded-md border border-zinc-300 px-3 py-2 text-zinc-950 outline-none focus:border-zinc-950"
+                    className={textarea}
                   />
                 </div>
                 <button
                   type="submit"
-                  className="h-10 rounded-md bg-zinc-950 px-4 text-sm font-medium text-white transition hover:bg-zinc-800"
+                  className={primaryButton}
                 >
                   Create deck
                 </button>

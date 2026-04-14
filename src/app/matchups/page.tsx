@@ -1,6 +1,24 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AppNav } from "@/components/AppNav";
+import {
+  appContainer,
+  appShell,
+  cardLarge,
+  emptyCard,
+  inputH10,
+  label,
+  logoOnDark,
+  pageCopy,
+  pageHeader,
+  pageTitle,
+  primaryButton,
+  secondaryButton,
+  sectionCopy,
+  sectionTitle,
+  textarea,
+} from "@/components/brand-styles";
+import { PrizeMapLogo } from "@/components/PrizeMapLogo";
 import { getArchetypeOptions } from "@/lib/archetypes";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { getFormatOptions } from "@/lib/formats";
@@ -312,15 +330,15 @@ export default async function MatchupsPage({
   const hasFilteredMatches = matchupSummary.length > 0;
 
   return (
-    <main className="min-h-screen bg-zinc-50 px-4 py-8 sm:px-6 sm:py-12">
-      <section className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-        <header className="flex flex-col gap-4 border-b border-zinc-200 pb-6 lg:flex-row lg:items-start lg:justify-between">
+    <main className={appShell}>
+      <section className={`${appContainer} max-w-6xl`}>
+        <header className={pageHeader}>
           <div>
-            <p className="text-sm font-medium text-zinc-500">TCG Tracker</p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-zinc-950">
+            <PrizeMapLogo {...logoOnDark} />
+            <h1 className={pageTitle}>
               Matchups
             </h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-600">
+            <p className={pageCopy}>
               Compare your records against each opponent archetype.
             </p>
           </div>
@@ -329,13 +347,13 @@ export default async function MatchupsPage({
 
         <form
           action="/matchups"
-          className="rounded-md border border-zinc-200 bg-white p-5"
+          className={cardLarge}
         >
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
             <div className="flex flex-col gap-2 lg:col-span-2">
               <label
                 htmlFor="deck_id"
-                className="text-sm font-medium text-zinc-800"
+                className={label}
               >
                 Deck
               </label>
@@ -343,7 +361,7 @@ export default async function MatchupsPage({
                 id="deck_id"
                 name="deck_id"
                 defaultValue={selectedDeckId}
-                className="h-10 rounded-md border border-zinc-300 bg-white px-3 text-zinc-950 outline-none focus:border-zinc-950"
+                className={inputH10}
               >
                 <option value="">All decks</option>
                 {userDecks.map((deck) => (
@@ -356,7 +374,7 @@ export default async function MatchupsPage({
             <div className="flex flex-col gap-2 lg:col-span-2">
               <label
                 htmlFor="deck_version_id"
-                className="text-sm font-medium text-zinc-800"
+                className={label}
               >
                 Deck version
               </label>
@@ -364,7 +382,7 @@ export default async function MatchupsPage({
                 id="deck_version_id"
                 name="deck_version_id"
                 defaultValue={selectedVersionId}
-                className="h-10 rounded-md border border-zinc-300 bg-white px-3 text-zinc-950 outline-none focus:border-zinc-950"
+                className={inputH10}
               >
                 <option value="">All versions</option>
                 {visibleVersions.map((version) => (
@@ -378,7 +396,7 @@ export default async function MatchupsPage({
             <div className="flex flex-col gap-2">
               <label
                 htmlFor="start_date"
-                className="text-sm font-medium text-zinc-800"
+                className={label}
               >
                 From
               </label>
@@ -387,13 +405,13 @@ export default async function MatchupsPage({
                 name="start_date"
                 type="date"
                 defaultValue={params.start_date ?? ""}
-                className="h-10 rounded-md border border-zinc-300 px-3 text-zinc-950 outline-none focus:border-zinc-950"
+                className={inputH10}
               />
             </div>
             <div className="flex flex-col gap-2">
               <label
                 htmlFor="end_date"
-                className="text-sm font-medium text-zinc-800"
+                className={label}
               >
                 To
               </label>
@@ -402,13 +420,13 @@ export default async function MatchupsPage({
                 name="end_date"
                 type="date"
                 defaultValue={params.end_date ?? ""}
-                className="h-10 rounded-md border border-zinc-300 px-3 text-zinc-950 outline-none focus:border-zinc-950"
+                className={inputH10}
               />
             </div>
             <div className="flex flex-col gap-2 lg:col-span-2">
               <label
                 htmlFor="sort"
-                className="text-sm font-medium text-zinc-800"
+                className={label}
               >
                 Sort
               </label>
@@ -416,7 +434,7 @@ export default async function MatchupsPage({
                 id="sort"
                 name="sort"
                 defaultValue={sort}
-                className="h-10 rounded-md border border-zinc-300 bg-white px-3 text-zinc-950 outline-none focus:border-zinc-950"
+                className={inputH10}
               >
                 <option value="most_played">Most played</option>
                 <option value="highest_win_rate">Highest win rate</option>
@@ -427,7 +445,7 @@ export default async function MatchupsPage({
             <div className="flex flex-col gap-2 lg:col-span-2">
               <label
                 htmlFor="format"
-                className="text-sm font-medium text-zinc-800"
+                className={label}
               >
                 Format
               </label>
@@ -435,7 +453,7 @@ export default async function MatchupsPage({
                 id="format"
                 name="format"
                 defaultValue={selectedFormat}
-                className="h-10 rounded-md border border-zinc-300 bg-white px-3 text-zinc-950 outline-none focus:border-zinc-950"
+                className={inputH10}
               >
                 <option value="all">All formats</option>
                 {formatOptions.map((format) => (
@@ -448,7 +466,7 @@ export default async function MatchupsPage({
             <div className="flex flex-col gap-2 lg:col-span-2">
               <label
                 htmlFor="opponent_archetype"
-                className="text-sm font-medium text-zinc-800"
+                className={label}
               >
                 Opponent archetype
               </label>
@@ -456,7 +474,7 @@ export default async function MatchupsPage({
                 id="opponent_archetype"
                 name="opponent_archetype"
                 defaultValue={selectedOpponentArchetype}
-                className="h-10 rounded-md border border-zinc-300 bg-white px-3 text-zinc-950 outline-none focus:border-zinc-950"
+                className={inputH10}
               >
                 <option value="">All archetypes</option>
                 {archetypeOptions.map((archetype) => (
@@ -469,13 +487,13 @@ export default async function MatchupsPage({
             <div className="flex flex-col gap-2 sm:flex-row md:col-span-2 lg:col-span-4 lg:items-end lg:justify-end">
               <button
                 type="submit"
-                className="h-10 rounded-md bg-zinc-950 px-4 text-sm font-medium text-white transition hover:bg-zinc-800"
+                className={primaryButton}
               >
                 Apply filters
               </button>
               <Link
                 href="/matchups"
-                className="inline-flex h-10 items-center justify-center rounded-md border border-zinc-300 px-4 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
+                className={secondaryButton}
               >
                 Clear
               </Link>
@@ -484,35 +502,35 @@ export default async function MatchupsPage({
         </form>
 
         {!hasMatches ? (
-          <section className="rounded-md border border-dashed border-zinc-300 bg-white p-6 sm:p-8">
-            <h2 className="text-2xl font-semibold tracking-tight text-zinc-950">
+          <section className={emptyCard}>
+            <h2 className="text-2xl font-semibold tracking-tight text-[#F8FAFC]">
               No matches logged yet.
             </h2>
-            <p className="mt-3 max-w-xl text-sm leading-6 text-zinc-600">
+            <p className={`mt-3 max-w-xl ${sectionCopy}`}>
               Log matches to build matchup records for each opponent archetype.
             </p>
             <Link
               href="/matches/new"
-              className="mt-6 inline-flex h-10 items-center justify-center rounded-md bg-zinc-950 px-4 text-sm font-medium text-white transition hover:bg-zinc-800"
+              className={`mt-6 ${primaryButton}`}
             >
               Log your first match
             </Link>
           </section>
         ) : hasFilteredMatches ? (
-          <section className="rounded-md border border-zinc-200 bg-white p-5 sm:p-6">
+          <section className={cardLarge}>
             <div className="flex flex-col gap-1">
-              <h2 className="text-xl font-semibold text-zinc-950">
+              <h2 className={sectionTitle}>
                 Matchup Summary
               </h2>
-              <p className="text-sm text-zinc-600">
+              <p className={sectionCopy}>
                 {filteredMatches.length} match
                 {filteredMatches.length === 1 ? "" : "es"} in this view.
               </p>
             </div>
             <div className="mt-5 overflow-x-auto">
-              <table className="min-w-full divide-y divide-zinc-200 text-left text-sm">
+              <table className="min-w-full divide-y divide-white/10 text-left text-sm">
                 <thead>
-                  <tr className="text-zinc-500">
+                  <tr className="text-[#94A3B8]">
                     <th className="py-3 pr-4 font-medium">
                       Opponent archetype
                     </th>
@@ -522,7 +540,7 @@ export default async function MatchupsPage({
                     <th className="py-3 pl-4 font-medium">Win rate</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-200">
+                <tbody className="divide-y divide-white/10">
                   {matchupSummary.map((matchup) => (
                     <tr key={matchup.opponentArchetype}>
                       <td
@@ -531,20 +549,20 @@ export default async function MatchupsPage({
                       >
                         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(360px,440px)]">
                           <div>
-                            <p className="font-medium text-zinc-950">
+                            <p className="font-medium text-[#F8FAFC]">
                               {matchup.opponentArchetype}
                             </p>
-                            <div className="mt-3 grid grid-cols-2 gap-2 text-sm text-zinc-700 sm:grid-cols-4">
+                            <div className="mt-3 grid grid-cols-2 gap-2 text-sm text-[#94A3B8] sm:grid-cols-4">
                               <p>{matchup.matches} played</p>
                               <p>{matchup.wins} wins</p>
                               <p>{matchup.losses} losses</p>
                               <div>
-                                <p className="font-medium text-zinc-950">
+                                <p className="font-medium text-[#F8FAFC]">
                                   {matchup.winRate}
                                 </p>
-                                <div className="mt-2 h-2 rounded-full bg-zinc-100">
+                                <div className="mt-2 h-2 rounded-full bg-[#0B1020]">
                                   <div
-                                    className="h-2 rounded-full bg-zinc-950"
+                                    className="h-2 rounded-full bg-[#4F8CFF]"
                                     style={{
                                       width: `${matchup.winRateValue}%`,
                                     }}
@@ -553,8 +571,8 @@ export default async function MatchupsPage({
                               </div>
                             </div>
                           </div>
-                          <div className="rounded-md border border-zinc-200 bg-zinc-50 p-4">
-                            <h3 className="text-sm font-semibold text-zinc-950">
+                          <div className="rounded-md border border-white/10 bg-[#0B1020]/45 p-4">
+                            <h3 className="text-sm font-semibold text-[#F8FAFC]">
                               Preparation Notes
                             </h3>
                             <div className="mt-4 flex flex-col gap-4">
@@ -572,7 +590,7 @@ export default async function MatchupsPage({
                                     <form
                                       key={`${yourArchetype}-${matchup.opponentArchetype}`}
                                       action={saveMatchupNote}
-                                      className="rounded-md border border-zinc-200 bg-white p-3"
+                                      className="rounded-md border border-white/10 bg-[#1A2238]/70 p-3"
                                     >
                                       <input
                                         type="hidden"
@@ -585,12 +603,12 @@ export default async function MatchupsPage({
                                         value={matchup.opponentArchetype}
                                       />
                                       <div className="flex flex-col gap-1">
-                                        <p className="text-xs font-medium uppercase text-zinc-500">
+                                        <p className="text-xs font-medium uppercase text-[#94A3B8]">
                                           {yourArchetype} vs{" "}
                                           {matchup.opponentArchetype}
                                         </p>
                                         {note ? (
-                                          <p className="text-xs text-zinc-500">
+                                          <p className="text-xs text-[#94A3B8]">
                                             Updated{" "}
                                             {formatUpdatedAt(note.updated_at)}
                                           </p>
@@ -601,11 +619,11 @@ export default async function MatchupsPage({
                                         rows={4}
                                         defaultValue={note?.notes ?? ""}
                                         placeholder="Plan, tech cards, sequencing, side notes..."
-                                        className="mt-3 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
+                                        className={`mt-3 w-full text-sm ${textarea}`}
                                       />
                                       <button
                                         type="submit"
-                                        className="mt-3 h-9 rounded-md bg-zinc-950 px-3 text-sm font-medium text-white transition hover:bg-zinc-800"
+                                        className={`mt-3 h-9 px-3 ${primaryButton}`}
                                       >
                                         {note ? "Update note" : "Save note"}
                                       </button>
@@ -613,7 +631,7 @@ export default async function MatchupsPage({
                                   );
                                 })
                               ) : (
-                                <p className="text-sm text-zinc-600">
+                                <p className={sectionCopy}>
                                   Create a deck before saving prep notes.
                                 </p>
                               )}
@@ -628,17 +646,17 @@ export default async function MatchupsPage({
             </div>
           </section>
         ) : (
-          <section className="rounded-md border border-dashed border-zinc-300 bg-white p-6">
-            <h2 className="text-xl font-semibold text-zinc-950">
+          <section className={emptyCard}>
+            <h2 className="text-xl font-semibold text-[#F8FAFC]">
               No matchups match these filters.
             </h2>
-            <p className="mt-2 text-sm leading-6 text-zinc-600">
+            <p className={`mt-2 ${sectionCopy}`}>
               Try a different deck, deck version, archetype, format, date
               range, or clear the filters.
             </p>
             <Link
               href="/matchups"
-              className="mt-5 inline-flex h-10 items-center justify-center rounded-md border border-zinc-300 px-4 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
+              className={`mt-5 ${secondaryButton}`}
             >
               Clear filters
             </Link>

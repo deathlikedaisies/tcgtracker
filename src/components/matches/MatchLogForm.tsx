@@ -2,6 +2,13 @@
 
 import { useState } from "react";
 import { useFormStatus } from "react-dom";
+import {
+  cardLarge,
+  inputH11,
+  label,
+  primaryButton,
+  textarea,
+} from "@/components/brand-styles";
 import { LATEST_FORMAT, MATCH_FORMATS } from "@/lib/formats";
 import { MATCH_TAGS } from "@/lib/match-options";
 
@@ -33,7 +40,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="h-11 rounded-md bg-zinc-950 px-4 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-400"
+      className={`${primaryButton} h-11`}
     >
       {pending ? "Saving..." : "Save and log another"}
     </button>
@@ -89,11 +96,11 @@ export function MatchLogForm({
   return (
     <form
       action={action}
-      className="mt-8 rounded-md border border-zinc-200 bg-white p-5 shadow-sm sm:p-6"
+      className={`mt-8 ${cardLarge}`}
     >
       <div className="grid gap-5">
         {wasSuccessful ? (
-          <div className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
+          <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm font-medium text-emerald-200">
             Match logged. Your deck, format, and opponent are ready for the next
             entry.
           </div>
@@ -103,7 +110,7 @@ export function MatchLogForm({
           <div className="flex flex-col gap-2">
             <label
               htmlFor="deck_version_id"
-              className="text-sm font-medium text-zinc-800"
+              className={label}
             >
               Deck version
             </label>
@@ -116,7 +123,7 @@ export function MatchLogForm({
                 setDeckVersionId(event.target.value);
                 remember(sessionKeys.deckVersionId, event.target.value);
               }}
-              className="h-11 rounded-md border border-zinc-300 bg-white px-3 text-zinc-950 outline-none focus:border-zinc-950"
+              className={inputH11}
             >
               {deckOptions.map((option) => (
                 <option key={option.id} value={option.id}>
@@ -128,14 +135,14 @@ export function MatchLogForm({
           </div>
 
           <fieldset className="flex flex-col gap-2">
-            <legend className="text-sm font-medium text-zinc-800">
+            <legend className={label}>
               Result
             </legend>
             <div className="grid grid-cols-2 gap-2">
               {(["win", "loss"] as const).map((result) => (
                 <label
                   key={result}
-                  className="flex h-11 cursor-pointer items-center justify-center rounded-md border border-zinc-300 px-3 text-sm font-medium capitalize text-zinc-800 has-[:checked]:border-zinc-950 has-[:checked]:bg-zinc-950 has-[:checked]:text-white"
+                  className="flex h-11 cursor-pointer items-center justify-center rounded-md border border-white/15 px-3 text-sm font-medium capitalize text-[#F8FAFC] transition hover:border-[#4F8CFF]/70 has-[:checked]:border-[#F5C84C] has-[:checked]:bg-[#F5C84C] has-[:checked]:text-[#0B1020]"
                 >
                   <input
                     type="radio"
@@ -155,7 +162,7 @@ export function MatchLogForm({
           <div className="flex flex-col gap-2">
             <label
               htmlFor="opponent_archetype"
-              className="text-sm font-medium text-zinc-800"
+              className={label}
             >
               Opponent archetype
             </label>
@@ -170,7 +177,7 @@ export function MatchLogForm({
                 remember(sessionKeys.opponentArchetype, event.target.value);
               }}
               placeholder="Choose or type an archetype"
-              className="h-11 rounded-md border border-zinc-300 px-3 text-zinc-950 outline-none focus:border-zinc-950"
+              className={inputH11}
             />
             <datalist id="opponent-archetypes">
               {opponentArchetypeOptions.map((archetype) => (
@@ -181,7 +188,7 @@ export function MatchLogForm({
           <div className="flex flex-col gap-2">
             <label
               htmlFor="opponent_variant"
-              className="text-sm font-medium text-zinc-800"
+              className={label}
             >
               Opponent variant
             </label>
@@ -189,14 +196,14 @@ export function MatchLogForm({
               id="opponent_variant"
               name="opponent_variant"
               placeholder="Optional detail"
-              className="h-11 rounded-md border border-zinc-300 px-3 text-zinc-950 outline-none focus:border-zinc-950"
+              className={inputH11}
             />
           </div>
         </div>
 
         <div className="grid gap-5 sm:grid-cols-2">
           <fieldset className="flex flex-col gap-2">
-            <legend className="text-sm font-medium text-zinc-800">
+            <legend className={label}>
               Went first
             </legend>
             <div className="grid grid-cols-2 gap-2">
@@ -206,7 +213,7 @@ export function MatchLogForm({
               ].map(([value, label]) => (
                 <label
                   key={value}
-                  className="flex h-11 cursor-pointer items-center justify-center rounded-md border border-zinc-300 px-3 text-sm font-medium text-zinc-800 has-[:checked]:border-zinc-950 has-[:checked]:bg-zinc-950 has-[:checked]:text-white"
+                  className="flex h-11 cursor-pointer items-center justify-center rounded-md border border-white/15 px-3 text-sm font-medium text-[#F8FAFC] transition hover:border-[#4F8CFF]/70 has-[:checked]:border-[#F5C84C] has-[:checked]:bg-[#F5C84C] has-[:checked]:text-[#0B1020]"
                 >
                   <input
                     type="radio"
@@ -222,7 +229,7 @@ export function MatchLogForm({
           </fieldset>
 
           <fieldset className="flex flex-col gap-2">
-            <legend className="text-sm font-medium text-zinc-800">
+            <legend className={label}>
               Event type
             </legend>
             <div className="grid grid-cols-3 gap-2">
@@ -230,7 +237,7 @@ export function MatchLogForm({
                 (eventType) => (
                   <label
                     key={eventType}
-                    className="flex h-11 cursor-pointer items-center justify-center rounded-md border border-zinc-300 px-2 text-sm font-medium capitalize text-zinc-800 has-[:checked]:border-zinc-950 has-[:checked]:bg-zinc-950 has-[:checked]:text-white"
+                    className="flex h-11 cursor-pointer items-center justify-center rounded-md border border-white/15 px-2 text-sm font-medium capitalize text-[#F8FAFC] transition hover:border-[#4F8CFF]/70 has-[:checked]:border-[#F5C84C] has-[:checked]:bg-[#F5C84C] has-[:checked]:text-[#0B1020]"
                   >
                     <input
                       type="radio"
@@ -249,7 +256,7 @@ export function MatchLogForm({
 
         <div className="grid gap-5 sm:grid-cols-[minmax(0,1fr)_220px]">
           <div className="flex flex-col gap-2">
-            <label htmlFor="format" className="text-sm font-medium text-zinc-800">
+            <label htmlFor="format" className={label}>
               Format
             </label>
             <select
@@ -260,7 +267,7 @@ export function MatchLogForm({
                 setFormat(event.target.value);
                 remember(sessionKeys.format, event.target.value);
               }}
-              className="h-11 rounded-md border border-zinc-300 bg-white px-3 text-zinc-950 outline-none focus:border-zinc-950"
+              className={inputH11}
             >
               {MATCH_FORMATS.map((formatOption) => (
                 <option key={formatOption} value={formatOption}>
@@ -273,7 +280,7 @@ export function MatchLogForm({
           <div className="flex flex-col gap-2">
             <label
               htmlFor="format_custom"
-              className="text-sm font-medium text-zinc-800"
+              className={label}
             >
               Custom format
             </label>
@@ -286,18 +293,18 @@ export function MatchLogForm({
                 remember(sessionKeys.customFormat, event.target.value);
               }}
               placeholder="Optional"
-              className="h-11 rounded-md border border-zinc-300 px-3 text-zinc-950 outline-none focus:border-zinc-950"
+              className={inputH11}
             />
           </div>
         </div>
 
         <fieldset className="flex flex-col gap-2">
-          <legend className="text-sm font-medium text-zinc-800">Tags</legend>
+          <legend className={label}>Tags</legend>
           <div className="flex flex-wrap gap-2">
             {MATCH_TAGS.map((tag) => (
               <label
                 key={tag}
-                className="cursor-pointer rounded-md border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 has-[:checked]:border-zinc-950 has-[:checked]:bg-zinc-950 has-[:checked]:text-white"
+                className="cursor-pointer rounded-md border border-white/15 px-3 py-2 text-sm font-medium text-[#F8FAFC] transition hover:border-[#4F8CFF]/70 has-[:checked]:border-[#4F8CFF] has-[:checked]:bg-[#4F8CFF]/20 has-[:checked]:text-[#F8FAFC]"
               >
                 <input
                   type="checkbox"
@@ -312,7 +319,7 @@ export function MatchLogForm({
         </fieldset>
 
         <div className="flex flex-col gap-2">
-          <label htmlFor="notes" className="text-sm font-medium text-zinc-800">
+          <label htmlFor="notes" className={label}>
             Notes
           </label>
           <textarea
@@ -320,7 +327,7 @@ export function MatchLogForm({
             name="notes"
             rows={3}
             placeholder="Optional"
-            className="rounded-md border border-zinc-300 px-3 py-2 text-zinc-950 outline-none focus:border-zinc-950"
+            className={textarea}
           />
         </div>
 

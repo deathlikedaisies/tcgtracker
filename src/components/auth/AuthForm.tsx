@@ -3,6 +3,12 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
+import {
+  inputH11,
+  label,
+  primaryButton,
+  sectionCopy,
+} from "@/components/brand-styles";
 import { createClient } from "@/lib/supabase";
 
 type AuthMode = "login" | "signup";
@@ -54,7 +60,7 @@ export function AuthForm({ mode }: AuthFormProps) {
   return (
     <form onSubmit={handleSubmit} className="flex w-full flex-col gap-5">
       <div className="flex flex-col gap-2">
-        <label htmlFor="email" className="text-sm font-medium text-zinc-800">
+        <label htmlFor="email" className={label}>
           Email
         </label>
         <input
@@ -65,11 +71,11 @@ export function AuthForm({ mode }: AuthFormProps) {
           required
           value={email}
           onChange={(event) => setEmail(event.target.value)}
-          className="h-11 rounded-md border border-zinc-300 px-3 text-zinc-950 outline-none focus:border-zinc-950"
+          className={inputH11}
         />
       </div>
       <div className="flex flex-col gap-2">
-        <label htmlFor="password" className="text-sm font-medium text-zinc-800">
+        <label htmlFor="password" className={label}>
           Password
         </label>
         <input
@@ -81,26 +87,26 @@ export function AuthForm({ mode }: AuthFormProps) {
           minLength={6}
           value={password}
           onChange={(event) => setPassword(event.target.value)}
-          className="h-11 rounded-md border border-zinc-300 px-3 text-zinc-950 outline-none focus:border-zinc-950"
+          className={inputH11}
         />
       </div>
       {message ? (
-        <p className="rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm text-zinc-700">
+        <p className="rounded-md border border-[#4F8CFF]/30 bg-[#4F8CFF]/10 px-3 py-2 text-sm text-[#F8FAFC]">
           {message}
         </p>
       ) : null}
       <button
         type="submit"
         disabled={isSubmitting}
-        className="h-11 rounded-md bg-zinc-950 px-4 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-400"
+        className={`${primaryButton} h-11`}
       >
         {isSubmitting ? "Please wait..." : isLogin ? "Log in" : "Create account"}
       </button>
-      <p className="text-sm text-zinc-600">
+      <p className={sectionCopy}>
         {isLogin ? "Need an account?" : "Already have an account?"}{" "}
         <Link
           href={isLogin ? "/signup" : "/login"}
-          className="font-medium text-zinc-950 underline underline-offset-4"
+          className="font-medium text-[#F5C84C] underline underline-offset-4"
         >
           {isLogin ? "Sign up" : "Log in"}
         </Link>

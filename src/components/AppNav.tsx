@@ -20,8 +20,8 @@ export function AppNav({ current }: AppNavProps) {
       {navItems.map((item) => {
         const isCurrent = item.section === current;
         const className = isCurrent
-          ? "inline-flex h-10 items-center justify-center rounded-md bg-zinc-950 px-4 text-sm font-medium text-white"
-          : "inline-flex h-10 items-center justify-center rounded-md border border-zinc-300 px-4 text-sm font-medium text-zinc-900 transition hover:bg-white";
+          ? "inline-flex h-10 items-center justify-center rounded-md bg-[#F5C84C] px-4 text-sm font-semibold text-[#0B1020]"
+          : "inline-flex h-10 items-center justify-center rounded-md border border-white/15 bg-[#1A2238]/55 px-4 text-sm font-medium text-[#F8FAFC] transition hover:border-[#4F8CFF]/70 hover:bg-[#4F8CFF]/10";
 
         return (
           <Link

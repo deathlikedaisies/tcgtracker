@@ -1,6 +1,15 @@
 import { redirect } from "next/navigation";
 import { AppNav } from "@/components/AppNav";
+import {
+  appShell,
+  emptyCard,
+  logoOnDark,
+  pageCopy,
+  pageTitle,
+  sectionCopy,
+} from "@/components/brand-styles";
 import { MatchLogForm } from "@/components/matches/MatchLogForm";
+import { PrizeMapLogo } from "@/components/PrizeMapLogo";
 import { getArchetypeOptions } from "@/lib/archetypes";
 import { LATEST_FORMAT } from "@/lib/formats";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
@@ -84,16 +93,19 @@ export default async function NewMatchPage({
   ]);
 
   return (
-    <main className="min-h-screen bg-zinc-50 px-4 py-8 sm:px-6 sm:py-12">
+    <main className={appShell}>
       <section className="mx-auto w-full max-w-2xl">
-        <AppNav current="log" />
+        <div className="flex flex-col gap-4">
+          <PrizeMapLogo {...logoOnDark} />
+          <AppNav current="log" />
+        </div>
 
-        <div className="mt-5 border-b border-zinc-200 pb-6">
-          <p className="text-sm font-medium text-zinc-500">Match Log</p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-zinc-950">
+        <div className="mt-5 border-b border-white/10 pb-6">
+          <p className="text-sm font-medium text-[#94A3B8]">Match Log</p>
+          <h1 className={pageTitle}>
             Log a Match
           </h1>
-          <p className="mt-3 text-sm leading-6 text-zinc-600">
+          <p className={pageCopy}>
             Fast entry for testing sessions and event rounds.
           </p>
         </div>
@@ -106,11 +118,11 @@ export default async function NewMatchPage({
             wasSuccessful={success === "1"}
           />
         ) : (
-          <div className="mt-8 rounded-md border border-dashed border-zinc-300 bg-white p-6">
-            <h2 className="text-lg font-semibold text-zinc-950">
+          <div className={`mt-8 ${emptyCard}`}>
+            <h2 className="text-lg font-semibold text-[#F8FAFC]">
               No deck versions yet.
             </h2>
-            <p className="mt-2 text-sm leading-6 text-zinc-600">
+            <p className={`mt-2 ${sectionCopy}`}>
               Create a deck and add a version before logging matches.
             </p>
           </div>

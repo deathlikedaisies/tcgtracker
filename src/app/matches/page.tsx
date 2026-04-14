@@ -1,6 +1,25 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AppNav } from "@/components/AppNav";
+import {
+  appContainer,
+  appShell,
+  cardLarge,
+  dangerButton,
+  emptyCard,
+  inputH10,
+  label,
+  logoOnDark,
+  pageCopy,
+  pageHeader,
+  pageTitle,
+  primaryButton,
+  secondaryButton,
+  sectionCopy,
+  sectionTitle,
+  subtlePill,
+} from "@/components/brand-styles";
+import { PrizeMapLogo } from "@/components/PrizeMapLogo";
 import { getArchetypeOptions } from "@/lib/archetypes";
 import { getFormatOptions } from "@/lib/formats";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
@@ -249,15 +268,15 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
   });
 
   return (
-    <main className="min-h-screen bg-zinc-50 px-4 py-8 sm:px-6 sm:py-12">
-      <section className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-        <header className="flex flex-col gap-4 border-b border-zinc-200 pb-6 lg:flex-row lg:items-start lg:justify-between">
+    <main className={appShell}>
+      <section className={`${appContainer} max-w-6xl`}>
+        <header className={pageHeader}>
           <div>
-            <p className="text-sm font-medium text-zinc-500">TCG Tracker</p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-zinc-950">
+            <PrizeMapLogo {...logoOnDark} />
+            <h1 className={pageTitle}>
               Matches
             </h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-600">
+            <p className={pageCopy}>
               Browse, filter, edit, and remove logged matches.
             </p>
           </div>
@@ -265,25 +284,25 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
         </header>
 
         {params.updated === "1" ? (
-          <div className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
+          <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm font-medium text-emerald-200">
             Match updated.
           </div>
         ) : null}
 
         <form
           action="/matches"
-          className="rounded-md border border-zinc-200 bg-white p-5"
+          className={cardLarge}
         >
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
             <div className="flex flex-col gap-2 lg:col-span-2">
-              <label htmlFor="deck_id" className="text-sm font-medium text-zinc-800">
+              <label htmlFor="deck_id" className={label}>
                 Deck
               </label>
               <select
                 id="deck_id"
                 name="deck_id"
                 defaultValue={selectedDeckId}
-                className="h-10 rounded-md border border-zinc-300 bg-white px-3 text-zinc-950 outline-none focus:border-zinc-950"
+                className={inputH10}
               >
                 <option value="">All decks</option>
                 {userDecks.map((deck) => (
@@ -296,7 +315,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
             <div className="flex flex-col gap-2 lg:col-span-2">
               <label
                 htmlFor="deck_version_id"
-                className="text-sm font-medium text-zinc-800"
+                className={label}
               >
                 Deck version
               </label>
@@ -304,7 +323,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                 id="deck_version_id"
                 name="deck_version_id"
                 defaultValue={selectedVersionId}
-                className="h-10 rounded-md border border-zinc-300 bg-white px-3 text-zinc-950 outline-none focus:border-zinc-950"
+                className={inputH10}
               >
                 <option value="">All versions</option>
                 {visibleVersions.map((version) => (
@@ -318,7 +337,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
             <div className="flex flex-col gap-2 lg:col-span-2">
               <label
                 htmlFor="opponent_archetype"
-                className="text-sm font-medium text-zinc-800"
+                className={label}
               >
                 Opponent
               </label>
@@ -326,7 +345,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                 id="opponent_archetype"
                 name="opponent_archetype"
                 defaultValue={selectedOpponentArchetype}
-                className="h-10 rounded-md border border-zinc-300 bg-white px-3 text-zinc-950 outline-none focus:border-zinc-950"
+                className={inputH10}
               >
                 <option value="">All archetypes</option>
                 {archetypeOptions.map((archetype) => (
@@ -337,14 +356,14 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
               </select>
             </div>
             <div className="flex flex-col gap-2">
-              <label htmlFor="result" className="text-sm font-medium text-zinc-800">
+              <label htmlFor="result" className={label}>
                 Result
               </label>
               <select
                 id="result"
                 name="result"
                 defaultValue={selectedResult}
-                className="h-10 rounded-md border border-zinc-300 bg-white px-3 text-zinc-950 outline-none focus:border-zinc-950"
+                className={inputH10}
               >
                 <option value="">All results</option>
                 <option value="win">Win</option>
@@ -352,14 +371,14 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
               </select>
             </div>
             <div className="flex flex-col gap-2">
-              <label htmlFor="format" className="text-sm font-medium text-zinc-800">
+              <label htmlFor="format" className={label}>
                 Format
               </label>
               <select
                 id="format"
                 name="format"
                 defaultValue={selectedFormat}
-                className="h-10 rounded-md border border-zinc-300 bg-white px-3 text-zinc-950 outline-none focus:border-zinc-950"
+                className={inputH10}
               >
                 <option value="all">All formats</option>
                 {formatOptions.map((format) => (
@@ -372,7 +391,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
             <div className="flex flex-col gap-2">
               <label
                 htmlFor="start_date"
-                className="text-sm font-medium text-zinc-800"
+                className={label}
               >
                 From
               </label>
@@ -381,11 +400,11 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                 name="start_date"
                 type="date"
                 defaultValue={params.start_date ?? ""}
-                className="h-10 rounded-md border border-zinc-300 px-3 text-zinc-950 outline-none focus:border-zinc-950"
+                className={inputH10}
               />
             </div>
             <div className="flex flex-col gap-2">
-              <label htmlFor="end_date" className="text-sm font-medium text-zinc-800">
+              <label htmlFor="end_date" className={label}>
                 To
               </label>
               <input
@@ -393,19 +412,19 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                 name="end_date"
                 type="date"
                 defaultValue={params.end_date ?? ""}
-                className="h-10 rounded-md border border-zinc-300 px-3 text-zinc-950 outline-none focus:border-zinc-950"
+                className={inputH10}
               />
             </div>
             <div className="flex flex-col gap-2 sm:flex-row md:col-span-2 lg:col-span-2 lg:items-end">
               <button
                 type="submit"
-                className="h-10 rounded-md bg-zinc-950 px-4 text-sm font-medium text-white transition hover:bg-zinc-800"
+                className={primaryButton}
               >
                 Apply filters
               </button>
               <Link
                 href="/matches"
-                className="inline-flex h-10 items-center justify-center rounded-md border border-zinc-300 px-4 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
+                className={secondaryButton}
               >
                 Clear
               </Link>
@@ -414,27 +433,27 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
         </form>
 
         {!matchRows.length ? (
-          <section className="rounded-md border border-dashed border-zinc-300 bg-white p-6 sm:p-8">
-            <h2 className="text-2xl font-semibold tracking-tight text-zinc-950">
+          <section className={emptyCard}>
+            <h2 className="text-2xl font-semibold tracking-tight text-[#F8FAFC]">
               No matches logged yet.
             </h2>
-            <p className="mt-3 max-w-xl text-sm leading-6 text-zinc-600">
+            <p className={`mt-3 max-w-xl ${sectionCopy}`}>
               Log your first match to start building match history.
             </p>
             <Link
               href="/matches/new"
-              className="mt-6 inline-flex h-10 items-center justify-center rounded-md bg-zinc-950 px-4 text-sm font-medium text-white transition hover:bg-zinc-800"
+              className={`mt-6 ${primaryButton}`}
             >
               Log your first match
             </Link>
           </section>
         ) : filteredMatches.length ? (
-          <section className="rounded-md border border-zinc-200 bg-white p-5 sm:p-6">
+          <section className={cardLarge}>
             <div className="flex flex-col gap-1">
-              <h2 className="text-xl font-semibold text-zinc-950">
+              <h2 className={sectionTitle}>
                 Match History
               </h2>
-              <p className="text-sm text-zinc-600">
+              <p className={sectionCopy}>
                 {filteredMatches.length} match
                 {filteredMatches.length === 1 ? "" : "es"} in this view.
               </p>
@@ -448,46 +467,46 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                 return (
                   <article
                     key={match.id}
-                    className="rounded-md border border-zinc-200 p-4"
+                    className="rounded-md border border-white/10 bg-[#0B1020]/35 p-4"
                   >
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
-                          <p className="text-sm font-medium text-zinc-500">
+                          <p className="text-sm font-medium text-[#94A3B8]">
                             {formatDate(match.played_at)}
                           </p>
                           <span
                             className={`rounded-md px-2 py-1 text-xs font-medium uppercase ${
                               match.result === "win"
-                                ? "bg-emerald-50 text-emerald-700"
-                                : "bg-rose-50 text-rose-700"
+                                ? "bg-emerald-500/15 text-emerald-300"
+                                : "bg-[#F43F5E]/15 text-rose-200"
                             }`}
                           >
                             {match.result}
                           </span>
                         </div>
-                        <h3 className="mt-2 text-lg font-semibold text-zinc-950">
+                        <h3 className="mt-2 text-lg font-semibold text-[#F8FAFC]">
                           {match.opponent_archetype}
                           {match.opponent_variant
                             ? ` - ${match.opponent_variant}`
                             : ""}
                         </h3>
-                        <p className="mt-1 text-sm text-zinc-600">
+                        <p className="mt-1 text-sm text-[#94A3B8]">
                           {getDeckName(match)} -{" "}
                           {deckVersion?.name ?? "Unknown version"}
                         </p>
-                        <div className="mt-3 flex flex-wrap gap-2 text-xs text-zinc-600">
-                          <span className="rounded-md bg-zinc-100 px-2 py-1">
+                        <div className="mt-3 flex flex-wrap gap-2 text-xs text-[#94A3B8]">
+                          <span className={subtlePill}>
                             {match.went_first === null
                               ? "Order not tracked"
                               : match.went_first
                                 ? "Went first"
                                 : "Went second"}
                           </span>
-                          <span className="rounded-md bg-zinc-100 px-2 py-1 capitalize">
+                          <span className={`${subtlePill} capitalize`}>
                             {match.event_type ?? "No event"}
                           </span>
-                          <span className="rounded-md bg-zinc-100 px-2 py-1">
+                          <span className={subtlePill}>
                             {match.format ?? "No format"}
                           </span>
                         </div>
@@ -496,28 +515,28 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                             {tags.map((tag) => (
                               <span
                                 key={tag}
-                                className="rounded-md bg-zinc-950 px-2 py-1 text-xs font-medium text-white"
+                                className="rounded-md bg-[#4F8CFF]/20 px-2 py-1 text-xs font-medium text-[#F8FAFC]"
                               >
                                 {tag}
                               </span>
                             ))}
                           </div>
                         ) : null}
-                        <p className="mt-3 text-sm leading-6 text-zinc-600">
+                        <p className={`mt-3 ${sectionCopy}`}>
                           {notePreview(match.notes)}
                         </p>
                       </div>
                       <div className="flex flex-col gap-2 sm:flex-row lg:min-w-36 lg:flex-col">
                         <Link
                           href={`/matches/${match.id}/edit`}
-                          className="inline-flex h-10 items-center justify-center rounded-md bg-zinc-950 px-4 text-sm font-medium text-white transition hover:bg-zinc-800"
+                          className={primaryButton}
                         >
                           Edit
                         </Link>
                         <form action={removeMatch}>
                           <button
                             type="submit"
-                            className="h-10 w-full rounded-md border border-rose-200 px-4 text-sm font-medium text-rose-700 transition hover:bg-rose-50"
+                            className={`w-full ${dangerButton}`}
                           >
                             Delete
                           </button>
@@ -530,17 +549,17 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
             </div>
           </section>
         ) : (
-          <section className="rounded-md border border-dashed border-zinc-300 bg-white p-6">
-            <h2 className="text-xl font-semibold text-zinc-950">
+          <section className={emptyCard}>
+            <h2 className="text-xl font-semibold text-[#F8FAFC]">
               No matches match these filters.
             </h2>
-            <p className="mt-2 text-sm leading-6 text-zinc-600">
+            <p className={`mt-2 ${sectionCopy}`}>
               Try a different deck, version, opponent, result, format, or date
               range.
             </p>
             <Link
               href="/matches"
-              className="mt-5 inline-flex h-10 items-center justify-center rounded-md border border-zinc-300 px-4 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
+              className={`mt-5 ${secondaryButton}`}
             >
               Clear filters
             </Link>

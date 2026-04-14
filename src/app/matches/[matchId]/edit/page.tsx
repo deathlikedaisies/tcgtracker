@@ -1,5 +1,17 @@
 import { notFound, redirect } from "next/navigation";
 import { AppNav } from "@/components/AppNav";
+import {
+  appShell,
+  cardLarge,
+  inputH11,
+  label,
+  logoOnDark,
+  pageCopy,
+  pageTitle,
+  primaryButton,
+  textarea,
+} from "@/components/brand-styles";
+import { PrizeMapLogo } from "@/components/PrizeMapLogo";
 import { getArchetypeOptions } from "@/lib/archetypes";
 import { LATEST_FORMAT, MATCH_FORMATS } from "@/lib/formats";
 import { MATCH_TAGS } from "@/lib/match-options";
@@ -118,29 +130,32 @@ export default async function EditMatchPage({ params }: EditMatchPageProps) {
   const saveMatch = updateMatch.bind(null, currentMatch.id);
 
   return (
-    <main className="min-h-screen bg-zinc-50 px-4 py-8 sm:px-6 sm:py-12">
+    <main className={appShell}>
       <section className="mx-auto w-full max-w-2xl">
-        <AppNav current="matches" />
+        <div className="flex flex-col gap-4">
+          <PrizeMapLogo {...logoOnDark} />
+          <AppNav current="matches" />
+        </div>
 
-        <div className="mt-5 border-b border-zinc-200 pb-6">
-          <p className="text-sm font-medium text-zinc-500">Match History</p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-zinc-950">
+        <div className="mt-5 border-b border-white/10 pb-6">
+          <p className="text-sm font-medium text-[#94A3B8]">Match History</p>
+          <h1 className={pageTitle}>
             Edit Match
           </h1>
-          <p className="mt-3 text-sm leading-6 text-zinc-600">
+          <p className={pageCopy}>
             Update match details and tags.
           </p>
         </div>
 
         <form
           action={saveMatch}
-          className="mt-8 rounded-md border border-zinc-200 bg-white p-5 shadow-sm sm:p-6"
+          className={`mt-8 ${cardLarge}`}
         >
           <div className="grid gap-5">
             <div className="flex flex-col gap-2">
               <label
                 htmlFor="deck_version_id"
-                className="text-sm font-medium text-zinc-800"
+                className={label}
               >
                 Deck version
               </label>
@@ -149,7 +164,7 @@ export default async function EditMatchPage({ params }: EditMatchPageProps) {
                 name="deck_version_id"
                 required
                 defaultValue={currentMatch.deck_version_id}
-                className="h-11 rounded-md border border-zinc-300 bg-white px-3 text-zinc-950 outline-none focus:border-zinc-950"
+                className={inputH11}
               >
                 {deckOptions.map((option) => (
                   <option key={option.id} value={option.id}>
@@ -164,7 +179,7 @@ export default async function EditMatchPage({ params }: EditMatchPageProps) {
               <div className="flex flex-col gap-2">
                 <label
                   htmlFor="opponent_archetype"
-                  className="text-sm font-medium text-zinc-800"
+                  className={label}
                 >
                   Opponent archetype
                 </label>
@@ -174,7 +189,7 @@ export default async function EditMatchPage({ params }: EditMatchPageProps) {
                   list="edit-opponent-archetypes"
                   required
                   defaultValue={currentMatch.opponent_archetype}
-                  className="h-11 rounded-md border border-zinc-300 px-3 text-zinc-950 outline-none focus:border-zinc-950"
+                  className={inputH11}
                 />
                 <datalist id="edit-opponent-archetypes">
                   {opponentArchetypeOptions.map((archetype) => (
@@ -185,7 +200,7 @@ export default async function EditMatchPage({ params }: EditMatchPageProps) {
               <div className="flex flex-col gap-2">
                 <label
                   htmlFor="opponent_variant"
-                  className="text-sm font-medium text-zinc-800"
+                  className={label}
                 >
                   Opponent variant
                 </label>
@@ -193,20 +208,20 @@ export default async function EditMatchPage({ params }: EditMatchPageProps) {
                   id="opponent_variant"
                   name="opponent_variant"
                   defaultValue={currentMatch.opponent_variant ?? ""}
-                  className="h-11 rounded-md border border-zinc-300 px-3 text-zinc-950 outline-none focus:border-zinc-950"
+                  className={inputH11}
                 />
               </div>
             </div>
 
             <fieldset className="flex flex-col gap-2">
-              <legend className="text-sm font-medium text-zinc-800">
+              <legend className={label}>
                 Result
               </legend>
               <div className="grid grid-cols-2 gap-2">
                 {(["win", "loss"] as const).map((result) => (
                   <label
                     key={result}
-                    className="flex h-11 cursor-pointer items-center justify-center rounded-md border border-zinc-300 px-3 text-sm font-medium capitalize text-zinc-800 has-[:checked]:border-zinc-950 has-[:checked]:bg-zinc-950 has-[:checked]:text-white"
+                    className="flex h-11 cursor-pointer items-center justify-center rounded-md border border-white/15 px-3 text-sm font-medium capitalize text-[#F8FAFC] transition hover:border-[#4F8CFF]/70 has-[:checked]:border-[#F5C84C] has-[:checked]:bg-[#F5C84C] has-[:checked]:text-[#0B1020]"
                   >
                     <input
                       type="radio"
@@ -223,11 +238,11 @@ export default async function EditMatchPage({ params }: EditMatchPageProps) {
 
             <div className="grid gap-5 sm:grid-cols-2">
               <fieldset className="flex flex-col gap-2">
-                <legend className="text-sm font-medium text-zinc-800">
+                <legend className={label}>
                   Went first
                 </legend>
                 <div className="grid grid-cols-2 gap-2">
-                  <label className="flex h-11 cursor-pointer items-center justify-center rounded-md border border-zinc-300 px-3 text-sm font-medium text-zinc-800 has-[:checked]:border-zinc-950 has-[:checked]:bg-zinc-950 has-[:checked]:text-white">
+                  <label className="flex h-11 cursor-pointer items-center justify-center rounded-md border border-white/15 px-3 text-sm font-medium text-[#F8FAFC] transition hover:border-[#4F8CFF]/70 has-[:checked]:border-[#F5C84C] has-[:checked]:bg-[#F5C84C] has-[:checked]:text-[#0B1020]">
                     <input
                       type="radio"
                       name="went_first"
@@ -237,7 +252,7 @@ export default async function EditMatchPage({ params }: EditMatchPageProps) {
                     />
                     Yes
                   </label>
-                  <label className="flex h-11 cursor-pointer items-center justify-center rounded-md border border-zinc-300 px-3 text-sm font-medium text-zinc-800 has-[:checked]:border-zinc-950 has-[:checked]:bg-zinc-950 has-[:checked]:text-white">
+                  <label className="flex h-11 cursor-pointer items-center justify-center rounded-md border border-white/15 px-3 text-sm font-medium text-[#F8FAFC] transition hover:border-[#4F8CFF]/70 has-[:checked]:border-[#F5C84C] has-[:checked]:bg-[#F5C84C] has-[:checked]:text-[#0B1020]">
                     <input
                       type="radio"
                       name="went_first"
@@ -251,7 +266,7 @@ export default async function EditMatchPage({ params }: EditMatchPageProps) {
               </fieldset>
 
               <fieldset className="flex flex-col gap-2">
-                <legend className="text-sm font-medium text-zinc-800">
+                <legend className={label}>
                   Event type
                 </legend>
                 <div className="grid grid-cols-3 gap-2">
@@ -259,7 +274,7 @@ export default async function EditMatchPage({ params }: EditMatchPageProps) {
                     (eventType) => (
                       <label
                         key={eventType}
-                        className="flex h-11 cursor-pointer items-center justify-center rounded-md border border-zinc-300 px-2 text-sm font-medium capitalize text-zinc-800 has-[:checked]:border-zinc-950 has-[:checked]:bg-zinc-950 has-[:checked]:text-white"
+                        className="flex h-11 cursor-pointer items-center justify-center rounded-md border border-white/15 px-2 text-sm font-medium capitalize text-[#F8FAFC] transition hover:border-[#4F8CFF]/70 has-[:checked]:border-[#F5C84C] has-[:checked]:bg-[#F5C84C] has-[:checked]:text-[#0B1020]"
                       >
                         <input
                           type="radio"
@@ -280,7 +295,7 @@ export default async function EditMatchPage({ params }: EditMatchPageProps) {
               <div className="flex flex-col gap-2">
                 <label
                   htmlFor="format"
-                  className="text-sm font-medium text-zinc-800"
+                  className={label}
                 >
                   Format
                 </label>
@@ -288,7 +303,7 @@ export default async function EditMatchPage({ params }: EditMatchPageProps) {
                   id="format"
                   name="format"
                   defaultValue={selectedFormat ?? LATEST_FORMAT}
-                  className="h-11 rounded-md border border-zinc-300 bg-white px-3 text-zinc-950 outline-none focus:border-zinc-950"
+                  className={inputH11}
                 >
                   {MATCH_FORMATS.map((format) => (
                     <option key={format} value={format}>
@@ -301,7 +316,7 @@ export default async function EditMatchPage({ params }: EditMatchPageProps) {
               <div className="flex flex-col gap-2">
                 <label
                   htmlFor="format_custom"
-                  className="text-sm font-medium text-zinc-800"
+                  className={label}
                 >
                   Custom format
                 </label>
@@ -310,20 +325,20 @@ export default async function EditMatchPage({ params }: EditMatchPageProps) {
                   name="format_custom"
                   defaultValue={customFormat}
                   placeholder="Optional"
-                  className="h-11 rounded-md border border-zinc-300 px-3 text-zinc-950 outline-none focus:border-zinc-950"
+                  className={inputH11}
                 />
               </div>
             </div>
 
             <fieldset className="flex flex-col gap-2">
-              <legend className="text-sm font-medium text-zinc-800">
+              <legend className={label}>
                 Tags
               </legend>
               <div className="flex flex-wrap gap-2">
                 {tagOptions.map((tag) => (
                   <label
                     key={tag}
-                    className="cursor-pointer rounded-md border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 has-[:checked]:border-zinc-950 has-[:checked]:bg-zinc-950 has-[:checked]:text-white"
+                    className="cursor-pointer rounded-md border border-white/15 px-3 py-2 text-sm font-medium text-[#F8FAFC] transition hover:border-[#4F8CFF]/70 has-[:checked]:border-[#4F8CFF] has-[:checked]:bg-[#4F8CFF]/20"
                   >
                     <input
                       type="checkbox"
@@ -339,7 +354,7 @@ export default async function EditMatchPage({ params }: EditMatchPageProps) {
             </fieldset>
 
             <div className="flex flex-col gap-2">
-              <label htmlFor="notes" className="text-sm font-medium text-zinc-800">
+              <label htmlFor="notes" className={label}>
                 Notes
               </label>
               <textarea
@@ -347,13 +362,13 @@ export default async function EditMatchPage({ params }: EditMatchPageProps) {
                 name="notes"
                 rows={5}
                 defaultValue={currentMatch.notes ?? ""}
-                className="rounded-md border border-zinc-300 px-3 py-2 text-zinc-950 outline-none focus:border-zinc-950"
+                className={textarea}
               />
             </div>
 
             <button
               type="submit"
-              className="h-11 rounded-md bg-zinc-950 px-4 text-sm font-medium text-white transition hover:bg-zinc-800"
+              className={`${primaryButton} h-11`}
             >
               Save match
             </button>
