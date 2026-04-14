@@ -34,6 +34,7 @@ import {
   sectionTitle,
 } from "@/components/brand-styles";
 import { PrizeMapLogo } from "@/components/PrizeMapLogo";
+import { ShareReportButton, type ShareReport } from "@/components/ShareReportButton";
 import { createClient } from "@/lib/supabase";
 
 type DeckSummary = {
@@ -189,6 +190,27 @@ export function DashboardContent({
     },
     null
   );
+  const bestMatchup = matchupSummary.reduce<MatchupSummary | null>(
+    (currentBest, matchup) => {
+      if (!currentBest) {
+        return matchup;
+      }
+
+      const matchupRate = parseRate(matchup.winRate);
+      const bestRate = parseRate(currentBest.winRate);
+
+      if (matchupRate > bestRate) {
+        return matchup;
+      }
+
+      if (matchupRate === bestRate && matchup.matches > currentBest.matches) {
+        return matchup;
+      }
+
+      return currentBest;
+    },
+    null
+  );
   const bestDeckVersion = deckPerformance.reduce<DeckPerformance | null>(
     (currentBest, deckVersion) => {
       if (!currentBest) {
@@ -246,6 +268,15 @@ export function DashboardContent({
       detail: `Last ${Math.min(recentMatches.length, 5)} logged matches`,
     },
   ];
+  const shareReport: ShareReport = {
+    title: `${selectedFormatLabel} Matchup Report`,
+    deckName: bestDeckVersion?.deckVersionName ?? "All decks",
+    winRate: stats.overallWinRate,
+    worstMatchup: worstMatchup?.opponentArchetype ?? "No matchup yet",
+    bestMatchup: bestMatchup?.opponentArchetype ?? "No matchup yet",
+    totalMatches: stats.totalMatches,
+    context: selectedFormatLabel,
+  };
 
   async function handleSignOut() {
     await supabase.auth.signOut();
@@ -275,6 +306,46 @@ export function DashboardContent({
             </button>
           </div>
         </div>
+
+        {hasMatches ? (
+          <section className="rounded-md bg-[#1A2238]/38 p-4 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.1)] sm:p-5">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-sm font-semibold text-[#4F8CFF]">
+                  Insight Strip
+                </p>
+                <h2 className="mt-1 text-2xl font-semibold tracking-tight text-[#F8FAFC]">
+                  Your testing signal for {selectedFormatLabel}.
+                </h2>
+              </div>
+              <Link
+                href="/matches/new"
+                className="text-sm font-medium text-[#F8FAFC] underline decoration-[#4F8CFF] underline-offset-4"
+              >
+                Log another match
+              </Link>
+              <ShareReportButton report={shareReport} />
+            </div>
+            <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+              {insights.map((insight) => (
+                <div
+                  key={insight.label}
+                  className="rounded-md bg-[#0B1020]/36 p-4"
+                >
+                  <p className="text-xs font-medium uppercase text-[#94A3B8]">
+                    {insight.label}
+                  </p>
+                  <p className="mt-2 truncate text-xl font-semibold text-[#F8FAFC]">
+                    {insight.value}
+                  </p>
+                  <p className="mt-2 text-sm text-[#94A3B8]">
+                    {insight.detail}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         <form
           action="/dashboard"
@@ -313,43 +384,6 @@ export function DashboardContent({
 
         {hasMatches ? (
           <>
-            <section className="rounded-md border border-[#4F8CFF]/20 bg-[#4F8CFF]/10 p-4 sm:p-5">
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-                <div>
-                  <p className="text-sm font-semibold text-[#4F8CFF]">
-                    Current read
-                  </p>
-                  <h2 className="mt-1 text-2xl font-semibold tracking-tight text-[#F8FAFC]">
-                    Your testing signal for {selectedFormatLabel}.
-                  </h2>
-                </div>
-                <Link
-                  href="/matches/new"
-                  className="text-sm font-medium text-[#F5C84C] underline underline-offset-4"
-                >
-                  Log another match
-                </Link>
-              </div>
-              <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                {insights.map((insight) => (
-                  <div
-                    key={insight.label}
-                    className="rounded-md border border-white/10 bg-[#0B1020]/45 p-4"
-                  >
-                    <p className="text-xs font-medium uppercase text-[#94A3B8]">
-                      {insight.label}
-                    </p>
-                    <p className="mt-2 truncate text-xl font-semibold text-[#F8FAFC]">
-                      {insight.value}
-                    </p>
-                    <p className="mt-2 text-sm text-[#94A3B8]">
-                      {insight.detail}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </section>
-
             <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
               <StatCard label="Matches" value={stats.totalMatches} />
               <StatCard label="Wins" value={stats.totalWins} />
@@ -489,7 +523,7 @@ export function DashboardContent({
                   </h2>
                   <Link
                     href="/matchups"
-                    className="text-sm font-medium text-[#F5C84C] underline underline-offset-4"
+                    className="text-sm font-medium text-[#F8FAFC] underline decoration-[#4F8CFF] underline-offset-4"
                   >
                     Analyze matchups
                   </Link>
@@ -557,8 +591,7 @@ export function DashboardContent({
               No matches logged yet.
             </h2>
             <p className={`mt-3 max-w-xl ${sectionCopy}`}>
-              Start tracking to uncover your real matchups, deck performance,
-              and testing trends.
+              Start tracking to uncover what&apos;s actually costing you games.
             </p>
             <Link
               href="/matches/new"
@@ -622,7 +655,7 @@ export function DashboardContent({
                         {deck.format ? ` · ${deck.format}` : ""}
                       </p>
                     </div>
-                    <span className="text-sm font-medium text-[#F5C84C]">
+                    <span className="text-sm font-medium text-[#4F8CFF]">
                       Manage versions
                     </span>
                   </div>
@@ -630,7 +663,7 @@ export function DashboardContent({
               ))}
             </div>
           ) : (
-            <div className="mt-5 rounded-md border border-dashed border-[#4F8CFF]/30 p-4">
+            <div className="mt-5 rounded-md bg-[#0B1020]/28 p-4 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.14)]">
               <p className={sectionCopy}>No decks found yet.</p>
               <Link
                 href="/decks"

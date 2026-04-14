@@ -19,6 +19,7 @@ import {
   textarea,
 } from "@/components/brand-styles";
 import { PrizeMapLogo } from "@/components/PrizeMapLogo";
+import { ShareReportButton, type ShareReport } from "@/components/ShareReportButton";
 import { getArchetypeOptions } from "@/lib/archetypes";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { getFormatOptions } from "@/lib/formats";
@@ -328,6 +329,64 @@ export default async function MatchupsPage({
 
   const hasMatches = matchRows.length > 0;
   const hasFilteredMatches = matchupSummary.length > 0;
+  const filteredWins = filteredMatches.filter(
+    (match) => match.result === "win"
+  ).length;
+  const reportWinRate = hasFilteredMatches
+    ? formatWinRate(filteredWins, filteredMatches.length)
+    : "0%";
+  const bestMatchup = matchupSummary.reduce<
+    (typeof matchupSummary)[number] | null
+  >((currentBest, matchup) => {
+    if (!currentBest) {
+      return matchup;
+    }
+
+    if (matchup.winRateValue > currentBest.winRateValue) {
+      return matchup;
+    }
+
+    if (
+      matchup.winRateValue === currentBest.winRateValue &&
+      matchup.matches > currentBest.matches
+    ) {
+      return matchup;
+    }
+
+    return currentBest;
+  }, null);
+  const worstMatchup = matchupSummary.reduce<
+    (typeof matchupSummary)[number] | null
+  >((currentWorst, matchup) => {
+    if (!currentWorst) {
+      return matchup;
+    }
+
+    if (matchup.winRateValue < currentWorst.winRateValue) {
+      return matchup;
+    }
+
+    if (
+      matchup.winRateValue === currentWorst.winRateValue &&
+      matchup.matches > currentWorst.matches
+    ) {
+      return matchup;
+    }
+
+    return currentWorst;
+  }, null);
+  const reportDeckName = selectedVersion
+    ? `${selectedVersion.deckName} - ${selectedVersion.name}`
+    : selectedDeck?.name ?? "All decks";
+  const shareReport: ShareReport = {
+    title: "Matchup Analysis Report",
+    deckName: reportDeckName,
+    winRate: reportWinRate,
+    worstMatchup: worstMatchup?.opponentArchetype ?? "No matchup yet",
+    bestMatchup: bestMatchup?.opponentArchetype ?? "No matchup yet",
+    totalMatches: filteredMatches.length,
+    context: selectedFormat === "all" ? "All formats" : selectedFormat,
+  };
 
   return (
     <main className={appShell}>
@@ -342,7 +401,12 @@ export default async function MatchupsPage({
               Compare your records against each opponent archetype.
             </p>
           </div>
-          <AppNav current="matchups" />
+          <div className="flex flex-col gap-3 lg:items-end">
+            <AppNav current="matchups" />
+            {hasFilteredMatches ? (
+              <ShareReportButton report={shareReport} />
+            ) : null}
+          </div>
         </header>
 
         <form

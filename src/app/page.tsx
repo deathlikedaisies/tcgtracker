@@ -24,7 +24,7 @@ const previewStats = [
     label: "Recent trend",
     value: "5-1",
     detail: "Current testing session",
-    accent: "bg-[#F5C84C]",
+    accent: "bg-[#4F8CFF]",
   },
 ];
 
@@ -66,9 +66,12 @@ const intelligence = [
 
 function ProductPreview() {
   return (
-    <div className="rounded-md border border-white/10 bg-[#1A2238]/70 p-3 shadow-[0_28px_90px_rgba(0,0,0,0.34)] sm:p-4">
-      <div className="rounded-md border border-white/10 bg-[#0B1020]">
-        <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+    <div className="relative">
+      <div className="absolute -inset-6 rounded-full bg-[#4F8CFF]/18 blur-3xl" />
+      <div className="absolute -bottom-8 right-8 h-32 w-32 rounded-full bg-[#4F8CFF]/10 blur-3xl" />
+      <div className="relative rounded-md bg-[#1A2238]/82 p-3 shadow-[0_30px_100px_rgba(0,0,0,0.42),0_0_70px_rgba(79,140,255,0.16)] ring-1 ring-white/10 sm:p-4">
+      <div className="rounded-md bg-[#0B1020] shadow-[inset_0_0_0_1px_rgba(248,250,252,0.06)]">
+        <div className="flex items-center justify-between border-b border-white/6 px-4 py-3">
           <div>
             <p className="text-sm font-medium text-[#94A3B8]">PrizeMap</p>
             <p className="mt-1 text-lg font-semibold text-[#F8FAFC]">
@@ -84,7 +87,7 @@ function ProductPreview() {
           {previewStats.map((stat) => (
             <div
               key={stat.label}
-              className="rounded-md border border-white/10 bg-[#1A2238]/75 p-4"
+              className="rounded-md bg-[#1A2238]/78 p-4 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.06)]"
             >
               <div className="flex items-start justify-between gap-4">
                 <div>
@@ -102,7 +105,7 @@ function ProductPreview() {
           ))}
         </div>
 
-        <div className="border-t border-white/10 p-4">
+        <div className="border-t border-white/6 p-4">
           <div className="flex items-center justify-between gap-4">
             <div>
               <p className="text-sm font-medium text-[#F8FAFC]">
@@ -130,6 +133,7 @@ function ProductPreview() {
           </div>
         </div>
       </div>
+      </div>
     </div>
   );
 }
@@ -137,7 +141,7 @@ function ProductPreview() {
 export default function Home() {
   return (
     <main className="min-h-screen bg-[#0B1020] text-[#F8FAFC]">
-      <header className="border-b border-white/10 px-6 py-5">
+      <header className="border-b border-white/6 px-6 py-5">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
           <PrizeMapLogo
             markClassName="bg-[#1A2238] shadow-[0_0_32px_rgba(79,140,255,0.22)]"
@@ -153,7 +157,7 @@ export default function Home() {
           </nav>
           <Link
             href="/login"
-            className="inline-flex h-10 items-center justify-center rounded-md border border-white/15 px-4 text-sm font-medium text-[#F8FAFC] transition hover:border-[#4F8CFF]/70 hover:bg-white/5"
+            className="inline-flex h-10 items-center justify-center rounded-md px-4 text-sm font-medium text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(248,250,252,0.12)] transition hover:bg-white/5 hover:shadow-[inset_0_0_0_1px_rgba(79,140,255,0.58)]"
           >
             Log in
           </Link>
@@ -163,11 +167,11 @@ export default function Home() {
       <section className="px-6 py-12 sm:py-16">
         <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
           <div>
-            <p className="inline-flex rounded-md border border-[#F5C84C]/25 bg-[#F5C84C]/10 px-3 py-1 text-sm font-medium text-[#F5C84C]">
+            <p className="inline-flex rounded-md bg-[#4F8CFF]/12 px-3 py-1 text-sm font-medium text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.28)]">
               Competitive Pokémon TCG tracker
             </p>
             <h1 className="mt-5 max-w-3xl text-4xl font-semibold leading-tight text-[#F8FAFC] sm:text-5xl lg:text-6xl">
-              Stop guessing. Start winning your matchups.
+              Win more games by understanding your matchups.
             </h1>
             <p className="mt-5 max-w-2xl text-xl leading-8 text-[#F8FAFC]">
               Track your matches. Map your prizes. Win more games.
@@ -186,7 +190,7 @@ export default function Home() {
               </Link>
               <Link
                 href="/login"
-                className="inline-flex h-12 items-center justify-center rounded-md border border-[#4F8CFF]/50 px-6 text-sm font-semibold text-[#F8FAFC] transition hover:border-[#4F8CFF] hover:bg-[#4F8CFF]/10"
+                className="inline-flex h-12 items-center justify-center rounded-md bg-[#4F8CFF]/10 px-6 text-sm font-semibold text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.34)] transition hover:bg-[#4F8CFF]/16 hover:shadow-[inset_0_0_0_1px_rgba(79,140,255,0.7)]"
               >
                 Log in
               </Link>
@@ -197,12 +201,12 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="border-y border-white/10 bg-[#1A2238]/35 px-6 py-5">
+      <section className="border-y border-white/6 bg-[#1A2238]/28 px-6 py-4">
         <div className="mx-auto grid max-w-6xl gap-3 md:grid-cols-3">
           {valueChips.map((item) => (
             <div
               key={item}
-              className="rounded-md border border-white/10 bg-[#0B1020]/45 px-4 py-3 text-sm font-medium text-[#F8FAFC]"
+              className="rounded-md bg-[#0B1020]/42 px-4 py-3 text-sm font-medium text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(248,250,252,0.06)]"
             >
               {item}
             </div>
@@ -210,7 +214,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="features" className="px-6 py-16 sm:py-20">
+      <section id="features" className="px-6 py-14 sm:py-18">
         <div className="mx-auto max-w-6xl">
           <div className="max-w-2xl">
             <p className="text-sm font-semibold text-[#4F8CFF]">
@@ -229,7 +233,7 @@ export default function Home() {
             {features.map((feature) => (
               <article
                 key={feature.title}
-                className="rounded-md border border-white/10 bg-[#1A2238]/70 p-6"
+                className="rounded-md bg-[#1A2238]/62 p-6 shadow-[0_14px_40px_rgba(0,0,0,0.18),inset_0_0_0_1px_rgba(248,250,252,0.05)]"
               >
                 <h3 className="text-lg font-semibold text-[#F8FAFC]">
                   {feature.title}
@@ -243,10 +247,10 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="intelligence" className="px-6 pb-16 sm:pb-20">
-        <div className="mx-auto grid max-w-6xl gap-8 rounded-md border border-white/10 bg-[#1A2238]/45 p-6 sm:p-8 lg:grid-cols-[0.85fr_1.15fr]">
+      <section id="intelligence" className="px-6 pb-14 sm:pb-18">
+        <div className="mx-auto grid max-w-6xl gap-8 rounded-md bg-[#1A2238]/42 p-6 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.06)] sm:p-8 lg:grid-cols-[0.85fr_1.15fr]">
           <div>
-            <p className="text-sm font-semibold text-[#F5C84C]">
+            <p className="text-sm font-semibold text-[#4F8CFF]">
               Product intelligence
             </p>
             <h2 className="mt-3 text-3xl font-semibold leading-tight text-[#F8FAFC]">
@@ -263,7 +267,7 @@ export default function Home() {
             {intelligence.map((item) => (
               <div
                 key={item.label}
-                className="rounded-md border border-white/10 bg-[#0B1020]/45 p-4"
+                className="rounded-md bg-[#0B1020]/42 p-4 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.05)]"
               >
                 <p className="text-sm font-semibold text-[#F8FAFC]">
                   {item.label}
@@ -278,7 +282,7 @@ export default function Home() {
       </section>
 
       <section className="px-6 pb-20">
-        <div className="mx-auto max-w-6xl rounded-md border border-[#F5C84C]/25 bg-[#F5C84C]/10 p-8 sm:p-10">
+        <div className="mx-auto max-w-6xl rounded-md bg-[#1A2238]/54 p-8 shadow-[0_18px_60px_rgba(0,0,0,0.2),inset_0_0_0_1px_rgba(248,250,252,0.06)] sm:p-10">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <h2 className="text-3xl font-semibold text-[#F8FAFC]">
