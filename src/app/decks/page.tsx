@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AppNav } from "@/components/AppNav";
+import { ArchetypeSprites } from "@/components/ArchetypeSprites";
 import {
   appContainer,
   appShell,
@@ -105,22 +106,29 @@ export default async function DecksPage() {
                       className={card}
                     >
                       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                        <div>
-                          <p className="text-xs font-medium uppercase text-[#94A3B8]">
-                            {deck.archetype}
-                            {deck.format ? ` · ${deck.format}` : ""}
-                          </p>
-                          <h3 className="mt-2 text-lg font-semibold text-[#F8FAFC]">
-                            {deck.name}
-                          </h3>
-                          <p className="mt-1 text-xs text-[#94A3B8]">
-                            Created {formatDate(deck.created_at)}
-                          </p>
-                          {deck.notes ? (
-                            <p className={`mt-3 ${sectionCopy}`}>
-                              {deck.notes}
+                        <div className="flex gap-3">
+                          <ArchetypeSprites
+                            archetype={deck.archetype}
+                            size="md"
+                            className="shrink-0"
+                          />
+                          <div>
+                            <p className="text-xs font-medium uppercase text-[#94A3B8]">
+                              {deck.archetype}
+                              {deck.format ? ` · ${deck.format}` : ""}
                             </p>
-                          ) : null}
+                            <h3 className="mt-2 text-lg font-semibold text-[#F8FAFC]">
+                              {deck.name}
+                            </h3>
+                            <p className="mt-1 text-xs text-[#94A3B8]">
+                              Created {formatDate(deck.created_at)}
+                            </p>
+                            {deck.notes ? (
+                              <p className={`mt-3 ${sectionCopy}`}>
+                                {deck.notes}
+                              </p>
+                            ) : null}
+                          </div>
                         </div>
                         <div className="flex flex-col gap-2 sm:min-w-32">
                           <Link

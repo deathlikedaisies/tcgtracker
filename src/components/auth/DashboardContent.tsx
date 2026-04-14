@@ -15,6 +15,7 @@ import {
   YAxis,
 } from "recharts";
 import { AppNav } from "@/components/AppNav";
+import { ArchetypeSprites } from "@/components/ArchetypeSprites";
 import {
   appContainer,
   appShell,
@@ -498,9 +499,10 @@ export function DashboardContent({
                     <p className="font-medium text-[#F8FAFC]">
                       {match.deckVersionName}
                     </p>
-                    <p className="text-sm text-[#94A3B8]">
-                      vs {match.opponentArchetype}
-                    </p>
+                    <div className="flex items-center gap-2 text-sm text-[#94A3B8]">
+                      <ArchetypeSprites archetype={match.opponentArchetype} />
+                      <span>vs {match.opponentArchetype}</span>
+                    </div>
                     <RecordPill result={match.result} />
                     <p className="text-sm capitalize text-[#94A3B8]">
                       {match.eventType ?? "No event"}
@@ -534,9 +536,12 @@ export function DashboardContent({
                       key={matchup.opponentArchetype}
                       className="grid gap-2 py-4 sm:grid-cols-[minmax(0,1fr)_80px_80px_80px_80px] sm:items-center"
                     >
-                      <p className="font-medium text-[#F8FAFC]">
-                        {matchup.opponentArchetype}
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <ArchetypeSprites archetype={matchup.opponentArchetype} />
+                        <p className="font-medium text-[#F8FAFC]">
+                          {matchup.opponentArchetype}
+                        </p>
+                      </div>
                       <p className="text-sm text-[#94A3B8]">
                         {matchup.matches} played
                       </p>
@@ -646,14 +651,17 @@ export function DashboardContent({
                   className="block rounded-md px-3 py-4 transition hover:bg-[#0B1020]/45"
                 >
                   <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <h3 className="font-medium text-[#F8FAFC]">
-                        {deck.name}
-                      </h3>
-                      <p className="text-sm text-[#94A3B8]">
-                        {deck.archetype}
-                        {deck.format ? ` · ${deck.format}` : ""}
-                      </p>
+                    <div className="flex items-center gap-3">
+                      <ArchetypeSprites archetype={deck.archetype} />
+                      <div>
+                        <h3 className="font-medium text-[#F8FAFC]">
+                          {deck.name}
+                        </h3>
+                        <p className="text-sm text-[#94A3B8]">
+                          {deck.archetype}
+                          {deck.format ? ` · ${deck.format}` : ""}
+                        </p>
+                      </div>
                     </div>
                     <span className="text-sm font-medium text-[#4F8CFF]">
                       Manage versions

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AppNav } from "@/components/AppNav";
+import { ArchetypeSprites } from "@/components/ArchetypeSprites";
 import {
   appContainer,
   appShell,
@@ -613,9 +614,14 @@ export default async function MatchupsPage({
                       >
                         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(360px,440px)]">
                           <div>
-                            <p className="font-medium text-[#F8FAFC]">
-                              {matchup.opponentArchetype}
-                            </p>
+                            <div className="flex items-center gap-3">
+                              <ArchetypeSprites
+                                archetype={matchup.opponentArchetype}
+                              />
+                              <p className="font-medium text-[#F8FAFC]">
+                                {matchup.opponentArchetype}
+                              </p>
+                            </div>
                             <div className="mt-3 grid grid-cols-2 gap-2 text-sm text-[#94A3B8] sm:grid-cols-4">
                               <p>{matchup.matches} played</p>
                               <p>{matchup.wins} wins</p>

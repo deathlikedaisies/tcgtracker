@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { AppNav } from "@/components/AppNav";
+import { ArchetypeSprites } from "@/components/ArchetypeSprites";
 import {
   appContainer,
   appShell,
@@ -80,18 +81,27 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
             <AppNav current="decks" />
           </div>
           <div className="mt-5 border-b border-white/10 pb-6">
-            <p className="text-sm font-medium text-[#94A3B8]">
-              {deck.archetype}
-              {deck.format ? ` · ${deck.format}` : ""}
-            </p>
-            <h1 className={pageTitle}>
-              {deck.name}
-            </h1>
-            {deck.notes ? (
-              <p className={pageCopy}>
-                {deck.notes}
-              </p>
-            ) : null}
+            <div className="flex gap-4">
+              <ArchetypeSprites
+                archetype={deck.archetype}
+                size="md"
+                className="mt-1 shrink-0"
+              />
+              <div>
+                <p className="text-sm font-medium text-[#94A3B8]">
+                  {deck.archetype}
+                  {deck.format ? ` · ${deck.format}` : ""}
+                </p>
+                <h1 className={pageTitle}>
+                  {deck.name}
+                </h1>
+                {deck.notes ? (
+                  <p className={pageCopy}>
+                    {deck.notes}
+                  </p>
+                ) : null}
+              </div>
+            </div>
           </div>
         </div>
 
