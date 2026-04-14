@@ -1,12 +1,6 @@
 import Link from "next/link";
 import { PrizeMapLogo } from "@/components/PrizeMapLogo";
 
-const trustItems = [
-  "Track decks",
-  "Analyze matchups",
-  "Improve testing decisions",
-];
-
 const previewStats = [
   {
     label: "Win rate",
@@ -21,7 +15,7 @@ const previewStats = [
     accent: "bg-[#F43F5E]",
   },
   {
-    label: "Deck performance",
+    label: "Best deck performance",
     value: "Raging Bolt",
     detail: "11 wins in last 15",
     accent: "bg-[#4F8CFF]",
@@ -29,35 +23,134 @@ const previewStats = [
   {
     label: "Recent trend",
     value: "5-1",
-    detail: "Current session",
+    detail: "Current testing session",
     accent: "bg-[#F5C84C]",
   },
+];
+
+const valueChips = [
+  "Track every game you play",
+  "See your real matchup win rates",
+  "Turn mistakes into better prep",
 ];
 
 const features = [
   {
     title: "Track every match",
-    copy: "Log deck versions, turn order, formats, tags, and notes without slowing down a testing session.",
+    copy: "Log deck version, opponent archetype, result, turn order, event type, format, tags, and notes without breaking testing rhythm.",
   },
   {
     title: "See your real matchups",
-    copy: "Filter by format, deck, and opponent archetype to understand where your testing record actually stands.",
+    copy: "Filter by deck, version, and format to find the archetypes you are actually beating and the ones costing you wins.",
   },
   {
     title: "Turn notes into preparation",
-    copy: "Keep matchup notes tied to your own archetypes so practice turns into a cleaner game plan.",
+    copy: "Keep matchup-specific notes tied to your own archetypes so practice games become cleaner sequencing and better plans.",
   },
 ];
+
+const intelligence = [
+  {
+    label: "Deck clarity",
+    text: "Find which deck version is performing best instead of relying on the last set you remember.",
+  },
+  {
+    label: "Matchup pressure",
+    text: "Spot the opponent archetypes dragging down your record before they define tournament day.",
+  },
+  {
+    label: "Testing feedback",
+    text: "See whether new lists, notes, and practice sessions are moving your results in the right direction.",
+  },
+];
+
+function ProductPreview() {
+  return (
+    <div className="rounded-md border border-white/10 bg-[#1A2238]/70 p-3 shadow-[0_28px_90px_rgba(0,0,0,0.34)] sm:p-4">
+      <div className="rounded-md border border-white/10 bg-[#0B1020]">
+        <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+          <div>
+            <p className="text-sm font-medium text-[#94A3B8]">PrizeMap</p>
+            <p className="mt-1 text-lg font-semibold text-[#F8FAFC]">
+              Matchup command center
+            </p>
+          </div>
+          <span className="rounded-md bg-[#4F8CFF]/15 px-3 py-1 text-xs font-semibold text-[#F8FAFC]">
+            Live testing
+          </span>
+        </div>
+
+        <div className="grid gap-3 p-4 sm:grid-cols-2">
+          {previewStats.map((stat) => (
+            <div
+              key={stat.label}
+              className="rounded-md border border-white/10 bg-[#1A2238]/75 p-4"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-xs font-medium uppercase text-[#94A3B8]">
+                    {stat.label}
+                  </p>
+                  <p className="mt-2 text-2xl font-semibold text-[#F8FAFC]">
+                    {stat.value}
+                  </p>
+                </div>
+                <span className={`mt-1 h-2 w-12 rounded-full ${stat.accent}`} />
+              </div>
+              <p className="mt-3 text-sm text-[#94A3B8]">{stat.detail}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="border-t border-white/10 p-4">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-medium text-[#F8FAFC]">
+                Dragapult ex
+              </p>
+              <p className="mt-1 text-sm text-[#94A3B8]">
+                Worst current matchup
+              </p>
+            </div>
+            <p className="text-sm font-semibold text-[#F43F5E]">42%</p>
+          </div>
+          <div className="mt-4 h-2 rounded-full bg-[#1A2238]">
+            <div className="h-2 w-[42%] rounded-full bg-[#F43F5E]" />
+          </div>
+          <div className="mt-4 grid grid-cols-3 gap-2 text-xs text-[#94A3B8]">
+            <span className="rounded-md bg-[#1A2238]/80 px-2 py-2">
+              19 games
+            </span>
+            <span className="rounded-md bg-[#1A2238]/80 px-2 py-2">
+              8 wins
+            </span>
+            <span className="rounded-md bg-[#1A2238]/80 px-2 py-2">
+              11 losses
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function Home() {
   return (
     <main className="min-h-screen bg-[#0B1020] text-[#F8FAFC]">
-      <section className="border-b border-white/10 px-6 py-5">
+      <header className="border-b border-white/10 px-6 py-5">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
           <PrizeMapLogo
             markClassName="bg-[#1A2238] shadow-[0_0_32px_rgba(79,140,255,0.22)]"
             textClassName="text-lg text-[#F8FAFC]"
           />
+          <nav className="hidden items-center gap-6 text-sm font-medium text-[#94A3B8] md:flex">
+            <a href="#features" className="transition hover:text-[#F8FAFC]">
+              Features
+            </a>
+            <a href="#intelligence" className="transition hover:text-[#F8FAFC]">
+              Intelligence
+            </a>
+          </nav>
           <Link
             href="/login"
             className="inline-flex h-10 items-center justify-center rounded-md border border-white/15 px-4 text-sm font-medium text-[#F8FAFC] transition hover:border-[#4F8CFF]/70 hover:bg-white/5"
@@ -65,16 +158,16 @@ export default function Home() {
             Log in
           </Link>
         </div>
-      </section>
+      </header>
 
-      <section className="px-6 py-20 sm:py-24">
-        <div className="mx-auto max-w-6xl">
-          <div className="max-w-3xl">
-            <p className="inline-flex rounded-md border border-[#F5C84C]/30 bg-[#F5C84C]/10 px-3 py-1 text-sm font-medium text-[#F5C84C]">
-              Competitive Pokémon TCG testing
+      <section className="px-6 py-12 sm:py-16">
+        <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
+          <div>
+            <p className="inline-flex rounded-md border border-[#F5C84C]/25 bg-[#F5C84C]/10 px-3 py-1 text-sm font-medium text-[#F5C84C]">
+              Competitive Pokémon TCG tracker
             </p>
-            <h1 className="mt-6 text-5xl font-semibold leading-tight text-[#F8FAFC]">
-              PrizeMap
+            <h1 className="mt-5 max-w-3xl text-4xl font-semibold leading-tight text-[#F8FAFC] sm:text-5xl lg:text-6xl">
+              Stop guessing. Start winning your matchups.
             </h1>
             <p className="mt-5 max-w-2xl text-xl leading-8 text-[#F8FAFC]">
               Track your matches. Map your prizes. Win more games.
@@ -99,12 +192,14 @@ export default function Home() {
               </Link>
             </div>
           </div>
+
+          <ProductPreview />
         </div>
       </section>
 
-      <section className="border-y border-white/10 bg-[#1A2238]/40 px-6 py-5">
-        <div className="mx-auto grid max-w-6xl gap-3 sm:grid-cols-3">
-          {trustItems.map((item) => (
+      <section className="border-y border-white/10 bg-[#1A2238]/35 px-6 py-5">
+        <div className="mx-auto grid max-w-6xl gap-3 md:grid-cols-3">
+          {valueChips.map((item) => (
             <div
               key={item}
               className="rounded-md border border-white/10 bg-[#0B1020]/45 px-4 py-3 text-sm font-medium text-[#F8FAFC]"
@@ -115,52 +210,19 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="px-6 py-20">
+      <section id="features" className="px-6 py-16 sm:py-20">
         <div className="mx-auto max-w-6xl">
           <div className="max-w-2xl">
             <p className="text-sm font-semibold text-[#4F8CFF]">
-              Testing intelligence
+              Built for disciplined testing
             </p>
-            <h2 className="mt-3 text-3xl font-semibold leading-tight text-[#F8FAFC]">
-              Your testing room, at a glance.
+            <h2 className="mt-3 text-3xl font-semibold leading-tight text-[#F8FAFC] sm:text-4xl">
+              Turn every game into usable signal.
             </h2>
-          </div>
-
-          <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {previewStats.map((stat) => (
-              <div
-                key={stat.label}
-                className="rounded-md border border-white/10 bg-[#1A2238]/80 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.28)]"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-sm font-medium text-[#94A3B8]">
-                      {stat.label}
-                    </p>
-                    <p className="mt-2 text-2xl font-semibold text-[#F8FAFC]">
-                      {stat.value}
-                    </p>
-                  </div>
-                  <span
-                    className={`mt-1 h-2 w-16 rounded-full ${stat.accent}`}
-                  />
-                </div>
-                <p className="mt-4 text-sm text-[#94A3B8]">{stat.detail}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="px-6 py-20">
-        <div className="mx-auto max-w-6xl">
-          <div className="max-w-2xl">
-            <p className="text-sm font-semibold text-[#4F8CFF]">
-              Built for better testing loops
+            <p className="mt-4 text-base leading-7 text-[#94A3B8]">
+              PrizeMap keeps the important context attached to each result, so
+              your testing record becomes easier to trust.
             </p>
-            <h2 className="mt-3 text-3xl font-semibold leading-tight text-[#F8FAFC]">
-              Know what is working before tournament day.
-            </h2>
           </div>
 
           <div className="mt-10 grid gap-4 md:grid-cols-3">
@@ -181,12 +243,46 @@ export default function Home() {
         </div>
       </section>
 
+      <section id="intelligence" className="px-6 pb-16 sm:pb-20">
+        <div className="mx-auto grid max-w-6xl gap-8 rounded-md border border-white/10 bg-[#1A2238]/45 p-6 sm:p-8 lg:grid-cols-[0.85fr_1.15fr]">
+          <div>
+            <p className="text-sm font-semibold text-[#F5C84C]">
+              Product intelligence
+            </p>
+            <h2 className="mt-3 text-3xl font-semibold leading-tight text-[#F8FAFC]">
+              Know what your testing is actually telling you.
+            </h2>
+            <p className="mt-4 text-sm leading-6 text-[#94A3B8]">
+              PrizeMap helps separate one-off memory from repeatable patterns:
+              which lists are improving, which matchups need prep, and whether
+              your changes are producing better outcomes.
+            </p>
+          </div>
+
+          <div className="grid gap-3">
+            {intelligence.map((item) => (
+              <div
+                key={item.label}
+                className="rounded-md border border-white/10 bg-[#0B1020]/45 p-4"
+              >
+                <p className="text-sm font-semibold text-[#F8FAFC]">
+                  {item.label}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-[#94A3B8]">
+                  {item.text}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="px-6 pb-20">
         <div className="mx-auto max-w-6xl rounded-md border border-[#F5C84C]/25 bg-[#F5C84C]/10 p-8 sm:p-10">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <h2 className="text-3xl font-semibold text-[#F8FAFC]">
-                Start mapping your testing record.
+                Stop guessing. Start learning from your games.
               </h2>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-[#94A3B8]">
                 Build better deck choices from real match data, matchup notes,

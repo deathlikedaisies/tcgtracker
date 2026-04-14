@@ -146,6 +146,10 @@ function RecordPill({ result }: { result: "win" | "loss" }) {
   );
 }
 
+function parseRate(value: string) {
+  return Number.parseInt(value.replace("%", ""), 10) || 0;
+}
+
 export function DashboardContent({
   email,
   decks,
@@ -164,6 +168,84 @@ export function DashboardContent({
   const hasMatches = stats.totalMatches > 0;
   const selectedFormatLabel =
     selectedFormat === "all" ? "All formats" : selectedFormat;
+  const worstMatchup = matchupSummary.reduce<MatchupSummary | null>(
+    (currentWorst, matchup) => {
+      if (!currentWorst) {
+        return matchup;
+      }
+
+      const matchupRate = parseRate(matchup.winRate);
+      const worstRate = parseRate(currentWorst.winRate);
+
+      if (matchupRate < worstRate) {
+        return matchup;
+      }
+
+      if (matchupRate === worstRate && matchup.matches > currentWorst.matches) {
+        return matchup;
+      }
+
+      return currentWorst;
+    },
+    null
+  );
+  const bestDeckVersion = deckPerformance.reduce<DeckPerformance | null>(
+    (currentBest, deckVersion) => {
+      if (!currentBest) {
+        return deckVersion;
+      }
+
+      const deckRate = parseRate(deckVersion.winRate);
+      const bestRate = parseRate(currentBest.winRate);
+
+      if (deckRate > bestRate) {
+        return deckVersion;
+      }
+
+      if (deckRate === bestRate && deckVersion.matches > currentBest.matches) {
+        return deckVersion;
+      }
+
+      return currentBest;
+    },
+    null
+  );
+  const recentRecord = recentMatches.slice(0, 5).reduce(
+    (record, match) => {
+      if (match.result === "win") {
+        return { ...record, wins: record.wins + 1 };
+      }
+
+      return { ...record, losses: record.losses + 1 };
+    },
+    { wins: 0, losses: 0 }
+  );
+  const insights = [
+    {
+      label: "Overall win rate",
+      value: stats.overallWinRate,
+      detail: `${stats.totalMatches} match${stats.totalMatches === 1 ? "" : "es"} tracked`,
+    },
+    {
+      label: "Worst matchup",
+      value: worstMatchup?.opponentArchetype ?? "No matchup yet",
+      detail: worstMatchup
+        ? `${worstMatchup.winRate} across ${worstMatchup.matches} games`
+        : "Log more games to find pressure points",
+    },
+    {
+      label: "Best deck version",
+      value: bestDeckVersion?.deckVersionName ?? "No deck record yet",
+      detail: bestDeckVersion
+        ? `${bestDeckVersion.winRate} across ${bestDeckVersion.matches} games`
+        : "Deck performance appears after logging",
+    },
+    {
+      label: "Recent trend",
+      value: `${recentRecord.wins}-${recentRecord.losses}`,
+      detail: `Last ${Math.min(recentMatches.length, 5)} logged matches`,
+    },
+  ];
 
   async function handleSignOut() {
     await supabase.auth.signOut();
@@ -231,6 +313,43 @@ export function DashboardContent({
 
         {hasMatches ? (
           <>
+            <section className="rounded-md border border-[#4F8CFF]/20 bg-[#4F8CFF]/10 p-4 sm:p-5">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-[#4F8CFF]">
+                    Current read
+                  </p>
+                  <h2 className="mt-1 text-2xl font-semibold tracking-tight text-[#F8FAFC]">
+                    Your testing signal for {selectedFormatLabel}.
+                  </h2>
+                </div>
+                <Link
+                  href="/matches/new"
+                  className="text-sm font-medium text-[#F5C84C] underline underline-offset-4"
+                >
+                  Log another match
+                </Link>
+              </div>
+              <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                {insights.map((insight) => (
+                  <div
+                    key={insight.label}
+                    className="rounded-md border border-white/10 bg-[#0B1020]/45 p-4"
+                  >
+                    <p className="text-xs font-medium uppercase text-[#94A3B8]">
+                      {insight.label}
+                    </p>
+                    <p className="mt-2 truncate text-xl font-semibold text-[#F8FAFC]">
+                      {insight.value}
+                    </p>
+                    <p className="mt-2 text-sm text-[#94A3B8]">
+                      {insight.detail}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </section>
+
             <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
               <StatCard label="Matches" value={stats.totalMatches} />
               <StatCard label="Wins" value={stats.totalWins} />
@@ -438,8 +557,8 @@ export function DashboardContent({
               No matches logged yet.
             </h2>
             <p className={`mt-3 max-w-xl ${sectionCopy}`}>
-              Log your first match to see win rates, matchup records, recent
-              results, and deck performance.
+              Start tracking to uncover your real matchups, deck performance,
+              and testing trends.
             </p>
             <Link
               href="/matches/new"

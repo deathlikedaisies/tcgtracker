@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useFormStatus } from "react-dom";
 import {
-  cardLarge,
   inputH11,
   label,
   primaryButton,
@@ -31,6 +30,7 @@ const sessionKeys = {
   format: "tcgtracker.matchLog.format",
   customFormat: "tcgtracker.matchLog.customFormat",
   opponentArchetype: "tcgtracker.matchLog.opponentArchetype",
+  result: "tcgtracker.matchLog.result",
 };
 
 function SubmitButton() {
@@ -88,6 +88,14 @@ export function MatchLogForm({
 
     return sessionStorage.getItem(sessionKeys.opponentArchetype) ?? "";
   });
+  const [result, setResult] = useState<"win" | "loss">(() => {
+    if (typeof window === "undefined") {
+      return "win";
+    }
+
+    const stored = sessionStorage.getItem(sessionKeys.result);
+    return stored === "loss" ? "loss" : "win";
+  });
 
   function remember(key: string, value: string) {
     sessionStorage.setItem(key, value);
@@ -96,9 +104,9 @@ export function MatchLogForm({
   return (
     <form
       action={action}
-      className={`mt-8 ${cardLarge}`}
+      className="mt-8 rounded-md border border-white/10 bg-[#1A2238]/60 p-4 shadow-[0_14px_44px_rgba(0,0,0,0.18)] sm:p-5"
     >
-      <div className="grid gap-5">
+      <div className="grid gap-4">
         {wasSuccessful ? (
           <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm font-medium text-emerald-200">
             Match logged. Your deck, format, and opponent are ready for the next
@@ -106,13 +114,13 @@ export function MatchLogForm({
           </div>
         ) : null}
 
-        <div className="grid gap-5 sm:grid-cols-[minmax(0,1fr)_180px]">
+        <div className="rounded-md border border-[#4F8CFF]/25 bg-[#4F8CFF]/10 p-4">
           <div className="flex flex-col gap-2">
             <label
               htmlFor="deck_version_id"
               className={label}
             >
-              Deck version
+              Deck version for this match
             </label>
             <select
               id="deck_version_id"
@@ -133,32 +141,36 @@ export function MatchLogForm({
               ))}
             </select>
           </div>
+        </div>
 
+        <div className="grid gap-4 sm:grid-cols-[180px_minmax(0,1fr)]">
           <fieldset className="flex flex-col gap-2">
             <legend className={label}>
               Result
             </legend>
             <div className="grid grid-cols-2 gap-2">
-              {(["win", "loss"] as const).map((result) => (
+              {(["win", "loss"] as const).map((resultOption) => (
                 <label
-                  key={result}
+                  key={resultOption}
                   className="flex h-11 cursor-pointer items-center justify-center rounded-md border border-white/15 px-3 text-sm font-medium capitalize text-[#F8FAFC] transition hover:border-[#4F8CFF]/70 has-[:checked]:border-[#F5C84C] has-[:checked]:bg-[#F5C84C] has-[:checked]:text-[#0B1020]"
                 >
                   <input
                     type="radio"
                     name="result"
-                    value={result}
-                    defaultChecked={result === "win"}
+                    value={resultOption}
+                    checked={result === resultOption}
+                    onChange={() => {
+                      setResult(resultOption);
+                      remember(sessionKeys.result, resultOption);
+                    }}
                     className="sr-only"
                   />
-                  {result}
+                  {resultOption}
                 </label>
               ))}
             </div>
           </fieldset>
-        </div>
 
-        <div className="grid gap-5 sm:grid-cols-2">
           <div className="flex flex-col gap-2">
             <label
               htmlFor="opponent_archetype"
@@ -185,6 +197,9 @@ export function MatchLogForm({
               ))}
             </datalist>
           </div>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-2">
             <label
               htmlFor="opponent_variant"
@@ -201,7 +216,7 @@ export function MatchLogForm({
           </div>
         </div>
 
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2">
           <fieldset className="flex flex-col gap-2">
             <legend className={label}>
               Went first
@@ -254,7 +269,7 @@ export function MatchLogForm({
           </fieldset>
         </div>
 
-        <div className="grid gap-5 sm:grid-cols-[minmax(0,1fr)_220px]">
+        <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_220px]">
           <div className="flex flex-col gap-2">
             <label htmlFor="format" className={label}>
               Format
@@ -325,9 +340,9 @@ export function MatchLogForm({
           <textarea
             id="notes"
             name="notes"
-            rows={3}
+            rows={2}
             placeholder="Optional"
-            className={textarea}
+            className={`${textarea} min-h-20 transition-all focus:min-h-28`}
           />
         </div>
 
