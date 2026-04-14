@@ -7,72 +7,72 @@ export type ArchetypeSprite = {
 
 export const FALLBACK_ARCHETYPE_SPRITES: ArchetypeSprite[] = [
   {
-    filename: "other-emerging.webp",
+    filename: "other-emerging.png",
     label: OTHER_ARCHETYPE,
   },
 ];
 
 export const ARCHETYPE_SPRITES: Record<string, ArchetypeSprite[]> = {
-  "Dragapult ex": [{ filename: "dragapult-ex.webp", label: "Dragapult ex" }],
+  "Dragapult ex": [{ filename: "dragapult-ex.png", label: "Dragapult ex" }],
   "Dragapult Blaziken": [
-    { filename: "dragapult-ex.webp", label: "Dragapult ex" },
-    { filename: "blaziken.webp", label: "Blaziken" },
+    { filename: "dragapult-ex.png", label: "Dragapult ex" },
+    { filename: "blaziken.png", label: "Blaziken" },
   ],
   "Dragapult Dusknoir": [
-    { filename: "dragapult-ex.webp", label: "Dragapult ex" },
-    { filename: "dusknoir.webp", label: "Dusknoir" },
+    { filename: "dragapult-ex.png", label: "Dragapult ex" },
+    { filename: "dusknoir.png", label: "Dusknoir" },
   ],
   "Grimmsnarl Froslass": [
-    { filename: "grimmsnarl.webp", label: "Grimmsnarl" },
-    { filename: "froslass.webp", label: "Froslass" },
+    { filename: "grimmsnarl.png", label: "Grimmsnarl" },
+    { filename: "froslass.png", label: "Froslass" },
   ],
   "Lucario Hariyama": [
-    { filename: "lucario.webp", label: "Lucario" },
-    { filename: "hariyama.webp", label: "Hariyama" },
+    { filename: "lucario.png", label: "Lucario" },
+    { filename: "hariyama.png", label: "Hariyama" },
   ],
   "Mega Lucario ex": [
-    { filename: "mega-lucario-ex.webp", label: "Mega Lucario ex" },
+    { filename: "mega-lucario-ex.png", label: "Mega Lucario ex" },
   ],
   "Mega Absol Box": [
-    { filename: "mega-absol.webp", label: "Mega Absol" },
+    { filename: "mega-absol.png", label: "Mega Absol" },
   ],
-  "N's Zoroark": [{ filename: "ns-zoroark.webp", label: "N's Zoroark" }],
+  "N's Zoroark": [{ filename: "ns-zoroark.png", label: "N's Zoroark" }],
   "Ogerpon Meganium": [
-    { filename: "ogerpon.webp", label: "Ogerpon" },
-    { filename: "meganium.webp", label: "Meganium" },
+    { filename: "ogerpon.png", label: "Ogerpon" },
+    { filename: "meganium.png", label: "Meganium" },
   ],
-  "Festival Lead": [{ filename: "festival-lead.webp", label: "Festival Lead" }],
+  "Festival Lead": [{ filename: "festival-lead.png", label: "Festival Lead" }],
   "Rocket's Spidops": [
-    { filename: "rockets-spidops.webp", label: "Rocket's Spidops" },
+    { filename: "rockets-spidops.png", label: "Rocket's Spidops" },
   ],
-  "Rocket Box": [{ filename: "rocket-box.webp", label: "Rocket Box" }],
+  "Rocket Box": [{ filename: "rocket-box.png", label: "Rocket Box" }],
   "Froslass Munkidori": [
-    { filename: "froslass.webp", label: "Froslass" },
-    { filename: "munkidori.webp", label: "Munkidori" },
+    { filename: "froslass.png", label: "Froslass" },
+    { filename: "munkidori.png", label: "Munkidori" },
   ],
-  "Joltik Box": [{ filename: "joltik.webp", label: "Joltik" }],
-  Crustle: [{ filename: "crustle.webp", label: "Crustle" }],
+  "Joltik Box": [{ filename: "joltik.png", label: "Joltik" }],
+  Crustle: [{ filename: "crustle.png", label: "Crustle" }],
   "Raging Bolt Ogerpon": [
-    { filename: "raging-bolt.webp", label: "Raging Bolt" },
-    { filename: "ogerpon.webp", label: "Ogerpon" },
+    { filename: "raging-bolt.png", label: "Raging Bolt" },
+    { filename: "ogerpon.png", label: "Ogerpon" },
   ],
-  Alakazam: [{ filename: "alakazam.webp", label: "Alakazam" }],
+  Alakazam: [{ filename: "alakazam.png", label: "Alakazam" }],
   [OTHER_ARCHETYPE]: FALLBACK_ARCHETYPE_SPRITES,
 
-  "Charizard ex": [{ filename: "charizard-ex.webp", label: "Charizard ex" }],
-  "Gardevoir ex": [{ filename: "gardevoir-ex.webp", label: "Gardevoir ex" }],
-  "Gholdengo ex": [{ filename: "gholdengo-ex.webp", label: "Gholdengo ex" }],
-  "Miraidon ex": [{ filename: "miraidon-ex.webp", label: "Miraidon ex" }],
+  "Charizard ex": [{ filename: "charizard-ex.png", label: "Charizard ex" }],
+  "Gardevoir ex": [{ filename: "gardevoir-ex.png", label: "Gardevoir ex" }],
+  "Gholdengo ex": [{ filename: "gholdengo-ex.png", label: "Gholdengo ex" }],
+  "Miraidon ex": [{ filename: "miraidon-ex.png", label: "Miraidon ex" }],
   "Roaring Moon ex": [
-    { filename: "roaring-moon-ex.webp", label: "Roaring Moon ex" },
+    { filename: "roaring-moon-ex.png", label: "Roaring Moon ex" },
   ],
   "Lost Zone Box": [
-    { filename: "lost-zone-box.webp", label: "Lost Zone Box" },
+    { filename: "lost-zone-box.png", label: "Lost Zone Box" },
   ],
-  "Chien-Pao ex": [{ filename: "chien-pao-ex.webp", label: "Chien-Pao ex" }],
-  "Ancient Box": [{ filename: "ancient-box.webp", label: "Ancient Box" }],
-  "Future Box": [{ filename: "future-box.webp", label: "Future Box" }],
-  "Lugia VSTAR": [{ filename: "lugia-vstar.webp", label: "Lugia VSTAR" }],
+  "Chien-Pao ex": [{ filename: "chien-pao-ex.png", label: "Chien-Pao ex" }],
+  "Ancient Box": [{ filename: "ancient-box.png", label: "Ancient Box" }],
+  "Future Box": [{ filename: "future-box.png", label: "Future Box" }],
+  "Lugia VSTAR": [{ filename: "lugia-vstar.png", label: "Lugia VSTAR" }],
 };
 
 export function getArchetypeSprites(archetype: string | null | undefined) {
