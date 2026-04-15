@@ -31,21 +31,21 @@ export const ARCHETYPE_SPRITES: Record<string, ArchetypeSprite[]> = {
     { filename: "hariyama.png", label: "Hariyama" },
   ],
   "Mega Lucario ex": [
-    { filename: "mega-lucario-ex.png", label: "Mega Lucario ex" },
+    { filename: "lucario.png", label: "Mega Lucario ex" },
   ],
   "Mega Absol Box": [
-    { filename: "mega-absol.png", label: "Mega Absol" },
+    { filename: "absol.png", label: "Mega Absol" },
   ],
-  "N's Zoroark": [{ filename: "ns-zoroark.png", label: "N's Zoroark" }],
+  "N's Zoroark": [{ filename: "zoroark.png", label: "N's Zoroark" }],
   "Ogerpon Meganium": [
     { filename: "ogerpon.png", label: "Ogerpon" },
     { filename: "meganium.png", label: "Meganium" },
   ],
-  "Festival Lead": [{ filename: "festival-lead.png", label: "Festival Lead" }],
+  "Festival Lead": [{ filename: "other-emerging.png", label: "Festival Lead" }],
   "Rocket's Spidops": [
-    { filename: "rockets-spidops.png", label: "Rocket's Spidops" },
+    { filename: "spidops.png", label: "Rocket's Spidops" },
   ],
-  "Rocket Box": [{ filename: "rocket-box.png", label: "Rocket Box" }],
+  "Rocket Box": [{ filename: "spidops.png", label: "Rocket Box" }],
   "Froslass Munkidori": [
     { filename: "froslass.png", label: "Froslass" },
     { filename: "munkidori.png", label: "Munkidori" },
@@ -62,23 +62,46 @@ export const ARCHETYPE_SPRITES: Record<string, ArchetypeSprite[]> = {
   "Charizard ex": [{ filename: "charizard-ex.png", label: "Charizard ex" }],
   "Gardevoir ex": [{ filename: "gardevoir-ex.png", label: "Gardevoir ex" }],
   "Gholdengo ex": [{ filename: "gholdengo-ex.png", label: "Gholdengo ex" }],
-  "Miraidon ex": [{ filename: "miraidon-ex.png", label: "Miraidon ex" }],
+  "Miraidon ex": [{ filename: "other-emerging.png", label: "Miraidon ex" }],
   "Roaring Moon ex": [
-    { filename: "roaring-moon-ex.png", label: "Roaring Moon ex" },
+    { filename: "raging-bolt.png", label: "Roaring Moon ex" },
   ],
   "Lost Zone Box": [
-    { filename: "lost-zone-box.png", label: "Lost Zone Box" },
+    { filename: "other-emerging.png", label: "Lost Zone Box" },
   ],
-  "Chien-Pao ex": [{ filename: "chien-pao-ex.png", label: "Chien-Pao ex" }],
-  "Ancient Box": [{ filename: "ancient-box.png", label: "Ancient Box" }],
-  "Future Box": [{ filename: "future-box.png", label: "Future Box" }],
-  "Lugia VSTAR": [{ filename: "lugia-vstar.png", label: "Lugia VSTAR" }],
+  "Chien-Pao ex": [{ filename: "other-emerging.png", label: "Chien-Pao ex" }],
+  "Ancient Box": [{ filename: "raging-bolt.png", label: "Ancient Box" }],
+  "Future Box": [{ filename: "other-emerging.png", label: "Future Box" }],
+  "Lugia VSTAR": [{ filename: "other-emerging.png", label: "Lugia VSTAR" }],
 };
+
+function normalizeArchetype(value: string) {
+  return value
+    .trim()
+    .replace(/[’‘`]/g, "'")
+    .replace(/\s+/g, " ")
+    .toLowerCase();
+}
+
+const NORMALIZED_ARCHETYPE_SPRITES = Object.fromEntries(
+  Object.entries(ARCHETYPE_SPRITES).map(([archetype, sprites]) => [
+    normalizeArchetype(archetype),
+    sprites,
+  ])
+);
 
 export function getArchetypeSprites(archetype: string | null | undefined) {
   if (!archetype) {
     return FALLBACK_ARCHETYPE_SPRITES;
   }
 
-  return ARCHETYPE_SPRITES[archetype] ?? FALLBACK_ARCHETYPE_SPRITES;
+  const sprites =
+    ARCHETYPE_SPRITES[archetype] ??
+    NORMALIZED_ARCHETYPE_SPRITES[normalizeArchetype(archetype)];
+
+  if (!sprites) {
+    console.log("Missing sprite for:", archetype);
+  }
+
+  return sprites ?? FALLBACK_ARCHETYPE_SPRITES;
 }

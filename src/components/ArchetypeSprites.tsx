@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useMemo, useState } from "react";
 import { getArchetypeSprites } from "@/lib/archetype-sprites";
 
@@ -29,13 +28,18 @@ export function ArchetypeSprites({
   className = "",
 }: ArchetypeSpritesProps) {
   const sprites = useMemo(() => getArchetypeSprites(archetype), [archetype]);
-  const [failedSprites, setFailedSprites] = useState<string[]>([]);
+  const [failedSpritesByArchetype, setFailedSpritesByArchetype] = useState<
+    Record<string, string[]>
+  >({});
+  const failedSpriteKey = archetype ?? "";
+  const failedSprites = failedSpritesByArchetype[failedSpriteKey] ?? [];
+
   const visibleSprites = sprites.filter(
     (sprite) => !failedSprites.includes(sprite.filename)
   );
-  const dimensions = size === "md" ? "size-12" : "size-9";
-  const imageDimensions = size === "md" ? "size-10" : "size-8";
-  const offset = size === "md" ? "-ml-3" : "-ml-2";
+  const dimensions = size === "md" ? "size-8" : "size-7";
+  const imageDimensions = size === "md" ? "size-7" : "size-6";
+  const offset = size === "md" ? "-ml-2" : "-ml-1.5";
   const fallbackText = getInitials(archetype);
 
   if (!visibleSprites.length) {
@@ -63,19 +67,28 @@ export function ArchetypeSprites({
             index > 0 ? offset : ""
           }`}
         >
-          <Image
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
             src={`/sprites/${sprite.filename}`}
             alt=""
-            width={size === "md" ? 40 : 32}
-            height={size === "md" ? 40 : 32}
             className={`${imageDimensions} object-contain`}
             loading="lazy"
             onError={() =>
-              setFailedSprites((current) =>
-                current.includes(sprite.filename)
-                  ? current
-                  : [...current, sprite.filename]
-              )
+              setFailedSpritesByArchetype((current) => {
+                const failedForArchetype = current[failedSpriteKey] ?? [];
+
+                if (failedForArchetype.includes(sprite.filename)) {
+                  return current;
+                }
+
+                return {
+                  ...current,
+                  [failedSpriteKey]: [
+                    ...failedForArchetype,
+                    sprite.filename,
+                  ],
+                };
+              })
             }
           />
         </span>
