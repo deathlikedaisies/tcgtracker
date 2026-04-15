@@ -84,15 +84,13 @@ export default async function DecksPage() {
           <AppNav current="decks" />
         </header>
 
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_340px]">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
           <section className="flex flex-col gap-4">
             <div>
               <h2 className={sectionTitle}>
                 Your Decks
               </h2>
-              <p className={`mt-1 ${sectionCopy}`}>
-                Select a deck to manage its versions.
-              </p>
+              <p className={`mt-1 ${sectionCopy}`}>Manage decks and versions.</p>
             </div>
 
             {userDecks.length ? (
@@ -101,23 +99,20 @@ export default async function DecksPage() {
                   const removeDeck = deleteDeck.bind(null, deck.id);
 
                   return (
-                    <article
-                      key={deck.id}
-                      className={card}
-                    >
+                    <article key={deck.id} className={card}>
                       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                        <div className="flex gap-3">
+                        <div className="flex min-w-0 gap-3">
                           <ArchetypeSprites
                             archetype={deck.archetype}
                             size="md"
                             className="shrink-0"
                           />
-                          <div>
+                          <div className="min-w-0">
                             <p className="text-xs font-medium uppercase text-[#94A3B8]">
                               {deck.archetype}
                               {deck.format ? ` · ${deck.format}` : ""}
                             </p>
-                            <h3 className="mt-2 text-lg font-semibold text-[#F8FAFC]">
+                            <h3 className="mt-2 truncate text-lg font-semibold text-[#F8FAFC]">
                               {deck.name}
                             </h3>
                             <p className="mt-1 text-xs text-[#94A3B8]">
@@ -130,7 +125,7 @@ export default async function DecksPage() {
                             ) : null}
                           </div>
                         </div>
-                        <div className="flex flex-col gap-2 sm:min-w-32">
+                        <div className="grid grid-cols-2 gap-2 sm:min-w-32 sm:grid-cols-1">
                           <Link
                             href={`/decks/${deck.id}`}
                             className={primaryButton}
@@ -171,6 +166,9 @@ export default async function DecksPage() {
               <h2 className="text-lg font-semibold text-[#F8FAFC]">
                 New Deck
               </h2>
+              <p className={`mt-1 ${sectionCopy}`}>
+                Add the list family first, then create versions.
+              </p>
               <div className="mt-5 flex flex-col gap-4">
                 <div className="flex flex-col gap-2">
                   <label

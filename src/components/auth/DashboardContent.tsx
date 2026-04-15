@@ -125,8 +125,8 @@ function StatCard({
 }) {
   return (
     <div className={card}>
-      <p className="text-sm font-medium text-[#94A3B8]">{label}</p>
-      <p className="mt-2 text-3xl font-semibold tracking-tight text-[#F8FAFC]">
+      <p className="text-xs font-medium uppercase text-[#94A3B8]/74">{label}</p>
+      <p className="mt-2 text-2xl font-semibold tracking-tight text-[#F8FAFC] sm:text-3xl">
         {value}
       </p>
     </div>
@@ -301,7 +301,7 @@ export function DashboardContent({
             <button
               type="button"
               onClick={handleSignOut}
-              className={`${secondaryButton} lg:w-fit`}
+              className="inline-flex h-9 items-center justify-center rounded-md px-3 text-sm font-medium text-[#94A3B8] transition hover:bg-white/5 hover:text-[#F8FAFC] lg:w-fit"
             >
               Sign out
             </button>
@@ -309,29 +309,31 @@ export function DashboardContent({
         </div>
 
         {hasMatches ? (
-          <section className="rounded-md bg-[#1A2238]/38 p-4 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.1)] sm:p-5">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <section className="rounded-md bg-[#1A2238]/38 p-4 shadow-[0_14px_38px_rgba(0,0,0,0.14)] sm:p-5">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div>
                 <p className="text-sm font-semibold text-[#4F8CFF]">
-                  Insight Strip
+                  Insight strip
                 </p>
                 <h2 className="mt-1 text-2xl font-semibold tracking-tight text-[#F8FAFC]">
-                  Your testing signal for {selectedFormatLabel}.
+                  Testing signal for {selectedFormatLabel}.
                 </h2>
               </div>
-              <Link
-                href="/matches/new"
-                className="text-sm font-medium text-[#F8FAFC] underline decoration-[#4F8CFF] underline-offset-4"
-              >
-                Log another match
-              </Link>
-              <ShareReportButton report={shareReport} />
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <Link
+                  href="/matches/new"
+                  className={primaryButton}
+                >
+                  Log match
+                </Link>
+                <ShareReportButton report={shareReport} />
+              </div>
             </div>
             <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
               {insights.map((insight) => (
                 <div
                   key={insight.label}
-                  className="rounded-md bg-[#0B1020]/36 p-4"
+                  className="rounded-md bg-[#0B1020]/30 p-4"
                 >
                   <p className="text-xs font-medium uppercase text-[#94A3B8]">
                     {insight.label}
@@ -348,10 +350,7 @@ export function DashboardContent({
           </section>
         ) : null}
 
-        <form
-          action="/dashboard"
-          className={card}
-        >
+        <form action="/dashboard" className="rounded-md bg-[#1A2238]/34 p-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div className="flex flex-col gap-2 sm:min-w-80">
               <label
@@ -374,10 +373,7 @@ export function DashboardContent({
                 <option value="all">All formats</option>
               </select>
             </div>
-            <button
-              type="submit"
-              className={primaryButton}
-            >
+            <button type="submit" className={secondaryButton}>
               Apply
             </button>
           </div>
@@ -483,15 +479,13 @@ export function DashboardContent({
                 <h2 className={sectionTitle}>
                   Recent Matches
                 </h2>
-                <p className={sectionCopy}>
-                  Your 10 most recent logged matches for {selectedFormatLabel}.
-                </p>
+                  <p className={sectionCopy}>Latest games for {selectedFormatLabel}.</p>
               </div>
               <div className={`mt-5 ${divider}`}>
                 {recentMatches.map((match) => (
                   <div
                     key={match.id}
-                    className="grid gap-2 py-4 sm:grid-cols-[120px_minmax(0,1fr)_minmax(0,1fr)_90px_120px] sm:items-center"
+                    className="grid gap-2 py-4 sm:grid-cols-[110px_minmax(0,1fr)_minmax(0,1.1fr)_76px_110px] sm:items-center"
                   >
                     <p className="text-sm text-[#94A3B8]">
                       {formatDate(match.playedAt)}
@@ -499,9 +493,9 @@ export function DashboardContent({
                     <p className="font-medium text-[#F8FAFC]">
                       {match.deckVersionName}
                     </p>
-                    <div className="flex items-center gap-2 text-sm text-[#94A3B8]">
+                    <div className="flex min-w-0 items-center gap-2 text-sm text-[#94A3B8]">
                       <ArchetypeSprites archetype={match.opponentArchetype} />
-                      <span>vs {match.opponentArchetype}</span>
+                      <span className="truncate">vs {match.opponentArchetype}</span>
                     </div>
                     <RecordPill result={match.result} />
                     <p className="text-sm capitalize text-[#94A3B8]">
@@ -523,10 +517,7 @@ export function DashboardContent({
                   <h2 className={sectionTitle}>
                     Matchups
                   </h2>
-                  <Link
-                    href="/matchups"
-                    className="text-sm font-medium text-[#F8FAFC] underline decoration-[#4F8CFF] underline-offset-4"
-                  >
+                  <Link href="/matchups" className="text-sm font-medium text-[#4F8CFF]">
                     Analyze matchups
                   </Link>
                 </div>

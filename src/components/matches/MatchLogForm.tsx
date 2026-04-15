@@ -33,6 +33,9 @@ const sessionKeys = {
   result: "tcgtracker.matchLog.result",
 };
 
+const toggleClass =
+  "flex h-11 cursor-pointer items-center justify-center rounded-md bg-[#0B1020]/38 px-3 text-sm font-medium text-[#F8FAFC] transition hover:bg-[#4F8CFF]/10 has-[:checked]:bg-[#4F8CFF]/22 has-[:checked]:text-[#F8FAFC]";
+
 function SubmitButton() {
   const { pending } = useFormStatus();
 
@@ -104,17 +107,16 @@ export function MatchLogForm({
   return (
     <form
       action={action}
-      className="mt-8 rounded-md bg-[#1A2238]/54 p-4 shadow-[0_14px_44px_rgba(0,0,0,0.16),inset_0_0_0_1px_rgba(248,250,252,0.05)] sm:p-5"
+      className="mt-6 rounded-md bg-[#1A2238]/50 p-4 shadow-[0_12px_34px_rgba(0,0,0,0.14)] sm:p-5"
     >
       <div className="grid gap-4">
         {wasSuccessful ? (
-          <div className="rounded-md bg-emerald-500/10 px-4 py-3 text-sm font-medium text-emerald-200 shadow-[inset_0_0_0_1px_rgba(34,197,94,0.22)]">
-            Match logged. Your deck, format, and opponent are ready for the next
-            entry.
+          <div className="rounded-md bg-emerald-500/10 px-4 py-3 text-sm font-medium text-emerald-200">
+            Match logged. Your previous selections are ready.
           </div>
         ) : null}
 
-        <div className="rounded-md bg-[#4F8CFF]/12 p-5 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.24)]">
+        <div className="rounded-md bg-[#4F8CFF]/10 p-4">
           <div className="flex flex-col gap-2">
             <label
               htmlFor="deck_version_id"
@@ -143,7 +145,7 @@ export function MatchLogForm({
           </div>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-[180px_minmax(0,1fr)]">
+        <div className="grid gap-4 sm:grid-cols-[170px_minmax(0,1fr)]">
           <fieldset className="flex flex-col gap-2">
             <legend className={label}>
               Result
@@ -152,7 +154,7 @@ export function MatchLogForm({
               {(["win", "loss"] as const).map((resultOption) => (
                 <label
                   key={resultOption}
-                  className="flex h-11 cursor-pointer items-center justify-center rounded-md bg-[#0B1020]/42 px-3 text-sm font-medium capitalize text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(248,250,252,0.08)] transition hover:shadow-[inset_0_0_0_1px_rgba(79,140,255,0.46)] has-[:checked]:bg-[#4F8CFF]/24 has-[:checked]:shadow-[inset_0_0_0_1px_rgba(79,140,255,0.78)]"
+                  className={`${toggleClass} capitalize`}
                 >
                   <input
                     type="radio"
@@ -229,7 +231,7 @@ export function MatchLogForm({
               ].map(([value, label]) => (
                 <label
                   key={value}
-                  className="flex h-11 cursor-pointer items-center justify-center rounded-md bg-[#0B1020]/42 px-3 text-sm font-medium text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(248,250,252,0.08)] transition hover:shadow-[inset_0_0_0_1px_rgba(79,140,255,0.46)] has-[:checked]:bg-[#4F8CFF]/24 has-[:checked]:shadow-[inset_0_0_0_1px_rgba(79,140,255,0.78)]"
+                className={toggleClass}
                 >
                   <input
                     type="radio"
@@ -253,7 +255,7 @@ export function MatchLogForm({
                 (eventType) => (
                   <label
                     key={eventType}
-                    className="flex h-11 cursor-pointer items-center justify-center rounded-md bg-[#0B1020]/42 px-2 text-sm font-medium capitalize text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(248,250,252,0.08)] transition hover:shadow-[inset_0_0_0_1px_rgba(79,140,255,0.46)] has-[:checked]:bg-[#4F8CFF]/24 has-[:checked]:shadow-[inset_0_0_0_1px_rgba(79,140,255,0.78)]"
+                    className={`${toggleClass} px-2 capitalize`}
                   >
                     <input
                       type="radio"
@@ -320,7 +322,7 @@ export function MatchLogForm({
             {MATCH_TAGS.map((tag) => (
               <label
                 key={tag}
-                className="cursor-pointer rounded-md bg-[#0B1020]/40 px-3 py-2 text-sm font-medium text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(248,250,252,0.07)] transition hover:shadow-[inset_0_0_0_1px_rgba(79,140,255,0.42)] has-[:checked]:bg-[#4F8CFF]/20 has-[:checked]:shadow-[inset_0_0_0_1px_rgba(79,140,255,0.68)] has-[:checked]:text-[#F8FAFC]"
+                className="cursor-pointer rounded-md bg-[#0B1020]/38 px-3 py-2 text-sm font-medium text-[#F8FAFC] transition hover:bg-[#4F8CFF]/10 has-[:checked]:bg-[#4F8CFF]/22 has-[:checked]:text-[#F8FAFC]"
               >
                 <input
                   type="checkbox"
@@ -347,7 +349,9 @@ export function MatchLogForm({
           />
         </div>
 
-        <SubmitButton />
+        <div className="pt-1">
+          <SubmitButton />
+        </div>
       </div>
     </form>
   );

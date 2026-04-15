@@ -12,7 +12,7 @@ export function PrizeMapLogo({
   return (
     <div className={`flex items-center gap-2.5 ${className}`}>
       <span
-        className={`flex size-9 items-center justify-center rounded-md border border-[#4F8CFF]/35 bg-[#0B1020] ${markClassName}`}
+        className={`flex size-9 items-center justify-center rounded-md bg-[#0B1020] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.28)] ${markClassName}`}
       >
         <svg
           aria-hidden="true"

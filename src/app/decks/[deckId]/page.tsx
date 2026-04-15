@@ -80,7 +80,7 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
             <PrizeMapLogo {...logoOnDark} />
             <AppNav current="decks" />
           </div>
-          <div className="mt-5 border-b border-white/10 pb-6">
+          <div className="mt-5 rounded-md bg-[#1A2238]/34 p-4 sm:p-5">
             <div className="flex gap-4">
               <ArchetypeSprites
                 archetype={deck.archetype}
@@ -105,15 +105,13 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
           </div>
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
           <section className="flex flex-col gap-4">
             <div>
               <h2 className={sectionTitle}>
                 Versions
               </h2>
-              <p className={`mt-1 ${sectionCopy}`}>
-                Keep history for each list and choose the current active build.
-              </p>
+              <p className={`mt-1 ${sectionCopy}`}>Choose the current active build.</p>
             </div>
 
             {deckVersions.length ? (
@@ -162,7 +160,7 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                       </div>
 
                       {version.decklist ? (
-                        <pre className="mt-4 max-h-80 overflow-auto whitespace-pre-wrap rounded-md border border-white/10 bg-[#0B1020]/70 p-4 text-sm leading-6 text-[#F8FAFC]">
+                        <pre className="mt-4 max-h-80 overflow-auto whitespace-pre-wrap rounded-md bg-[#0B1020]/58 p-4 text-sm leading-6 text-[#F8FAFC]">
                           {version.decklist}
                         </pre>
                       ) : null}
@@ -192,6 +190,9 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
               <h2 className="text-lg font-semibold text-[#F8FAFC]">
                 New Version
               </h2>
+              <p className={`mt-1 ${sectionCopy}`}>
+                Save a list snapshot for testing.
+              </p>
               <div className="mt-5 flex flex-col gap-4">
                 <div className="flex flex-col gap-2">
                   <label

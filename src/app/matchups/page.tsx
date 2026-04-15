@@ -410,10 +410,7 @@ export default async function MatchupsPage({
           </div>
         </header>
 
-        <form
-          action="/matchups"
-          className={cardLarge}
-        >
+        <form action="/matchups" className="rounded-md bg-[#1A2238]/34 p-4 sm:p-5">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
             <div className="flex flex-col gap-2 lg:col-span-2">
               <label
@@ -592,127 +589,104 @@ export default async function MatchupsPage({
                 {filteredMatches.length === 1 ? "" : "es"} in this view.
               </p>
             </div>
-            <div className="mt-5 overflow-x-auto">
-              <table className="min-w-full divide-y divide-white/10 text-left text-sm">
-                <thead>
-                  <tr className="text-[#94A3B8]">
-                    <th className="py-3 pr-4 font-medium">
-                      Opponent archetype
-                    </th>
-                    <th className="px-4 py-3 font-medium">Played</th>
-                    <th className="px-4 py-3 font-medium">Wins</th>
-                    <th className="px-4 py-3 font-medium">Losses</th>
-                    <th className="py-3 pl-4 font-medium">Win rate</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/10">
-                  {matchupSummary.map((matchup) => (
-                    <tr key={matchup.opponentArchetype}>
-                      <td
-                        colSpan={5}
-                        className="py-5 align-top"
-                      >
-                        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(360px,440px)]">
-                          <div>
-                            <div className="flex items-center gap-3">
-                              <ArchetypeSprites
-                                archetype={matchup.opponentArchetype}
-                              />
-                              <p className="font-medium text-[#F8FAFC]">
-                                {matchup.opponentArchetype}
-                              </p>
-                            </div>
-                            <div className="mt-3 grid grid-cols-2 gap-2 text-sm text-[#94A3B8] sm:grid-cols-4">
-                              <p>{matchup.matches} played</p>
-                              <p>{matchup.wins} wins</p>
-                              <p>{matchup.losses} losses</p>
-                              <div>
-                                <p className="font-medium text-[#F8FAFC]">
-                                  {matchup.winRate}
-                                </p>
-                                <div className="mt-2 h-2 rounded-full bg-[#0B1020]">
-                                  <div
-                                    className="h-2 rounded-full bg-[#4F8CFF]"
-                                    style={{
-                                      width: `${matchup.winRateValue}%`,
-                                    }}
-                                  />
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="rounded-md border border-white/10 bg-[#0B1020]/45 p-4">
-                            <h3 className="text-sm font-semibold text-[#F8FAFC]">
-                              Preparation Notes
-                            </h3>
-                            <div className="mt-4 flex flex-col gap-4">
-                              {yourArchetypesForView.length ? (
-                                yourArchetypesForView.map((yourArchetype) => {
-                                  const note = matchupNotes.find(
-                                    (candidate) =>
-                                      candidate.your_archetype ===
-                                        yourArchetype &&
-                                      candidate.opponent_archetype ===
-                                        matchup.opponentArchetype
-                                  );
+            <div className="mt-5 flex flex-col gap-3">
+              {matchupSummary.map((matchup) => (
+                <article
+                  key={matchup.opponentArchetype}
+                  className="rounded-md bg-[#0B1020]/32 p-4"
+                >
+                  <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px] lg:items-center">
+                    <div>
+                      <div className="flex items-center gap-3">
+                        <ArchetypeSprites
+                          archetype={matchup.opponentArchetype}
+                        />
+                        <h3 className="font-medium text-[#F8FAFC]">
+                          {matchup.opponentArchetype}
+                        </h3>
+                      </div>
+                      <div className="mt-3 h-2 rounded-full bg-[#1A2238]/70">
+                        <div
+                          className="h-2 rounded-full bg-[#4F8CFF]"
+                          style={{ width: `${matchup.winRateValue}%` }}
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-4 gap-2 text-sm">
+                      <p className="text-[#94A3B8]">{matchup.matches} played</p>
+                      <p className="text-[#94A3B8]">{matchup.wins} W</p>
+                      <p className="text-[#94A3B8]">{matchup.losses} L</p>
+                      <p className="font-semibold text-[#F8FAFC]">
+                        {matchup.winRate}
+                      </p>
+                    </div>
+                  </div>
 
-                                  return (
-                                    <form
-                                      key={`${yourArchetype}-${matchup.opponentArchetype}`}
-                                      action={saveMatchupNote}
-                                      className="rounded-md border border-white/10 bg-[#1A2238]/70 p-3"
-                                    >
-                                      <input
-                                        type="hidden"
-                                        name="your_archetype"
-                                        value={yourArchetype}
-                                      />
-                                      <input
-                                        type="hidden"
-                                        name="opponent_archetype"
-                                        value={matchup.opponentArchetype}
-                                      />
-                                      <div className="flex flex-col gap-1">
-                                        <p className="text-xs font-medium uppercase text-[#94A3B8]">
-                                          {yourArchetype} vs{" "}
-                                          {matchup.opponentArchetype}
-                                        </p>
-                                        {note ? (
-                                          <p className="text-xs text-[#94A3B8]">
-                                            Updated{" "}
-                                            {formatUpdatedAt(note.updated_at)}
-                                          </p>
-                                        ) : null}
-                                      </div>
-                                      <textarea
-                                        name="notes"
-                                        rows={4}
-                                        defaultValue={note?.notes ?? ""}
-                                        placeholder="Plan, tech cards, sequencing, side notes..."
-                                        className={`mt-3 w-full text-sm ${textarea}`}
-                                      />
-                                      <button
-                                        type="submit"
-                                        className={`mt-3 h-9 px-3 ${primaryButton}`}
-                                      >
-                                        {note ? "Update note" : "Save note"}
-                                      </button>
-                                    </form>
-                                  );
-                                })
-                              ) : (
-                                <p className={sectionCopy}>
-                                  Create a deck before saving prep notes.
+                  <details className="mt-4 rounded-md bg-[#1A2238]/36 p-3">
+                    <summary className="cursor-pointer text-sm font-medium text-[#F8FAFC]">
+                      Preparation notes
+                    </summary>
+                    <div className="mt-4 flex flex-col gap-3">
+                      {yourArchetypesForView.length ? (
+                        yourArchetypesForView.map((yourArchetype) => {
+                          const note = matchupNotes.find(
+                            (candidate) =>
+                              candidate.your_archetype === yourArchetype &&
+                              candidate.opponent_archetype ===
+                                matchup.opponentArchetype
+                          );
+
+                          return (
+                            <form
+                              key={`${yourArchetype}-${matchup.opponentArchetype}`}
+                              action={saveMatchupNote}
+                              className="rounded-md bg-[#0B1020]/38 p-3"
+                            >
+                              <input
+                                type="hidden"
+                                name="your_archetype"
+                                value={yourArchetype}
+                              />
+                              <input
+                                type="hidden"
+                                name="opponent_archetype"
+                                value={matchup.opponentArchetype}
+                              />
+                              <div className="flex flex-col gap-1">
+                                <p className="text-xs font-medium uppercase text-[#94A3B8]">
+                                  {yourArchetype} vs {matchup.opponentArchetype}
                                 </p>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                                {note ? (
+                                  <p className="text-xs text-[#94A3B8]/78">
+                                    Updated {formatUpdatedAt(note.updated_at)}
+                                  </p>
+                                ) : null}
+                              </div>
+                              <textarea
+                                name="notes"
+                                rows={3}
+                                defaultValue={note?.notes ?? ""}
+                                placeholder="Plan, tech cards, sequencing, side notes..."
+                                className={`mt-3 w-full text-sm ${textarea}`}
+                              />
+                              <button
+                                type="submit"
+                                className={`mt-3 h-9 px-3 ${primaryButton}`}
+                              >
+                                {note ? "Update note" : "Save note"}
+                              </button>
+                            </form>
+                          );
+                        })
+                      ) : (
+                        <p className={sectionCopy}>
+                          Create a deck before saving prep notes.
+                        </p>
+                      )}
+                    </div>
+                  </details>
+                </article>
+              ))}
             </div>
           </section>
         ) : (

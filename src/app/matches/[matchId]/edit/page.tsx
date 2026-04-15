@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { AppNav } from "@/components/AppNav";
 import {
+  appContainer,
   appShell,
   cardLarge,
   inputH11,
@@ -17,6 +18,9 @@ import { LATEST_FORMAT, MATCH_FORMATS } from "@/lib/formats";
 import { MATCH_TAGS } from "@/lib/match-options";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { updateMatch } from "../../actions";
+
+const editToggleClass =
+  "flex h-11 cursor-pointer items-center justify-center rounded-md bg-[#0B1020]/38 px-3 text-sm font-medium text-[#F8FAFC] transition hover:bg-[#4F8CFF]/10 has-[:checked]:bg-[#4F8CFF]/22 has-[:checked]:text-[#F8FAFC]";
 
 type EditMatchPageProps = {
   params: Promise<{
@@ -131,25 +135,26 @@ export default async function EditMatchPage({ params }: EditMatchPageProps) {
 
   return (
     <main className={appShell}>
-      <section className="mx-auto w-full max-w-2xl">
-        <div className="flex flex-col gap-4">
-          <PrizeMapLogo {...logoOnDark} />
+      <section className={`${appContainer} max-w-2xl`}>
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <PrizeMapLogo {...logoOnDark} />
+            <p className="mt-5 text-sm font-medium text-[#94A3B8]">
+              Match history
+            </p>
+            <h1 className={pageTitle}>
+              Edit Match
+            </h1>
+            <p className={pageCopy}>
+              Update match details and tags.
+            </p>
+          </div>
           <AppNav current="matches" />
-        </div>
-
-        <div className="mt-5 border-b border-white/10 pb-6">
-          <p className="text-sm font-medium text-[#94A3B8]">Match History</p>
-          <h1 className={pageTitle}>
-            Edit Match
-          </h1>
-          <p className={pageCopy}>
-            Update match details and tags.
-          </p>
         </div>
 
         <form
           action={saveMatch}
-          className={`mt-8 ${cardLarge}`}
+          className={cardLarge}
         >
           <div className="grid gap-5">
             <div className="flex flex-col gap-2">
@@ -221,7 +226,7 @@ export default async function EditMatchPage({ params }: EditMatchPageProps) {
                 {(["win", "loss"] as const).map((result) => (
                   <label
                     key={result}
-                    className="flex h-11 cursor-pointer items-center justify-center rounded-md border border-white/15 px-3 text-sm font-medium capitalize text-[#F8FAFC] transition hover:border-[#4F8CFF]/70 has-[:checked]:border-[#F5C84C] has-[:checked]:bg-[#F5C84C] has-[:checked]:text-[#0B1020]"
+                    className={`${editToggleClass} capitalize`}
                   >
                     <input
                       type="radio"
@@ -242,7 +247,7 @@ export default async function EditMatchPage({ params }: EditMatchPageProps) {
                   Went first
                 </legend>
                 <div className="grid grid-cols-2 gap-2">
-                  <label className="flex h-11 cursor-pointer items-center justify-center rounded-md border border-white/15 px-3 text-sm font-medium text-[#F8FAFC] transition hover:border-[#4F8CFF]/70 has-[:checked]:border-[#F5C84C] has-[:checked]:bg-[#F5C84C] has-[:checked]:text-[#0B1020]">
+                  <label className={editToggleClass}>
                     <input
                       type="radio"
                       name="went_first"
@@ -252,7 +257,7 @@ export default async function EditMatchPage({ params }: EditMatchPageProps) {
                     />
                     Yes
                   </label>
-                  <label className="flex h-11 cursor-pointer items-center justify-center rounded-md border border-white/15 px-3 text-sm font-medium text-[#F8FAFC] transition hover:border-[#4F8CFF]/70 has-[:checked]:border-[#F5C84C] has-[:checked]:bg-[#F5C84C] has-[:checked]:text-[#0B1020]">
+                  <label className={editToggleClass}>
                     <input
                       type="radio"
                       name="went_first"
@@ -274,7 +279,7 @@ export default async function EditMatchPage({ params }: EditMatchPageProps) {
                     (eventType) => (
                       <label
                         key={eventType}
-                        className="flex h-11 cursor-pointer items-center justify-center rounded-md border border-white/15 px-2 text-sm font-medium capitalize text-[#F8FAFC] transition hover:border-[#4F8CFF]/70 has-[:checked]:border-[#F5C84C] has-[:checked]:bg-[#F5C84C] has-[:checked]:text-[#0B1020]"
+                        className={`${editToggleClass} px-2 capitalize`}
                       >
                         <input
                           type="radio"
@@ -338,7 +343,7 @@ export default async function EditMatchPage({ params }: EditMatchPageProps) {
                 {tagOptions.map((tag) => (
                   <label
                     key={tag}
-                    className="cursor-pointer rounded-md border border-white/15 px-3 py-2 text-sm font-medium text-[#F8FAFC] transition hover:border-[#4F8CFF]/70 has-[:checked]:border-[#4F8CFF] has-[:checked]:bg-[#4F8CFF]/20"
+                    className="cursor-pointer rounded-md bg-[#0B1020]/38 px-3 py-2 text-sm font-medium text-[#F8FAFC] transition hover:bg-[#4F8CFF]/10 has-[:checked]:bg-[#4F8CFF]/22"
                   >
                     <input
                       type="checkbox"

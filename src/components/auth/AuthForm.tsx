@@ -91,7 +91,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         />
       </div>
       {message ? (
-        <p className="rounded-md border border-[#4F8CFF]/30 bg-[#4F8CFF]/10 px-3 py-2 text-sm text-[#F8FAFC]">
+        <p className="rounded-md bg-[#4F8CFF]/10 px-3 py-2 text-sm text-[#F8FAFC]">
           {message}
         </p>
       ) : null}

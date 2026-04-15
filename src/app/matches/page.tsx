@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AppNav } from "@/components/AppNav";
+import { ArchetypeSprites } from "@/components/ArchetypeSprites";
 import {
   appContainer,
   appShell,
@@ -284,15 +285,12 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
         </header>
 
         {params.updated === "1" ? (
-          <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm font-medium text-emerald-200">
+          <div className="rounded-md bg-emerald-500/10 px-4 py-3 text-sm font-medium text-emerald-200">
             Match updated.
           </div>
         ) : null}
 
-        <form
-          action="/matches"
-          className={cardLarge}
-        >
+        <form action="/matches" className="rounded-md bg-[#1A2238]/34 p-4 sm:p-5">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
             <div className="flex flex-col gap-2 lg:col-span-2">
               <label htmlFor="deck_id" className={label}>
@@ -458,7 +456,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                 {filteredMatches.length === 1 ? "" : "es"} in this view.
               </p>
             </div>
-            <div className="mt-5 flex flex-col gap-4">
+            <div className="mt-5 flex flex-col gap-3">
               {filteredMatches.map((match) => {
                 const deckVersion = getDeckVersion(match);
                 const tags = match.match_tags?.map((tag) => tag.tag) ?? [];
@@ -467,7 +465,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                 return (
                   <article
                     key={match.id}
-                    className="rounded-md border border-white/10 bg-[#0B1020]/35 p-4"
+                    className="rounded-md bg-[#0B1020]/32 p-4 transition hover:bg-[#0B1020]/44"
                   >
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                       <div className="min-w-0">
@@ -485,12 +483,15 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                             {match.result}
                           </span>
                         </div>
-                        <h3 className="mt-2 text-lg font-semibold text-[#F8FAFC]">
-                          {match.opponent_archetype}
-                          {match.opponent_variant
-                            ? ` - ${match.opponent_variant}`
-                            : ""}
-                        </h3>
+                        <div className="mt-2 flex items-center gap-3">
+                          <ArchetypeSprites archetype={match.opponent_archetype} />
+                          <h3 className="min-w-0 text-lg font-semibold text-[#F8FAFC]">
+                            {match.opponent_archetype}
+                            {match.opponent_variant
+                              ? ` - ${match.opponent_variant}`
+                              : ""}
+                          </h3>
+                        </div>
                         <p className="mt-1 text-sm text-[#94A3B8]">
                           {getDeckName(match)} -{" "}
                           {deckVersion?.name ?? "Unknown version"}
@@ -515,7 +516,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                             {tags.map((tag) => (
                               <span
                                 key={tag}
-                                className="rounded-md bg-[#4F8CFF]/20 px-2 py-1 text-xs font-medium text-[#F8FAFC]"
+                                className="rounded-md bg-[#4F8CFF]/16 px-2 py-1 text-xs font-medium text-[#F8FAFC]"
                               >
                                 {tag}
                               </span>
@@ -526,7 +527,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                           {notePreview(match.notes)}
                         </p>
                       </div>
-                      <div className="flex flex-col gap-2 sm:flex-row lg:min-w-36 lg:flex-col">
+                      <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-row lg:min-w-36 lg:flex-col">
                         <Link
                           href={`/matches/${match.id}/edit`}
                           className={primaryButton}

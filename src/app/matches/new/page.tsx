@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { AppNav } from "@/components/AppNav";
 import {
+  appContainer,
   appShell,
   emptyCard,
   logoOnDark,
@@ -94,20 +95,19 @@ export default async function NewMatchPage({
 
   return (
     <main className={appShell}>
-      <section className="mx-auto w-full max-w-2xl">
-        <div className="flex flex-col gap-4">
-          <PrizeMapLogo {...logoOnDark} />
+      <section className={`${appContainer} max-w-2xl`}>
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <PrizeMapLogo {...logoOnDark} />
+            <p className="mt-5 text-sm font-medium text-[#94A3B8]">Match log</p>
+            <h1 className={pageTitle}>
+              Log a Match
+            </h1>
+            <p className={pageCopy}>
+              Fast entry for testing sessions and event rounds.
+            </p>
+          </div>
           <AppNav current="log" />
-        </div>
-
-        <div className="mt-5 border-b border-white/10 pb-6">
-          <p className="text-sm font-medium text-[#94A3B8]">Match Log</p>
-          <h1 className={pageTitle}>
-            Log a Match
-          </h1>
-          <p className={pageCopy}>
-            Fast entry for testing sessions and event rounds.
-          </p>
         </div>
 
         {deckOptions.length ? (
