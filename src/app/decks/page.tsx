@@ -22,7 +22,7 @@ import {
 import { PrizeMapLogo } from "@/components/PrizeMapLogo";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { getArchetypeOptions } from "@/lib/archetypes";
-import { LATEST_FORMAT, MATCH_FORMATS } from "@/lib/formats";
+import { LATEST_FORMAT } from "@/lib/formats";
 import { createDeck, deleteDeck } from "./actions";
 
 type Deck = {
@@ -78,7 +78,7 @@ export default async function DecksPage() {
               Decks
             </h1>
             <p className={pageCopy}>
-              Create decks, manage lists, and keep version history organized.
+              Build and manage decks for the current Standard format.
             </p>
           </div>
           <AppNav current="decks" />
@@ -113,7 +113,9 @@ export default async function DecksPage() {
                           <div className="min-w-0">
                             <p className="text-xs font-medium uppercase text-[#94A3B8]">
                               {deck.archetype}
-                              {deck.format ? ` · ${deck.format}` : ""}
+                              {deck.format && deck.format !== LATEST_FORMAT
+                                ? ` · ${deck.format}`
+                                : ""}
                             </p>
                             <h3 className="mt-2 truncate text-lg font-semibold text-[#F8FAFC]">
                               {deck.name}
@@ -173,6 +175,7 @@ export default async function DecksPage() {
                 Add the list family first, then create versions.
               </p>
               <div className="mt-5 flex flex-col gap-4">
+                <input type="hidden" name="format" value={LATEST_FORMAT} />
                 <div className="flex flex-col gap-2">
                   <label
                     htmlFor="name"
@@ -205,26 +208,6 @@ export default async function DecksPage() {
                   <datalist id="deck-archetypes">
                     {archetypeOptions.map((archetype) => (
                       <option key={archetype} value={archetype} />
-                    ))}
-                  </datalist>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <label
-                    htmlFor="format"
-                    className={label}
-                  >
-                    Format
-                  </label>
-                  <input
-                    id="format"
-                    name="format"
-                    list="deck-formats"
-                    defaultValue={LATEST_FORMAT}
-                    className={inputH10}
-                  />
-                  <datalist id="deck-formats">
-                    {MATCH_FORMATS.map((format) => (
-                      <option key={format} value={format} />
                     ))}
                   </datalist>
                 </div>

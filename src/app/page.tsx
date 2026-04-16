@@ -6,14 +6,14 @@ const navItems = ["Product", "Insights", "Prep"];
 
 const valueChips = [
   "Deck version tracking",
-  "Format-aware matchup data",
+  "Current Standard matchup data",
   "Testing notes that travel",
 ];
 
 const features = [
   {
     title: "Log testing fast",
-    copy: "Capture the deck, opponent, result, format, tags, and notes without slowing down a session.",
+    copy: "Capture deck, opponent, result, turn order, and event type without slowing down testing.",
     stat: "30s",
   },
   {
@@ -29,9 +29,9 @@ const features = [
 ];
 
 const demoMetrics = [
-  { label: "Demo games", value: "42" },
-  { label: "Demo win rate", value: "64%" },
-  { label: "Demo weak spot", value: "Dragapult" },
+  { label: "Example games", value: "42" },
+  { label: "Example win rate", value: "64%" },
+  { label: "Example weak spot", value: "Dragapult" },
 ];
 
 const trendBars = [58, 76, 44, 84, 62, 70, 92, 52, 80, 68];
@@ -107,7 +107,7 @@ function ProductPreview() {
                   Matchup signal
                 </p>
                 <p className="mt-1 text-xs text-[#94A3B8]/80">
-                  Demo preview, not live account data
+                  Example preview, not live account data
                 </p>
               </div>
               <span className="rounded-md bg-[#22C55E]/12 px-3 py-1 text-xs font-semibold text-emerald-300">
@@ -198,7 +198,7 @@ export default function Home() {
         <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.88fr_1.12fr] lg:items-center">
           <div>
             <p className="inline-flex rounded-md bg-[#4F8CFF]/14 px-3 py-1 text-sm font-semibold text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.24)]">
-              Competitive Pokemon TCG command center
+              Competitive Pokémon TCG command center
             </p>
             <h1 className="mt-5 max-w-3xl text-4xl font-semibold leading-tight tracking-tight text-[#F8FAFC] sm:text-6xl">
               Turn every match into an edge.
@@ -208,7 +208,7 @@ export default function Home() {
             </p>
             <p className="mt-3 max-w-xl text-sm leading-6 text-[#94A3B8]/82">
               PrizeMap gives competitive players a sharper way to understand
-              deck performance, format shifts, and matchup plans.
+              deck performance, current Standard trends, and matchup plans.
             </p>
             <div className="mt-7 flex flex-col gap-3 sm:flex-row">
               <Link

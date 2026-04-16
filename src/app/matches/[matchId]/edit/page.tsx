@@ -296,44 +296,53 @@ export default async function EditMatchPage({ params }: EditMatchPageProps) {
               </fieldset>
             </div>
 
-            <div className="grid gap-5 sm:grid-cols-[minmax(0,1fr)_220px]">
-              <div className="flex flex-col gap-2">
-                <label
-                  htmlFor="format"
-                  className={label}
-                >
-                  Format
-                </label>
-                <select
-                  id="format"
-                  name="format"
-                  defaultValue={selectedFormat ?? LATEST_FORMAT}
-                  className={inputH11}
-                >
-                  {MATCH_FORMATS.map((format) => (
-                    <option key={format} value={format}>
-                      {format}
-                    </option>
-                  ))}
-                  <option value="custom">Custom</option>
-                </select>
+            <details className="rounded-md bg-[#0B1020]/30 p-3 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.04)]">
+              <summary className="cursor-pointer text-sm font-semibold text-[#F8FAFC]">
+                Advanced history details
+              </summary>
+              <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
+                PrizeMap defaults to current Standard. Use this only for older
+                or imported records.
+              </p>
+              <div className="mt-4 grid gap-5 sm:grid-cols-[minmax(0,1fr)_220px]">
+                <div className="flex flex-col gap-2">
+                  <label
+                    htmlFor="format"
+                    className={label}
+                  >
+                    Saved format
+                  </label>
+                  <select
+                    id="format"
+                    name="format"
+                    defaultValue={selectedFormat ?? LATEST_FORMAT}
+                    className={inputH11}
+                  >
+                    {MATCH_FORMATS.map((format) => (
+                      <option key={format} value={format}>
+                        {format}
+                      </option>
+                    ))}
+                    <option value="custom">Custom saved format</option>
+                  </select>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label
+                    htmlFor="format_custom"
+                    className={label}
+                  >
+                    Custom saved format
+                  </label>
+                  <input
+                    id="format_custom"
+                    name="format_custom"
+                    defaultValue={customFormat}
+                    placeholder="Optional"
+                    className={inputH11}
+                  />
+                </div>
               </div>
-              <div className="flex flex-col gap-2">
-                <label
-                  htmlFor="format_custom"
-                  className={label}
-                >
-                  Custom format
-                </label>
-                <input
-                  id="format_custom"
-                  name="format_custom"
-                  defaultValue={customFormat}
-                  placeholder="Optional"
-                  className={inputH11}
-                />
-              </div>
-            </div>
+            </details>
 
             <fieldset className="flex flex-col gap-2">
               <legend className={label}>

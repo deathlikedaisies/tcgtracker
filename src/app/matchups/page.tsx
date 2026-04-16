@@ -23,7 +23,7 @@ import { PrizeMapLogo } from "@/components/PrizeMapLogo";
 import { ShareReportButton, type ShareReport } from "@/components/ShareReportButton";
 import { getArchetypeOptions } from "@/lib/archetypes";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
-import { getFormatOptions } from "@/lib/formats";
+import { getFormatOptions, LATEST_FORMAT } from "@/lib/formats";
 import { saveMatchupNote } from "./actions";
 
 type SortKey = "most_played" | "highest_win_rate" | "lowest_win_rate" | "az";
@@ -213,7 +213,7 @@ export default async function MatchupsPage({
   const selectedFormat =
     params.format && formatOptions.includes(params.format)
       ? params.format
-      : "all";
+      : LATEST_FORMAT;
   const archetypeOptions = getArchetypeOptions(
     selectedFormat === "all" ? null : selectedFormat,
     matchRows.map((match) => match.opponent_archetype)
@@ -386,7 +386,7 @@ export default async function MatchupsPage({
     worstMatchup: worstMatchup?.opponentArchetype ?? "No matchup yet",
     bestMatchup: bestMatchup?.opponentArchetype ?? "No matchup yet",
     totalMatches: filteredMatches.length,
-    context: selectedFormat === "all" ? "All formats" : selectedFormat,
+    context: selectedFormat === "all" ? "Saved history" : selectedFormat,
   };
 
   return (
@@ -509,7 +509,7 @@ export default async function MatchupsPage({
                 htmlFor="format"
                 className={label}
               >
-                Format
+                Match set
               </label>
               <select
                 id="format"
@@ -517,7 +517,7 @@ export default async function MatchupsPage({
                 defaultValue={selectedFormat}
                 className={inputH10}
               >
-                <option value="all">All formats</option>
+                <option value="all">Saved history</option>
                 {formatOptions.map((format) => (
                   <option key={format} value={format}>
                     {format}
@@ -695,8 +695,8 @@ export default async function MatchupsPage({
               No matchups match these filters.
             </h2>
             <p className={`mt-2 ${sectionCopy}`}>
-              Try a different deck, deck version, archetype, format, date
-              range, or clear the filters.
+              Try a different deck, deck version, archetype, date range, or
+              clear the filters.
             </p>
             <Link
               href="/matchups"

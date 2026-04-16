@@ -33,7 +33,7 @@ export const divider = "divide-y divide-white/6";
 export const label = "text-sm font-medium text-[#F8FAFC]";
 
 export const input =
-  "rounded-md bg-[#0B1020]/62 px-3 text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(248,250,252,0.06)] outline-none transition placeholder:text-[#94A3B8]/60 focus:bg-[#0B1020]/78 focus:shadow-[inset_0_0_0_1px_rgba(79,140,255,0.7),0_0_24px_rgba(79,140,255,0.1)]";
+  "w-full min-w-0 rounded-md bg-[#0B1020]/62 px-3 text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(248,250,252,0.06)] outline-none transition placeholder:text-[#94A3B8]/60 focus:bg-[#0B1020]/78 focus:shadow-[inset_0_0_0_1px_rgba(79,140,255,0.7),0_0_24px_rgba(79,140,255,0.1)]";
 
 export const inputH10 = `h-10 ${input}`;
 

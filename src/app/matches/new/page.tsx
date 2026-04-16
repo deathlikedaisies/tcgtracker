@@ -104,7 +104,7 @@ export default async function NewMatchPage({
               Log a Match
             </h1>
             <p className={pageCopy}>
-              Fast entry for testing sessions and event rounds.
+              Fast current Standard entry for testing sessions and event rounds.
             </p>
           </div>
           <AppNav current="log" />

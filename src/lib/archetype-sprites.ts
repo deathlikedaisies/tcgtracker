@@ -13,6 +13,10 @@ export const FALLBACK_ARCHETYPE_SPRITES: ArchetypeSprite[] = [
 ];
 
 export const ARCHETYPE_SPRITES: Record<string, ArchetypeSprite[]> = {
+  "Starmie Froslass": [
+    { filename: "other-emerging.png", label: "Starmie" },
+    { filename: "froslass.png", label: "Froslass" },
+  ],
   "Dragapult ex": [{ filename: "dragapult-ex.png", label: "Dragapult ex" }],
   "Dragapult Blaziken": [
     { filename: "dragapult-ex.png", label: "Dragapult ex" },
@@ -33,6 +37,9 @@ export const ARCHETYPE_SPRITES: Record<string, ArchetypeSprite[]> = {
   "Mega Lucario ex": [
     { filename: "lucario.png", label: "Mega Lucario ex" },
   ],
+  "Mega Lucario": [
+    { filename: "lucario.png", label: "Mega Lucario" },
+  ],
   "Mega Absol Box": [
     { filename: "absol.png", label: "Mega Absol" },
   ],
@@ -44,6 +51,12 @@ export const ARCHETYPE_SPRITES: Record<string, ArchetypeSprite[]> = {
   "Festival Lead": [{ filename: "other-emerging.png", label: "Festival Lead" }],
   "Rocket's Spidops": [
     { filename: "spidops.png", label: "Rocket's Spidops" },
+  ],
+  "Rocket's Mewtwo": [
+    { filename: "other-emerging.png", label: "Rocket's Mewtwo" },
+  ],
+  "Rocket's Honchkrow": [
+    { filename: "other-emerging.png", label: "Rocket's Honchkrow" },
   ],
   "Rocket Box": [{ filename: "spidops.png", label: "Rocket Box" }],
   "Froslass Munkidori": [
@@ -57,6 +70,18 @@ export const ARCHETYPE_SPRITES: Record<string, ArchetypeSprite[]> = {
     { filename: "ogerpon.png", label: "Ogerpon" },
   ],
   Alakazam: [{ filename: "alakazam.png", label: "Alakazam" }],
+  "Alakazam Dudunsparce": [
+    { filename: "alakazam.png", label: "Alakazam" },
+    { filename: "other-emerging.png", label: "Dudunsparce" },
+  ],
+  "Cynthia's Garchomp": [
+    { filename: "other-emerging.png", label: "Cynthia's Garchomp" },
+  ],
+  Okidogi: [{ filename: "other-emerging.png", label: "Okidogi" }],
+  "Marnie's Grimmsnarl": [
+    { filename: "grimmsnarl.png", label: "Marnie's Grimmsnarl" },
+  ],
+  "Mega Froslass": [{ filename: "froslass.png", label: "Mega Froslass" }],
   [OTHER_ARCHETYPE]: FALLBACK_ARCHETYPE_SPRITES,
 
   "Charizard ex": [{ filename: "charizard-ex.png", label: "Charizard ex" }],

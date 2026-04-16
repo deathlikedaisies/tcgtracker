@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { MATCH_FORMATS } from "@/lib/formats";
+import { LATEST_FORMAT, MATCH_FORMATS } from "@/lib/formats";
 import { EVENT_TYPES, MATCH_RESULTS, parseSelectedTags } from "@/lib/match-options";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 
@@ -68,7 +68,7 @@ function getMatchPayload(formData: FormData) {
   const formatSelection = optionalText(formData.get("format"));
   const customFormat = optionalText(formData.get("format_custom"));
   const format =
-    formatSelection === "custom" ? customFormat : formatSelection;
+    formatSelection === "custom" ? customFormat : formatSelection ?? LATEST_FORMAT;
 
   if (!deckVersionId) {
     throw new Error("Deck version is required.");

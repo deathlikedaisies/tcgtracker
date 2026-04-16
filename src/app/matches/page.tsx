@@ -22,7 +22,7 @@ import {
 } from "@/components/brand-styles";
 import { PrizeMapLogo } from "@/components/PrizeMapLogo";
 import { getArchetypeOptions } from "@/lib/archetypes";
-import { getFormatOptions } from "@/lib/formats";
+import { getFormatOptions, LATEST_FORMAT } from "@/lib/formats";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { deleteMatch } from "./actions";
 
@@ -215,7 +215,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
   const selectedFormat =
     params.format && formatOptions.includes(params.format)
       ? params.format
-      : "all";
+      : LATEST_FORMAT;
   const archetypeOptions = getArchetypeOptions(
     selectedFormat === "all" ? null : selectedFormat,
     matchRows.map((match) => match.opponent_archetype)
@@ -370,7 +370,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
             </div>
             <div className="flex flex-col gap-2">
               <label htmlFor="format" className={label}>
-                Format
+                Match set
               </label>
               <select
                 id="format"
@@ -378,7 +378,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                 defaultValue={selectedFormat}
                 className={inputH10}
               >
-                <option value="all">All formats</option>
+                <option value="all">Saved history</option>
                 {formatOptions.map((format) => (
                   <option key={format} value={format}>
                     {format}
@@ -555,8 +555,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
               No matches match these filters.
             </h2>
             <p className={`mt-2 ${sectionCopy}`}>
-              Try a different deck, version, opponent, result, format, or date
-              range.
+              Try a different deck, version, opponent, result, or date range.
             </p>
             <Link
               href="/matches"

@@ -26,7 +26,7 @@ export default async function SignupPage() {
             Sign up
           </h1>
           <p className={pageCopy}>
-            Create an account to start tracking your cards.
+            Create an account to start tracking your matches.
           </p>
         </div>
         <AuthForm mode="signup" />

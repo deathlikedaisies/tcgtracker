@@ -1,25 +1,28 @@
-import { LATEST_FORMAT, MATCH_FORMATS } from "@/lib/formats";
-
 export const OTHER_ARCHETYPE = "Other / Emerging";
 
 export const POST_ROTATION_2026_ARCHETYPES = [
-  "Dragapult ex",
-  "Dragapult Blaziken",
-  "Dragapult Dusknoir",
+  "Starmie Froslass",
   "Grimmsnarl Froslass",
-  "Lucario Hariyama",
-  "Mega Lucario ex",
-  "Mega Absol Box",
-  "N's Zoroark",
-  "Ogerpon Meganium",
-  "Festival Lead",
-  "Rocket's Spidops",
-  "Rocket Box",
   "Froslass Munkidori",
+  "Dragapult Dusknoir",
+  "Dragapult Blaziken",
+  "Dragapult ex",
+  "N's Zoroark",
+  "Mega Absol Box",
+  "Raging Bolt Ogerpon",
+  "Ogerpon Meganium",
   "Joltik Box",
   "Crustle",
-  "Raging Bolt Ogerpon",
-  "Alakazam",
+  "Lucario Hariyama",
+  "Mega Lucario",
+  "Alakazam Dudunsparce",
+  "Rocket's Mewtwo",
+  "Rocket's Honchkrow",
+  "Festival Lead",
+  "Cynthia's Garchomp",
+  "Okidogi",
+  "Marnie's Grimmsnarl",
+  "Mega Froslass",
   OTHER_ARCHETYPE,
 ] as const;
 
@@ -40,18 +43,12 @@ export const PRE_ROTATION_2025_2026_ARCHETYPES = [
 ] as const;
 
 export function getArchetypeOptions(
-  format: string | null | undefined,
+  _format: string | null | undefined,
   existingArchetypes: (string | null)[] = []
 ) {
-  const base =
-    format === LATEST_FORMAT
-      ? POST_ROTATION_2026_ARCHETYPES
-      : format === MATCH_FORMATS[1]
-        ? PRE_ROTATION_2025_2026_ARCHETYPES
-        : [...POST_ROTATION_2026_ARCHETYPES, ...PRE_ROTATION_2025_2026_ARCHETYPES];
   const existing = existingArchetypes.filter(
     (archetype): archetype is string => Boolean(archetype)
   );
 
-  return Array.from(new Set([...base, ...existing]));
+  return Array.from(new Set([...POST_ROTATION_2026_ARCHETYPES, ...existing]));
 }

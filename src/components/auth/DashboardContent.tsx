@@ -169,7 +169,7 @@ export function DashboardContent({
   const supabase = createClient();
   const hasMatches = stats.totalMatches > 0;
   const selectedFormatLabel =
-    selectedFormat === "all" ? "All formats" : selectedFormat;
+    selectedFormat === "all" ? "Saved history" : selectedFormat;
   const worstMatchup = matchupSummary.reduce<MatchupSummary | null>(
     (currentWorst, matchup) => {
       if (!currentWorst) {
@@ -357,7 +357,7 @@ export function DashboardContent({
                 htmlFor="format"
                 className={label}
               >
-                Format
+                Match set
               </label>
               <select
                 id="format"
@@ -370,7 +370,7 @@ export function DashboardContent({
                     {format}
                   </option>
                 ))}
-                <option value="all">All formats</option>
+                <option value="all">Saved history</option>
               </select>
             </div>
             <button type="submit" className={secondaryButton}>
@@ -416,7 +416,16 @@ export function DashboardContent({
                         tickLine={false}
                         axisLine={false}
                       />
-                      <Tooltip />
+                      <Tooltip
+                        formatter={(value, name) => [
+                          value,
+                          name === "wins"
+                            ? "Wins"
+                            : name === "losses"
+                              ? "Losses"
+                              : name,
+                        ]}
+                      />
                       <Legend />
                       <Line
                         type="monotone"
@@ -466,7 +475,12 @@ export function DashboardContent({
                         tickLine={false}
                         axisLine={false}
                       />
-                      <Tooltip formatter={(value) => `${value}%`} />
+                      <Tooltip
+                        formatter={(value, name) => [
+                          `${value}%`,
+                          name === "winRate" ? "Win rate" : name,
+                        ]}
+                      />
                       <Bar dataKey="winRate" fill="#4F8CFF" radius={[0, 4, 4, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
@@ -610,8 +624,8 @@ export function DashboardContent({
               No matches in {selectedFormatLabel}.
             </h2>
             <p className={`mt-3 max-w-xl ${sectionCopy}`}>
-              Choose another format or log a match in this format to populate
-              the dashboard.
+              Log a current Standard match or view saved history to see older
+              records.
             </p>
             <Link
               href="/matches/new"
@@ -623,7 +637,7 @@ export function DashboardContent({
               href="/dashboard?format=all"
               className={`mt-3 sm:ml-3 sm:mt-6 ${secondaryButton}`}
             >
-              View all formats
+              View saved history
             </Link>
           </section>
         )}
