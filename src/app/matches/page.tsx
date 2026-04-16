@@ -290,7 +290,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
           </div>
         ) : null}
 
-        <form action="/matches" className="rounded-md bg-[#1A2238]/34 p-4 sm:p-5">
+        <form action="/matches" className="rounded-md bg-[#11182C]/48 p-4 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.04)] sm:p-5">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
             <div className="flex flex-col gap-2 lg:col-span-2">
               <label htmlFor="deck_id" className={label}>
@@ -465,7 +465,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                 return (
                   <article
                     key={match.id}
-                    className="rounded-md bg-[#0B1020]/32 p-4 transition hover:bg-[#0B1020]/44"
+                    className="rounded-md bg-[#0B1020]/40 p-4 transition hover:bg-[#0B1020]/56 hover:shadow-[0_14px_34px_rgba(0,0,0,0.16)]"
                   >
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                       <div className="min-w-0">

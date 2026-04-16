@@ -34,7 +34,7 @@ const sessionKeys = {
 };
 
 const toggleClass =
-  "flex h-11 cursor-pointer items-center justify-center rounded-md bg-[#0B1020]/38 px-3 text-sm font-medium text-[#F8FAFC] transition hover:bg-[#4F8CFF]/10 has-[:checked]:bg-[#4F8CFF]/22 has-[:checked]:text-[#F8FAFC]";
+  "flex h-11 cursor-pointer items-center justify-center rounded-md bg-[#0B1020]/46 px-3 text-sm font-medium text-[#F8FAFC] transition hover:bg-[#4F8CFF]/12 has-[:checked]:bg-[#4F8CFF]/24 has-[:checked]:shadow-[0_0_24px_rgba(79,140,255,0.12)] has-[:checked]:text-[#F8FAFC]";
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -107,7 +107,7 @@ export function MatchLogForm({
   return (
     <form
       action={action}
-      className="mt-6 rounded-md bg-[#1A2238]/50 p-4 shadow-[0_12px_34px_rgba(0,0,0,0.14)] sm:p-5"
+      className="mt-6 rounded-md bg-[#11182C]/76 p-4 shadow-[0_20px_60px_rgba(0,0,0,0.24),inset_0_0_0_1px_rgba(248,250,252,0.05)] sm:p-5"
     >
       <div className="grid gap-4">
         {wasSuccessful ? (
@@ -116,7 +116,7 @@ export function MatchLogForm({
           </div>
         ) : null}
 
-        <div className="rounded-md bg-[#4F8CFF]/10 p-4">
+        <div className="rounded-md bg-[#4F8CFF]/12 p-4 shadow-[0_0_34px_rgba(79,140,255,0.08)]">
           <div className="flex flex-col gap-2">
             <label
               htmlFor="deck_version_id"
@@ -145,34 +145,7 @@ export function MatchLogForm({
           </div>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-[170px_minmax(0,1fr)]">
-          <fieldset className="flex flex-col gap-2">
-            <legend className={label}>
-              Result
-            </legend>
-            <div className="grid grid-cols-2 gap-2">
-              {(["win", "loss"] as const).map((resultOption) => (
-                <label
-                  key={resultOption}
-                  className={`${toggleClass} capitalize`}
-                >
-                  <input
-                    type="radio"
-                    name="result"
-                    value={resultOption}
-                    checked={result === resultOption}
-                    onChange={() => {
-                      setResult(resultOption);
-                      remember(sessionKeys.result, resultOption);
-                    }}
-                    className="sr-only"
-                  />
-                  {resultOption}
-                </label>
-              ))}
-            </div>
-          </fieldset>
-
+        <div className="grid gap-4">
           <div className="flex flex-col gap-2">
             <label
               htmlFor="opponent_archetype"
@@ -202,7 +175,7 @@ export function MatchLogForm({
           </div>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_220px]">
           <div className="flex flex-col gap-2">
             <label
               htmlFor="opponent_variant"
@@ -217,6 +190,32 @@ export function MatchLogForm({
               className={inputH11}
             />
           </div>
+          <fieldset className="flex flex-col gap-2">
+            <legend className={label}>
+              Result
+            </legend>
+            <div className="grid grid-cols-2 gap-2">
+              {(["win", "loss"] as const).map((resultOption) => (
+                <label
+                  key={resultOption}
+                  className={`${toggleClass} capitalize`}
+                >
+                  <input
+                    type="radio"
+                    name="result"
+                    value={resultOption}
+                    checked={result === resultOption}
+                    onChange={() => {
+                      setResult(resultOption);
+                      remember(sessionKeys.result, resultOption);
+                    }}
+                    className="sr-only"
+                  />
+                  {resultOption}
+                </label>
+              ))}
+            </div>
+          </fieldset>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
@@ -231,7 +230,7 @@ export function MatchLogForm({
               ].map(([value, label]) => (
                 <label
                   key={value}
-                className={toggleClass}
+                  className={toggleClass}
                 >
                   <input
                     type="radio"
@@ -322,7 +321,7 @@ export function MatchLogForm({
             {MATCH_TAGS.map((tag) => (
               <label
                 key={tag}
-                className="cursor-pointer rounded-md bg-[#0B1020]/38 px-3 py-2 text-sm font-medium text-[#F8FAFC] transition hover:bg-[#4F8CFF]/10 has-[:checked]:bg-[#4F8CFF]/22 has-[:checked]:text-[#F8FAFC]"
+                className="cursor-pointer rounded-md bg-[#0B1020]/46 px-3 py-2 text-sm font-medium text-[#F8FAFC] transition hover:bg-[#4F8CFF]/12 has-[:checked]:bg-[#4F8CFF]/24 has-[:checked]:text-[#F8FAFC]"
               >
                 <input
                   type="checkbox"

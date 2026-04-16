@@ -410,7 +410,7 @@ export default async function MatchupsPage({
           </div>
         </header>
 
-        <form action="/matchups" className="rounded-md bg-[#1A2238]/34 p-4 sm:p-5">
+        <form action="/matchups" className="rounded-md bg-[#11182C]/48 p-4 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.04)] sm:p-5">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
             <div className="flex flex-col gap-2 lg:col-span-2">
               <label
@@ -593,7 +593,7 @@ export default async function MatchupsPage({
               {matchupSummary.map((matchup) => (
                 <article
                   key={matchup.opponentArchetype}
-                  className="rounded-md bg-[#0B1020]/32 p-4"
+                  className="rounded-md bg-[#0B1020]/40 p-4 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.04)]"
                 >
                   <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px] lg:items-center">
                     <div>
@@ -622,7 +622,7 @@ export default async function MatchupsPage({
                     </div>
                   </div>
 
-                  <details className="mt-4 rounded-md bg-[#1A2238]/36 p-3">
+                  <details className="mt-4 rounded-md bg-[#11182C]/58 p-3">
                     <summary className="cursor-pointer text-sm font-medium text-[#F8FAFC]">
                       Preparation notes
                     </summary>
@@ -640,7 +640,7 @@ export default async function MatchupsPage({
                             <form
                               key={`${yourArchetype}-${matchup.opponentArchetype}`}
                               action={saveMatchupNote}
-                              className="rounded-md bg-[#0B1020]/38 p-3"
+                              className="rounded-md bg-[#0B1020]/46 p-3"
                             >
                               <input
                                 type="hidden"

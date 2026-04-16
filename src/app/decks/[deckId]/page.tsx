@@ -80,7 +80,7 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
             <PrizeMapLogo {...logoOnDark} />
             <AppNav current="decks" />
           </div>
-          <div className="mt-5 rounded-md bg-[#1A2238]/34 p-4 sm:p-5">
+          <div className="mt-5 rounded-md bg-[#11182C]/64 p-4 shadow-[0_18px_52px_rgba(0,0,0,0.18),inset_0_0_0_1px_rgba(248,250,252,0.05)] sm:p-5">
             <div className="flex gap-4">
               <ArchetypeSprites
                 archetype={deck.archetype}
@@ -182,7 +182,7 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
             )}
           </section>
 
-          <aside>
+          <aside className="lg:sticky lg:top-6">
             <form
               action={createVersion}
               className={card}

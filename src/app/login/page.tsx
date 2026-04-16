@@ -15,7 +15,7 @@ export default async function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#0B1020] px-6 py-12 text-[#F8FAFC]">
+    <main className="flex min-h-screen items-center justify-center bg-[#0B1020] bg-[radial-gradient(ellipse_at_top,rgba(79,140,255,0.16),transparent_42%),linear-gradient(180deg,#0B1020_0%,#10172A_55%,#0B1020_100%)] px-6 py-12 text-[#F8FAFC]">
       <section className={`w-full max-w-sm ${card}`}>
         <div className="mb-6">
           <PrizeMapLogo

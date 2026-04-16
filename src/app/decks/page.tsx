@@ -99,7 +99,10 @@ export default async function DecksPage() {
                   const removeDeck = deleteDeck.bind(null, deck.id);
 
                   return (
-                    <article key={deck.id} className={card}>
+                    <article
+                      key={deck.id}
+                      className={`${card} transition hover:bg-[#11182C]/88 hover:shadow-[0_22px_62px_rgba(0,0,0,0.28),0_0_34px_rgba(79,140,255,0.08),inset_0_0_0_1px_rgba(248,250,252,0.06)]`}
+                    >
                       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                         <div className="flex min-w-0 gap-3">
                           <ArchetypeSprites
@@ -158,7 +161,7 @@ export default async function DecksPage() {
             )}
           </section>
 
-          <aside>
+          <aside className="lg:sticky lg:top-6">
             <form
               action={createDeck}
               className={card}

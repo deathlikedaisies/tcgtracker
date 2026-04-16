@@ -309,7 +309,7 @@ export function DashboardContent({
         </div>
 
         {hasMatches ? (
-          <section className="rounded-md bg-[#1A2238]/38 p-4 shadow-[0_14px_38px_rgba(0,0,0,0.14)] sm:p-5">
+          <section className="rounded-md bg-[#11182C]/78 p-4 shadow-[0_24px_70px_rgba(0,0,0,0.28),0_0_50px_rgba(79,140,255,0.08),inset_0_0_0_1px_rgba(248,250,252,0.05)] sm:p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div>
                 <p className="text-sm font-semibold text-[#4F8CFF]">
@@ -329,19 +329,19 @@ export function DashboardContent({
                 <ShareReportButton report={shareReport} />
               </div>
             </div>
-            <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <div className="mt-5 grid grid-cols-2 gap-3 xl:grid-cols-4">
               {insights.map((insight) => (
                 <div
                   key={insight.label}
-                  className="rounded-md bg-[#0B1020]/30 p-4"
+                  className="rounded-md bg-[#0B1020]/44 p-4 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.04)]"
                 >
                   <p className="text-xs font-medium uppercase text-[#94A3B8]">
                     {insight.label}
                   </p>
-                  <p className="mt-2 truncate text-xl font-semibold text-[#F8FAFC]">
+                  <p className="mt-2 truncate text-lg font-semibold text-[#F8FAFC] sm:text-xl">
                     {insight.value}
                   </p>
-                  <p className="mt-2 text-sm text-[#94A3B8]">
+                  <p className="mt-2 text-xs leading-5 text-[#94A3B8] sm:text-sm">
                     {insight.detail}
                   </p>
                 </div>
@@ -350,7 +350,7 @@ export function DashboardContent({
           </section>
         ) : null}
 
-        <form action="/dashboard" className="rounded-md bg-[#1A2238]/34 p-4">
+        <form action="/dashboard" className="rounded-md bg-[#11182C]/48 p-4 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.04)]">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div className="flex flex-col gap-2 sm:min-w-80">
               <label
@@ -479,7 +479,9 @@ export function DashboardContent({
                 <h2 className={sectionTitle}>
                   Recent Matches
                 </h2>
-                  <p className={sectionCopy}>Latest games for {selectedFormatLabel}.</p>
+                <p className={sectionCopy}>
+                  Latest games for {selectedFormatLabel}.
+                </p>
               </div>
               <div className={`mt-5 ${divider}`}>
                 {recentMatches.map((match) => (
@@ -639,7 +641,7 @@ export function DashboardContent({
                 <Link
                   key={deck.id}
                   href={`/decks/${deck.id}`}
-                  className="block rounded-md px-3 py-4 transition hover:bg-[#0B1020]/45"
+                  className="block rounded-md px-3 py-4 transition hover:bg-[#0B1020]/52"
                 >
                   <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-center gap-3">
@@ -662,7 +664,7 @@ export function DashboardContent({
               ))}
             </div>
           ) : (
-            <div className="mt-5 rounded-md bg-[#0B1020]/28 p-4 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.14)]">
+            <div className="mt-5 rounded-md bg-[#0B1020]/38 p-4 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.12)]">
               <p className={sectionCopy}>No decks found yet.</p>
               <Link
                 href="/decks"

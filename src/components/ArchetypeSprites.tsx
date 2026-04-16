@@ -37,15 +37,15 @@ export function ArchetypeSprites({
   const visibleSprites = sprites.filter(
     (sprite) => !failedSprites.includes(sprite.filename)
   );
-  const dimensions = size === "md" ? "size-8" : "size-7";
-  const imageDimensions = size === "md" ? "size-7" : "size-6";
+  const dimensions = size === "md" ? "size-9" : "size-7";
+  const imageDimensions = size === "md" ? "size-8" : "size-6";
   const offset = size === "md" ? "-ml-2" : "-ml-1.5";
   const fallbackText = getInitials(archetype);
 
   if (!visibleSprites.length) {
     return (
       <span
-        className={`inline-flex ${dimensions} items-center justify-center rounded-md bg-[#4F8CFF]/14 text-xs font-semibold text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.24)] ${className}`}
+        className={`inline-flex ${dimensions} items-center justify-center rounded-md bg-[#4F8CFF]/16 text-xs font-semibold text-[#F8FAFC] shadow-[0_10px_24px_rgba(79,140,255,0.12),inset_0_0_0_1px_rgba(79,140,255,0.26)] ${className}`}
         aria-label={`${archetype ?? "Unknown archetype"} sprite fallback`}
         title={archetype ?? "Unknown archetype"}
       >
@@ -63,7 +63,7 @@ export function ArchetypeSprites({
       {visibleSprites.slice(0, 2).map((sprite, index) => (
         <span
           key={sprite.filename}
-          className={`inline-flex ${dimensions} items-center justify-center rounded-md bg-[#0B1020]/52 shadow-[0_8px_22px_rgba(0,0,0,0.24),inset_0_0_0_1px_rgba(248,250,252,0.08)] ${
+          className={`inline-flex ${dimensions} items-center justify-center rounded-md bg-[#0B1020]/60 shadow-[0_10px_24px_rgba(0,0,0,0.28),0_0_18px_rgba(79,140,255,0.08),inset_0_0_0_1px_rgba(248,250,252,0.08)] ${
             index > 0 ? offset : ""
           }`}
         >

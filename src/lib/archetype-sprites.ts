@@ -99,9 +99,5 @@ export function getArchetypeSprites(archetype: string | null | undefined) {
     ARCHETYPE_SPRITES[archetype] ??
     NORMALIZED_ARCHETYPE_SPRITES[normalizeArchetype(archetype)];
 
-  if (!sprites) {
-    console.log("Missing sprite for:", archetype);
-  }
-
   return sprites ?? FALLBACK_ARCHETYPE_SPRITES;
 }
