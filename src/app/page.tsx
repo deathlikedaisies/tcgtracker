@@ -126,7 +126,10 @@ export default function Home() {
       <header className="px-4 py-4 sm:px-6">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 rounded bg-[#0B1020]/42 px-3 py-3 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.05)]">
           <PrizeMapLogo
-            markClassName="bg-[#1A2238] shadow-[0_0_28px_rgba(79,140,255,0.22)]"
+            variant="app-icon"
+            hideTextOnMobile
+            className="group transition hover:scale-[1.02]"
+            markClassName="bg-[#1A2238] transition group-hover:shadow-[0_0_22px_rgba(79,140,255,0.22)]"
             textClassName="text-base text-[#F8FAFC]"
           />
           <div className="flex items-center gap-2">
@@ -146,9 +149,15 @@ export default function Home() {
         </div>
       </header>
 
-      <section className="px-4 pb-6 pt-3 sm:px-6 sm:pb-9 sm:pt-7">
-        <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[0.82fr_1.18fr] lg:items-center">
-          <div>
+      <section className="relative px-4 pb-6 pt-3 sm:px-6 sm:pb-9 sm:pt-7">
+        <PrizeMapLogo
+          variant="watermark"
+          showText={false}
+          className="pointer-events-none absolute -left-16 top-4 hidden size-72 opacity-[0.035] lg:block"
+          markClassName="size-full"
+        />
+        <div className="relative mx-auto grid max-w-6xl gap-6 lg:grid-cols-[0.82fr_1.18fr] lg:items-center">
+          <div className="prizemap-fade-in">
             <p className="inline-flex rounded bg-[#4F8CFF]/14 px-3 py-1 text-sm font-semibold text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.24)]">
               Based on your real match data
             </p>
@@ -164,6 +173,12 @@ export default function Home() {
                 href="/signup"
                 className="inline-flex h-12 w-full items-center justify-center rounded bg-[#F5C84C] px-6 text-sm font-semibold text-[#0B1020] shadow-[0_18px_44px_rgba(245,200,76,0.34)] transition hover:-translate-y-0.5 hover:bg-[#ffd85f] active:translate-y-0 active:scale-[0.98] sm:w-auto"
               >
+                <PrizeMapLogo
+                  variant="favicon"
+                  showText={false}
+                  className="mr-2"
+                  markClassName="size-6 bg-[#0B1020]/12 shadow-none"
+                />
                 Start tracking
               </Link>
             </div>
@@ -203,6 +218,12 @@ export default function Home() {
             href="/signup"
             className="inline-flex h-12 w-full items-center justify-center rounded bg-[#F5C84C] px-4 text-center text-sm font-semibold text-[#0B1020] shadow-[0_18px_44px_rgba(245,200,76,0.32)] transition hover:-translate-y-0.5 hover:bg-[#ffd85f] active:translate-y-0 active:scale-[0.98] sm:px-6 md:w-auto"
           >
+            <PrizeMapLogo
+              variant="favicon"
+              showText={false}
+              className="mr-2"
+              markClassName="size-6 bg-[#0B1020]/12 shadow-none"
+            />
             Start tracking before your next session
           </Link>
         </div>

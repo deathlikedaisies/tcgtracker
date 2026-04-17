@@ -278,7 +278,7 @@ export function DashboardContent({
 
   return (
     <main className={appShell}>
-      <section className={`${appContainer} max-w-6xl`}>
+      <section className={`${appContainer} prizemap-fade-in max-w-6xl`}>
         <div className={pageHeader}>
           <div>
             <PrizeMapLogo {...logoOnDark} />
@@ -315,6 +315,12 @@ export function DashboardContent({
                   href="/matches/new"
                   className={primaryButton}
                 >
+                  <PrizeMapLogo
+                    variant="favicon"
+                    showText={false}
+                    className="mr-2"
+                    markClassName="size-5 bg-[#0B1020]/12 shadow-none"
+                  />
                   Log match
                 </Link>
                 <ShareReportButton report={shareReport} />
@@ -556,6 +562,12 @@ export function DashboardContent({
           </>
         ) : !hasAnyMatches ? (
           <section className={emptyCard}>
+            <PrizeMapLogo
+              variant="app-icon"
+              showText={false}
+              className="mb-5"
+              markClassName="size-12 bg-[#0B1020]/72 shadow-[0_0_28px_rgba(79,140,255,0.16),inset_0_0_0_1px_rgba(79,140,255,0.22)]"
+            />
             <h2 className="text-2xl font-semibold tracking-tight text-[#F8FAFC]">
               No matches logged yet.
             </h2>
@@ -566,6 +578,12 @@ export function DashboardContent({
               href="/matches/new"
               className={`mt-6 ${primaryButton}`}
             >
+              <PrizeMapLogo
+                variant="favicon"
+                showText={false}
+                className="mr-2"
+                markClassName="size-5 bg-[#0B1020]/12 shadow-none"
+              />
               Log your first match
             </Link>
             <Link

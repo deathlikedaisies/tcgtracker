@@ -7,7 +7,10 @@ export const pageHeader =
   "rounded-md bg-[#0B1020]/36 p-3 shadow-[0_18px_60px_rgba(0,0,0,0.2),inset_0_0_0_1px_rgba(248,250,252,0.05)] flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between";
 
 export const logoOnDark = {
-  markClassName: "size-8 bg-[#1A2238] shadow-[0_0_28px_rgba(79,140,255,0.22)]",
+  variant: "app-icon" as const,
+  hideTextOnMobile: true,
+  className: "group transition hover:scale-[1.02]",
+  markClassName: "size-8 bg-[#1A2238] transition group-hover:shadow-[0_0_22px_rgba(79,140,255,0.22)]",
   textClassName: "text-sm text-[#F8FAFC]",
 };
 
