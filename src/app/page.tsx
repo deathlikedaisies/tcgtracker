@@ -32,7 +32,7 @@ function ProductPreview() {
     <div className="relative">
       <div className="absolute inset-x-10 -top-4 h-14 bg-[#4F8CFF]/14 blur-3xl" />
       <div className="relative rounded bg-[#10172A]/94 p-2 shadow-[0_24px_72px_rgba(0,0,0,0.46)] sm:p-3">
-        <div className="rounded bg-[#0B1020]/96 p-3 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.07)] sm:p-5">
+        <div className="rounded bg-[#0B1020]/96 p-3 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.07)] sm:p-4">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-xs font-medium uppercase text-[#94A3B8]/80">
@@ -47,7 +47,21 @@ function ProductPreview() {
             </span>
           </div>
 
-          <div className="mt-4 grid grid-cols-2 gap-2 sm:mt-5 sm:gap-3">
+          <div className="mt-3 rounded bg-[#11182C]/92 p-4 shadow-[0_18px_48px_rgba(245,200,76,0.12),inset_0_0_0_1px_rgba(245,200,76,0.36)] transition duration-200 hover:-translate-y-0.5 sm:p-5">
+            <div className="flex min-w-0 items-center gap-3">
+              <ArchetypeSprites archetype="Dragapult Dusknoir" className="shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs font-medium uppercase text-[#F5C84C]">
+                  Primary recommendation
+                </p>
+                <p className="mt-1 min-w-0 text-base font-semibold text-[#F8FAFC] sm:text-lg">
+                  Your next session: fix the Dragapult Dusknoir line.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-3 grid grid-cols-2 gap-2 sm:gap-3">
             {demoMetrics.map((metric) => {
               const isWorstMatchup = metric.label === "Worst matchup";
 
@@ -56,7 +70,7 @@ function ProductPreview() {
                   key={metric.label}
                   className={`rounded p-3 transition duration-200 hover:-translate-y-0.5 ${
                     isWorstMatchup
-                      ? "col-span-2 bg-[#F43F5E]/13 shadow-[0_18px_48px_rgba(244,63,94,0.16),inset_0_0_0_1px_rgba(244,63,94,0.32)]"
+                      ? "col-span-2 bg-[#F43F5E]/18 shadow-[0_18px_52px_rgba(244,63,94,0.20),inset_0_0_0_1px_rgba(244,63,94,0.44)]"
                       : "bg-[#1A2238]/50 shadow-[0_10px_26px_rgba(0,0,0,0.12)]"
                   }`}
                 >
@@ -74,7 +88,7 @@ function ProductPreview() {
                     <p
                       className={`min-w-0 font-semibold leading-tight ${metric.tone} ${
                         isWorstMatchup
-                          ? "text-2xl sm:text-3xl"
+                          ? "text-3xl sm:text-4xl"
                           : metric.label === "Recent trend"
                             ? "text-base text-[#F8FAFC]/82 sm:text-lg"
                             : "text-lg sm:text-xl"
@@ -94,17 +108,19 @@ function ProductPreview() {
               );
             })}
           </div>
-
-          <div className="mt-3 rounded bg-[#11182C]/88 p-3 shadow-[0_16px_42px_rgba(245,200,76,0.08),inset_0_0_0_1px_rgba(245,200,76,0.28)] transition duration-200 hover:-translate-y-0.5">
-            <div className="flex min-w-0 items-center gap-2">
-              <ArchetypeSprites archetype="Dragapult Dusknoir" className="shrink-0" />
-              <p className="min-w-0 text-sm font-semibold text-[#F8FAFC] sm:text-base">
-                Your next session: fix the Dragapult Dusknoir line.
-              </p>
-            </div>
-          </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function HeroSignal() {
+  return (
+    <div className="mt-5 inline-flex max-w-full items-center gap-3 rounded bg-[#11182C]/56 px-3 py-2 shadow-[0_12px_30px_rgba(0,0,0,0.16)]">
+      <ArchetypeSprites archetype="Dragapult Dusknoir" className="shrink-0" />
+      <span className="min-w-0 text-sm font-semibold text-[#F8FAFC]">
+        Weak spot found: Dragapult Dusknoir
+      </span>
     </div>
   );
 }
@@ -147,7 +163,8 @@ export default function Home() {
             <p className="mt-4 max-w-xl text-lg leading-8 text-[#F8FAFC]">
               Track games. Find what&apos;s losing you matches. Fix it.
             </p>
-            <div className="mt-6">
+            <HeroSignal />
+            <div className="mt-5">
               <Link
                 href="/signup"
                 className="inline-flex h-12 w-full items-center justify-center rounded bg-[#F5C84C] px-6 text-sm font-semibold text-[#0B1020] shadow-[0_18px_44px_rgba(245,200,76,0.34)] transition hover:-translate-y-0.5 hover:bg-[#ffd85f] active:translate-y-0 active:scale-[0.98] sm:w-auto"
@@ -161,8 +178,8 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="px-4 pb-6 sm:px-6 sm:pb-8">
-        <div className="mx-auto grid max-w-6xl gap-3 md:grid-cols-3">
+      <section className="px-4 pb-5 sm:px-6 sm:pb-7">
+        <div className="mx-auto grid max-w-6xl gap-2 md:grid-cols-3">
           {valueChips.map((item) => (
             <div
               key={item}
@@ -174,24 +191,24 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="px-4 pb-6 sm:px-6 sm:pb-8">
-        <div className="mx-auto max-w-6xl rounded bg-[#11182C]/48 p-5 shadow-[0_14px_38px_rgba(0,0,0,0.16)] sm:p-6">
+      <section className="px-4 pb-5 sm:px-6 sm:pb-7">
+        <div className="mx-auto max-w-6xl rounded bg-[#11182C]/42 p-4 shadow-[0_12px_30px_rgba(0,0,0,0.14)] sm:p-5">
           <h2 className="text-2xl font-semibold tracking-tight text-[#F8FAFC]">
             Most players test wrong.
           </h2>
-          <div className="mt-4 grid gap-2 text-sm font-medium text-[#94A3B8] md:grid-cols-3">
+          <div className="mt-3 grid gap-2 text-sm font-medium text-[#94A3B8] md:grid-cols-3">
             <p>You remember wins. You forget what&apos;s actually losing you games.</p>
             <p>You think you know your matchups. You don&apos;t.</p>
             <p>You repeat the same mistakes every session.</p>
           </div>
-          <p className="mt-4 text-base font-semibold text-[#F8FAFC]">
+          <p className="mt-3 text-base font-semibold text-[#F8FAFC]">
             PrizeMap shows you what&apos;s actually happening.
           </p>
         </div>
       </section>
 
-      <section className="px-4 pb-10 sm:px-6 sm:pb-14">
-        <div className="mx-auto flex max-w-6xl flex-col gap-4 rounded bg-[#11182C]/66 p-5 shadow-[0_18px_50px_rgba(0,0,0,0.22)] sm:p-6 md:flex-row md:items-center md:justify-between">
+      <section className="px-4 pb-8 sm:px-6 sm:pb-12">
+        <div className="mx-auto flex max-w-6xl flex-col gap-4 rounded bg-[#11182C]/58 p-4 shadow-[0_14px_36px_rgba(0,0,0,0.18)] sm:p-5 md:flex-row md:items-center md:justify-between">
           <div>
             <h2 className="text-2xl font-semibold tracking-tight text-[#F8FAFC]">
               Know exactly what to fix next session.
