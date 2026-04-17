@@ -2,36 +2,16 @@ import Link from "next/link";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
 import { PrizeMapLogo } from "@/components/PrizeMapLogo";
 
-const navItems = ["Product", "Insights", "Prep"];
-
 const valueChips = [
-  "Deck version tracking",
-  "Real matchup data",
-  "Testing notes that travel",
-];
-
-const features = [
-  {
-    title: "Log testing fast",
-    copy: "Log opponent, result, and turn order in seconds between games.",
-    stat: "5s",
-  },
-  {
-    title: "Find pressure points",
-    copy: "See which matchups and deck versions are actually moving your win rate.",
-    stat: "64%",
-  },
-  {
-    title: "Prep with context",
-    copy: "Save matchup notes by your archetype so the next set of games starts sharper.",
-    stat: "Notes",
-  },
+  "See your real win rates",
+  "Find your worst matchup",
+  "Improve every session",
 ];
 
 const demoMetrics = [
-  { label: "Example games", value: "42" },
-  { label: "Example win rate", value: "64%" },
-  { label: "Example weak spot", value: "Dragapult" },
+  { label: "Worst matchup", value: "Dragapult", tone: "text-[#F43F5E]" },
+  { label: "Best deck", value: "Raging Bolt", tone: "text-[#F5C84C]" },
+  { label: "Win rate", value: "64%", tone: "text-[#22C55E]" },
 ];
 
 const trendBars = [58, 76, 44, 84, 62, 70, 92, 52, 80, 68];
@@ -72,29 +52,29 @@ function ProductPreview() {
                 PrizeMap preview
               </p>
               <h2 className="mt-1 text-xl font-semibold tracking-tight text-[#F8FAFC]">
-                Testing dashboard
+                Your matchup insights
               </h2>
             </div>
             <SpriteStack />
           </div>
 
-          <div className="mt-5 grid grid-cols-3 gap-2 sm:mt-6 sm:gap-3">
+          <div className="mt-5 grid grid-cols-1 gap-2 sm:mt-6 sm:grid-cols-3 sm:gap-3">
             {demoMetrics.map((metric) => (
               <div
                 key={metric.label}
-                className="rounded-md bg-[#1A2238]/56 p-3 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.05)] sm:p-4"
+                className="rounded-md bg-[#1A2238]/62 p-3 shadow-[0_14px_34px_rgba(0,0,0,0.16),inset_0_0_0_1px_rgba(248,250,252,0.05)] sm:p-4"
               >
                 <p className="text-xs font-medium uppercase text-[#94A3B8]/72">
                   {metric.label}
                 </p>
-                <p className="mt-2 text-lg font-semibold text-[#F8FAFC] sm:text-2xl">
+                <p className={`mt-1 text-2xl font-semibold sm:mt-2 sm:text-3xl ${metric.tone}`}>
                   {metric.value}
                 </p>
               </div>
             ))}
           </div>
 
-          <div className="mt-4 rounded-md bg-[#11182C]/78 p-4">
+          <div className="mt-3 rounded-md bg-[#11182C]/78 p-3 sm:mt-4 sm:p-4">
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="text-sm font-semibold text-[#F8FAFC]">
@@ -112,7 +92,7 @@ function ProductPreview() {
               {trendBars.map((height, index) => (
                 <div
                   key={`${height}-${index}`}
-                  className="flex h-16 items-end rounded-sm bg-[#0B1020]/72 px-1 sm:h-24"
+                  className="flex h-12 items-end rounded-sm bg-[#0B1020]/72 px-1 sm:h-20"
                 >
                   <div
                     className={`w-full rounded-sm ${
@@ -127,21 +107,21 @@ function ProductPreview() {
             </div>
           </div>
 
-          <div className="mt-4 grid gap-2 sm:grid-cols-2">
+          <div className="mt-3 grid gap-2 sm:mt-4 sm:grid-cols-2">
             <div className="rounded-md bg-[#1A2238]/48 p-3">
               <p className="text-xs font-medium uppercase text-[#94A3B8]/72">
-                Best deck
+                Focus next
               </p>
               <p className="mt-1 font-semibold text-[#F8FAFC]">
-                Raging Bolt Ogerpon
+                Test the Dragapult line
               </p>
             </div>
             <div className="rounded-md bg-[#1A2238]/48 p-3">
               <p className="text-xs font-medium uppercase text-[#94A3B8]/72">
-                Prep focus
+                Recent trend
               </p>
               <p className="mt-1 font-semibold text-[#F8FAFC]">
-                Dragapult lines
+                4 wins in last 6
               </p>
             </div>
           </div>
@@ -160,17 +140,6 @@ export default function Home() {
             markClassName="bg-[#1A2238] shadow-[0_0_28px_rgba(79,140,255,0.22)]"
             textClassName="text-base text-[#F8FAFC]"
           />
-          <nav className="hidden items-center gap-5 text-sm font-medium text-[#94A3B8] md:flex">
-            {navItems.map((item) => (
-              <a
-                key={item}
-                href={`#${item.toLowerCase()}`}
-                className="transition hover:text-[#F8FAFC]"
-              >
-                {item}
-              </a>
-            ))}
-          </nav>
           <div className="flex items-center gap-2">
             <Link
               href="/login"
@@ -188,8 +157,8 @@ export default function Home() {
         </div>
       </header>
 
-      <section className="px-4 pb-12 pt-7 sm:px-6 sm:pb-16 sm:pt-12">
-        <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.88fr_1.12fr] lg:items-center">
+      <section className="px-4 pb-8 pt-4 sm:px-6 sm:pb-10 sm:pt-8">
+        <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[0.82fr_1.18fr] lg:items-center">
           <div>
             <p className="inline-flex rounded-md bg-[#4F8CFF]/14 px-3 py-1 text-sm font-semibold text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.24)]">
               Built for Pokémon TCG testing
@@ -197,25 +166,15 @@ export default function Home() {
             <h1 className="mt-5 max-w-3xl text-4xl font-semibold leading-tight tracking-tight text-[#F8FAFC] sm:text-6xl">
               Log faster. Learn your matchups.
             </h1>
-            <p className="mt-4 text-lg leading-8 text-[#F8FAFC]">
-              Track real games, spot weak matchups, and prep with notes tied to your decks.
+            <p className="mt-4 max-w-xl text-lg leading-8 text-[#F8FAFC]">
+              Track games. See your worst matchups. Win more.
             </p>
-            <p className="mt-3 max-w-xl text-sm leading-6 text-[#94A3B8]/82">
-              PrizeMap gives competitive players a sharper way to understand
-              deck performance, testing patterns, and matchup plans.
-            </p>
-            <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-6">
               <Link
                 href="/signup"
-                className="inline-flex h-12 items-center justify-center rounded-md bg-[#F5C84C] px-6 text-sm font-semibold text-[#0B1020] shadow-[0_14px_34px_rgba(245,200,76,0.24)] transition hover:bg-[#ffd85f]"
+                className="inline-flex h-12 w-full items-center justify-center rounded-md bg-[#F5C84C] px-6 text-sm font-semibold text-[#0B1020] shadow-[0_14px_34px_rgba(245,200,76,0.24)] transition hover:bg-[#ffd85f] sm:w-auto"
               >
                 Get started
-              </Link>
-              <Link
-                href="/login"
-                className="inline-flex h-12 items-center justify-center rounded-md bg-[#4F8CFF]/12 px-6 text-sm font-semibold text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.22)] transition hover:bg-[#4F8CFF]/18"
-              >
-                Log in
               </Link>
             </div>
           </div>
@@ -224,7 +183,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="product" className="px-4 pb-10 sm:px-6 sm:pb-12">
+      <section className="px-4 pb-8 sm:px-6 sm:pb-10">
         <div className="mx-auto grid max-w-6xl gap-3 md:grid-cols-3">
           {valueChips.map((item) => (
             <div
@@ -237,68 +196,14 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="insights" className="px-4 pb-12 sm:px-6 sm:pb-16">
-        <div className="mx-auto max-w-6xl">
-          <div className="mb-6 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
-            <div>
-              <p className="text-sm font-semibold text-[#4F8CFF]">
-                Product intelligence
-              </p>
-              <h2 className="mt-2 text-3xl font-semibold tracking-tight text-[#F8FAFC]">
-                Built for disciplined testing.
-              </h2>
-            </div>
-            <p className="max-w-md text-sm leading-6 text-[#94A3B8]/80">
-              Clean inputs, readable summaries, and matchup notes in one place.
-            </p>
-          </div>
-          <div className="grid gap-4 md:grid-cols-3">
-            {features.map((feature) => (
-              <article
-                key={feature.title}
-                className="rounded-md bg-[#11182C]/72 p-5 shadow-[0_18px_52px_rgba(0,0,0,0.22),inset_0_0_0_1px_rgba(248,250,252,0.05)]"
-              >
-                <p className="text-3xl font-semibold text-[#F5C84C]">
-                  {feature.stat}
-                </p>
-                <h3 className="mt-5 text-lg font-semibold text-[#F8FAFC]">
-                  {feature.title}
-                </h3>
-                <p className="mt-3 text-sm leading-6 text-[#94A3B8]/80">
-                  {feature.copy}
-                </p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="px-4 pb-12 sm:px-6 sm:pb-16">
-        <div className="mx-auto grid max-w-6xl gap-3 rounded-md bg-[#0B1020]/44 p-4 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.06)] sm:grid-cols-3 sm:p-5">
-          {demoMetrics.map((metric) => (
-            <div key={metric.label} className="rounded-md bg-[#11182C]/62 p-4">
-              <p className="text-xs font-medium uppercase text-[#94A3B8]/76">
-                {metric.label}
-              </p>
-              <p className="mt-2 text-2xl font-semibold text-[#F8FAFC]">
-                {metric.value}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section id="prep" className="px-4 pb-16 sm:px-6 sm:pb-20">
-        <div className="mx-auto flex max-w-6xl flex-col gap-6 rounded-md bg-[#11182C]/80 p-6 shadow-[0_24px_80px_rgba(0,0,0,0.32),0_0_56px_rgba(79,140,255,0.08),inset_0_0_0_1px_rgba(248,250,252,0.06)] sm:p-8 md:flex-row md:items-center md:justify-between">
+      <section className="px-4 pb-10 sm:px-6 sm:pb-14">
+        <div className="mx-auto flex max-w-6xl flex-col gap-4 rounded-md bg-[#11182C]/72 p-5 shadow-[0_18px_58px_rgba(0,0,0,0.26),0_0_44px_rgba(79,140,255,0.08),inset_0_0_0_1px_rgba(248,250,252,0.05)] sm:p-6 md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="text-sm font-semibold text-[#4F8CFF]">
-              Ready for your next testing block?
-            </p>
-            <h2 className="mt-2 text-3xl font-semibold tracking-tight text-[#F8FAFC]">
-              Stop guessing. Start mapping.
+            <h2 className="text-2xl font-semibold tracking-tight text-[#F8FAFC]">
+              Know what to test next.
             </h2>
-            <p className="mt-3 max-w-xl text-sm leading-6 text-[#94A3B8]/80">
-              Build better tournament decisions from your own match data.
+            <p className="mt-2 max-w-xl text-sm leading-6 text-[#94A3B8]/80">
+              Turn every testing block into cleaner matchup decisions.
             </p>
           </div>
           <Link
