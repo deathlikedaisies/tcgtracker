@@ -49,7 +49,7 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
 
   const { data: deck, error: deckError } = await supabase
     .from("decks")
-    .select("id, name, archetype, format, notes")
+    .select("id, name, archetype, notes")
     .eq("id", deckId)
     .eq("user_id", user.id)
     .single();
@@ -90,7 +90,6 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
               <div>
                 <p className="text-sm font-medium text-[#94A3B8]">
                   {deck.archetype}
-                  {deck.format ? ` · ${deck.format}` : ""}
                 </p>
                 <h1 className={pageTitle}>
                   {deck.name}

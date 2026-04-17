@@ -20,7 +20,6 @@ type DeckWithVersions = {
   id: string;
   name: string;
   archetype: string;
-  format: string | null;
   deck_versions: {
     id: string;
     name: string;
@@ -51,7 +50,7 @@ export default async function NewMatchPage({
   const { data: decks, error } = await supabase
     .from("decks")
     .select(
-      "id, name, archetype, format, deck_versions(id, name, is_active, created_at)"
+      "id, name, archetype, deck_versions(id, name, is_active, created_at)"
     )
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
@@ -70,28 +69,33 @@ export default async function NewMatchPage({
 
   const { data: previousMatches, error: previousMatchesError } = await supabase
     .from("matches")
-    .select("opponent_archetype")
-    .eq("user_id", user.id);
+    .select("opponent_archetype, played_at")
+    .eq("user_id", user.id)
+    .order("played_at", { ascending: false });
 
   if (previousMatchesError) {
     throw new Error(previousMatchesError.message);
   }
 
   const userDecks = (decks ?? []) as DeckWithVersions[];
+  const previousOpponentArchetypes = (
+    (previousMatches ?? []) as { opponent_archetype: string }[]
+  ).map((match) => match.opponent_archetype);
   const deckOptions = userDecks.flatMap((deck) =>
     deck.deck_versions.map((version) => ({
       id: version.id,
       label: `${deck.name} - ${version.name}`,
-      detail: `${deck.archetype}${deck.format ? ` · ${deck.format}` : ""}`,
+      detail: deck.archetype,
       isActive: version.is_active,
     }))
   );
   const opponentArchetypeOptions = getArchetypeOptions(LATEST_FORMAT, [
-    ...((previousMatches ?? []) as { opponent_archetype: string }[]).map(
-      (match) => match.opponent_archetype
-    ),
+    ...previousOpponentArchetypes,
     ...userDecks.map((deck) => deck.archetype),
   ]);
+  const recentOpponentArchetypes = Array.from(
+    new Set(previousOpponentArchetypes)
+  ).slice(0, 5);
 
   return (
     <main className={appShell}>
@@ -104,7 +108,7 @@ export default async function NewMatchPage({
               Log a Match
             </h1>
             <p className={pageCopy}>
-              Fast current Standard entry for testing sessions and event rounds.
+              Fast entry for testing sessions and event rounds.
             </p>
           </div>
           <AppNav current="log" />
@@ -115,6 +119,7 @@ export default async function NewMatchPage({
             action={logMatch}
             deckOptions={deckOptions}
             opponentArchetypeOptions={opponentArchetypeOptions}
+            recentOpponentArchetypes={recentOpponentArchetypes}
             wasSuccessful={success === "1"}
           />
         ) : (

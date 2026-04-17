@@ -22,7 +22,6 @@ import {
 } from "@/components/brand-styles";
 import { PrizeMapLogo } from "@/components/PrizeMapLogo";
 import { getArchetypeOptions } from "@/lib/archetypes";
-import { getFormatOptions, LATEST_FORMAT } from "@/lib/formats";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { deleteMatch } from "./actions";
 
@@ -32,7 +31,6 @@ type MatchesPageProps = {
     deck_version_id?: string;
     opponent_archetype?: string;
     result?: string;
-    format?: string;
     start_date?: string;
     end_date?: string;
     updated?: string;
@@ -57,7 +55,6 @@ type MatchRow = {
   result: "win" | "loss";
   went_first: boolean | null;
   event_type: string | null;
-  format: string | null;
   notes: string | null;
   played_at: string;
   deck_versions:
@@ -184,7 +181,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
   const { data: matches, error: matchesError } = await supabase
     .from("matches")
     .select(
-      "id, deck_version_id, opponent_archetype, opponent_variant, result, went_first, event_type, format, notes, played_at, deck_versions(id, name, deck_id, decks(id, name)), match_tags(tag)"
+      "id, deck_version_id, opponent_archetype, opponent_variant, result, went_first, event_type, notes, played_at, deck_versions(id, name, deck_id, decks(id, name)), match_tags(tag)"
     )
     .eq("user_id", user.id)
     .order("played_at", { ascending: false });
@@ -211,13 +208,8 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
     (version) => version.id === params.deck_version_id
   );
   const selectedVersionId = selectedVersion?.id ?? "";
-  const formatOptions = getFormatOptions(matchRows.map((match) => match.format));
-  const selectedFormat =
-    params.format && formatOptions.includes(params.format)
-      ? params.format
-      : LATEST_FORMAT;
   const archetypeOptions = getArchetypeOptions(
-    selectedFormat === "all" ? null : selectedFormat,
+    null,
     matchRows.map((match) => match.opponent_archetype)
   );
   const selectedOpponentArchetype = archetypeOptions.includes(
@@ -250,10 +242,6 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
     }
 
     if (selectedResult && match.result !== selectedResult) {
-      return false;
-    }
-
-    if (selectedFormat !== "all" && match.format !== selectedFormat) {
       return false;
     }
 
@@ -366,24 +354,6 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                 <option value="">All results</option>
                 <option value="win">Win</option>
                 <option value="loss">Loss</option>
-              </select>
-            </div>
-            <div className="flex flex-col gap-2">
-              <label htmlFor="format" className={label}>
-                Match set
-              </label>
-              <select
-                id="format"
-                name="format"
-                defaultValue={selectedFormat}
-                className={inputH10}
-              >
-                <option value="all">Saved history</option>
-                {formatOptions.map((format) => (
-                  <option key={format} value={format}>
-                    {format}
-                  </option>
-                ))}
               </select>
             </div>
             <div className="flex flex-col gap-2">
@@ -506,9 +476,6 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                           </span>
                           <span className={`${subtlePill} capitalize`}>
                             {match.event_type ?? "No event"}
-                          </span>
-                          <span className={subtlePill}>
-                            {match.format ?? "No format"}
                           </span>
                         </div>
                         {tags.length ? (

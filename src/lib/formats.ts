@@ -1,4 +1,4 @@
-export const LATEST_FORMAT = "Post-rotation 2026";
+export const LATEST_FORMAT = "standard";
 export const PRE_ROTATION_FORMAT = "Pre-rotation 2025–2026";
 
 export const MATCH_FORMATS = [LATEST_FORMAT] as const;

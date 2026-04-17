@@ -15,7 +15,6 @@ import {
 } from "@/components/brand-styles";
 import { PrizeMapLogo } from "@/components/PrizeMapLogo";
 import { getArchetypeOptions } from "@/lib/archetypes";
-import { LATEST_FORMAT, MATCH_FORMATS } from "@/lib/formats";
 import { MATCH_TAGS } from "@/lib/match-options";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { updateMatch } from "../../actions";
@@ -33,7 +32,6 @@ type DeckWithVersions = {
   id: string;
   name: string;
   archetype: string;
-  format: string | null;
   deck_versions: {
     id: string;
     name: string;
@@ -49,7 +47,6 @@ type MatchRow = {
   result: "win" | "loss";
   went_first: boolean | null;
   event_type: string | null;
-  format: string | null;
   notes: string | null;
   match_tags:
     | {
@@ -72,7 +69,7 @@ export default async function EditMatchPage({ params }: EditMatchPageProps) {
   const { data: match, error: matchError } = await supabase
     .from("matches")
     .select(
-      "id, deck_version_id, opponent_archetype, opponent_variant, result, went_first, event_type, format, notes, match_tags(tag)"
+      "id, deck_version_id, opponent_archetype, opponent_variant, result, went_first, event_type, notes, match_tags(tag)"
     )
     .eq("id", matchId)
     .eq("user_id", user.id)
@@ -84,7 +81,7 @@ export default async function EditMatchPage({ params }: EditMatchPageProps) {
 
   const { data: decks, error: decksError } = await supabase
     .from("decks")
-    .select("id, name, archetype, format, deck_versions(id, name, is_active)")
+    .select("id, name, archetype, deck_versions(id, name, is_active)")
     .eq("user_id", user.id)
     .order("name", { ascending: true })
     .order("is_active", {
@@ -115,17 +112,13 @@ export default async function EditMatchPage({ params }: EditMatchPageProps) {
     deck.deck_versions.map((version) => ({
       id: version.id,
       label: `${deck.name} - ${version.name}`,
-      detail: `${deck.archetype}${deck.format ? ` · ${deck.format}` : ""}`,
+      detail: deck.archetype,
       isActive: version.is_active,
     }))
   );
   const currentTags = currentMatch.match_tags?.map((tag) => tag.tag) ?? [];
   const tagOptions = Array.from(new Set([...MATCH_TAGS, ...currentTags]));
-  const selectedFormat = MATCH_FORMATS.includes(currentMatch.format as never)
-    ? currentMatch.format ?? LATEST_FORMAT
-    : "custom";
-  const customFormat = selectedFormat === "custom" ? currentMatch.format ?? "" : "";
-  const opponentArchetypeOptions = getArchetypeOptions(currentMatch.format, [
+  const opponentArchetypeOptions = getArchetypeOptions(null, [
     ...((previousMatches ?? []) as { opponent_archetype: string }[]).map(
       (previousMatch) => previousMatch.opponent_archetype
     ),
@@ -283,54 +276,6 @@ export default async function EditMatchPage({ params }: EditMatchPageProps) {
                 </div>
               </fieldset>
             </div>
-
-            <details className="rounded-md bg-[#0B1020]/30 p-3 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.04)]">
-              <summary className="cursor-pointer text-sm font-semibold text-[#F8FAFC]">
-                Advanced history details
-              </summary>
-              <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
-                PrizeMap defaults to current Standard. Use this only for older
-                or imported records.
-              </p>
-              <div className="mt-4 grid gap-5 sm:grid-cols-[minmax(0,1fr)_220px]">
-                <div className="flex flex-col gap-2">
-                  <label
-                    htmlFor="format"
-                    className={label}
-                  >
-                    Saved format
-                  </label>
-                  <select
-                    id="format"
-                    name="format"
-                    defaultValue={selectedFormat ?? LATEST_FORMAT}
-                    className={inputH11}
-                  >
-                    {MATCH_FORMATS.map((format) => (
-                      <option key={format} value={format}>
-                        {format}
-                      </option>
-                    ))}
-                    <option value="custom">Custom saved format</option>
-                  </select>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <label
-                    htmlFor="format_custom"
-                    className={label}
-                  >
-                    Custom saved format
-                  </label>
-                  <input
-                    id="format_custom"
-                    name="format_custom"
-                    defaultValue={customFormat}
-                    placeholder="Optional"
-                    className={inputH11}
-                  />
-                </div>
-              </div>
-            </details>
 
             <fieldset className="flex flex-col gap-2">
               <legend className={label}>

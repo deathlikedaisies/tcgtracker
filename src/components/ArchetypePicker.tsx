@@ -15,6 +15,8 @@ type ArchetypePickerProps = {
   required?: boolean;
   autoFocus?: boolean;
   placeholder?: string;
+  maxOptions?: number;
+  listMaxHeightClassName?: string;
 };
 
 function normalize(value: string) {
@@ -36,6 +38,8 @@ export function ArchetypePicker({
   required = false,
   autoFocus = false,
   placeholder = "Search or type an archetype",
+  maxOptions = 12,
+  listMaxHeightClassName = "max-h-72",
 }: ArchetypePickerProps) {
   const isControlled = value !== undefined;
   const [internalValue, setInternalValue] = useState(defaultValue);
@@ -54,13 +58,13 @@ export function ArchetypePicker({
     const normalizedQuery = normalize(query);
 
     if (!normalizedQuery) {
-      return options.slice(0, 12);
+      return options.slice(0, maxOptions);
     }
 
     return options
       .filter((option) => normalize(option).includes(normalizedQuery))
-      .slice(0, 12);
-  }, [options, query]);
+      .slice(0, maxOptions);
+  }, [maxOptions, options, query]);
 
   const exactMatch = options.some((option) => normalize(option) === normalize(query));
   const canUseCustom = query.trim().length > 0 && !exactMatch;
@@ -106,7 +110,7 @@ export function ArchetypePicker({
         }}
         className={inputH10}
       />
-      <div className="max-h-72 overflow-y-auto rounded-md bg-[#0B1020]/42 p-1.5 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.05)]">
+      <div className={`${listMaxHeightClassName} overflow-y-auto rounded-md bg-[#0B1020]/42 p-1.5 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.05)]`}>
         <div className="grid gap-1.5">
           {visibleOptions.map((option) => {
             const isSelected = normalize(option) === normalize(selectedValue);

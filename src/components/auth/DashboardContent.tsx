@@ -23,8 +23,6 @@ import {
   cardLarge,
   divider,
   emptyCard,
-  inputH10,
-  label,
   logoOnDark,
   pageCopy,
   pageHeader,
@@ -42,7 +40,6 @@ type DeckSummary = {
   id: string;
   name: string;
   archetype: string;
-  format: string | null;
   created_at: string;
 };
 
@@ -62,7 +59,6 @@ type RecentMatch = {
   opponentArchetype: string;
   result: "win" | "loss";
   eventType: string | null;
-  format: string | null;
 };
 
 type SummaryRow = {
@@ -97,8 +93,6 @@ type DeckPerformanceChartPoint = {
 type DashboardContentProps = {
   email: string;
   decks: DeckSummary[];
-  selectedFormat: string;
-  formatOptions: string[];
   hasAnyMatches: boolean;
   stats: DashboardStats;
   recentMatches: RecentMatch[];
@@ -155,8 +149,6 @@ function parseRate(value: string) {
 export function DashboardContent({
   email,
   decks,
-  selectedFormat,
-  formatOptions,
   hasAnyMatches,
   stats,
   recentMatches,
@@ -168,8 +160,6 @@ export function DashboardContent({
   const router = useRouter();
   const supabase = createClient();
   const hasMatches = stats.totalMatches > 0;
-  const selectedFormatLabel =
-    selectedFormat === "all" ? "Saved history" : selectedFormat;
   const worstMatchup = matchupSummary.reduce<MatchupSummary | null>(
     (currentWorst, matchup) => {
       if (!currentWorst) {
@@ -270,13 +260,13 @@ export function DashboardContent({
     },
   ];
   const shareReport: ShareReport = {
-    title: `${selectedFormatLabel} Matchup Report`,
+    title: "Matchup Report",
     deckName: bestDeckVersion?.deckVersionName ?? "All decks",
     winRate: stats.overallWinRate,
     worstMatchup: worstMatchup?.opponentArchetype ?? "No matchup yet",
     bestMatchup: bestMatchup?.opponentArchetype ?? "No matchup yet",
     totalMatches: stats.totalMatches,
-    context: selectedFormatLabel,
+    context: "Your testing",
   };
 
   async function handleSignOut() {
@@ -316,7 +306,7 @@ export function DashboardContent({
                   Insight strip
                 </p>
                 <h2 className="mt-1 text-2xl font-semibold tracking-tight text-[#F8FAFC]">
-                  Testing signal for {selectedFormatLabel}.
+                  Testing signal from your matches.
                 </h2>
               </div>
               <div className="flex flex-col gap-2 sm:flex-row">
@@ -350,35 +340,6 @@ export function DashboardContent({
           </section>
         ) : null}
 
-        <form action="/dashboard" className="rounded-md bg-[#11182C]/48 p-4 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.04)]">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div className="flex flex-col gap-2 sm:min-w-80">
-              <label
-                htmlFor="format"
-                className={label}
-              >
-                Match set
-              </label>
-              <select
-                id="format"
-                name="format"
-                defaultValue={selectedFormat}
-                className={inputH10}
-              >
-                {formatOptions.map((format) => (
-                  <option key={format} value={format}>
-                    {format}
-                  </option>
-                ))}
-                <option value="all">Saved history</option>
-              </select>
-            </div>
-            <button type="submit" className={secondaryButton}>
-              Apply
-            </button>
-          </div>
-        </form>
-
         {hasMatches ? (
           <>
             <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
@@ -397,7 +358,7 @@ export function DashboardContent({
                     Result Trend
                   </h2>
                   <p className={sectionCopy}>
-                    Daily wins and losses for {selectedFormatLabel}.
+                    Daily wins and losses from your logged matches.
                   </p>
                 </div>
                 <div className="mt-5 h-72">
@@ -490,11 +451,11 @@ export function DashboardContent({
 
             <section className={cardLarge}>
               <div className="flex flex-col gap-1">
-                <h2 className={sectionTitle}>
+                  <h2 className={sectionTitle}>
                   Recent Matches
                 </h2>
                 <p className={sectionCopy}>
-                  Latest games for {selectedFormatLabel}.
+                  Latest games from your testing.
                 </p>
               </div>
               <div className={`mt-5 ${divider}`}>
@@ -517,11 +478,6 @@ export function DashboardContent({
                     <p className="text-sm capitalize text-[#94A3B8]">
                       {match.eventType ?? "No event"}
                     </p>
-                    {selectedFormat === "all" ? (
-                      <p className="text-sm text-[#94A3B8]">
-                        {match.format ?? "No format"}
-                      </p>
-                    ) : null}
                   </div>
                 ))}
               </div>
@@ -618,29 +574,7 @@ export function DashboardContent({
               Manage decks
             </Link>
           </section>
-        ) : (
-          <section className={emptyCard}>
-            <h2 className="text-2xl font-semibold tracking-tight text-[#F8FAFC]">
-              No matches in {selectedFormatLabel}.
-            </h2>
-            <p className={`mt-3 max-w-xl ${sectionCopy}`}>
-              Log a current Standard match or view saved history to see older
-              records.
-            </p>
-            <Link
-              href="/matches/new"
-              className={`mt-6 ${primaryButton}`}
-            >
-              Log match
-            </Link>
-            <Link
-              href="/dashboard?format=all"
-              className={`mt-3 sm:ml-3 sm:mt-6 ${secondaryButton}`}
-            >
-              View saved history
-            </Link>
-          </section>
-        )}
+        ) : null}
 
         <section className={cardLarge}>
           <div className="flex flex-col gap-1">
@@ -666,7 +600,6 @@ export function DashboardContent({
                         </h3>
                         <p className="text-sm text-[#94A3B8]">
                           {deck.archetype}
-                          {deck.format ? ` · ${deck.format}` : ""}
                         </p>
                       </div>
                     </div>

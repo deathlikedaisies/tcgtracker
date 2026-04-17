@@ -30,7 +30,6 @@ type Deck = {
   id: string;
   name: string;
   archetype: string;
-  format: string | null;
   notes: string | null;
   created_at: string;
 };
@@ -55,7 +54,7 @@ export default async function DecksPage() {
 
   const { data: decks, error } = await supabase
     .from("decks")
-    .select("id, name, archetype, format, notes, created_at")
+    .select("id, name, archetype, notes, created_at")
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 
@@ -79,7 +78,7 @@ export default async function DecksPage() {
               Decks
             </h1>
             <p className={pageCopy}>
-              Build and manage decks for the current Standard format.
+              Build and manage the decks you use for testing.
             </p>
           </div>
           <AppNav current="decks" />
@@ -114,9 +113,6 @@ export default async function DecksPage() {
                           <div className="min-w-0">
                             <p className="text-xs font-medium uppercase text-[#94A3B8]">
                               {deck.archetype}
-                              {deck.format && deck.format !== LATEST_FORMAT
-                                ? ` · ${deck.format}`
-                                : ""}
                             </p>
                             <h3 className="mt-2 truncate text-lg font-semibold text-[#F8FAFC]">
                               {deck.name}

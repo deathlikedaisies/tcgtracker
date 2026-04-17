@@ -23,7 +23,6 @@ import { PrizeMapLogo } from "@/components/PrizeMapLogo";
 import { ShareReportButton, type ShareReport } from "@/components/ShareReportButton";
 import { getArchetypeOptions } from "@/lib/archetypes";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
-import { getFormatOptions, LATEST_FORMAT } from "@/lib/formats";
 import { saveMatchupNote } from "./actions";
 
 type SortKey = "most_played" | "highest_win_rate" | "lowest_win_rate" | "az";
@@ -34,7 +33,6 @@ type MatchupsPageProps = {
     deck_version_id?: string;
     start_date?: string;
     end_date?: string;
-    format?: string;
     opponent_archetype?: string;
     sort?: string;
   }>;
@@ -56,7 +54,6 @@ type MatchRow = {
   deck_version_id: string;
   opponent_archetype: string;
   result: "win" | "loss";
-  format: string | null;
   played_at: string;
   deck_versions:
     | {
@@ -189,7 +186,7 @@ export default async function MatchupsPage({
   const { data: matches, error: matchesError } = await supabase
     .from("matches")
     .select(
-      "id, deck_version_id, opponent_archetype, result, format, played_at, deck_versions(id, deck_id)"
+      "id, deck_version_id, opponent_archetype, result, played_at, deck_versions(id, deck_id)"
     )
     .eq("user_id", user.id);
 
@@ -209,13 +206,8 @@ export default async function MatchupsPage({
 
   const matchRows = (matches ?? []) as unknown as MatchRow[];
   const matchupNotes = (notes ?? []) as MatchupNote[];
-  const formatOptions = getFormatOptions(matchRows.map((match) => match.format));
-  const selectedFormat =
-    params.format && formatOptions.includes(params.format)
-      ? params.format
-      : LATEST_FORMAT;
   const archetypeOptions = getArchetypeOptions(
-    selectedFormat === "all" ? null : selectedFormat,
+    null,
     matchRows.map((match) => match.opponent_archetype)
   );
   const selectedOpponentArchetype = archetypeOptions.includes(
@@ -226,10 +218,6 @@ export default async function MatchupsPage({
   const filteredMatches = matchRows.filter((match) => {
     const deckVersion = getDeckVersion(match);
     const playedAt = new Date(match.played_at);
-
-    if (selectedFormat !== "all" && match.format !== selectedFormat) {
-      return false;
-    }
 
     if (
       selectedOpponentArchetype &&
@@ -386,7 +374,7 @@ export default async function MatchupsPage({
     worstMatchup: worstMatchup?.opponentArchetype ?? "No matchup yet",
     bestMatchup: bestMatchup?.opponentArchetype ?? "No matchup yet",
     totalMatches: filteredMatches.length,
-    context: selectedFormat === "all" ? "Saved history" : selectedFormat,
+    context: "Your matchup data",
   };
 
   return (
@@ -502,27 +490,6 @@ export default async function MatchupsPage({
                 <option value="highest_win_rate">Highest win rate</option>
                 <option value="lowest_win_rate">Lowest win rate</option>
                 <option value="az">Opponent A-Z</option>
-              </select>
-            </div>
-            <div className="flex flex-col gap-2 lg:col-span-2">
-              <label
-                htmlFor="format"
-                className={label}
-              >
-                Match set
-              </label>
-              <select
-                id="format"
-                name="format"
-                defaultValue={selectedFormat}
-                className={inputH10}
-              >
-                <option value="all">Saved history</option>
-                {formatOptions.map((format) => (
-                  <option key={format} value={format}>
-                    {format}
-                  </option>
-                ))}
               </select>
             </div>
             <div className="flex flex-col gap-2 lg:col-span-2">

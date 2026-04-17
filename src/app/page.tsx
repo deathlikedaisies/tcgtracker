@@ -6,7 +6,7 @@ const navItems = ["Product", "Insights", "Prep"];
 
 const valueChips = [
   "Deck version tracking",
-  "Current Standard matchup data",
+  "Real matchup data",
   "Testing notes that travel",
 ];
 
@@ -75,7 +75,7 @@ function ProductPreview() {
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-xs font-medium uppercase text-[#94A3B8]/80">
-                Post-rotation 2026
+                PrizeMap preview
               </p>
               <h2 className="mt-1 text-xl font-semibold tracking-tight text-[#F8FAFC]">
                 Testing dashboard
@@ -208,7 +208,7 @@ export default function Home() {
             </p>
             <p className="mt-3 max-w-xl text-sm leading-6 text-[#94A3B8]/82">
               PrizeMap gives competitive players a sharper way to understand
-              deck performance, current Standard trends, and matchup plans.
+              deck performance, testing patterns, and matchup plans.
             </p>
             <div className="mt-7 flex flex-col gap-3 sm:flex-row">
               <Link

@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
-import { LATEST_FORMAT, MATCH_FORMATS } from "@/lib/formats";
+import { LATEST_FORMAT } from "@/lib/formats";
 import { EVENT_TYPES, MATCH_RESULTS, parseSelectedTags } from "@/lib/match-options";
 
 const results = new Set<string>(MATCH_RESULTS);
@@ -31,10 +31,6 @@ export async function logMatch(formData: FormData) {
   const result = String(formData.get("result") ?? "").trim();
   const eventType = optionalText(formData.get("event_type"));
   const wentFirstValue = optionalText(formData.get("went_first"));
-  const formatSelection = optionalText(formData.get("format"));
-  const customFormat = optionalText(formData.get("format_custom"));
-  const format =
-    formatSelection === "custom" ? customFormat : formatSelection ?? LATEST_FORMAT;
 
   if (!deckVersionId) {
     throw new Error("Deck version is required.");
@@ -50,14 +46,6 @@ export async function logMatch(formData: FormData) {
 
   if (eventType && !eventTypes.has(eventType)) {
     throw new Error("Invalid event type.");
-  }
-
-  if (
-    formatSelection &&
-    formatSelection !== "custom" &&
-    !MATCH_FORMATS.includes(formatSelection as never)
-  ) {
-    throw new Error("Invalid format.");
   }
 
   const { data: ownedDeckVersion, error: ownershipError } = await supabase
@@ -81,7 +69,7 @@ export async function logMatch(formData: FormData) {
       result,
       went_first: wentFirstValue === null ? null : wentFirstValue === "true",
       event_type: eventType,
-      format,
+      format: LATEST_FORMAT,
       notes: optionalText(formData.get("notes")),
     })
     .select("id")

@@ -1,6 +1,5 @@
 import { DashboardContent } from "@/components/auth/DashboardContent";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
-import { getFormatOptions, LATEST_FORMAT } from "@/lib/formats";
 import { redirect } from "next/navigation";
 
 type MatchResult = "win" | "loss";
@@ -12,7 +11,6 @@ type MatchRow = {
   result: MatchResult;
   went_first: boolean | null;
   event_type: string | null;
-  format: string | null;
   played_at: string;
   deck_versions: {
     name: string;
@@ -56,14 +54,7 @@ function formatChartDate(value: string) {
   }).format(new Date(value));
 }
 
-type DashboardPageProps = {
-  searchParams: Promise<{
-    format?: string;
-  }>;
-};
-
-export default async function DashboardPage({ searchParams }: DashboardPageProps) {
-  const params = await searchParams;
+export default async function DashboardPage() {
   const supabase = await createServerSupabaseClient();
   const {
     data: { user },
@@ -75,7 +66,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
   const { data: decks, error: decksError } = await supabase
     .from("decks")
-    .select("id, name, archetype, format, created_at")
+    .select("id, name, archetype, created_at")
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 
@@ -86,7 +77,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   const { data: matches, error: matchesError } = await supabase
     .from("matches")
     .select(
-      "id, deck_version_id, opponent_archetype, result, went_first, event_type, format, played_at, deck_versions(name)"
+      "id, deck_version_id, opponent_archetype, result, went_first, event_type, played_at, deck_versions(name)"
     )
     .eq("user_id", user.id)
     .order("played_at", { ascending: false });
@@ -96,17 +87,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   }
 
   const matchRows = (matches ?? []) as unknown as MatchRow[];
-  const formatOptions = getFormatOptions(matchRows.map((match) => match.format));
-  const selectedFormat =
-    params.format === "all"
-      ? "all"
-      : formatOptions.includes(params.format ?? "")
-        ? params.format ?? LATEST_FORMAT
-        : LATEST_FORMAT;
-  const filteredMatches =
-    selectedFormat === "all"
-      ? matchRows
-      : matchRows.filter((match) => match.format === selectedFormat);
+  const filteredMatches = matchRows;
   const totalRecord = getRecord(filteredMatches);
   const wentFirstRecord = getRecord(
     filteredMatches.filter((match) => match.went_first === true)
@@ -160,7 +141,6 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     opponentArchetype: match.opponent_archetype,
     result: match.result,
     eventType: match.event_type,
-    format: match.format,
   }));
   const trendData = Array.from(
     filteredMatches
@@ -197,8 +177,6 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     <DashboardContent
       email={user.email ?? "Unknown email"}
       decks={decks ?? []}
-      selectedFormat={selectedFormat}
-      formatOptions={formatOptions}
       hasAnyMatches={matchRows.length > 0}
       stats={{
         totalMatches: totalRecord.matches,
