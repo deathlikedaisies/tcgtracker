@@ -1,104 +1,112 @@
 import { OTHER_ARCHETYPE } from "@/lib/archetypes";
+import { getPokemonSprite } from "@/lib/pokemon-sprites";
 
 export type ArchetypeSprite = {
   filename: string;
   label: string;
 };
 
-export const FALLBACK_ARCHETYPE_SPRITES: ArchetypeSprite[] = [
-  {
-    filename: "other-emerging.png",
-    label: OTHER_ARCHETYPE,
-  },
-];
+type ArchetypePokemon = {
+  pokemon: string | number;
+  label?: string;
+};
 
-export const ARCHETYPE_SPRITES: Record<string, ArchetypeSprite[]> = {
+export const FALLBACK_ARCHETYPE_SPRITES: ArchetypeSprite[] = [];
+
+export const ARCHETYPE_POKEMON: Record<string, ArchetypePokemon[]> = {
   "Starmie Froslass": [
-    { filename: "starmie.png", label: "Starmie" },
-    { filename: "froslass.png", label: "Froslass" },
+    { pokemon: "Starmie" },
+    { pokemon: "Froslass" },
   ],
-  "Dragapult ex": [{ filename: "dragapult-ex.png", label: "Dragapult ex" }],
+  "Dragapult ex": [{ pokemon: "Dragapult", label: "Dragapult ex" }],
   "Dragapult Blaziken": [
-    { filename: "dragapult-ex.png", label: "Dragapult ex" },
-    { filename: "blaziken.png", label: "Blaziken" },
+    { pokemon: "Dragapult", label: "Dragapult ex" },
+    { pokemon: "Blaziken" },
   ],
   "Dragapult Dusknoir": [
-    { filename: "dragapult-ex.png", label: "Dragapult ex" },
-    { filename: "dusknoir.png", label: "Dusknoir" },
+    { pokemon: "Dragapult", label: "Dragapult ex" },
+    { pokemon: "Dusknoir" },
   ],
   "Grimmsnarl Froslass": [
-    { filename: "grimmsnarl.png", label: "Grimmsnarl" },
-    { filename: "froslass.png", label: "Froslass" },
+    { pokemon: "Grimmsnarl" },
+    { pokemon: "Froslass" },
   ],
   "Lucario Hariyama": [
-    { filename: "lucario.png", label: "Lucario" },
-    { filename: "hariyama.png", label: "Hariyama" },
+    { pokemon: "Lucario" },
+    { pokemon: "Hariyama" },
   ],
-  "Mega Lucario ex": [
-    { filename: "lucario.png", label: "Mega Lucario ex" },
-  ],
-  "Mega Lucario": [
-    { filename: "lucario.png", label: "Mega Lucario" },
-  ],
-  "Mega Absol Box": [
-    { filename: "absol.png", label: "Mega Absol" },
-  ],
-  "N's Zoroark": [{ filename: "zoroark.png", label: "N's Zoroark" }],
+  "Mega Lucario ex": [{ pokemon: "Lucario", label: "Mega Lucario ex" }],
+  "Mega Lucario": [{ pokemon: "Lucario", label: "Mega Lucario" }],
+  "Mega Absol Box": [{ pokemon: "Absol", label: "Mega Absol" }],
+  "N's Zoroark": [{ pokemon: "Zoroark", label: "N's Zoroark" }],
   "Ogerpon Meganium": [
-    { filename: "ogerpon.png", label: "Ogerpon" },
-    { filename: "meganium.png", label: "Meganium" },
+    { pokemon: "Ogerpon" },
+    { pokemon: "Meganium" },
   ],
-  "Festival Lead": [{ filename: "festival-lead.png", label: "Festival Lead" }],
-  "Rocket's Spidops": [
-    { filename: "spidops.png", label: "Rocket's Spidops" },
-  ],
-  "Rocket's Mewtwo": [
-    { filename: "mewtwo.png", label: "Rocket's Mewtwo" },
-  ],
-  "Rocket's Honchkrow": [
-    { filename: "honchkrow.png", label: "Rocket's Honchkrow" },
-  ],
-  "Rocket Box": [{ filename: "spidops.png", label: "Rocket Box" }],
+  "Festival Lead": [{ pokemon: "Dipplin", label: "Festival Lead" }],
+  "Rocket's Spidops": [{ pokemon: "Spidops", label: "Rocket's Spidops" }],
+  "Rocket's Mewtwo": [{ pokemon: "Mewtwo", label: "Rocket's Mewtwo" }],
+  "Rocket's Honchkrow": [{ pokemon: "Honchkrow", label: "Rocket's Honchkrow" }],
+  "Rocket Box": [{ pokemon: "Spidops", label: "Rocket Box" }],
   "Froslass Munkidori": [
-    { filename: "froslass.png", label: "Froslass" },
-    { filename: "munkidori.png", label: "Munkidori" },
+    { pokemon: "Froslass" },
+    { pokemon: "Munkidori" },
   ],
-  "Joltik Box": [{ filename: "joltik.png", label: "Joltik" }],
-  Crustle: [{ filename: "crustle.png", label: "Crustle" }],
+  "Joltik Box": [{ pokemon: "Joltik" }],
+  Crustle: [{ pokemon: "Crustle" }],
   "Raging Bolt Ogerpon": [
-    { filename: "raging-bolt.png", label: "Raging Bolt" },
-    { filename: "ogerpon.png", label: "Ogerpon" },
+    { pokemon: "Raging Bolt" },
+    { pokemon: "Ogerpon" },
   ],
-  Alakazam: [{ filename: "alakazam.png", label: "Alakazam" }],
+  Alakazam: [{ pokemon: "Alakazam" }],
   "Alakazam Dudunsparce": [
-    { filename: "alakazam.png", label: "Alakazam" },
-    { filename: "dudunsparce.png", label: "Dudunsparce" },
+    { pokemon: "Alakazam" },
+    { pokemon: "Dudunsparce" },
   ],
-  "Cynthia's Garchomp": [
-    { filename: "garchomp.png", label: "Cynthia's Garchomp" },
-  ],
-  Okidogi: [{ filename: "okidogi.png", label: "Okidogi" }],
-  "Marnie's Grimmsnarl": [
-    { filename: "grimmsnarl.png", label: "Marnie's Grimmsnarl" },
-  ],
-  "Mega Froslass": [{ filename: "froslass.png", label: "Mega Froslass" }],
-  [OTHER_ARCHETYPE]: FALLBACK_ARCHETYPE_SPRITES,
+  "Cynthia's Garchomp": [{ pokemon: "Garchomp", label: "Cynthia's Garchomp" }],
+  Okidogi: [{ pokemon: "Okidogi" }],
+  "Marnie's Grimmsnarl": [{ pokemon: "Grimmsnarl", label: "Marnie's Grimmsnarl" }],
+  "Mega Froslass": [{ pokemon: "Froslass", label: "Mega Froslass" }],
+  [OTHER_ARCHETYPE]: [],
 
-  "Charizard ex": [{ filename: "charizard-ex.png", label: "Charizard ex" }],
-  "Gardevoir ex": [{ filename: "gardevoir-ex.png", label: "Gardevoir ex" }],
-  "Gholdengo ex": [{ filename: "gholdengo-ex.png", label: "Gholdengo ex" }],
-  "Miraidon ex": [{ filename: "miraidon.png", label: "Miraidon ex" }],
-  "Roaring Moon ex": [
-    { filename: "roaring-moon.png", label: "Roaring Moon ex" },
-  ],
-  "Lost Zone Box": [
-    { filename: "other-emerging.png", label: "Lost Zone Box" },
-  ],
-  "Chien-Pao ex": [{ filename: "chien-pao.png", label: "Chien-Pao ex" }],
-  "Ancient Box": [{ filename: "raging-bolt.png", label: "Ancient Box" }],
-  "Future Box": [{ filename: "other-emerging.png", label: "Future Box" }],
-  "Lugia VSTAR": [{ filename: "lugia.png", label: "Lugia VSTAR" }],
+  "Charizard ex": [{ pokemon: "Charizard", label: "Charizard ex" }],
+  "Gardevoir ex": [{ pokemon: "Gardevoir", label: "Gardevoir ex" }],
+  "Gholdengo ex": [{ pokemon: "Gholdengo", label: "Gholdengo ex" }],
+  "Miraidon ex": [{ pokemon: "Miraidon", label: "Miraidon ex" }],
+  "Roaring Moon ex": [{ pokemon: "Roaring Moon", label: "Roaring Moon ex" }],
+  "Lost Zone Box": [{ pokemon: "Comfey", label: "Lost Zone Box" }],
+  "Chien-Pao ex": [{ pokemon: "Chien-Pao", label: "Chien-Pao ex" }],
+  "Ancient Box": [{ pokemon: "Raging Bolt", label: "Ancient Box" }],
+  "Future Box": [{ pokemon: "Miraidon", label: "Future Box" }],
+  "Lugia VSTAR": [{ pokemon: "Lugia", label: "Lugia VSTAR" }],
 };
+
+function toArchetypeSprite(ref: ArchetypePokemon): ArchetypeSprite | null {
+  const sprite = getPokemonSprite(ref.pokemon);
+
+  if (!sprite) {
+    return null;
+  }
+
+  return {
+    filename: sprite.filename,
+    label: ref.label ?? sprite.pokemon,
+  };
+}
+
+function isArchetypeSprite(
+  sprite: ArchetypeSprite | null
+): sprite is ArchetypeSprite {
+  return sprite !== null;
+}
+
+export const ARCHETYPE_SPRITES: Record<string, ArchetypeSprite[]> =
+  Object.fromEntries(
+    Object.entries(ARCHETYPE_POKEMON).map(([archetype, pokemon]) => [
+      archetype,
+      pokemon.map(toArchetypeSprite).filter(isArchetypeSprite),
+    ])
+  );
 
 function normalizeArchetype(value: string) {
   return value
