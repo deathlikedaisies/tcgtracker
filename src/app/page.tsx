@@ -3,9 +3,9 @@ import { ArchetypeSprites } from "@/components/ArchetypeSprites";
 import { PrizeMapLogo } from "@/components/PrizeMapLogo";
 
 const valueChips = [
-  "See your real win rates",
-  "Find your worst matchup",
-  "Know what to test next",
+  "Stop guessing your matchups",
+  "See what's actually losing you games",
+  "Fix your next testing block",
 ];
 
 const demoMetrics = [
@@ -36,7 +36,7 @@ function ProductPreview() {
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-xs font-medium uppercase text-[#94A3B8]/80">
-                Based on your testing
+                From your last testing session
               </p>
               <h2 className="mt-1 text-lg font-semibold tracking-tight text-[#F8FAFC] sm:text-xl">
                 Your matchup insights
@@ -48,38 +48,56 @@ function ProductPreview() {
           </div>
 
           <div className="mt-4 grid grid-cols-2 gap-2 sm:mt-5 sm:gap-3">
-            {demoMetrics.map((metric) => (
-              <div
-                key={metric.label}
-                className="rounded-md bg-[#1A2238]/62 p-3 shadow-[0_14px_34px_rgba(0,0,0,0.16),inset_0_0_0_1px_rgba(248,250,252,0.05)]"
-              >
-                <p className="text-xs font-medium uppercase text-[#94A3B8]/72">
-                  {metric.label}
-                </p>
-                <div className="mt-1 flex min-w-0 items-center gap-2 sm:mt-2">
-                  {metric.archetype ? (
-                    <ArchetypeSprites archetype={metric.archetype} className="shrink-0" />
-                  ) : null}
-                  <p className={`min-w-0 text-xl font-semibold leading-tight sm:text-2xl ${metric.tone}`}>
-                    {"mobileValue" in metric ? (
-                      <>
-                        <span className="sm:hidden">{metric.mobileValue}</span>
-                        <span className="hidden sm:inline">{metric.value}</span>
-                      </>
-                    ) : (
-                      metric.value
-                    )}
+            {demoMetrics.map((metric) => {
+              const isWorstMatchup = metric.label === "Worst matchup";
+
+              return (
+                <div
+                  key={metric.label}
+                  className={`rounded-md p-3 shadow-[0_14px_34px_rgba(0,0,0,0.16),inset_0_0_0_1px_rgba(248,250,252,0.05)] ${
+                    isWorstMatchup
+                      ? "col-span-2 bg-[#F43F5E]/12 shadow-[0_18px_46px_rgba(244,63,94,0.12),inset_0_0_0_1px_rgba(244,63,94,0.22)]"
+                      : "bg-[#1A2238]/54"
+                  }`}
+                >
+                  <p
+                    className={`text-xs font-medium uppercase ${
+                      isWorstMatchup ? "text-rose-200" : "text-[#94A3B8]/72"
+                    }`}
+                  >
+                    {metric.label}
                   </p>
+                  <div className="mt-1 flex min-w-0 items-center gap-2 sm:mt-2">
+                    {metric.archetype ? (
+                      <ArchetypeSprites archetype={metric.archetype} className="shrink-0" />
+                    ) : null}
+                    <p
+                      className={`min-w-0 font-semibold leading-tight ${metric.tone} ${
+                        isWorstMatchup
+                          ? "text-2xl sm:text-3xl"
+                          : "text-lg sm:text-xl"
+                      }`}
+                    >
+                      {"mobileValue" in metric ? (
+                        <>
+                          <span className="sm:hidden">{metric.mobileValue}</span>
+                          <span className="hidden sm:inline">{metric.value}</span>
+                        </>
+                      ) : (
+                        metric.value
+                      )}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
-          <div className="mt-3 rounded-md bg-[#11182C]/78 p-3">
+          <div className="mt-3 rounded-md bg-[#11182C]/78 p-3 shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
             <div className="flex min-w-0 items-center gap-2">
               <ArchetypeSprites archetype="Dragapult Dusknoir" className="shrink-0" />
               <p className="min-w-0 text-sm font-semibold text-[#F8FAFC]">
-                Next test: fix the Dragapult Dusknoir line.
+                Your next session: fix the Dragapult Dusknoir line.
               </p>
             </div>
           </div>
@@ -146,7 +164,7 @@ export default function Home() {
           {valueChips.map((item) => (
             <div
               key={item}
-              className="rounded-md bg-[#11182C]/66 px-4 py-4 text-sm font-semibold text-[#F8FAFC] shadow-[0_14px_34px_rgba(0,0,0,0.16),inset_0_0_0_1px_rgba(248,250,252,0.05)]"
+              className="rounded-md bg-[#11182C]/44 px-4 py-3 text-sm font-semibold text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(248,250,252,0.04)]"
             >
               {item}
             </div>
@@ -160,9 +178,9 @@ export default function Home() {
             Most players test wrong.
           </h2>
           <div className="mt-4 grid gap-2 text-sm font-medium text-[#94A3B8] md:grid-cols-3">
-            <p>You remember wins, not patterns</p>
-            <p>You guess matchups</p>
-            <p>You repeat the same mistakes</p>
+            <p>You remember wins. You forget what&apos;s actually losing you games.</p>
+            <p>You think you know your matchups. You don&apos;t.</p>
+            <p>You repeat the same mistakes every session.</p>
           </div>
           <p className="mt-4 text-base font-semibold text-[#F8FAFC]">
             PrizeMap shows you what&apos;s actually happening.
@@ -184,7 +202,7 @@ export default function Home() {
             href="/signup"
             className="inline-flex h-12 w-full items-center justify-center rounded-md bg-[#F5C84C] px-4 text-center text-sm font-semibold text-[#0B1020] shadow-[0_14px_34px_rgba(245,200,76,0.24)] transition hover:bg-[#ffd85f] sm:px-6 md:w-auto"
           >
-            Start tracking before your next testing block
+            Start tracking before your next testing session
           </Link>
         </div>
       </section>
