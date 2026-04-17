@@ -30,9 +30,9 @@ const demoMetrics = [
 function ProductPreview() {
   return (
     <div className="relative">
-      <div className="absolute inset-x-8 -top-5 h-16 bg-[#4F8CFF]/18 blur-3xl" />
-      <div className="relative rounded-md bg-[#10172A]/92 p-2.5 shadow-[0_28px_90px_rgba(0,0,0,0.42),0_0_64px_rgba(79,140,255,0.14)] sm:p-3">
-        <div className="rounded-md bg-[#0B1020]/96 p-3 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.07)] sm:p-5">
+      <div className="absolute inset-x-10 -top-4 h-14 bg-[#4F8CFF]/14 blur-3xl" />
+      <div className="relative rounded bg-[#10172A]/94 p-2 shadow-[0_24px_72px_rgba(0,0,0,0.46)] sm:p-3">
+        <div className="rounded bg-[#0B1020]/96 p-3 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.07)] sm:p-5">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-xs font-medium uppercase text-[#94A3B8]/80">
@@ -42,7 +42,7 @@ function ProductPreview() {
                 Your matchup insights
               </h2>
             </div>
-            <span className="rounded-md bg-[#22C55E]/12 px-3 py-1 text-xs font-semibold text-emerald-300">
+            <span className="rounded bg-[#22C55E]/10 px-3 py-1 text-xs font-semibold text-emerald-300/86">
               +8%
             </span>
           </div>
@@ -54,10 +54,10 @@ function ProductPreview() {
               return (
                 <div
                   key={metric.label}
-                  className={`rounded-md p-3 shadow-[0_14px_34px_rgba(0,0,0,0.16),inset_0_0_0_1px_rgba(248,250,252,0.05)] ${
+                  className={`rounded p-3 transition duration-200 hover:-translate-y-0.5 ${
                     isWorstMatchup
-                      ? "col-span-2 bg-[#F43F5E]/12 shadow-[0_18px_46px_rgba(244,63,94,0.12),inset_0_0_0_1px_rgba(244,63,94,0.22)]"
-                      : "bg-[#1A2238]/54"
+                      ? "col-span-2 bg-[#F43F5E]/13 shadow-[0_18px_48px_rgba(244,63,94,0.16),inset_0_0_0_1px_rgba(244,63,94,0.32)]"
+                      : "bg-[#1A2238]/50 shadow-[0_10px_26px_rgba(0,0,0,0.12)]"
                   }`}
                 >
                   <p
@@ -75,7 +75,9 @@ function ProductPreview() {
                       className={`min-w-0 font-semibold leading-tight ${metric.tone} ${
                         isWorstMatchup
                           ? "text-2xl sm:text-3xl"
-                          : "text-lg sm:text-xl"
+                          : metric.label === "Recent trend"
+                            ? "text-base text-[#F8FAFC]/82 sm:text-lg"
+                            : "text-lg sm:text-xl"
                       }`}
                     >
                       {"mobileValue" in metric ? (
@@ -93,10 +95,10 @@ function ProductPreview() {
             })}
           </div>
 
-          <div className="mt-3 rounded-md bg-[#11182C]/78 p-3 shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
+          <div className="mt-3 rounded bg-[#11182C]/88 p-3 shadow-[0_16px_42px_rgba(245,200,76,0.08),inset_0_0_0_1px_rgba(245,200,76,0.28)] transition duration-200 hover:-translate-y-0.5">
             <div className="flex min-w-0 items-center gap-2">
               <ArchetypeSprites archetype="Dragapult Dusknoir" className="shrink-0" />
-              <p className="min-w-0 text-sm font-semibold text-[#F8FAFC]">
+              <p className="min-w-0 text-sm font-semibold text-[#F8FAFC] sm:text-base">
                 Your next session: fix the Dragapult Dusknoir line.
               </p>
             </div>
@@ -109,9 +111,9 @@ function ProductPreview() {
 
 export default function Home() {
   return (
-    <main className="min-h-screen overflow-hidden bg-[#0B1020] bg-[radial-gradient(ellipse_at_top,rgba(79,140,255,0.22),transparent_42%),linear-gradient(180deg,#0B1020_0%,#11182C_48%,#0B1020_100%)] text-[#F8FAFC]">
+    <main className="min-h-screen overflow-hidden bg-[#0B1020] bg-[radial-gradient(ellipse_at_top,rgba(79,140,255,0.14),transparent_38%),linear-gradient(180deg,#0B1020_0%,#11182C_50%,#0B1020_100%)] text-[#F8FAFC]">
       <header className="px-4 py-4 sm:px-6">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 rounded-md bg-[#0B1020]/42 px-3 py-3 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.06)]">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 rounded bg-[#0B1020]/42 px-3 py-3 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.05)]">
           <PrizeMapLogo
             markClassName="bg-[#1A2238] shadow-[0_0_28px_rgba(79,140,255,0.22)]"
             textClassName="text-base text-[#F8FAFC]"
@@ -119,13 +121,13 @@ export default function Home() {
           <div className="flex items-center gap-2">
             <Link
               href="/login"
-              className="hidden h-10 items-center justify-center rounded-md px-3 text-sm font-medium text-[#94A3B8] transition hover:bg-white/5 hover:text-[#F8FAFC] sm:inline-flex"
+              className="hidden h-10 items-center justify-center rounded px-3 text-sm font-medium text-[#94A3B8] transition hover:bg-white/5 hover:text-[#F8FAFC] active:scale-[0.98] sm:inline-flex"
             >
               Log in
             </Link>
             <Link
               href="/signup"
-              className="inline-flex h-10 items-center justify-center rounded-md bg-[#F5C84C] px-4 text-sm font-semibold text-[#0B1020] shadow-[0_12px_30px_rgba(245,200,76,0.22)] transition hover:bg-[#ffd85f]"
+              className="inline-flex h-10 items-center justify-center rounded bg-[#F5C84C] px-4 text-sm font-semibold text-[#0B1020] shadow-[0_14px_34px_rgba(245,200,76,0.28)] transition hover:-translate-y-0.5 hover:bg-[#ffd85f] active:translate-y-0 active:scale-[0.98]"
             >
               Get started
             </Link>
@@ -148,7 +150,7 @@ export default function Home() {
             <div className="mt-6">
               <Link
                 href="/signup"
-                className="inline-flex h-12 w-full items-center justify-center rounded-md bg-[#F5C84C] px-6 text-sm font-semibold text-[#0B1020] shadow-[0_14px_34px_rgba(245,200,76,0.24)] transition hover:bg-[#ffd85f] sm:w-auto"
+                className="inline-flex h-12 w-full items-center justify-center rounded bg-[#F5C84C] px-6 text-sm font-semibold text-[#0B1020] shadow-[0_18px_44px_rgba(245,200,76,0.34)] transition hover:-translate-y-0.5 hover:bg-[#ffd85f] active:translate-y-0 active:scale-[0.98] sm:w-auto"
               >
                 Start tracking
               </Link>
@@ -164,7 +166,7 @@ export default function Home() {
           {valueChips.map((item) => (
             <div
               key={item}
-              className="rounded-md bg-[#11182C]/44 px-4 py-3 text-sm font-semibold text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(248,250,252,0.04)]"
+              className="rounded bg-[#11182C]/32 px-4 py-3 text-sm font-semibold text-[#F8FAFC]/88"
             >
               {item}
             </div>
@@ -173,7 +175,7 @@ export default function Home() {
       </section>
 
       <section className="px-4 pb-6 sm:px-6 sm:pb-8">
-        <div className="mx-auto max-w-6xl rounded-md bg-[#11182C]/64 p-5 shadow-[0_18px_52px_rgba(0,0,0,0.22),inset_0_0_0_1px_rgba(248,250,252,0.05)] sm:p-6">
+        <div className="mx-auto max-w-6xl rounded bg-[#11182C]/48 p-5 shadow-[0_14px_38px_rgba(0,0,0,0.16)] sm:p-6">
           <h2 className="text-2xl font-semibold tracking-tight text-[#F8FAFC]">
             Most players test wrong.
           </h2>
@@ -189,7 +191,7 @@ export default function Home() {
       </section>
 
       <section className="px-4 pb-10 sm:px-6 sm:pb-14">
-        <div className="mx-auto flex max-w-6xl flex-col gap-4 rounded-md bg-[#11182C]/72 p-5 shadow-[0_18px_58px_rgba(0,0,0,0.26),0_0_36px_rgba(79,140,255,0.06),inset_0_0_0_1px_rgba(248,250,252,0.05)] sm:p-6 md:flex-row md:items-center md:justify-between">
+        <div className="mx-auto flex max-w-6xl flex-col gap-4 rounded bg-[#11182C]/66 p-5 shadow-[0_18px_50px_rgba(0,0,0,0.22)] sm:p-6 md:flex-row md:items-center md:justify-between">
           <div>
             <h2 className="text-2xl font-semibold tracking-tight text-[#F8FAFC]">
               Know exactly what to fix next session.
@@ -200,7 +202,7 @@ export default function Home() {
           </div>
           <Link
             href="/signup"
-            className="inline-flex h-12 w-full items-center justify-center rounded-md bg-[#F5C84C] px-4 text-center text-sm font-semibold text-[#0B1020] shadow-[0_14px_34px_rgba(245,200,76,0.24)] transition hover:bg-[#ffd85f] sm:px-6 md:w-auto"
+            className="inline-flex h-12 w-full items-center justify-center rounded bg-[#F5C84C] px-4 text-center text-sm font-semibold text-[#0B1020] shadow-[0_18px_44px_rgba(245,200,76,0.32)] transition hover:-translate-y-0.5 hover:bg-[#ffd85f] active:translate-y-0 active:scale-[0.98] sm:px-6 md:w-auto"
           >
             Start tracking before your next testing session
           </Link>
