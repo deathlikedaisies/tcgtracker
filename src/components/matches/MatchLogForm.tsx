@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useFormStatus } from "react-dom";
+import { ArchetypePicker } from "@/components/ArchetypePicker";
 import {
   inputH11,
   label,
@@ -128,35 +129,19 @@ export function MatchLogForm({
           </div>
         </div>
 
-        <div className="grid gap-4">
-          <div className="flex flex-col gap-2">
-            <label
-              htmlFor="opponent_archetype"
-              className={label}
-            >
-              Opponent archetype
-            </label>
-            <input
-              id="opponent_archetype"
-              name="opponent_archetype"
-              list="opponent-archetypes"
-              required
-              autoFocus
-              value={opponentArchetype}
-              onChange={(event) => {
-                setOpponentArchetype(event.target.value);
-                remember(sessionKeys.opponentArchetype, event.target.value);
-              }}
-              placeholder="Choose or type an archetype"
-              className={inputH11}
-            />
-            <datalist id="opponent-archetypes">
-              {opponentArchetypeOptions.map((archetype) => (
-                <option key={archetype} value={archetype} />
-              ))}
-            </datalist>
-          </div>
-        </div>
+        <ArchetypePicker
+          id="opponent_archetype"
+          name="opponent_archetype"
+          label="Opponent archetype"
+          options={opponentArchetypeOptions}
+          value={opponentArchetype}
+          required
+          autoFocus
+          onValueChange={(nextValue) => {
+            setOpponentArchetype(nextValue);
+            remember(sessionKeys.opponentArchetype, nextValue);
+          }}
+        />
 
         <fieldset className="flex flex-col gap-2">
           <legend className={label}>

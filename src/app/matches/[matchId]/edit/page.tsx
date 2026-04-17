@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { AppNav } from "@/components/AppNav";
+import { ArchetypePicker } from "@/components/ArchetypePicker";
 import {
   appContainer,
   appShell,
@@ -181,27 +182,14 @@ export default async function EditMatchPage({ params }: EditMatchPageProps) {
             </div>
 
             <div className="grid gap-5 sm:grid-cols-2">
-              <div className="flex flex-col gap-2">
-                <label
-                  htmlFor="opponent_archetype"
-                  className={label}
-                >
-                  Opponent archetype
-                </label>
-                <input
-                  id="opponent_archetype"
-                  name="opponent_archetype"
-                  list="edit-opponent-archetypes"
-                  required
-                  defaultValue={currentMatch.opponent_archetype}
-                  className={inputH11}
-                />
-                <datalist id="edit-opponent-archetypes">
-                  {opponentArchetypeOptions.map((archetype) => (
-                    <option key={archetype} value={archetype} />
-                  ))}
-                </datalist>
-              </div>
+              <ArchetypePicker
+                id="opponent_archetype"
+                name="opponent_archetype"
+                label="Opponent archetype"
+                options={opponentArchetypeOptions}
+                defaultValue={currentMatch.opponent_archetype}
+                required
+              />
               <div className="flex flex-col gap-2">
                 <label
                   htmlFor="opponent_variant"

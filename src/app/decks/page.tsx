@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AppNav } from "@/components/AppNav";
+import { ArchetypePicker } from "@/components/ArchetypePicker";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
 import {
   appContainer,
@@ -190,27 +191,13 @@ export default async function DecksPage() {
                     className={inputH10}
                   />
                 </div>
-                <div className="flex flex-col gap-2">
-                  <label
-                    htmlFor="archetype"
-                    className={label}
-                  >
-                    Archetype
-                  </label>
-                  <input
-                    id="archetype"
-                    name="archetype"
-                    list="deck-archetypes"
-                    required
-                    placeholder="Choose or type an archetype"
-                    className={inputH10}
-                  />
-                  <datalist id="deck-archetypes">
-                    {archetypeOptions.map((archetype) => (
-                      <option key={archetype} value={archetype} />
-                    ))}
-                  </datalist>
-                </div>
+                <ArchetypePicker
+                  id="archetype"
+                  name="archetype"
+                  label="Archetype"
+                  options={archetypeOptions}
+                  required
+                />
                 <div className="flex flex-col gap-2">
                   <label
                     htmlFor="notes"

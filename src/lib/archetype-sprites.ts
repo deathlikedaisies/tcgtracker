@@ -14,7 +14,7 @@ export const FALLBACK_ARCHETYPE_SPRITES: ArchetypeSprite[] = [
 
 export const ARCHETYPE_SPRITES: Record<string, ArchetypeSprite[]> = {
   "Starmie Froslass": [
-    { filename: "other-emerging.png", label: "Starmie" },
+    { filename: "starmie.png", label: "Starmie" },
     { filename: "froslass.png", label: "Froslass" },
   ],
   "Dragapult ex": [{ filename: "dragapult-ex.png", label: "Dragapult ex" }],
@@ -48,15 +48,15 @@ export const ARCHETYPE_SPRITES: Record<string, ArchetypeSprite[]> = {
     { filename: "ogerpon.png", label: "Ogerpon" },
     { filename: "meganium.png", label: "Meganium" },
   ],
-  "Festival Lead": [{ filename: "other-emerging.png", label: "Festival Lead" }],
+  "Festival Lead": [{ filename: "festival-lead.png", label: "Festival Lead" }],
   "Rocket's Spidops": [
     { filename: "spidops.png", label: "Rocket's Spidops" },
   ],
   "Rocket's Mewtwo": [
-    { filename: "other-emerging.png", label: "Rocket's Mewtwo" },
+    { filename: "mewtwo.png", label: "Rocket's Mewtwo" },
   ],
   "Rocket's Honchkrow": [
-    { filename: "other-emerging.png", label: "Rocket's Honchkrow" },
+    { filename: "honchkrow.png", label: "Rocket's Honchkrow" },
   ],
   "Rocket Box": [{ filename: "spidops.png", label: "Rocket Box" }],
   "Froslass Munkidori": [
@@ -72,12 +72,12 @@ export const ARCHETYPE_SPRITES: Record<string, ArchetypeSprite[]> = {
   Alakazam: [{ filename: "alakazam.png", label: "Alakazam" }],
   "Alakazam Dudunsparce": [
     { filename: "alakazam.png", label: "Alakazam" },
-    { filename: "other-emerging.png", label: "Dudunsparce" },
+    { filename: "dudunsparce.png", label: "Dudunsparce" },
   ],
   "Cynthia's Garchomp": [
-    { filename: "other-emerging.png", label: "Cynthia's Garchomp" },
+    { filename: "garchomp.png", label: "Cynthia's Garchomp" },
   ],
-  Okidogi: [{ filename: "other-emerging.png", label: "Okidogi" }],
+  Okidogi: [{ filename: "okidogi.png", label: "Okidogi" }],
   "Marnie's Grimmsnarl": [
     { filename: "grimmsnarl.png", label: "Marnie's Grimmsnarl" },
   ],
@@ -87,17 +87,17 @@ export const ARCHETYPE_SPRITES: Record<string, ArchetypeSprite[]> = {
   "Charizard ex": [{ filename: "charizard-ex.png", label: "Charizard ex" }],
   "Gardevoir ex": [{ filename: "gardevoir-ex.png", label: "Gardevoir ex" }],
   "Gholdengo ex": [{ filename: "gholdengo-ex.png", label: "Gholdengo ex" }],
-  "Miraidon ex": [{ filename: "other-emerging.png", label: "Miraidon ex" }],
+  "Miraidon ex": [{ filename: "miraidon.png", label: "Miraidon ex" }],
   "Roaring Moon ex": [
-    { filename: "raging-bolt.png", label: "Roaring Moon ex" },
+    { filename: "roaring-moon.png", label: "Roaring Moon ex" },
   ],
   "Lost Zone Box": [
     { filename: "other-emerging.png", label: "Lost Zone Box" },
   ],
-  "Chien-Pao ex": [{ filename: "other-emerging.png", label: "Chien-Pao ex" }],
+  "Chien-Pao ex": [{ filename: "chien-pao.png", label: "Chien-Pao ex" }],
   "Ancient Box": [{ filename: "raging-bolt.png", label: "Ancient Box" }],
   "Future Box": [{ filename: "other-emerging.png", label: "Future Box" }],
-  "Lugia VSTAR": [{ filename: "other-emerging.png", label: "Lugia VSTAR" }],
+  "Lugia VSTAR": [{ filename: "lugia.png", label: "Lugia VSTAR" }],
 };
 
 function normalizeArchetype(value: string) {
