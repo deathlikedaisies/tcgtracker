@@ -2,17 +2,12 @@ import Link from "next/link";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
 import { PrizeMapLogo } from "@/components/PrizeMapLogo";
 
-const valueChips = [
-  "Stop guessing your matchups",
-  "See what's actually losing you games",
-  "Fix your next testing block",
-];
-
 const demoMetrics = [
   {
     label: "Worst matchup",
     value: "Dragapult Dusknoir",
     mobileValue: "Dragapult",
+    detail: "You lost 7 of your last 10 games",
     tone: "text-[#F43F5E]",
     archetype: "Dragapult Dusknoir",
   },
@@ -33,28 +28,23 @@ function ProductPreview() {
       <div className="absolute inset-x-10 -top-4 h-14 bg-[#4F8CFF]/14 blur-3xl" />
       <div className="relative rounded bg-[#10172A]/94 p-2 shadow-[0_24px_72px_rgba(0,0,0,0.46)] sm:p-3">
         <div className="rounded bg-[#0B1020]/96 p-3 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.07)] sm:p-4">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-xs font-medium uppercase text-[#94A3B8]/80">
-                From your last testing session
-              </p>
-              <h2 className="mt-1 text-lg font-semibold tracking-tight text-[#F8FAFC] sm:text-xl">
-                Your matchup insights
-              </h2>
-            </div>
-            <span className="rounded bg-[#22C55E]/10 px-3 py-1 text-xs font-semibold text-emerald-300/86">
-              +8%
-            </span>
+          <div>
+            <p className="text-xs font-medium uppercase text-[#94A3B8]/80">
+              From your last testing session
+            </p>
+            <h2 className="mt-1 text-lg font-semibold tracking-tight text-[#F8FAFC] sm:text-xl">
+              Your matchup insights
+            </h2>
           </div>
 
           <div className="mt-3 rounded bg-[#11182C]/92 p-4 shadow-[0_18px_48px_rgba(245,200,76,0.12),inset_0_0_0_1px_rgba(245,200,76,0.36)] transition duration-200 hover:-translate-y-0.5 sm:p-5">
             <div className="flex min-w-0 items-center gap-3">
               <ArchetypeSprites archetype="Dragapult Dusknoir" className="shrink-0" />
               <div className="min-w-0">
-                <p className="text-xs font-medium uppercase text-[#F5C84C]">
-                  Primary recommendation
+                <p className="text-xs font-medium text-[#F5C84C]/82">
+                  Recommended next test
                 </p>
-                <p className="mt-1 min-w-0 text-base font-semibold text-[#F8FAFC] sm:text-lg">
+                <p className="mt-1 min-w-0 text-lg font-semibold text-[#F8FAFC] sm:text-xl">
                   Your next session: fix the Dragapult Dusknoir line.
                 </p>
               </div>
@@ -104,6 +94,11 @@ function ProductPreview() {
                       )}
                     </p>
                   </div>
+                  {"detail" in metric ? (
+                    <p className="mt-2 text-sm font-semibold text-rose-100/88">
+                      {metric.detail}
+                    </p>
+                  ) : null}
                 </div>
               );
             })}
@@ -119,7 +114,7 @@ function HeroSignal() {
     <div className="mt-5 inline-flex max-w-full items-center gap-3 rounded bg-[#11182C]/56 px-3 py-2 shadow-[0_12px_30px_rgba(0,0,0,0.16)]">
       <ArchetypeSprites archetype="Dragapult Dusknoir" className="shrink-0" />
       <span className="min-w-0 text-sm font-semibold text-[#F8FAFC]">
-        Weak spot found: Dragapult Dusknoir
+        This matchup is costing you games: Dragapult Dusknoir
       </span>
     </div>
   );
@@ -154,8 +149,8 @@ export default function Home() {
       <section className="px-4 pb-6 pt-3 sm:px-6 sm:pb-9 sm:pt-7">
         <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[0.82fr_1.18fr] lg:items-center">
           <div>
-            <p className="inline-flex rounded-md bg-[#4F8CFF]/14 px-3 py-1 text-sm font-semibold text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.24)]">
-              Built for Pokémon TCG testing
+            <p className="inline-flex rounded bg-[#4F8CFF]/14 px-3 py-1 text-sm font-semibold text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.24)]">
+              Based on your real match data
             </p>
             <h1 className="mt-5 max-w-3xl text-4xl font-semibold leading-tight tracking-tight text-[#F8FAFC] sm:text-6xl">
               You don&apos;t actually know your matchups.
@@ -175,19 +170,6 @@ export default function Home() {
           </div>
 
           <ProductPreview />
-        </div>
-      </section>
-
-      <section className="px-4 pb-5 sm:px-6 sm:pb-7">
-        <div className="mx-auto grid max-w-6xl gap-2 md:grid-cols-3">
-          {valueChips.map((item) => (
-            <div
-              key={item}
-              className="rounded bg-[#11182C]/32 px-4 py-3 text-sm font-semibold text-[#F8FAFC]/88"
-            >
-              {item}
-            </div>
-          ))}
         </div>
       </section>
 
@@ -221,7 +203,7 @@ export default function Home() {
             href="/signup"
             className="inline-flex h-12 w-full items-center justify-center rounded bg-[#F5C84C] px-4 text-center text-sm font-semibold text-[#0B1020] shadow-[0_18px_44px_rgba(245,200,76,0.32)] transition hover:-translate-y-0.5 hover:bg-[#ffd85f] active:translate-y-0 active:scale-[0.98] sm:px-6 md:w-auto"
           >
-            Start tracking before your next testing session
+            Start tracking before your next session
           </Link>
         </div>
       </section>
