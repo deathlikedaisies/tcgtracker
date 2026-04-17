@@ -38,6 +38,10 @@ export const ARCHETYPE_POKEMON: Record<string, ArchetypePokemon[]> = {
   "Mega Lucario ex": [{ pokemon: "Lucario", label: "Mega Lucario ex" }],
   "Mega Lucario": [{ pokemon: "Lucario", label: "Mega Lucario" }],
   "Mega Absol Box": [{ pokemon: "Absol", label: "Mega Absol" }],
+  "Gholdengo Lunatone": [
+    { pokemon: "Gholdengo" },
+    { pokemon: "Lunatone" },
+  ],
   "N's Zoroark": [{ pokemon: "Zoroark", label: "N's Zoroark" }],
   "Ogerpon Meganium": [
     { pokemon: "Ogerpon" },
@@ -67,6 +71,44 @@ export const ARCHETYPE_POKEMON: Record<string, ArchetypePokemon[]> = {
   Okidogi: [{ pokemon: "Okidogi" }],
   "Marnie's Grimmsnarl": [{ pokemon: "Grimmsnarl", label: "Marnie's Grimmsnarl" }],
   "Mega Froslass": [{ pokemon: "Froslass", label: "Mega Froslass" }],
+  "Gardevoir Jellicent": [
+    { pokemon: "Gardevoir" },
+    { pokemon: "Jellicent" },
+  ],
+  "Charizard Noctowl": [
+    { pokemon: "Charizard" },
+    { pokemon: "Noctowl" },
+  ],
+  "Charizard Pidgeot": [
+    { pokemon: "Charizard" },
+    { pokemon: "Pidgeot" },
+  ],
+  "Greninja Froslass": [
+    { pokemon: "Greninja" },
+    { pokemon: "Froslass" },
+  ],
+  "Dragapult Froslass": [
+    { pokemon: "Dragapult", label: "Dragapult ex" },
+    { pokemon: "Froslass" },
+  ],
+  "Gholdengo Dragapult": [
+    { pokemon: "Gholdengo" },
+    { pokemon: "Dragapult", label: "Dragapult ex" },
+  ],
+  "Sinistcha Ogerpon": [
+    { pokemon: "Sinistcha" },
+    { pokemon: "Ogerpon" },
+  ],
+  "Farigiraf Milotic": [
+    { pokemon: "Farigiraf" },
+    { pokemon: "Milotic" },
+  ],
+  "Archaludon Zoroark": [
+    { pokemon: "Archaludon" },
+    { pokemon: "Zoroark" },
+  ],
+  Garchomp: [{ pokemon: "Garchomp" }],
+  Spidops: [{ pokemon: "Spidops" }],
   [OTHER_ARCHETYPE]: [],
 
   "Charizard ex": [{ pokemon: "Charizard", label: "Charizard ex" }],

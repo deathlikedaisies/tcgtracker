@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useFormStatus } from "react-dom";
 import { ArchetypePicker } from "@/components/ArchetypePicker";
+import { ArchetypeSprites } from "@/components/ArchetypeSprites";
 import {
   inputH11,
   label,
@@ -51,6 +52,14 @@ function SubmitButton() {
       {pending ? "Saving..." : "Save and log another"}
     </button>
   );
+}
+
+function normalize(value: string) {
+  return value
+    .trim()
+    .replace(/[’‘`]/g, "'")
+    .replace(/\s+/g, " ")
+    .toLowerCase();
 }
 
 export function MatchLogForm({
@@ -112,11 +121,48 @@ export function MatchLogForm({
 
     return sessionStorage.getItem(sessionKeys.detailsOpen) === "true";
   });
+  const [notes, setNotes] = useState("");
+  const [tcgLiveLog, setTcgLiveLog] = useState("");
   const [isChangingDeck, setIsChangingDeck] = useState(false);
   const selectedDeck = deckOptions.find((option) => option.id === deckVersionId);
+  const selectedDeckArchetype = selectedDeck?.detail ?? "";
 
   function remember(key: string, value: string) {
     sessionStorage.setItem(key, value);
+  }
+
+  function importTcgLiveLog() {
+    const log = tcgLiveLog.trim();
+
+    if (!log) {
+      return;
+    }
+
+    setNotes(log);
+
+    const normalizedLog = normalize(log);
+
+    if (
+      /\b(you won|you win|won the game|victory)\b/.test(normalizedLog) &&
+      !/\b(opponent won|opponent wins|you lost|defeat)\b/.test(normalizedLog)
+    ) {
+      setResult("win");
+      remember(sessionKeys.result, "win");
+    } else if (/\b(you lost|defeat|opponent won|opponent wins)\b/.test(normalizedLog)) {
+      setResult("loss");
+      remember(sessionKeys.result, "loss");
+    }
+
+    const ownArchetype = normalize(selectedDeckArchetype);
+    const inferredOpponent = opponentArchetypeOptions
+      .filter((option) => normalize(option) !== ownArchetype)
+      .sort((first, second) => second.length - first.length)
+      .find((option) => normalizedLog.includes(normalize(option)));
+
+    if (inferredOpponent) {
+      setOpponentArchetype(inferredOpponent);
+      remember(sessionKeys.opponentArchetype, inferredOpponent);
+    }
   }
 
   return (
@@ -138,9 +184,15 @@ export function MatchLogForm({
               <p className="text-xs font-medium uppercase text-[#94A3B8]/72">
                 Using
               </p>
-              <p className="truncate text-sm font-semibold text-[#F8FAFC]">
-                {selectedDeck?.label ?? "Choose a deck version"}
-              </p>
+              <div className="mt-1 flex min-w-0 items-center gap-2">
+                <ArchetypeSprites
+                  archetype={selectedDeckArchetype}
+                  className="shrink-0"
+                />
+                <p className="truncate text-sm font-semibold text-[#F8FAFC]">
+                  {selectedDeck?.label ?? "Choose a deck version"}
+                </p>
+              </div>
             </div>
             <button
               type="button"
@@ -293,6 +345,29 @@ export function MatchLogForm({
             </span>
           </summary>
           <div className="mt-4 grid gap-4">
+            <div className="rounded-md bg-[#11182C]/58 p-3">
+              <div className="flex flex-col gap-2">
+                <label htmlFor="tcg_live_log" className={label}>
+                  Import TCG Live log
+                </label>
+                <textarea
+                  id="tcg_live_log"
+                  value={tcgLiveLog}
+                  onChange={(event) => setTcgLiveLog(event.target.value)}
+                  rows={3}
+                  placeholder="Paste a TCG Live battle log"
+                  className={`${textarea} min-h-24`}
+                />
+              </div>
+              <button
+                type="button"
+                onClick={importTcgLiveLog}
+                className="mt-3 rounded-md bg-[#4F8CFF]/14 px-3 py-2 text-sm font-semibold text-[#F8FAFC] transition hover:bg-[#4F8CFF]/22"
+              >
+                Use log
+              </button>
+            </div>
+
             <fieldset className="flex flex-col gap-2">
               <legend className={label}>
                 Event type
@@ -364,6 +439,8 @@ export function MatchLogForm({
               <textarea
                 id="notes"
                 name="notes"
+                value={notes}
+                onChange={(event) => setNotes(event.target.value)}
                 rows={2}
                 placeholder="Optional"
                 className={`${textarea} min-h-16 transition-all focus:min-h-28`}
