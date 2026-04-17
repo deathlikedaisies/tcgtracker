@@ -19,15 +19,15 @@ type MatchRow = {
   }[] | null;
 };
 
-function formatWinRate(wins: number, total: number) {
+function formatWinRate(wins: number, total: number, emptyLabel = "0%") {
   if (total === 0) {
-    return "0%";
+    return emptyLabel;
   }
 
   return `${Math.round((wins / total) * 100)}%`;
 }
 
-function getRecord(matches: MatchRow[]) {
+function getRecord(matches: MatchRow[], emptyLabel?: string) {
   const wins = matches.filter((match) => match.result === "win").length;
   const losses = matches.filter((match) => match.result === "loss").length;
 
@@ -35,7 +35,7 @@ function getRecord(matches: MatchRow[]) {
     matches: matches.length,
     wins,
     losses,
-    winRate: formatWinRate(wins, matches.length),
+    winRate: formatWinRate(wins, matches.length, emptyLabel),
   };
 }
 
@@ -90,10 +90,12 @@ export default async function DashboardPage() {
   const filteredMatches = matchRows;
   const totalRecord = getRecord(filteredMatches);
   const wentFirstRecord = getRecord(
-    filteredMatches.filter((match) => match.went_first === true)
+    filteredMatches.filter((match) => match.went_first === true),
+    "N/A"
   );
   const wentSecondRecord = getRecord(
-    filteredMatches.filter((match) => match.went_first === false)
+    filteredMatches.filter((match) => match.went_first === false),
+    "N/A"
   );
 
   const matchupSummary = Array.from(

@@ -57,18 +57,18 @@ export const ARCHETYPE_POKEMON: Record<string, ArchetypePokemon[]> = {
     { pokemon: "Munkidori" },
   ],
   "Joltik Box": [{ pokemon: "Joltik" }],
-  Crustle: [{ pokemon: "Crustle" }],
+  "Crustle": [{ pokemon: "Crustle" }],
   "Raging Bolt Ogerpon": [
     { pokemon: "Raging Bolt" },
     { pokemon: "Ogerpon" },
   ],
-  Alakazam: [{ pokemon: "Alakazam" }],
+  "Alakazam": [{ pokemon: "Alakazam" }],
   "Alakazam Dudunsparce": [
     { pokemon: "Alakazam" },
     { pokemon: "Dudunsparce" },
   ],
   "Cynthia's Garchomp": [{ pokemon: "Garchomp", label: "Cynthia's Garchomp" }],
-  Okidogi: [{ pokemon: "Okidogi" }],
+  "Okidogi": [{ pokemon: "Okidogi" }],
   "Marnie's Grimmsnarl": [{ pokemon: "Grimmsnarl", label: "Marnie's Grimmsnarl" }],
   "Mega Froslass": [{ pokemon: "Froslass", label: "Mega Froslass" }],
   "Gardevoir Jellicent": [
@@ -107,8 +107,8 @@ export const ARCHETYPE_POKEMON: Record<string, ArchetypePokemon[]> = {
     { pokemon: "Archaludon" },
     { pokemon: "Zoroark" },
   ],
-  Garchomp: [{ pokemon: "Garchomp" }],
-  Spidops: [{ pokemon: "Spidops" }],
+  "Garchomp": [{ pokemon: "Garchomp" }],
+  "Spidops": [{ pokemon: "Spidops" }],
   [OTHER_ARCHETYPE]: [],
 
   "Charizard ex": [{ pokemon: "Charizard", label: "Charizard ex" }],

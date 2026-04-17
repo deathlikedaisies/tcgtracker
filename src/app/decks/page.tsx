@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { AppNav } from "@/components/AppNav";
 import { ArchetypePicker } from "@/components/ArchetypePicker";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
+import { ConfirmSubmitButton } from "@/components/ConfirmSubmitButton";
 import {
   appContainer,
   appShell,
@@ -135,12 +136,12 @@ export default async function DecksPage() {
                             Manage
                           </Link>
                           <form action={removeDeck}>
-                            <button
-                              type="submit"
+                            <ConfirmSubmitButton
+                              message="Delete this deck and all of its versions and matches? This cannot be undone."
                               className={`w-full ${dangerButton}`}
                             >
                               Delete
-                            </button>
+                            </ConfirmSubmitButton>
                           </form>
                         </div>
                       </div>

@@ -16,7 +16,7 @@ const navItems: {
   { href: "/decks", label: "Decks", shortLabel: "Decks", section: "decks" },
   { href: "/matches", label: "Matches", shortLabel: "Logs", section: "matches" },
   { href: "/matches/new", label: "Log match", shortLabel: "Log", section: "log" },
-  { href: "/matchups", label: "Matchups", shortLabel: "Vs", section: "matchups" },
+  { href: "/matchups", label: "Matchups", shortLabel: "Match", section: "matchups" },
 ];
 
 export function AppNav({ current }: AppNavProps) {
@@ -29,7 +29,7 @@ export function AppNav({ current }: AppNavProps) {
         const isCurrent = item.section === current;
         const isLogAction = item.section === "log";
         const className = isCurrent
-          ? "inline-flex h-9 min-w-0 items-center justify-center rounded-md bg-[#F5C84C] px-1.5 text-[11px] font-semibold text-[#0B1020] shadow-[0_10px_26px_rgba(245,200,76,0.2)] sm:h-10 sm:px-3 sm:text-sm"
+          ? "inline-flex h-9 min-w-0 items-center justify-center rounded-md bg-[#4F8CFF]/24 px-1.5 text-[11px] font-semibold text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.34),0_10px_26px_rgba(79,140,255,0.12)] sm:h-10 sm:px-3 sm:text-sm"
           : isLogAction
             ? "inline-flex h-9 min-w-0 items-center justify-center rounded-md bg-[#4F8CFF]/18 px-1.5 text-[11px] font-semibold text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.26)] transition hover:bg-[#4F8CFF]/24 sm:h-10 sm:px-3 sm:text-sm"
             : "inline-flex h-9 min-w-0 items-center justify-center rounded-md px-1.5 text-[11px] font-medium text-[#94A3B8] transition hover:bg-[#1A2238]/66 hover:text-[#F8FAFC] sm:h-10 sm:px-3 sm:text-sm";

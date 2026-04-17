@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AppNav } from "@/components/AppNav";
+import { ArchetypePicker } from "@/components/ArchetypePicker";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
+import { ConfirmSubmitButton } from "@/components/ConfirmSubmitButton";
 import {
   appContainer,
   appShell,
@@ -109,7 +111,9 @@ function notePreview(notes: string | null) {
     return "No notes";
   }
 
-  return notes.length > 90 ? `${notes.slice(0, 90)}...` : notes;
+  const compact = notes.replace(/\s+/g, " ").trim();
+
+  return compact.length > 72 ? `${compact.slice(0, 72)}...` : compact;
 }
 
 function getDeckVersion(match: MatchRow) {
@@ -321,25 +325,16 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
               </select>
             </div>
             <div className="flex flex-col gap-2 lg:col-span-2">
-              <label
-                htmlFor="opponent_archetype"
-                className={label}
-              >
-                Opponent
-              </label>
-              <select
+              <ArchetypePicker
                 id="opponent_archetype"
                 name="opponent_archetype"
+                label="Opponent"
+                options={archetypeOptions}
                 defaultValue={selectedOpponentArchetype}
-                className={inputH10}
-              >
-                <option value="">All archetypes</option>
-                {archetypeOptions.map((archetype) => (
-                  <option key={archetype} value={archetype}>
-                    {archetype}
-                  </option>
-                ))}
-              </select>
+                placeholder="All archetypes"
+                maxOptions={5}
+                listMaxHeightClassName="max-h-40"
+              />
             </div>
             <div className="flex flex-col gap-2">
               <label htmlFor="result" className={label}>
@@ -502,12 +497,12 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                           Edit
                         </Link>
                         <form action={removeMatch}>
-                          <button
-                            type="submit"
+                          <ConfirmSubmitButton
+                            message="Delete this match? This cannot be undone."
                             className={`w-full ${dangerButton}`}
                           >
                             Delete
-                          </button>
+                          </ConfirmSubmitButton>
                         </form>
                       </div>
                     </div>

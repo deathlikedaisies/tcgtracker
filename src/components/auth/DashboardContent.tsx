@@ -160,7 +160,8 @@ export function DashboardContent({
   const router = useRouter();
   const supabase = createClient();
   const hasMatches = stats.totalMatches > 0;
-  const worstMatchup = matchupSummary.reduce<MatchupSummary | null>(
+  const sampledMatchups = matchupSummary.filter((matchup) => matchup.matches >= 3);
+  const worstMatchup = sampledMatchups.reduce<MatchupSummary | null>(
     (currentWorst, matchup) => {
       if (!currentWorst) {
         return matchup;
@@ -181,7 +182,7 @@ export function DashboardContent({
     },
     null
   );
-  const bestMatchup = matchupSummary.reduce<MatchupSummary | null>(
+  const bestMatchup = sampledMatchups.reduce<MatchupSummary | null>(
     (currentBest, matchup) => {
       if (!currentBest) {
         return matchup;
@@ -241,10 +242,10 @@ export function DashboardContent({
     },
     {
       label: "Worst matchup",
-      value: worstMatchup?.opponentArchetype ?? "No matchup yet",
+      value: worstMatchup?.opponentArchetype ?? "No 3-game sample",
       detail: worstMatchup
         ? `${worstMatchup.winRate} across ${worstMatchup.matches} games`
-        : "Log more games to find pressure points",
+        : "Log more games to trust the signal",
     },
     {
       label: "Best deck version",
@@ -263,8 +264,8 @@ export function DashboardContent({
     title: "Matchup Report",
     deckName: bestDeckVersion?.deckVersionName ?? "All decks",
     winRate: stats.overallWinRate,
-    worstMatchup: worstMatchup?.opponentArchetype ?? "No matchup yet",
-    bestMatchup: bestMatchup?.opponentArchetype ?? "No matchup yet",
+    worstMatchup: worstMatchup?.opponentArchetype ?? "No 3-game sample",
+    bestMatchup: bestMatchup?.opponentArchetype ?? "No 3-game sample",
     totalMatches: stats.totalMatches,
     context: "Your testing",
   };

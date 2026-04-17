@@ -34,7 +34,6 @@ const sessionKeys = {
   result: "tcgtracker.matchLog.result",
   wentFirst: "tcgtracker.matchLog.wentFirst",
   eventType: "tcgtracker.matchLog.eventType",
-  detailsOpen: "tcgtracker.matchLog.detailsOpen",
 };
 
 const toggleClass =
@@ -114,15 +113,10 @@ export function MatchLogForm({
       ? stored
       : "testing";
   });
-  const [detailsOpen, setDetailsOpen] = useState(() => {
-    if (typeof window === "undefined") {
-      return false;
-    }
-
-    return sessionStorage.getItem(sessionKeys.detailsOpen) === "true";
-  });
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const [notes, setNotes] = useState("");
   const [tcgLiveLog, setTcgLiveLog] = useState("");
+  const [importStatus, setImportStatus] = useState("");
   const [isChangingDeck, setIsChangingDeck] = useState(false);
   const selectedDeck = deckOptions.find((option) => option.id === deckVersionId);
   const selectedDeckArchetype = selectedDeck?.detail ?? "";
@@ -135,12 +129,14 @@ export function MatchLogForm({
     const log = tcgLiveLog.trim();
 
     if (!log) {
+      setImportStatus("Paste a TCG Live log first.");
       return;
     }
 
     setNotes(log);
 
     const normalizedLog = normalize(log);
+    let detectedResult = "";
 
     if (
       /\b(you won|you win|won the game|victory)\b/.test(normalizedLog) &&
@@ -148,9 +144,11 @@ export function MatchLogForm({
     ) {
       setResult("win");
       remember(sessionKeys.result, "win");
+      detectedResult = "Win";
     } else if (/\b(you lost|defeat|opponent won|opponent wins)\b/.test(normalizedLog)) {
       setResult("loss");
       remember(sessionKeys.result, "loss");
+      detectedResult = "Loss";
     }
 
     const ownArchetype = normalize(selectedDeckArchetype);
@@ -163,6 +161,15 @@ export function MatchLogForm({
       setOpponentArchetype(inferredOpponent);
       remember(sessionKeys.opponentArchetype, inferredOpponent);
     }
+
+    setTcgLiveLog("");
+    setImportStatus(
+      `Imported to notes.${
+        detectedResult || inferredOpponent
+          ? ` Detected: ${[detectedResult, inferredOpponent].filter(Boolean).join(" · ")}.`
+          : " Opponent/result not detected."
+      }`
+    );
   }
 
   return (
@@ -227,6 +234,20 @@ export function MatchLogForm({
           ) : null}
         </div>
 
+        <div className="flex items-center justify-between gap-3 rounded-md bg-[#0B1020]/28 px-3 py-2 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.035)]">
+          <p className="truncate text-xs font-medium uppercase text-[#94A3B8]/72">
+            Event
+          </p>
+          <button
+            type="button"
+            onClick={() => setDetailsOpen(true)}
+            className="inline-flex items-center gap-2 rounded-md bg-[#4F8CFF]/12 px-3 py-1.5 text-xs font-semibold capitalize text-[#F8FAFC] transition hover:bg-[#4F8CFF]/18"
+          >
+            {eventType}
+            <span className="text-[#94A3B8]">Change</span>
+          </button>
+        </div>
+
         <section className="rounded-md bg-[#0B1020]/24 p-3 shadow-[0_14px_40px_rgba(0,0,0,0.14),inset_0_0_0_1px_rgba(79,140,255,0.08)] sm:p-4">
           <ArchetypePicker
             id="opponent_archetype"
@@ -257,8 +278,9 @@ export function MatchLogForm({
                       setOpponentArchetype(archetype);
                       remember(sessionKeys.opponentArchetype, archetype);
                     }}
-                    className="shrink-0 rounded-md bg-[#11182C]/82 px-3 py-2 text-xs font-semibold text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(248,250,252,0.05)] transition hover:bg-[#4F8CFF]/16"
+                    className="inline-flex shrink-0 items-center gap-2 rounded-md bg-[#11182C]/82 px-3 py-2 text-xs font-semibold text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(248,250,252,0.05)] transition hover:bg-[#4F8CFF]/16"
                   >
+                    <ArchetypeSprites archetype={archetype} className="shrink-0" />
                     {archetype}
                   </button>
                 ))}
@@ -329,9 +351,7 @@ export function MatchLogForm({
         <details
           open={detailsOpen}
           onToggle={(event) => {
-            const isOpen = event.currentTarget.open;
-            setDetailsOpen(isOpen);
-            remember(sessionKeys.detailsOpen, String(isOpen));
+            setDetailsOpen(event.currentTarget.open);
           }}
           className="group rounded-md bg-[#0B1020]/28 p-3 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.035)]"
         >
@@ -366,6 +386,11 @@ export function MatchLogForm({
               >
                 Use log
               </button>
+              {importStatus ? (
+                <p className="mt-2 text-xs font-medium text-[#94A3B8]">
+                  {importStatus}
+                </p>
+              ) : null}
             </div>
 
             <fieldset className="flex flex-col gap-2">

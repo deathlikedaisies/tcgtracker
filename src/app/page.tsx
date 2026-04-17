@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
+import { ArchetypeSprites } from "@/components/ArchetypeSprites";
 import { PrizeMapLogo } from "@/components/PrizeMapLogo";
 
 const navItems = ["Product", "Insights", "Prep"];
@@ -13,8 +13,8 @@ const valueChips = [
 const features = [
   {
     title: "Log testing fast",
-    copy: "Capture deck, opponent, result, turn order, and event type without slowing down testing.",
-    stat: "30s",
+    copy: "Log opponent, result, and turn order in seconds between games.",
+    stat: "5s",
   },
   {
     title: "Find pressure points",
@@ -38,27 +38,21 @@ const trendBars = [58, 76, 44, 84, 62, 70, 92, 52, 80, 68];
 
 function SpriteStack() {
   const sprites = [
-    { src: "/sprites/dragapult-ex.png", alt: "Dragapult ex" },
-    { src: "/sprites/lucario.png", alt: "Lucario" },
-    { src: "/sprites/ogerpon.png", alt: "Ogerpon" },
+    "Dragapult Dusknoir",
+    "Lucario Hariyama",
+    "Raging Bolt Ogerpon",
   ];
 
   return (
     <div className="hidden items-center sm:flex">
       {sprites.map((sprite, index) => (
         <span
-          key={sprite.src}
+          key={sprite}
           className={`flex size-11 items-center justify-center rounded-md bg-[#0B1020]/74 shadow-[0_14px_34px_rgba(0,0,0,0.32),0_0_24px_rgba(79,140,255,0.12),inset_0_0_0_1px_rgba(248,250,252,0.08)] ${
             index > 0 ? "-ml-3" : ""
           }`}
         >
-          <Image
-            src={sprite.src}
-            alt={sprite.alt}
-            width={36}
-            height={36}
-            className="size-9 object-contain"
-          />
+          <ArchetypeSprites archetype={sprite} size="md" />
         </span>
       ))}
     </div>
@@ -198,13 +192,13 @@ export default function Home() {
         <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.88fr_1.12fr] lg:items-center">
           <div>
             <p className="inline-flex rounded-md bg-[#4F8CFF]/14 px-3 py-1 text-sm font-semibold text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.24)]">
-              Competitive Pokémon TCG command center
+              Built for Pokémon TCG testing
             </p>
             <h1 className="mt-5 max-w-3xl text-4xl font-semibold leading-tight tracking-tight text-[#F8FAFC] sm:text-6xl">
-              Turn every match into an edge.
+              Log faster. Learn your matchups.
             </h1>
             <p className="mt-4 text-lg leading-8 text-[#F8FAFC]">
-              Track matches, map matchups, and prep with real testing signal.
+              Track real games, spot weak matchups, and prep with notes tied to your decks.
             </p>
             <p className="mt-3 max-w-xl text-sm leading-6 text-[#94A3B8]/82">
               PrizeMap gives competitive players a sharper way to understand

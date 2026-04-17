@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AppNav } from "@/components/AppNav";
+import { ArchetypePicker } from "@/components/ArchetypePicker";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
 import {
   appContainer,
@@ -493,25 +494,16 @@ export default async function MatchupsPage({
               </select>
             </div>
             <div className="flex flex-col gap-2 lg:col-span-2">
-              <label
-                htmlFor="opponent_archetype"
-                className={label}
-              >
-                Opponent archetype
-              </label>
-              <select
+              <ArchetypePicker
                 id="opponent_archetype"
                 name="opponent_archetype"
+                label="Opponent archetype"
+                options={archetypeOptions}
                 defaultValue={selectedOpponentArchetype}
-                className={inputH10}
-              >
-                <option value="">All archetypes</option>
-                {archetypeOptions.map((archetype) => (
-                  <option key={archetype} value={archetype}>
-                    {archetype}
-                  </option>
-                ))}
-              </select>
+                placeholder="All archetypes"
+                maxOptions={5}
+                listMaxHeightClassName="max-h-40"
+              />
             </div>
             <div className="flex flex-col gap-2 sm:flex-row md:col-span-2 lg:col-span-4 lg:items-end lg:justify-end">
               <button
@@ -574,10 +566,17 @@ export default async function MatchupsPage({
                       </div>
                       <div className="mt-3 h-2 rounded-full bg-[#1A2238]/70">
                         <div
-                          className="h-2 rounded-full bg-[#4F8CFF]"
+                          className={`h-2 rounded-full bg-[#4F8CFF] ${
+                            matchup.matches < 3 ? "opacity-45" : ""
+                          }`}
                           style={{ width: `${matchup.winRateValue}%` }}
                         />
                       </div>
+                      {matchup.matches < 3 ? (
+                        <p className="mt-2 text-xs font-medium text-[#94A3B8]/76">
+                          Low sample. Log 3+ games before trusting this rate.
+                        </p>
+                      ) : null}
                     </div>
                     <div className="grid grid-cols-4 gap-2 text-sm">
                       <p className="text-[#94A3B8]">{matchup.matches} played</p>
