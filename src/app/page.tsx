@@ -150,7 +150,7 @@ export default function Home() {
               Log in
             </Link>
             <Link
-              href="/signup"
+              href="/onboarding"
               className="inline-flex h-10 items-center justify-center rounded bg-[#F5C84C] px-4 text-sm font-semibold text-[#0B1020] shadow-[0_14px_34px_rgba(245,200,76,0.28)] transition hover:-translate-y-0.5 hover:bg-[#ffd85f] active:translate-y-0 active:scale-[0.98]"
             >
               Get started
@@ -180,7 +180,7 @@ export default function Home() {
             <HeroSignal />
             <div className="mt-5">
               <Link
-                href="/signup"
+                href="/onboarding"
                 className="inline-flex h-12 w-full items-center justify-center rounded bg-[#F5C84C] px-6 text-sm font-semibold text-[#0B1020] shadow-[0_18px_44px_rgba(245,200,76,0.34)] transition hover:-translate-y-0.5 hover:bg-[#ffd85f] active:translate-y-0 active:scale-[0.98] sm:w-auto"
               >
                 Start tracking
@@ -214,7 +214,7 @@ export default function Home() {
             </p>
           </div>
           <Link
-            href="/signup"
+            href="/onboarding"
             className="inline-flex h-12 w-full items-center justify-center rounded bg-[#F5C84C] px-4 text-center text-sm font-semibold text-[#0B1020] shadow-[0_18px_44px_rgba(245,200,76,0.32)] transition hover:-translate-y-0.5 hover:bg-[#ffd85f] active:translate-y-0 active:scale-[0.98] sm:px-6 md:w-auto"
           >
             Fix your next testing session
