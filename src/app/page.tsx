@@ -52,7 +52,7 @@ function ProductPreview() {
                   Auto analysis
                 </p>
                 <p className="mt-1 min-w-0 text-lg font-semibold text-[#F8FAFC] sm:text-xl">
-                  Your next session: fix the Dragapult Dusknoir line.
+                  Run 5 games vs Dragapult going second.
                 </p>
               </div>
             </div>
@@ -194,7 +194,7 @@ export default async function Home() {
                 href="/onboarding"
                 className="inline-flex h-12 w-full items-center justify-center rounded bg-[#F5C84C] px-6 text-sm font-semibold text-[#0B1020] shadow-[0_18px_44px_rgba(245,200,76,0.34)] transition hover:-translate-y-0.5 hover:bg-[#ffd85f] active:translate-y-0 active:scale-[0.98] sm:w-auto"
               >
-                Start tracking
+                Log your next game
               </Link>
             </div>
           </div>
@@ -206,10 +206,10 @@ export default async function Home() {
       <section className="px-4 pb-5 sm:px-6 sm:pb-7">
         <div className="mx-auto max-w-6xl rounded bg-[#11182C]/42 p-4 shadow-[0_12px_30px_rgba(0,0,0,0.14)] sm:p-5">
           <h2 className="text-2xl font-semibold tracking-tight text-[#F8FAFC]">
-            Most players test wrong.
+            Stop guessing. Test the leak.
           </h2>
-          <p className="mt-3 max-w-2xl text-sm font-medium leading-6 text-[#94A3B8]">
-            You remember wins. You ignore patterns. That&apos;s why you don&apos;t improve.
+          <p className="mt-3 max-w-xl text-sm font-medium leading-6 text-[#94A3B8]">
+            PrizeMap turns your last games into the next matchup to drill.
           </p>
         </div>
       </section>
@@ -228,7 +228,7 @@ export default async function Home() {
             href="/onboarding"
             className="inline-flex h-12 w-full items-center justify-center rounded bg-[#F5C84C] px-4 text-center text-sm font-semibold text-[#0B1020] shadow-[0_18px_44px_rgba(245,200,76,0.32)] transition hover:-translate-y-0.5 hover:bg-[#ffd85f] active:translate-y-0 active:scale-[0.98] sm:px-6 md:w-auto"
           >
-            Fix your next testing session
+            Log your next game
           </Link>
         </div>
       </section>

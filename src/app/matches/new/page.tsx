@@ -13,6 +13,7 @@ import { MatchLogForm } from "@/components/matches/MatchLogForm";
 import { PrizeMapLogo } from "@/components/PrizeMapLogo";
 import { getArchetypeOptions } from "@/lib/archetypes";
 import { LATEST_FORMAT } from "@/lib/formats";
+import { buildSessionCoachInsight } from "@/lib/session-coach";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { logMatch } from "./actions";
 
@@ -71,7 +72,7 @@ export default async function NewMatchPage({
 
   const { data: previousMatches, error: previousMatchesError } = await supabase
     .from("matches")
-    .select("opponent_archetype, played_at")
+    .select("opponent_archetype, result, went_first, event_type, played_at, match_tags(tag)")
     .eq("user_id", user.id)
     .order("played_at", { ascending: false });
 
@@ -83,6 +84,16 @@ export default async function NewMatchPage({
   const previousOpponentArchetypes = (
     (previousMatches ?? []) as { opponent_archetype: string }[]
   ).map((match) => match.opponent_archetype);
+  const sessionCoach = buildSessionCoachInsight(
+    (previousMatches ?? []) as {
+      opponent_archetype: string;
+      result: "win" | "loss";
+      went_first: boolean | null;
+      event_type: string | null;
+      played_at: string;
+      match_tags: { tag: string }[] | null;
+    }[]
+  );
   const deckOptions = userDecks.flatMap((deck) =>
     deck.deck_versions.map((version) => ({
       id: version.id,
@@ -124,6 +135,7 @@ export default async function NewMatchPage({
             recentOpponentArchetypes={recentOpponentArchetypes}
             initialEventType={event}
             initialOpponentArchetype={opponent}
+            sessionCoach={sessionCoach}
             wasSuccessful={success === "1"}
           />
         ) : (

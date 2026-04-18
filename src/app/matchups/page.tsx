@@ -528,13 +528,13 @@ export default async function MatchupsPage({
               No matches logged yet.
             </h2>
             <p className={`mt-3 max-w-xl ${sectionCopy}`}>
-              Log matches to build matchup records for each opponent archetype.
+              Log a few games and PrizeMap will show your weakest matchup.
             </p>
             <Link
               href="/matches/new"
               className={`mt-6 ${primaryButton}`}
             >
-              Log your first match
+              Log your next game
             </Link>
           </section>
         ) : hasFilteredMatches ? (

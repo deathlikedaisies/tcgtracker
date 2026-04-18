@@ -12,6 +12,7 @@ import {
   textarea,
 } from "@/components/brand-styles";
 import { MATCH_TAGS } from "@/lib/match-options";
+import type { SessionCoachInsight } from "@/lib/session-coach";
 
 type DeckOption = {
   id: string;
@@ -27,6 +28,7 @@ type MatchLogFormProps = {
   recentOpponentArchetypes: string[];
   initialEventType?: string;
   initialOpponentArchetype?: string;
+  sessionCoach?: SessionCoachInsight | null;
   wasSuccessful: boolean;
 };
 
@@ -50,7 +52,7 @@ function SubmitButton() {
       disabled={pending}
       className={`${primaryButton} h-11 w-full`}
     >
-      {pending ? "Saving..." : "Save and log another"}
+      {pending ? "Saving..." : "Save & next game"}
     </button>
   );
 }
@@ -70,6 +72,7 @@ export function MatchLogForm({
   initialEventType,
   initialOpponentArchetype,
   recentOpponentArchetypes,
+  sessionCoach,
   wasSuccessful,
 }: MatchLogFormProps) {
   const [deckVersionId, setDeckVersionId] = useState(() => {
@@ -214,7 +217,17 @@ export function MatchLogForm({
       <div className="grid w-full max-w-full min-w-0 gap-4 overflow-x-hidden">
         {wasSuccessful ? (
           <div className="rounded-md bg-emerald-500/10 px-3 py-2 text-sm font-medium text-emerald-200">
-            Match logged. Ready for the next one.
+            {sessionCoach ? (
+              <>
+                {sessionCoach.condition === "No loss cluster yet"
+                  ? "Trend improving"
+                  : `Still your biggest leak: ${sessionCoach.weakMatchup}`}
+                .{" "}
+                <span className="text-emerald-100">{sessionCoach.nextTest}</span>
+              </>
+            ) : (
+              "Match logged. Ready for the next one."
+            )}
           </div>
         ) : null}
 
@@ -369,7 +382,7 @@ export function MatchLogForm({
 
         <fieldset className="max-w-full overflow-x-hidden rounded-md bg-[#0B1020]/28 px-3 py-2.5 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.035)]">
           <legend className="mb-2 text-xs font-medium uppercase text-[#94A3B8]/72">
-            Where did it happen?
+            Game type
           </legend>
           <div className="grid min-w-0 grid-cols-3 gap-1.5 sm:gap-2">
             {(["casual", "testing", "tournament"] as const).map(

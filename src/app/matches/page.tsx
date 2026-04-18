@@ -401,13 +401,13 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
               No matches logged yet.
             </h2>
             <p className={`mt-3 max-w-xl ${sectionCopy}`}>
-              Log your first match to start building match history.
+              Log a game and start finding what is costing you wins.
             </p>
             <Link
               href="/matches/new"
               className={`mt-6 ${primaryButton}`}
             >
-              Log your first match
+              Log your next game
             </Link>
           </section>
         ) : filteredMatches.length ? (

@@ -15,7 +15,7 @@ const navItems: {
   { href: "/dashboard", label: "Dashboard", shortLabel: "Home", section: "dashboard" },
   { href: "/decks", label: "Decks", shortLabel: "Decks", section: "decks" },
   { href: "/matches", label: "Matches", shortLabel: "Logs", section: "matches" },
-  { href: "/matches/new", label: "Log match", shortLabel: "Log", section: "log" },
+  { href: "/matches/new", label: "Log game", shortLabel: "Log", section: "log" },
   { href: "/matchups", label: "Matchups", shortLabel: "Match", section: "matchups" },
 ];
 

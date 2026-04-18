@@ -151,7 +151,7 @@ function parseRate(value: string) {
 function SessionCoachCard({ insight }: { insight: SessionCoachInsight }) {
   return (
     <section className="rounded-md bg-[#11182C]/84 p-4 shadow-[0_24px_70px_rgba(0,0,0,0.30),0_0_42px_rgba(245,200,76,0.08),inset_0_0_0_1px_rgba(245,200,76,0.18)] sm:p-5">
-      <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+      <div className="flex flex-col gap-4">
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-wide text-[#F5C84C]/82">
             Session Coach
@@ -163,37 +163,61 @@ function SessionCoachCard({ insight }: { insight: SessionCoachInsight }) {
                 {insight.headline}
               </h2>
               <p className="mt-2 text-sm font-medium text-[#94A3B8]">
-                {insight.confidence} · Record vs this matchup: {insight.record}
+                {insight.confidence} · Record: {insight.record}
               </p>
             </div>
           </div>
         </div>
-        <Link
-          href={insight.continueHref}
-          className="inline-flex h-11 w-full items-center justify-center rounded-md bg-[#F5C84C] px-4 text-sm font-semibold text-[#0B1020] shadow-[0_16px_38px_rgba(245,200,76,0.24)] transition hover:-translate-y-0.5 hover:bg-[#ffd85f] active:translate-y-0 active:scale-[0.98] sm:w-fit"
-        >
-          Continue this test
-        </Link>
       </div>
 
-      <div className="mt-5 grid gap-3 lg:grid-cols-[1.1fr_1fr]">
-        <div className="rounded-md bg-[#0B1020]/46 p-4 shadow-[inset_0_0_0_1px_rgba(244,63,94,0.16)]">
-          <p className="text-xs font-semibold uppercase text-[#F43F5E]/86">
-            What is costing you games
-          </p>
-          <p className="mt-2 text-base font-semibold text-[#F8FAFC]">
-            {insight.context}
-          </p>
-          <p className="mt-2 text-sm leading-6 text-[#94A3B8]">
-            {insight.focus}
-          </p>
+      <div className="mt-5 rounded-md bg-[#0B1020]/52 p-4 shadow-[inset_0_0_0_1px_rgba(244,63,94,0.18)]">
+        <p className="text-xs font-semibold uppercase text-[#F43F5E]/86">
+          Biggest leak
+        </p>
+        <div className="mt-3 grid gap-3 sm:grid-cols-3">
+          <div>
+            <p className="text-xs font-medium uppercase text-[#94A3B8]/70">
+              Matchup
+            </p>
+            <p className="mt-1 text-base font-semibold text-[#F8FAFC]">
+              {insight.weakMatchup}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs font-medium uppercase text-[#94A3B8]/70">
+              Condition
+            </p>
+            <p className="mt-1 text-base font-semibold text-[#F8FAFC]">
+              {insight.condition}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs font-medium uppercase text-[#94A3B8]/70">
+              Next test
+            </p>
+            <p className="mt-1 text-base font-semibold text-[#F8FAFC]">
+              {insight.exactTest}
+            </p>
+          </div>
         </div>
-        <div className="rounded-md bg-[#0B1020]/50 p-4 shadow-[inset_0_0_0_1px_rgba(245,200,76,0.22)]">
-          <p className="text-xs font-semibold uppercase text-[#F5C84C]/86">
-            Recommended next test
+        <p className="mt-3 text-sm leading-6 text-[#94A3B8]">
+          {insight.context}
+        </p>
+      </div>
+
+      <div className="mt-4 grid gap-3 lg:grid-cols-[auto_minmax(0,1fr)] lg:items-stretch">
+        <Link
+          href={insight.continueHref}
+          className="inline-flex h-12 w-full items-center justify-center rounded-md bg-[#F5C84C] px-5 text-sm font-semibold text-[#0B1020] shadow-[0_16px_38px_rgba(245,200,76,0.24)] transition hover:-translate-y-0.5 hover:bg-[#ffd85f] active:translate-y-0 active:scale-[0.98] lg:w-fit"
+        >
+          Run this test
+        </Link>
+        <div className="rounded-md bg-[#0B1020]/42 p-3 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.12)]">
+          <p className="text-xs font-semibold uppercase text-[#4F8CFF]">
+            Auto analysis
           </p>
-          <p className="mt-2 text-lg font-semibold leading-7 text-[#F8FAFC]">
-            {insight.nextTest}
+          <p className="mt-1 text-sm leading-6 text-[#94A3B8]">
+            {insight.focus}
           </p>
         </div>
       </div>
@@ -381,7 +405,7 @@ export function DashboardContent({
                     className="mr-2"
                     markClassName="size-5 bg-[#0B1020]/12 shadow-none"
                   />
-                  Log match
+                  Log your next game
                 </Link>
                 <ShareReportButton report={shareReport} />
               </div>
@@ -632,7 +656,7 @@ export function DashboardContent({
               No matches logged yet.
             </h2>
             <p className={`mt-3 max-w-xl ${sectionCopy}`}>
-              Start tracking to uncover what&apos;s actually costing you games.
+              Log a few games and PrizeMap will point at the matchup to fix.
             </p>
             <Link
               href="/matches/new"
@@ -644,7 +668,7 @@ export function DashboardContent({
                 className="mr-2"
                 markClassName="size-5 bg-[#0B1020]/12 shadow-none"
               />
-              Log your first match
+              Log your next game
             </Link>
             <Link
               href="/decks"

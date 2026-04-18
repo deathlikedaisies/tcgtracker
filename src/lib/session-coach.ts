@@ -11,7 +11,10 @@ export type SessionCoachInsight = {
   archetype: string;
   confidence: string;
   headline: string;
+  weakMatchup: string;
+  condition: string;
   context: string;
+  exactTest: string;
   nextTest: string;
   focus: string;
   record: string;
@@ -35,18 +38,16 @@ function formatRecord(wins: number, losses: number) {
 
 function getConfidence(matchCount: number, totalMatches: number) {
   if (matchCount >= 10) {
-    return `Stronger signal from ${matchCount} games`;
+    return `Strong signal (${matchCount}+ games)`;
   }
 
   if (matchCount >= 3) {
-    return `Early signal from ${matchCount} games`;
+    return `Early signal (${matchCount} games)`;
   }
 
   return totalMatches >= 3
-    ? `Small sample, but clear trend from ${matchCount} game${
-        matchCount === 1 ? "" : "s"
-      }`
-    : `Early signal from ${totalMatches} game${totalMatches === 1 ? "" : "s"}`;
+    ? `Small sample (${matchCount} game${matchCount === 1 ? "" : "s"})`
+    : `Early signal (${totalMatches} game${totalMatches === 1 ? "" : "s"})`;
 }
 
 function getMostCommonValue(values: string[]) {
@@ -137,8 +138,11 @@ export function buildSessionCoachInsight(
         recentMatches.length
       ),
       headline: `No clear leak yet. Stress-test ${strongestPositiveSignal.archetype}.`,
+      weakMatchup: strongestPositiveSignal.archetype,
+      condition: "No loss cluster yet",
       context: "You have not logged a loss in your recent sample.",
-      nextTest: `Next test: play 5 more games vs ${strongestPositiveSignal.archetype}.`,
+      exactTest: `Play 5 more games vs ${strongestPositiveSignal.archetype}.`,
+      nextTest: `Run 5 more games vs ${strongestPositiveSignal.archetype}.`,
       focus: "Keep the same deck and test whether the matchup stays stable.",
       record: formatRecord(strongestPositiveSignal.wins, 0),
       eventType,
@@ -182,6 +186,12 @@ export function buildSessionCoachInsight(
         .filter((eventType): eventType is string => Boolean(eventType))
     ) ?? "testing";
   const turnPhrase = turnContext ? ` ${turnContext}` : "";
+  const condition = turnContext
+    ? `Worse when ${turnContext}`
+    : repeatedTag
+      ? `Losses repeat around ${repeatedTag}`
+      : "Weakest recent matchup";
+  const exactTest = `Play 5 games vs ${biggestLeak.archetype}${turnPhrase}.`;
   const focus = repeatedTag
     ? `Focus on ${repeatedTag} in this matchup.`
     : turnContext
@@ -192,10 +202,13 @@ export function buildSessionCoachInsight(
     archetype: biggestLeak.archetype,
     confidence: getConfidence(biggestLeak.matches.length, recentMatches.length),
     headline: `Your biggest leak right now is ${biggestLeak.archetype}.`,
+    weakMatchup: biggestLeak.archetype,
+    condition,
     context: turnContext
       ? `You are losing more often when ${turnContext}.`
       : "This matchup is costing you the clearest games right now.",
-    nextTest: `Next test: play 5 more games vs ${biggestLeak.archetype}${turnPhrase}.`,
+    exactTest,
+    nextTest: `Run 5 games vs ${biggestLeak.archetype}${turnPhrase}.`,
     focus,
     record: formatRecord(biggestLeak.wins, biggestLeak.losses),
     eventType,
