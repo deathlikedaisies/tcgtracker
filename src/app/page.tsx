@@ -37,17 +37,17 @@ function ProductPreview() {
             </h2>
           </div>
 
-          <div className="mt-3 rounded bg-[#11182C]/92 p-4 shadow-[0_16px_42px_rgba(245,200,76,0.09),inset_0_0_0_1px_rgba(245,200,76,0.42)] transition duration-200 hover:-translate-y-0.5 sm:p-5">
+          <div className="mt-3 rounded bg-[#11182C]/92 p-4 shadow-[0_14px_34px_rgba(245,200,76,0.07),inset_0_0_0_1px_rgba(245,200,76,0.34)] transition duration-200 hover:-translate-y-0.5 sm:p-5">
             <div className="flex min-w-0 items-center gap-3">
               <PrizeMapLogo
                 variant="app-icon"
                 showText={false}
-                className="prizemap-glow-pulse shrink-0"
-                markClassName="size-10 bg-[#0B1020]/72 shadow-[inset_0_0_0_1px_rgba(245,200,76,0.26)]"
+                className="shrink-0 opacity-90"
+                markClassName="size-8 bg-transparent shadow-none"
               />
               <div className="min-w-0">
-                <p className="text-xs font-medium text-[#F5C84C]/82">
-                  Recommended next test
+                <p className="text-xs font-medium uppercase tracking-wide text-[#F5C84C]/82">
+                  Auto analysis
                 </p>
                 <p className="mt-1 min-w-0 text-lg font-semibold text-[#F8FAFC] sm:text-xl">
                   Your next session: fix the Dragapult Dusknoir line.
@@ -65,7 +65,7 @@ function ProductPreview() {
                   key={metric.label}
                   className={`rounded p-3 transition duration-200 hover:-translate-y-0.5 ${
                     isWorstMatchup
-                      ? "col-span-2 bg-[#F43F5E]/18 shadow-[0_18px_52px_rgba(244,63,94,0.20),inset_0_0_0_1px_rgba(244,63,94,0.44)]"
+                      ? "col-span-2 bg-[#2A1320]/92 shadow-[0_14px_38px_rgba(244,63,94,0.12),inset_0_0_0_1px_rgba(244,63,94,0.34)]"
                       : "bg-[#1A2238]/50 shadow-[0_10px_26px_rgba(0,0,0,0.12)]"
                   }`}
                 >
@@ -124,7 +124,7 @@ function HeroSignal() {
     <div className="mt-5 inline-flex max-w-full items-center gap-3 rounded bg-[#11182C]/56 px-3 py-2 shadow-[0_12px_30px_rgba(0,0,0,0.16)]">
       <ArchetypeSprites archetype="Dragapult Dusknoir" className="shrink-0" />
       <span className="min-w-0 text-sm font-semibold text-[#F8FAFC]">
-        This matchup is costing you games: Dragapult Dusknoir
+        This matchup is your biggest leak right now: Dragapult Dusknoir
       </span>
     </div>
   );
@@ -198,8 +198,7 @@ export default function Home() {
             Most players test wrong.
           </h2>
           <p className="mt-3 max-w-2xl text-sm font-medium leading-6 text-[#94A3B8]">
-            You remember wins. You forget what&apos;s costing you games.
-            PrizeMap shows the truth.
+            You remember wins. You ignore patterns. That&apos;s why you don&apos;t improve.
           </p>
         </div>
       </section>
@@ -218,7 +217,7 @@ export default function Home() {
             href="/signup"
             className="inline-flex h-12 w-full items-center justify-center rounded bg-[#F5C84C] px-4 text-center text-sm font-semibold text-[#0B1020] shadow-[0_18px_44px_rgba(245,200,76,0.32)] transition hover:-translate-y-0.5 hover:bg-[#ffd85f] active:translate-y-0 active:scale-[0.98] sm:px-6 md:w-auto"
           >
-            Start tracking before your next session
+            Fix your next testing session
           </Link>
         </div>
       </section>
