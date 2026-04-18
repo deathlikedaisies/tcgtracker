@@ -37,9 +37,14 @@ function ProductPreview() {
             </h2>
           </div>
 
-          <div className="mt-3 rounded bg-[#11182C]/92 p-4 shadow-[0_18px_48px_rgba(245,200,76,0.12),inset_0_0_0_1px_rgba(245,200,76,0.36)] transition duration-200 hover:-translate-y-0.5 sm:p-5">
+          <div className="mt-3 rounded bg-[#11182C]/92 p-4 shadow-[0_16px_42px_rgba(245,200,76,0.09),inset_0_0_0_1px_rgba(245,200,76,0.42)] transition duration-200 hover:-translate-y-0.5 sm:p-5">
             <div className="flex min-w-0 items-center gap-3">
-              <ArchetypeSprites archetype="Dragapult Dusknoir" className="shrink-0" />
+              <PrizeMapLogo
+                variant="app-icon"
+                showText={false}
+                className="prizemap-glow-pulse shrink-0"
+                markClassName="size-10 bg-[#0B1020]/72 shadow-[inset_0_0_0_1px_rgba(245,200,76,0.26)]"
+              />
               <div className="min-w-0">
                 <p className="text-xs font-medium text-[#F5C84C]/82">
                   Recommended next test
@@ -95,9 +100,14 @@ function ProductPreview() {
                     </p>
                   </div>
                   {"detail" in metric ? (
-                    <p className="mt-2 text-sm font-semibold text-rose-100/88">
-                      {metric.detail}
-                    </p>
+                    <>
+                      <p className="mt-2 text-sm font-semibold text-rose-100/90">
+                        This is your biggest leak right now.
+                      </p>
+                      <p className="mt-1 text-sm font-medium text-rose-100/78">
+                        {metric.detail}
+                      </p>
+                    </>
                   ) : null}
                 </div>
               );
@@ -165,7 +175,7 @@ export default function Home() {
               You don&apos;t actually know your matchups.
             </h1>
             <p className="mt-4 max-w-xl text-lg leading-8 text-[#F8FAFC]">
-              Track games. Find what&apos;s losing you matches. Fix it.
+              Built from your own games, not guesses.
             </p>
             <HeroSignal />
             <div className="mt-5">
@@ -173,12 +183,6 @@ export default function Home() {
                 href="/signup"
                 className="inline-flex h-12 w-full items-center justify-center rounded bg-[#F5C84C] px-6 text-sm font-semibold text-[#0B1020] shadow-[0_18px_44px_rgba(245,200,76,0.34)] transition hover:-translate-y-0.5 hover:bg-[#ffd85f] active:translate-y-0 active:scale-[0.98] sm:w-auto"
               >
-                <PrizeMapLogo
-                  variant="favicon"
-                  showText={false}
-                  className="mr-2"
-                  markClassName="size-6 bg-[#0B1020]/12 shadow-none"
-                />
                 Start tracking
               </Link>
             </div>
@@ -193,13 +197,9 @@ export default function Home() {
           <h2 className="text-2xl font-semibold tracking-tight text-[#F8FAFC]">
             Most players test wrong.
           </h2>
-          <div className="mt-3 grid gap-2 text-sm font-medium text-[#94A3B8] md:grid-cols-3">
-            <p>You remember wins. You forget what&apos;s actually losing you games.</p>
-            <p>You think you know your matchups. You don&apos;t.</p>
-            <p>You repeat the same mistakes every session.</p>
-          </div>
-          <p className="mt-3 text-base font-semibold text-[#F8FAFC]">
-            PrizeMap shows you what&apos;s actually happening.
+          <p className="mt-3 max-w-2xl text-sm font-medium leading-6 text-[#94A3B8]">
+            You remember wins. You forget what&apos;s costing you games.
+            PrizeMap shows the truth.
           </p>
         </div>
       </section>
@@ -218,12 +218,6 @@ export default function Home() {
             href="/signup"
             className="inline-flex h-12 w-full items-center justify-center rounded bg-[#F5C84C] px-4 text-center text-sm font-semibold text-[#0B1020] shadow-[0_18px_44px_rgba(245,200,76,0.32)] transition hover:-translate-y-0.5 hover:bg-[#ffd85f] active:translate-y-0 active:scale-[0.98] sm:px-6 md:w-auto"
           >
-            <PrizeMapLogo
-              variant="favicon"
-              showText={false}
-              className="mr-2"
-              markClassName="size-6 bg-[#0B1020]/12 shadow-none"
-            />
             Start tracking before your next session
           </Link>
         </div>
