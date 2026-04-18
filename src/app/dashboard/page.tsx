@@ -1,4 +1,5 @@
 import { DashboardContent } from "@/components/auth/DashboardContent";
+import { buildSessionCoachInsight } from "@/lib/session-coach";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
 
@@ -12,6 +13,9 @@ type MatchRow = {
   went_first: boolean | null;
   event_type: string | null;
   played_at: string;
+  match_tags: {
+    tag: string;
+  }[] | null;
   deck_versions: {
     name: string;
   } | {
@@ -77,7 +81,7 @@ export default async function DashboardPage() {
   const { data: matches, error: matchesError } = await supabase
     .from("matches")
     .select(
-      "id, deck_version_id, opponent_archetype, result, went_first, event_type, played_at, deck_versions(name)"
+      "id, deck_version_id, opponent_archetype, result, went_first, event_type, played_at, match_tags(tag), deck_versions(name)"
     )
     .eq("user_id", user.id)
     .order("played_at", { ascending: false });
@@ -87,6 +91,7 @@ export default async function DashboardPage() {
   }
 
   const matchRows = (matches ?? []) as unknown as MatchRow[];
+  const sessionCoach = buildSessionCoachInsight(matchRows);
   const filteredMatches = matchRows;
   const totalRecord = getRecord(filteredMatches);
   const wentFirstRecord = getRecord(
@@ -193,6 +198,7 @@ export default async function DashboardPage() {
       deckPerformance={deckPerformance}
       trendData={trendData}
       deckPerformanceChart={deckPerformanceChart}
+      sessionCoach={sessionCoach}
     />
   );
 }

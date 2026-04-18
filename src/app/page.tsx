@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
 import { PrizeMapLogo } from "@/components/PrizeMapLogo";
+import { createServerSupabaseClient } from "@/lib/supabase-server";
 
 const demoMetrics = [
   {
@@ -130,7 +132,16 @@ function HeroSignal() {
   );
 }
 
-export default function Home() {
+export default async function Home() {
+  const supabase = await createServerSupabaseClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (user) {
+    redirect("/dashboard");
+  }
+
   return (
     <main className="min-h-screen overflow-hidden bg-[#0B1020] bg-[radial-gradient(ellipse_at_top,rgba(79,140,255,0.14),transparent_38%),linear-gradient(180deg,#0B1020_0%,#11182C_50%,#0B1020_100%)] text-[#F8FAFC]">
       <header className="px-4 py-4 sm:px-6">
@@ -145,15 +156,15 @@ export default function Home() {
           <div className="flex items-center gap-2">
             <Link
               href="/login"
-              className="hidden h-10 items-center justify-center rounded px-3 text-sm font-medium text-[#94A3B8] transition hover:bg-white/5 hover:text-[#F8FAFC] active:scale-[0.98] sm:inline-flex"
+              className="inline-flex h-10 items-center justify-center rounded px-3 text-sm font-medium text-[#94A3B8] transition hover:bg-white/5 hover:text-[#F8FAFC] active:scale-[0.98]"
             >
               Log in
             </Link>
             <Link
-              href="/onboarding"
-              className="inline-flex h-10 items-center justify-center rounded bg-[#F5C84C] px-4 text-sm font-semibold text-[#0B1020] shadow-[0_14px_34px_rgba(245,200,76,0.28)] transition hover:-translate-y-0.5 hover:bg-[#ffd85f] active:translate-y-0 active:scale-[0.98]"
+              href="/signup"
+              className="inline-flex h-10 items-center justify-center rounded bg-[#F5C84C] px-3 text-sm font-semibold text-[#0B1020] shadow-[0_14px_34px_rgba(245,200,76,0.22)] transition hover:-translate-y-0.5 hover:bg-[#ffd85f] active:translate-y-0 active:scale-[0.98] sm:px-4"
             >
-              Get started
+              Sign up
             </Link>
           </div>
         </div>

@@ -34,6 +34,7 @@ import {
 } from "@/components/brand-styles";
 import { PrizeMapLogo } from "@/components/PrizeMapLogo";
 import { ShareReportButton, type ShareReport } from "@/components/ShareReportButton";
+import type { SessionCoachInsight } from "@/lib/session-coach";
 import { createClient } from "@/lib/supabase";
 
 type DeckSummary = {
@@ -100,6 +101,7 @@ type DashboardContentProps = {
   deckPerformance: DeckPerformance[];
   trendData: TrendPoint[];
   deckPerformanceChart: DeckPerformanceChartPoint[];
+  sessionCoach: SessionCoachInsight | null;
 };
 
 function formatDate(value: string) {
@@ -146,6 +148,59 @@ function parseRate(value: string) {
   return Number.parseInt(value.replace("%", ""), 10) || 0;
 }
 
+function SessionCoachCard({ insight }: { insight: SessionCoachInsight }) {
+  return (
+    <section className="rounded-md bg-[#11182C]/84 p-4 shadow-[0_24px_70px_rgba(0,0,0,0.30),0_0_42px_rgba(245,200,76,0.08),inset_0_0_0_1px_rgba(245,200,76,0.18)] sm:p-5">
+      <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+        <div className="min-w-0">
+          <p className="text-xs font-semibold uppercase tracking-wide text-[#F5C84C]/82">
+            Session Coach
+          </p>
+          <div className="mt-3 flex min-w-0 items-start gap-3">
+            <ArchetypeSprites archetype={insight.archetype} className="shrink-0" />
+            <div className="min-w-0">
+              <h2 className="text-2xl font-semibold leading-tight tracking-tight text-[#F8FAFC] sm:text-3xl">
+                {insight.headline}
+              </h2>
+              <p className="mt-2 text-sm font-medium text-[#94A3B8]">
+                {insight.confidence} · Record vs this matchup: {insight.record}
+              </p>
+            </div>
+          </div>
+        </div>
+        <Link
+          href={insight.continueHref}
+          className="inline-flex h-11 w-full items-center justify-center rounded-md bg-[#F5C84C] px-4 text-sm font-semibold text-[#0B1020] shadow-[0_16px_38px_rgba(245,200,76,0.24)] transition hover:-translate-y-0.5 hover:bg-[#ffd85f] active:translate-y-0 active:scale-[0.98] sm:w-fit"
+        >
+          Continue this test
+        </Link>
+      </div>
+
+      <div className="mt-5 grid gap-3 lg:grid-cols-[1.1fr_1fr]">
+        <div className="rounded-md bg-[#0B1020]/46 p-4 shadow-[inset_0_0_0_1px_rgba(244,63,94,0.16)]">
+          <p className="text-xs font-semibold uppercase text-[#F43F5E]/86">
+            What is costing you games
+          </p>
+          <p className="mt-2 text-base font-semibold text-[#F8FAFC]">
+            {insight.context}
+          </p>
+          <p className="mt-2 text-sm leading-6 text-[#94A3B8]">
+            {insight.focus}
+          </p>
+        </div>
+        <div className="rounded-md bg-[#0B1020]/50 p-4 shadow-[inset_0_0_0_1px_rgba(245,200,76,0.22)]">
+          <p className="text-xs font-semibold uppercase text-[#F5C84C]/86">
+            Recommended next test
+          </p>
+          <p className="mt-2 text-lg font-semibold leading-7 text-[#F8FAFC]">
+            {insight.nextTest}
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function DashboardContent({
   email,
   decks,
@@ -156,6 +211,7 @@ export function DashboardContent({
   deckPerformance,
   trendData,
   deckPerformanceChart,
+  sessionCoach,
 }: DashboardContentProps) {
   const router = useRouter();
   const supabase = createClient();
@@ -299,15 +355,19 @@ export function DashboardContent({
           </div>
         </div>
 
+        {hasMatches && sessionCoach ? (
+          <SessionCoachCard insight={sessionCoach} />
+        ) : null}
+
         {hasMatches ? (
           <section className="rounded-md bg-[#11182C]/78 p-4 shadow-[0_24px_70px_rgba(0,0,0,0.28),0_0_50px_rgba(79,140,255,0.08),inset_0_0_0_1px_rgba(248,250,252,0.05)] sm:p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div>
                 <p className="text-sm font-semibold text-[#4F8CFF]">
-                  Insight strip
+                  Testing snapshot
                 </p>
                 <h2 className="mt-1 text-2xl font-semibold tracking-tight text-[#F8FAFC]">
-                  Testing signal from your matches.
+                  Fast context from your logged games.
                 </h2>
               </div>
               <div className="flex flex-col gap-2 sm:flex-row">

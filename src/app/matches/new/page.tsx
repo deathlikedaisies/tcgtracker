@@ -30,6 +30,8 @@ type DeckWithVersions = {
 
 type NewMatchPageProps = {
   searchParams: Promise<{
+    event?: string;
+    opponent?: string;
     success?: string;
   }>;
 };
@@ -37,7 +39,7 @@ type NewMatchPageProps = {
 export default async function NewMatchPage({
   searchParams,
 }: NewMatchPageProps) {
-  const { success } = await searchParams;
+  const { event, opponent, success } = await searchParams;
   const supabase = await createServerSupabaseClient();
   const {
     data: { user },
@@ -105,10 +107,10 @@ export default async function NewMatchPage({
             <PrizeMapLogo {...logoOnDark} />
             <p className="mt-5 text-sm font-medium text-[#94A3B8]">Match log</p>
             <h1 className={pageTitle}>
-              Log a Match
+              What just happened?
             </h1>
             <p className={pageCopy}>
-              Fast entry for testing sessions and event rounds.
+              Capture the game, then get back to testing.
             </p>
           </div>
           <AppNav current="log" />
@@ -120,6 +122,8 @@ export default async function NewMatchPage({
             deckOptions={deckOptions}
             opponentArchetypeOptions={opponentArchetypeOptions}
             recentOpponentArchetypes={recentOpponentArchetypes}
+            initialEventType={event}
+            initialOpponentArchetype={opponent}
             wasSuccessful={success === "1"}
           />
         ) : (

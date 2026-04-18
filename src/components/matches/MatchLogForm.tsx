@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { ArchetypePicker } from "@/components/ArchetypePicker";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
@@ -25,6 +25,8 @@ type MatchLogFormProps = {
   deckOptions: DeckOption[];
   opponentArchetypeOptions: string[];
   recentOpponentArchetypes: string[];
+  initialEventType?: string;
+  initialOpponentArchetype?: string;
   wasSuccessful: boolean;
 };
 
@@ -65,6 +67,8 @@ export function MatchLogForm({
   action,
   deckOptions,
   opponentArchetypeOptions,
+  initialEventType,
+  initialOpponentArchetype,
   recentOpponentArchetypes,
   wasSuccessful,
 }: MatchLogFormProps) {
@@ -79,6 +83,10 @@ export function MatchLogForm({
       : deckOptions[0]?.id ?? "";
   });
   const [opponentArchetype, setOpponentArchetype] = useState(() => {
+    if (initialOpponentArchetype?.trim()) {
+      return initialOpponentArchetype.trim();
+    }
+
     if (typeof window === "undefined") {
       return "";
     }
@@ -104,6 +112,14 @@ export function MatchLogForm({
   const [eventType, setEventType] = useState<
     "casual" | "testing" | "tournament"
   >(() => {
+    if (
+      initialEventType === "casual" ||
+      initialEventType === "testing" ||
+      initialEventType === "tournament"
+    ) {
+      return initialEventType;
+    }
+
     if (typeof window === "undefined") {
       return "testing";
     }
@@ -120,6 +136,23 @@ export function MatchLogForm({
   const [isChangingDeck, setIsChangingDeck] = useState(false);
   const selectedDeck = deckOptions.find((option) => option.id === deckVersionId);
   const selectedDeckArchetype = selectedDeck?.detail ?? "";
+
+  useEffect(() => {
+    if (initialOpponentArchetype?.trim()) {
+      sessionStorage.setItem(
+        sessionKeys.opponentArchetype,
+        initialOpponentArchetype.trim()
+      );
+    }
+
+    if (
+      initialEventType === "casual" ||
+      initialEventType === "testing" ||
+      initialEventType === "tournament"
+    ) {
+      sessionStorage.setItem(sessionKeys.eventType, initialEventType);
+    }
+  }, [initialEventType, initialOpponentArchetype]);
 
   function remember(key: string, value: string) {
     sessionStorage.setItem(key, value);
@@ -189,7 +222,7 @@ export function MatchLogForm({
           <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
             <div className="min-w-0 flex-1">
               <p className="text-xs font-medium uppercase text-[#94A3B8]/72">
-                Using
+                Current deck
               </p>
               <div className="mt-1 flex min-w-0 items-center gap-2">
                 <ArchetypeSprites
@@ -206,7 +239,7 @@ export function MatchLogForm({
               onClick={() => setIsChangingDeck((current) => !current)}
               className="shrink-0 rounded-md bg-[#4F8CFF]/12 px-3 py-2 text-xs font-semibold text-[#F8FAFC] transition hover:bg-[#4F8CFF]/18"
             >
-              {isChangingDeck ? "Done" : "Change"}
+              {isChangingDeck ? "Done" : "Change deck"}
             </button>
           </div>
           {isChangingDeck ? (
@@ -234,25 +267,11 @@ export function MatchLogForm({
           ) : null}
         </div>
 
-        <div className="flex max-w-full flex-wrap items-center justify-between gap-3 overflow-x-hidden rounded-md bg-[#0B1020]/28 px-3 py-2 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.035)]">
-          <p className="truncate text-xs font-medium uppercase text-[#94A3B8]/72">
-            Event
-          </p>
-          <button
-            type="button"
-            onClick={() => setDetailsOpen(true)}
-            className="inline-flex items-center gap-2 rounded-md bg-[#4F8CFF]/12 px-3 py-1.5 text-xs font-semibold capitalize text-[#F8FAFC] transition hover:bg-[#4F8CFF]/18"
-          >
-            {eventType}
-            <span className="text-[#94A3B8]">Change</span>
-          </button>
-        </div>
-
         <section className="max-w-full overflow-x-hidden rounded-md bg-[#0B1020]/24 p-3 shadow-[0_14px_40px_rgba(0,0,0,0.14),inset_0_0_0_1px_rgba(79,140,255,0.08)] sm:p-4">
           <ArchetypePicker
             id="opponent_archetype"
             name="opponent_archetype"
-            label="Opponent archetype"
+            label="Who did you play?"
             options={opponentArchetypeOptions}
             value={opponentArchetype}
             required
@@ -292,7 +311,7 @@ export function MatchLogForm({
         <div className="grid min-w-0 gap-3 sm:grid-cols-2">
           <fieldset className="flex flex-col gap-2">
             <legend className={label}>
-              Result
+              Did you win?
             </legend>
             <div className="grid grid-cols-2 gap-2">
               {(["win", "loss"] as const).map((resultOption) => (
@@ -318,7 +337,7 @@ export function MatchLogForm({
           </fieldset>
           <fieldset className="flex flex-col gap-2">
             <legend className={label}>
-              Turn order
+              Did you go first?
             </legend>
             <div className="grid grid-cols-2 gap-2">
               {[
@@ -348,6 +367,35 @@ export function MatchLogForm({
 
         </div>
 
+        <fieldset className="max-w-full overflow-x-hidden rounded-md bg-[#0B1020]/28 px-3 py-2.5 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.035)]">
+          <legend className="mb-2 text-xs font-medium uppercase text-[#94A3B8]/72">
+            Where did it happen?
+          </legend>
+          <div className="grid min-w-0 grid-cols-3 gap-1.5 sm:gap-2">
+            {(["casual", "testing", "tournament"] as const).map(
+              (eventTypeOption) => (
+                <label
+                  key={eventTypeOption}
+                  className={`${toggleClass} h-10 text-xs capitalize sm:text-sm`}
+                >
+                  <input
+                    type="radio"
+                    name="event_type"
+                    value={eventTypeOption}
+                    checked={eventType === eventTypeOption}
+                    onChange={() => {
+                      setEventType(eventTypeOption);
+                      remember(sessionKeys.eventType, eventTypeOption);
+                    }}
+                    className="sr-only"
+                  />
+                  {eventTypeOption}
+                </label>
+              )
+            )}
+          </div>
+        </fieldset>
+
         <details
           open={detailsOpen}
           onToggle={(event) => {
@@ -358,7 +406,7 @@ export function MatchLogForm({
           <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3 text-sm font-semibold text-[#F8FAFC] marker:hidden">
             <span>More details</span>
             <span className="text-xs font-medium text-[#94A3B8] group-open:hidden">
-              Event, variant, tags, notes
+              Variant, tags, notes, import
             </span>
             <span className="hidden text-xs font-medium text-[#94A3B8] group-open:inline">
               Hide
@@ -392,35 +440,6 @@ export function MatchLogForm({
                 </p>
               ) : null}
             </div>
-
-            <fieldset className="flex flex-col gap-2">
-              <legend className={label}>
-                Event type
-              </legend>
-              <div className="grid min-w-0 grid-cols-3 gap-1.5 sm:gap-2">
-                {(["casual", "testing", "tournament"] as const).map(
-                  (eventTypeOption) => (
-                    <label
-                      key={eventTypeOption}
-                      className={`${toggleClass} text-xs capitalize sm:text-sm`}
-                    >
-                      <input
-                        type="radio"
-                        name="event_type"
-                        value={eventTypeOption}
-                        checked={eventType === eventTypeOption}
-                        onChange={() => {
-                          setEventType(eventTypeOption);
-                          remember(sessionKeys.eventType, eventTypeOption);
-                        }}
-                        className="sr-only"
-                      />
-                      {eventTypeOption}
-                    </label>
-                  )
-                )}
-              </div>
-            </fieldset>
 
             <div className="flex flex-col gap-2">
               <label
