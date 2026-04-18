@@ -37,7 +37,7 @@ const sessionKeys = {
 };
 
 const toggleClass =
-  "flex h-12 min-w-0 cursor-pointer items-center justify-center rounded-md bg-[#0B1020]/42 px-3 text-center text-sm font-semibold text-[#94A3B8] transition hover:bg-[#4F8CFF]/12 hover:text-[#F8FAFC] has-[:checked]:bg-[#4F8CFF]/24 has-[:checked]:shadow-[0_0_24px_rgba(79,140,255,0.12)] has-[:checked]:text-[#F8FAFC]";
+  "flex h-12 w-full max-w-full min-w-0 cursor-pointer items-center justify-center rounded-md bg-[#0B1020]/42 px-3 text-center text-sm font-semibold text-[#94A3B8] transition hover:bg-[#4F8CFF]/12 hover:text-[#F8FAFC] has-[:checked]:bg-[#4F8CFF]/24 has-[:checked]:shadow-[0_0_24px_rgba(79,140,255,0.12)] has-[:checked]:text-[#F8FAFC]";
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -46,7 +46,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className={`${primaryButton} h-11`}
+      className={`${primaryButton} h-11 w-full`}
     >
       {pending ? "Saving..." : "Save and log another"}
     </button>
@@ -175,19 +175,19 @@ export function MatchLogForm({
   return (
     <form
       action={action}
-      className="mt-5 w-full min-w-0 overflow-hidden rounded-md bg-[#11182C]/68 p-3 pb-28 shadow-[0_20px_60px_rgba(0,0,0,0.20),inset_0_0_0_1px_rgba(248,250,252,0.04)] sm:p-5 md:pb-5"
+      className="mt-5 w-full max-w-full min-w-0 overflow-x-hidden rounded-md bg-[#11182C]/68 p-3 pb-28 shadow-[0_20px_60px_rgba(0,0,0,0.20),inset_0_0_0_1px_rgba(248,250,252,0.04)] sm:p-5 md:pb-5"
     >
       <input type="hidden" name="deck_version_id" value={deckVersionId} />
-      <div className="grid min-w-0 gap-4">
+      <div className="grid w-full max-w-full min-w-0 gap-4 overflow-x-hidden">
         {wasSuccessful ? (
           <div className="rounded-md bg-emerald-500/10 px-3 py-2 text-sm font-medium text-emerald-200">
             Match logged. Ready for the next one.
           </div>
         ) : null}
 
-        <div className="rounded-md bg-[#0B1020]/38 px-3 py-2.5 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.04)]">
-          <div className="flex min-w-0 items-center justify-between gap-3">
-            <div className="min-w-0">
+        <div className="max-w-full overflow-x-hidden rounded-md bg-[#0B1020]/38 px-3 py-2.5 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.04)]">
+          <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
+            <div className="min-w-0 flex-1">
               <p className="text-xs font-medium uppercase text-[#94A3B8]/72">
                 Using
               </p>
@@ -234,7 +234,7 @@ export function MatchLogForm({
           ) : null}
         </div>
 
-        <div className="flex items-center justify-between gap-3 rounded-md bg-[#0B1020]/28 px-3 py-2 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.035)]">
+        <div className="flex max-w-full flex-wrap items-center justify-between gap-3 overflow-x-hidden rounded-md bg-[#0B1020]/28 px-3 py-2 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.035)]">
           <p className="truncate text-xs font-medium uppercase text-[#94A3B8]/72">
             Event
           </p>
@@ -248,7 +248,7 @@ export function MatchLogForm({
           </button>
         </div>
 
-        <section className="rounded-md bg-[#0B1020]/24 p-3 shadow-[0_14px_40px_rgba(0,0,0,0.14),inset_0_0_0_1px_rgba(79,140,255,0.08)] sm:p-4">
+        <section className="max-w-full overflow-x-hidden rounded-md bg-[#0B1020]/24 p-3 shadow-[0_14px_40px_rgba(0,0,0,0.14),inset_0_0_0_1px_rgba(79,140,255,0.08)] sm:p-4">
           <ArchetypePicker
             id="opponent_archetype"
             name="opponent_archetype"
@@ -269,7 +269,7 @@ export function MatchLogForm({
               <p className="mb-2 text-xs font-medium uppercase text-[#94A3B8]/70">
                 Recent opponents
               </p>
-              <div className="flex gap-2 overflow-x-auto pb-1">
+              <div className="flex max-w-full flex-wrap gap-2 overflow-x-hidden pb-1">
                 {recentOpponentArchetypes.map((archetype) => (
                   <button
                     key={archetype}
@@ -278,10 +278,10 @@ export function MatchLogForm({
                       setOpponentArchetype(archetype);
                       remember(sessionKeys.opponentArchetype, archetype);
                     }}
-                    className="inline-flex shrink-0 items-center gap-2 rounded-md bg-[#11182C]/82 px-3 py-2 text-xs font-semibold text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(248,250,252,0.05)] transition hover:bg-[#4F8CFF]/16"
+                    className="inline-flex max-w-full items-center gap-2 rounded-md bg-[#11182C]/82 px-3 py-2 text-xs font-semibold text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(248,250,252,0.05)] transition hover:bg-[#4F8CFF]/16"
                   >
                     <ArchetypeSprites archetype={archetype} className="shrink-0" />
-                    {archetype}
+                    <span className="min-w-0 truncate">{archetype}</span>
                   </button>
                 ))}
               </div>
@@ -353,9 +353,9 @@ export function MatchLogForm({
           onToggle={(event) => {
             setDetailsOpen(event.currentTarget.open);
           }}
-          className="group rounded-md bg-[#0B1020]/28 p-3 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.035)]"
+          className="group max-w-full overflow-x-hidden rounded-md bg-[#0B1020]/28 p-3 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.035)]"
         >
-          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold text-[#F8FAFC] marker:hidden">
+          <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3 text-sm font-semibold text-[#F8FAFC] marker:hidden">
             <span>More details</span>
             <span className="text-xs font-medium text-[#94A3B8] group-open:hidden">
               Event, variant, tags, notes
@@ -365,7 +365,7 @@ export function MatchLogForm({
             </span>
           </summary>
           <div className="mt-4 grid gap-4">
-            <div className="rounded-md bg-[#11182C]/58 p-3">
+            <div className="max-w-full overflow-x-hidden rounded-md bg-[#11182C]/58 p-3">
               <div className="flex flex-col gap-2">
                 <label htmlFor="tcg_live_log" className={label}>
                   Import TCG Live log
@@ -382,7 +382,7 @@ export function MatchLogForm({
               <button
                 type="button"
                 onClick={importTcgLiveLog}
-                className="mt-3 rounded-md bg-[#4F8CFF]/14 px-3 py-2 text-sm font-semibold text-[#F8FAFC] transition hover:bg-[#4F8CFF]/22"
+                className="mt-3 max-w-full rounded-md bg-[#4F8CFF]/14 px-3 py-2 text-sm font-semibold text-[#F8FAFC] transition hover:bg-[#4F8CFF]/22"
               >
                 Use log
               </button>
@@ -397,7 +397,7 @@ export function MatchLogForm({
               <legend className={label}>
                 Event type
               </legend>
-              <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+              <div className="grid min-w-0 grid-cols-3 gap-1.5 sm:gap-2">
                 {(["casual", "testing", "tournament"] as const).map(
                   (eventTypeOption) => (
                     <label
@@ -478,13 +478,13 @@ export function MatchLogForm({
           <div className="hidden md:block">
             <SubmitButton />
           </div>
-          <a href="/matches" className={secondaryButton}>
+          <a href="/matches" className={`w-full ${secondaryButton}`}>
             Match history
           </a>
         </div>
       </div>
-      <div className="fixed inset-x-0 bottom-0 z-40 bg-[#0B1020]/92 px-4 py-3 shadow-[0_-18px_44px_rgba(0,0,0,0.36),inset_0_1px_0_rgba(248,250,252,0.06)] backdrop-blur md:hidden">
-        <div className="mx-auto max-w-2xl">
+      <div className="fixed inset-x-0 bottom-0 z-40 max-w-full overflow-x-hidden bg-[#0B1020]/92 px-4 py-3 shadow-[0_-18px_44px_rgba(0,0,0,0.36),inset_0_1px_0_rgba(248,250,252,0.06)] backdrop-blur md:hidden">
+        <div className="mx-auto w-full max-w-2xl">
           <SubmitButton />
         </div>
       </div>

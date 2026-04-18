@@ -1,7 +1,7 @@
 export const appShell =
-  "min-h-screen bg-[#0B1020] bg-[radial-gradient(ellipse_at_top,rgba(79,140,255,0.14),transparent_42%),linear-gradient(180deg,#0B1020_0%,#10172A_52%,#0B1020_100%)] px-4 py-5 text-[#F8FAFC] sm:px-6 sm:py-8";
+  "min-h-screen w-full max-w-full overflow-x-hidden bg-[#0B1020] bg-[radial-gradient(ellipse_at_top,rgba(79,140,255,0.14),transparent_42%),linear-gradient(180deg,#0B1020_0%,#10172A_52%,#0B1020_100%)] px-4 py-5 text-[#F8FAFC] sm:px-6 sm:py-8";
 
-export const appContainer = "mx-auto flex w-full flex-col gap-5 sm:gap-6";
+export const appContainer = "mx-auto flex w-full max-w-full min-w-0 flex-col gap-5 overflow-x-hidden sm:gap-6";
 
 export const pageHeader =
   "rounded-md bg-[#0B1020]/36 p-3 shadow-[0_18px_60px_rgba(0,0,0,0.2),inset_0_0_0_1px_rgba(248,250,252,0.05)] flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between";
@@ -36,7 +36,7 @@ export const divider = "divide-y divide-white/6";
 export const label = "text-sm font-medium text-[#F8FAFC]";
 
 export const input =
-  "w-full min-w-0 rounded-md bg-[#0B1020]/62 px-3 text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(248,250,252,0.06)] outline-none transition placeholder:text-[#94A3B8]/60 focus:bg-[#0B1020]/78 focus:shadow-[inset_0_0_0_1px_rgba(79,140,255,0.7),0_0_24px_rgba(79,140,255,0.1)]";
+  "w-full max-w-full min-w-0 rounded-md bg-[#0B1020]/62 px-3 text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(248,250,252,0.06)] outline-none transition placeholder:text-[#94A3B8]/60 focus:bg-[#0B1020]/78 focus:shadow-[inset_0_0_0_1px_rgba(79,140,255,0.7),0_0_24px_rgba(79,140,255,0.1)]";
 
 export const inputH10 = `h-10 ${input}`;
 
@@ -45,13 +45,13 @@ export const inputH11 = `h-11 ${input}`;
 export const textarea = `${input} py-2`;
 
 export const primaryButton =
-  "inline-flex h-10 items-center justify-center rounded-md bg-[#F5C84C] px-4 text-sm font-semibold text-[#0B1020] shadow-[0_12px_30px_rgba(245,200,76,0.22)] transition hover:bg-[#ffd85f] disabled:cursor-not-allowed disabled:bg-[#94A3B8]";
+  "inline-flex h-10 max-w-full items-center justify-center rounded-md bg-[#F5C84C] px-4 text-sm font-semibold text-[#0B1020] shadow-[0_12px_30px_rgba(245,200,76,0.22)] transition hover:bg-[#ffd85f] disabled:cursor-not-allowed disabled:bg-[#94A3B8]";
 
 export const secondaryButton =
-  "inline-flex h-10 items-center justify-center rounded-md bg-[#4F8CFF]/12 px-4 text-sm font-medium text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.2),0_10px_28px_rgba(79,140,255,0.08)] transition hover:bg-[#4F8CFF]/18 hover:shadow-[inset_0_0_0_1px_rgba(79,140,255,0.5),0_10px_28px_rgba(79,140,255,0.12)]";
+  "inline-flex h-10 max-w-full items-center justify-center rounded-md bg-[#4F8CFF]/12 px-4 text-sm font-medium text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.2),0_10px_28px_rgba(79,140,255,0.08)] transition hover:bg-[#4F8CFF]/18 hover:shadow-[inset_0_0_0_1px_rgba(79,140,255,0.5),0_10px_28px_rgba(79,140,255,0.12)]";
 
 export const dangerButton =
-  "inline-flex h-10 items-center justify-center rounded-md bg-[#F43F5E]/10 px-4 text-sm font-medium text-rose-200 transition hover:bg-[#F43F5E]/16";
+  "inline-flex h-10 max-w-full items-center justify-center rounded-md bg-[#F43F5E]/10 px-4 text-sm font-medium text-rose-200 transition hover:bg-[#F43F5E]/16";
 
 export const subtlePill =
   "rounded-md bg-[#0B1020]/50 px-2 py-1 text-xs text-[#94A3B8]/86";

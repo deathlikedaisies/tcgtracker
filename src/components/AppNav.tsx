@@ -23,7 +23,7 @@ export function AppNav({ current }: AppNavProps) {
   return (
     <nav
       aria-label="Primary"
-      className="grid w-full grid-cols-5 gap-1 rounded-md bg-[#0B1020]/34 p-1 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.05)] sm:w-auto sm:flex sm:flex-wrap sm:justify-end sm:gap-2 sm:p-1.5"
+      className="grid w-full max-w-full grid-cols-5 gap-1 overflow-x-hidden rounded-md bg-[#0B1020]/34 p-1 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.05)] sm:w-auto sm:flex sm:flex-wrap sm:justify-end sm:gap-2 sm:p-1.5"
     >
       {navItems.map((item) => {
         const isCurrent = item.section === current;

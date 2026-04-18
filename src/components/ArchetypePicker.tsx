@@ -79,7 +79,7 @@ export function ArchetypePicker({
   }
 
   return (
-    <div className="flex min-w-0 flex-col gap-2">
+    <div className="flex w-full max-w-full min-w-0 flex-col gap-2 overflow-x-hidden">
       <label htmlFor={`${id}-search`} className={labelClass}>
         {label}
       </label>
@@ -110,7 +110,7 @@ export function ArchetypePicker({
         }}
         className={inputH10}
       />
-      <div className={`${listMaxHeightClassName} overflow-y-auto rounded-md bg-[#0B1020]/42 p-1.5 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.05)]`}>
+      <div className={`${listMaxHeightClassName} max-w-full overflow-x-hidden overflow-y-auto rounded-md bg-[#0B1020]/42 p-1.5 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.05)]`}>
         <div className="grid gap-1.5">
           {visibleOptions.map((option) => {
             const isSelected = normalize(option) === normalize(selectedValue);
@@ -120,7 +120,7 @@ export function ArchetypePicker({
                 key={option}
                 type="button"
                 onClick={() => setValue(option)}
-                className={`flex min-h-11 w-full min-w-0 items-center gap-3 rounded-md px-2.5 py-2 text-left transition ${
+                className={`flex min-h-11 w-full max-w-full min-w-0 items-center gap-3 rounded-md px-2.5 py-2 text-left transition ${
                   isSelected
                     ? "bg-[#4F8CFF]/22 text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.28)]"
                     : "text-[#94A3B8] hover:bg-[#1A2238]/58 hover:text-[#F8FAFC]"
@@ -138,7 +138,7 @@ export function ArchetypePicker({
             <button
               type="button"
               onClick={() => setValue(query.trim())}
-              className="flex min-h-11 w-full min-w-0 items-center gap-3 rounded-md px-2.5 py-2 text-left text-[#F8FAFC] transition hover:bg-[#1A2238]/58"
+              className="flex min-h-11 w-full max-w-full min-w-0 items-center gap-3 rounded-md px-2.5 py-2 text-left text-[#F8FAFC] transition hover:bg-[#1A2238]/58"
             >
               <ArchetypeSprites archetype={query.trim()} className="shrink-0" />
               <span className="min-w-0 flex-1 truncate text-sm font-medium">

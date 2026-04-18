@@ -100,8 +100,8 @@ export default async function NewMatchPage({
   return (
     <main className={appShell}>
       <section className={`${appContainer} max-w-2xl`}>
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div>
+        <div className="flex max-w-full min-w-0 flex-col gap-4 overflow-x-hidden lg:flex-row lg:flex-wrap lg:items-start lg:justify-between">
+          <div className="min-w-0 max-w-full">
             <PrizeMapLogo {...logoOnDark} />
             <p className="mt-5 text-sm font-medium text-[#94A3B8]">Match log</p>
             <h1 className={pageTitle}>
