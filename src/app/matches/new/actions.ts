@@ -97,5 +97,9 @@ export async function logMatch(formData: FormData) {
   revalidatePath("/dashboard");
   revalidatePath("/matchups");
   revalidatePath("/matches/new");
-  redirect("/matches/new?success=1");
+  redirect(
+    `/matches/new?success=1&opponent=${encodeURIComponent(
+      opponentArchetype
+    )}&event=${encodeURIComponent(eventType ?? "testing")}`
+  );
 }

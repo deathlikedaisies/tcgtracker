@@ -76,10 +76,10 @@ export default async function DecksPage() {
           <div>
             <PrizeMapLogo {...logoOnDark} />
             <h1 className={pageTitle}>
-              Decks
+              Deck Experiments
             </h1>
             <p className={pageCopy}>
-              Build and manage the decks you use for testing.
+              Treat every deck version like a testable hypothesis.
             </p>
           </div>
           <AppNav current="decks" />
@@ -89,9 +89,11 @@ export default async function DecksPage() {
           <section className="flex flex-col gap-4">
             <div>
               <h2 className={sectionTitle}>
-                Your Decks
+                Active experiments
               </h2>
-              <p className={`mt-1 ${sectionCopy}`}>Manage decks and versions.</p>
+              <p className={`mt-1 ${sectionCopy}`}>
+                Test versions, compare results, then keep the list that improves.
+              </p>
             </div>
 
             {userDecks.length ? (
@@ -128,12 +130,18 @@ export default async function DecksPage() {
                             ) : null}
                           </div>
                         </div>
-                        <div className="grid grid-cols-2 gap-2 sm:min-w-32 sm:grid-cols-1">
+                        <div className="grid gap-2 sm:min-w-32">
                           <Link
                             href={`/decks/${deck.id}`}
                             className={primaryButton}
                           >
-                            Manage
+                            Test version
+                          </Link>
+                          <Link
+                            href={`/dashboard`}
+                            className="inline-flex h-10 items-center justify-center rounded-md bg-[#4F8CFF]/12 px-3 text-sm font-semibold text-[#F8FAFC] transition hover:bg-[#4F8CFF]/18"
+                          >
+                            Compare
                           </Link>
                           <form action={removeDeck}>
                             <ConfirmSubmitButton
@@ -155,7 +163,7 @@ export default async function DecksPage() {
                   No decks yet.
                 </h3>
                 <p className={`mt-2 ${sectionCopy}`}>
-                  Create your first deck, then add versions for match logging.
+                  Create your first experiment, then log games against it.
                 </p>
               </div>
             )}
@@ -167,10 +175,10 @@ export default async function DecksPage() {
               className={card}
             >
               <h2 className="text-lg font-semibold text-[#F8FAFC]">
-                New Deck
+                New experiment
               </h2>
               <p className={`mt-1 ${sectionCopy}`}>
-                Add the list family first, then create versions.
+                Start with the list family. Versions become your test subjects.
               </p>
               <div className="mt-5 flex flex-col gap-4">
                 <input type="hidden" name="format" value={LATEST_FORMAT} />
@@ -213,7 +221,7 @@ export default async function DecksPage() {
                   type="submit"
                   className={primaryButton}
                 >
-                  Create deck
+                  Create experiment
                 </button>
               </div>
             </form>

@@ -10,12 +10,19 @@ export type CoachMatch = {
 export type SessionCoachInsight = {
   archetype: string;
   confidence: string;
+  commonIssue: string | null;
+  criteria: string;
+  evidence: string;
   headline: string;
   weakMatchup: string;
   condition: string;
   context: string;
   exactTest: string;
   nextTest: string;
+  progressCompleted: number;
+  progressGoal: number;
+  progressFeedback: string;
+  reasoning: string;
   focus: string;
   record: string;
   eventType: string;
@@ -36,18 +43,41 @@ function formatRecord(wins: number, losses: number) {
   return `${wins}-${losses}`;
 }
 
-function getConfidence(matchCount: number, totalMatches: number) {
+function formatComparisonRecord(matches: CoachMatch[]) {
+  const wins = matches.filter((match) => match.result === "win").length;
+  const losses = matches.length - wins;
+
+  return formatRecord(wins, losses);
+}
+
+function getConfidence(matchCount: number) {
   if (matchCount >= 10) {
-    return `Strong signal (${matchCount}+ games)`;
+    return "Strong signal";
   }
 
-  if (matchCount >= 3) {
-    return `Early signal (${matchCount} games)`;
+  if (matchCount >= 5) {
+    return "Building signal";
   }
 
-  return totalMatches >= 3
-    ? `Small sample (${matchCount} game${matchCount === 1 ? "" : "s"})`
-    : `Early signal (${totalMatches} game${totalMatches === 1 ? "" : "s"})`;
+  return "Early signal";
+}
+
+function getProgressFeedback(completed: number, goal: number) {
+  const remaining = Math.max(goal - completed, 0);
+
+  if (remaining === 0) {
+    return "Test block complete. Review the pattern before changing plans.";
+  }
+
+  if (remaining === 1) {
+    return "One more game to strengthen this read.";
+  }
+
+  if (completed >= 3) {
+    return "You are building signal.";
+  }
+
+  return "Keep logging this exact test.";
 }
 
 function getMostCommonValue(values: string[]) {
@@ -131,18 +161,26 @@ export function buildSessionCoachInsight(
           .filter((eventType): eventType is string => Boolean(eventType))
       ) ?? "testing";
 
+    const completed = Math.min(strongestPositiveSignal.matches.length, 5);
+
     return {
       archetype: strongestPositiveSignal.archetype,
-      confidence: getConfidence(
-        strongestPositiveSignal.matches.length,
-        recentMatches.length
-      ),
+      confidence: getConfidence(strongestPositiveSignal.matches.length),
+      commonIssue: null,
+      criteria: `Counts games vs ${strongestPositiveSignal.archetype}.`,
+      evidence: `Based on ${strongestPositiveSignal.matches.length} recent game${
+        strongestPositiveSignal.matches.length === 1 ? "" : "s"
+      } vs ${strongestPositiveSignal.archetype}.`,
       headline: `No clear leak yet. Stress-test ${strongestPositiveSignal.archetype}.`,
       weakMatchup: strongestPositiveSignal.archetype,
       condition: "No loss cluster yet",
       context: "You have not logged a loss in your recent sample.",
       exactTest: `Play 5 more games vs ${strongestPositiveSignal.archetype}.`,
       nextTest: `Run 5 more games vs ${strongestPositiveSignal.archetype}.`,
+      progressCompleted: completed,
+      progressGoal: 5,
+      progressFeedback: getProgressFeedback(completed, 5),
+      reasoning: `You are ${formatRecord(strongestPositiveSignal.wins, 0)} in this matchup so far.`,
       focus: "Keep the same deck and test whether the matchup stays stable.",
       record: formatRecord(strongestPositiveSignal.wins, 0),
       eventType,
@@ -186,6 +224,13 @@ export function buildSessionCoachInsight(
         .filter((eventType): eventType is string => Boolean(eventType))
     ) ?? "testing";
   const turnPhrase = turnContext ? ` ${turnContext}` : "";
+  const progressMatches = turnContext
+    ? biggestLeak.matches.filter((match) =>
+        turnContext === "going second"
+          ? match.went_first === false
+          : match.went_first === true
+      )
+    : biggestLeak.matches;
   const condition = turnContext
     ? `Worse when ${turnContext}`
     : repeatedTag
@@ -197,10 +242,29 @@ export function buildSessionCoachInsight(
     : turnContext
       ? `Review your lines when ${turnContext}.`
       : "Focus on your opening plan and prize map.";
+  const comparisonMatches =
+    turnContext === "going second" ? firstMatches : secondMatches;
+  const reasoning = turnContext
+    ? comparisonMatches.length
+      ? `You are ${formatComparisonRecord(progressMatches)} when ${turnContext} vs ${formatComparisonRecord(
+          comparisonMatches
+        )} otherwise.`
+      : `All recent losses in this matchup happened when ${turnContext}.`
+    : repeatedTag
+      ? `${repeatedTag} appears most often in losses vs this matchup.`
+      : `You are ${formatRecord(biggestLeak.wins, biggestLeak.losses)} against this matchup recently.`;
+  const completed = Math.min(progressMatches.length, 5);
 
   return {
     archetype: biggestLeak.archetype,
-    confidence: getConfidence(biggestLeak.matches.length, recentMatches.length),
+    confidence: getConfidence(biggestLeak.matches.length),
+    commonIssue: repeatedTag ?? null,
+    criteria: turnContext
+      ? `Counts games vs ${biggestLeak.archetype} when ${turnContext}.`
+      : `Counts games vs ${biggestLeak.archetype}.`,
+    evidence: `Based on ${biggestLeak.matches.length} recent game${
+      biggestLeak.matches.length === 1 ? "" : "s"
+    } vs ${biggestLeak.archetype}.`,
     headline: `Your biggest leak right now is ${biggestLeak.archetype}.`,
     weakMatchup: biggestLeak.archetype,
     condition,
@@ -209,6 +273,10 @@ export function buildSessionCoachInsight(
       : "This matchup is costing you the clearest games right now.",
     exactTest,
     nextTest: `Run 5 games vs ${biggestLeak.archetype}${turnPhrase}.`,
+    progressCompleted: completed,
+    progressGoal: 5,
+    progressFeedback: getProgressFeedback(completed, 5),
+    reasoning,
     focus,
     record: formatRecord(biggestLeak.wins, biggestLeak.losses),
     eventType,

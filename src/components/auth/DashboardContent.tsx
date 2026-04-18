@@ -33,6 +33,7 @@ import {
   sectionTitle,
 } from "@/components/brand-styles";
 import { PrizeMapLogo } from "@/components/PrizeMapLogo";
+import { SessionCoachPanel } from "@/components/SessionCoachPanel";
 import { ShareReportButton, type ShareReport } from "@/components/ShareReportButton";
 import type { SessionCoachInsight } from "@/lib/session-coach";
 import { createClient } from "@/lib/supabase";
@@ -146,83 +147,6 @@ function RecordPill({ result }: { result: "win" | "loss" }) {
 
 function parseRate(value: string) {
   return Number.parseInt(value.replace("%", ""), 10) || 0;
-}
-
-function SessionCoachCard({ insight }: { insight: SessionCoachInsight }) {
-  return (
-    <section className="rounded-md bg-[#11182C]/84 p-4 shadow-[0_24px_70px_rgba(0,0,0,0.30),0_0_42px_rgba(245,200,76,0.08),inset_0_0_0_1px_rgba(245,200,76,0.18)] sm:p-5">
-      <div className="flex flex-col gap-4">
-        <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-wide text-[#F5C84C]/82">
-            Session Coach
-          </p>
-          <div className="mt-3 flex min-w-0 items-start gap-3">
-            <ArchetypeSprites archetype={insight.archetype} className="shrink-0" />
-            <div className="min-w-0">
-              <h2 className="text-2xl font-semibold leading-tight tracking-tight text-[#F8FAFC] sm:text-3xl">
-                {insight.headline}
-              </h2>
-              <p className="mt-2 text-sm font-medium text-[#94A3B8]">
-                {insight.confidence} · Record: {insight.record}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-5 rounded-md bg-[#0B1020]/52 p-4 shadow-[inset_0_0_0_1px_rgba(244,63,94,0.18)]">
-        <p className="text-xs font-semibold uppercase text-[#F43F5E]/86">
-          Biggest leak
-        </p>
-        <div className="mt-3 grid gap-3 sm:grid-cols-3">
-          <div>
-            <p className="text-xs font-medium uppercase text-[#94A3B8]/70">
-              Matchup
-            </p>
-            <p className="mt-1 text-base font-semibold text-[#F8FAFC]">
-              {insight.weakMatchup}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs font-medium uppercase text-[#94A3B8]/70">
-              Condition
-            </p>
-            <p className="mt-1 text-base font-semibold text-[#F8FAFC]">
-              {insight.condition}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs font-medium uppercase text-[#94A3B8]/70">
-              Next test
-            </p>
-            <p className="mt-1 text-base font-semibold text-[#F8FAFC]">
-              {insight.exactTest}
-            </p>
-          </div>
-        </div>
-        <p className="mt-3 text-sm leading-6 text-[#94A3B8]">
-          {insight.context}
-        </p>
-      </div>
-
-      <div className="mt-4 grid gap-3 lg:grid-cols-[auto_minmax(0,1fr)] lg:items-stretch">
-        <Link
-          href={insight.continueHref}
-          className="inline-flex h-12 w-full items-center justify-center rounded-md bg-[#F5C84C] px-5 text-sm font-semibold text-[#0B1020] shadow-[0_16px_38px_rgba(245,200,76,0.24)] transition hover:-translate-y-0.5 hover:bg-[#ffd85f] active:translate-y-0 active:scale-[0.98] lg:w-fit"
-        >
-          Run this test
-        </Link>
-        <div className="rounded-md bg-[#0B1020]/42 p-3 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.12)]">
-          <p className="text-xs font-semibold uppercase text-[#4F8CFF]">
-            Auto analysis
-          </p>
-          <p className="mt-1 text-sm leading-6 text-[#94A3B8]">
-            {insight.focus}
-          </p>
-        </div>
-      </div>
-    </section>
-  );
 }
 
 export function DashboardContent({
@@ -380,11 +304,27 @@ export function DashboardContent({
         </div>
 
         {hasMatches && sessionCoach ? (
-          <SessionCoachCard insight={sessionCoach} />
+          <SessionCoachPanel insight={sessionCoach} />
         ) : null}
 
         {hasMatches ? (
-          <section className="rounded-md bg-[#11182C]/78 p-4 shadow-[0_24px_70px_rgba(0,0,0,0.28),0_0_50px_rgba(79,140,255,0.08),inset_0_0_0_1px_rgba(248,250,252,0.05)] sm:p-5">
+          <details className="rounded-md bg-[#11182C]/62 p-4 shadow-[0_18px_50px_rgba(0,0,0,0.18),inset_0_0_0_1px_rgba(248,250,252,0.04)] sm:p-5">
+            <summary className="cursor-pointer list-none marker:hidden">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-[#4F8CFF]">
+                    Detailed stats
+                  </p>
+                  <h2 className="mt-1 text-xl font-semibold tracking-tight text-[#F8FAFC]">
+                    Charts and totals
+                  </h2>
+                </div>
+                <span className="text-sm font-medium text-[#94A3B8]">
+                  Open
+                </span>
+              </div>
+            </summary>
+            <section className="mt-5 rounded-md bg-[#11182C]/78 p-4 shadow-[0_24px_70px_rgba(0,0,0,0.22),0_0_50px_rgba(79,140,255,0.06),inset_0_0_0_1px_rgba(248,250,252,0.04)] sm:p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div>
                 <p className="text-sm font-semibold text-[#4F8CFF]">
@@ -428,11 +368,16 @@ export function DashboardContent({
                 </div>
               ))}
             </div>
-          </section>
+            </section>
+          </details>
         ) : null}
 
         {hasMatches ? (
-          <>
+          <details className="rounded-md bg-[#11182C]/48 p-4 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.04)] sm:p-5">
+            <summary className="cursor-pointer list-none text-sm font-semibold text-[#F8FAFC] marker:hidden">
+              More records and charts
+            </summary>
+            <div className="mt-5 grid gap-6">
             <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
               <StatCard label="Matches" value={stats.totalMatches} />
               <StatCard label="Wins" value={stats.totalWins} />
@@ -539,6 +484,7 @@ export function DashboardContent({
                 </div>
               </div>
             </section>
+            </div>
 
             <section className={cardLarge}>
               <div className="flex flex-col gap-1">
@@ -643,7 +589,7 @@ export function DashboardContent({
                 </div>
               </div>
             </section>
-          </>
+          </details>
         ) : !hasAnyMatches ? (
           <section className={emptyCard}>
             <PrizeMapLogo

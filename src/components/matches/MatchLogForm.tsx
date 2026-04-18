@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { ArchetypePicker } from "@/components/ArchetypePicker";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
+import { SessionCoachPanel } from "@/components/SessionCoachPanel";
 import {
   inputH11,
   label,
@@ -209,6 +210,17 @@ export function MatchLogForm({
   }
 
   return (
+    <>
+      {sessionCoach ? (
+        <div className="mt-5">
+          <SessionCoachPanel
+            insight={sessionCoach}
+            isPostSave={wasSuccessful}
+            showCta={false}
+          />
+        </div>
+      ) : null}
+
     <form
       action={action}
       className="mt-5 w-full max-w-full min-w-0 overflow-x-hidden rounded-md bg-[#11182C]/68 p-3 pb-28 shadow-[0_20px_60px_rgba(0,0,0,0.20),inset_0_0_0_1px_rgba(248,250,252,0.04)] sm:p-5 md:pb-5"
@@ -223,7 +235,11 @@ export function MatchLogForm({
                   ? "Trend improving"
                   : `Still your biggest leak: ${sessionCoach.weakMatchup}`}
                 .{" "}
-                <span className="text-emerald-100">{sessionCoach.nextTest}</span>
+                <span className="text-emerald-100">
+                  {sessionCoach.progressCompleted} / {sessionCoach.progressGoal} done.
+                  {" "}
+                  {sessionCoach.progressFeedback}
+                </span>
               </>
             ) : (
               "Match logged. Ready for the next one."
@@ -521,5 +537,6 @@ export function MatchLogForm({
         </div>
       </div>
     </form>
+    </>
   );
 }

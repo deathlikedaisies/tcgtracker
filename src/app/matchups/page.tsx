@@ -21,8 +21,10 @@ import {
   textarea,
 } from "@/components/brand-styles";
 import { PrizeMapLogo } from "@/components/PrizeMapLogo";
+import { SessionCoachPanel } from "@/components/SessionCoachPanel";
 import { ShareReportButton, type ShareReport } from "@/components/ShareReportButton";
 import { getArchetypeOptions } from "@/lib/archetypes";
+import { buildSessionCoachInsight } from "@/lib/session-coach";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { saveMatchupNote } from "./actions";
 
@@ -55,7 +57,12 @@ type MatchRow = {
   deck_version_id: string;
   opponent_archetype: string;
   result: "win" | "loss";
+  went_first: boolean | null;
+  event_type: string | null;
   played_at: string;
+  match_tags: {
+    tag: string;
+  }[] | null;
   deck_versions:
     | {
         id: string;
@@ -126,6 +133,41 @@ function parseDateEnd(value: string | undefined) {
   return date;
 }
 
+function getMatchupCoachLabel(matchup: {
+  matches: number;
+  winRateValue: number;
+}) {
+  if (matchup.matches < 3) {
+    return {
+      label: "Needs more data",
+      className: "bg-[#4F8CFF]/14 text-[#B8D1FF]",
+      action: "Log 3 games before trusting this matchup.",
+    };
+  }
+
+  if (matchup.winRateValue >= 60) {
+    return {
+      label: "Strong matchup",
+      className: "bg-emerald-500/14 text-emerald-200",
+      action: "Keep the plan stable and verify after the next session.",
+    };
+  }
+
+  if (matchup.winRateValue <= 45) {
+    return {
+      label: "Weak matchup",
+      className: "bg-[#F43F5E]/14 text-rose-200",
+      action: "Run 5 targeted games and tag every loss.",
+    };
+  }
+
+  return {
+    label: "Watchlist",
+    className: "bg-[#F5C84C]/14 text-[#F5C84C]",
+    action: "Play a focused set to see which way this breaks.",
+  };
+}
+
 export default async function MatchupsPage({
   searchParams,
 }: MatchupsPageProps) {
@@ -187,7 +229,7 @@ export default async function MatchupsPage({
   const { data: matches, error: matchesError } = await supabase
     .from("matches")
     .select(
-      "id, deck_version_id, opponent_archetype, result, played_at, deck_versions(id, deck_id)"
+      "id, deck_version_id, opponent_archetype, result, went_first, event_type, played_at, match_tags(tag), deck_versions(id, deck_id)"
     )
     .eq("user_id", user.id);
 
@@ -206,6 +248,7 @@ export default async function MatchupsPage({
   }
 
   const matchRows = (matches ?? []) as unknown as MatchRow[];
+  const sessionCoach = buildSessionCoachInsight(matchRows);
   const matchupNotes = (notes ?? []) as MatchupNote[];
   const archetypeOptions = getArchetypeOptions(
     null,
@@ -388,7 +431,7 @@ export default async function MatchupsPage({
               Matchups
             </h1>
             <p className={pageCopy}>
-              Compare your records against each opponent archetype.
+              Find the matchup to test next.
             </p>
           </div>
           <div className="flex flex-col gap-3 lg:items-end">
@@ -398,6 +441,10 @@ export default async function MatchupsPage({
             ) : null}
           </div>
         </header>
+
+        {sessionCoach ? (
+          <SessionCoachPanel insight={sessionCoach} />
+        ) : null}
 
         <form action="/matchups" className="rounded-md bg-[#11182C]/48 p-4 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.04)] sm:p-5">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
@@ -544,25 +591,32 @@ export default async function MatchupsPage({
                 Matchup Summary
               </h2>
               <p className={sectionCopy}>
-                {filteredMatches.length} match
-                {filteredMatches.length === 1 ? "" : "es"} in this view.
+                Every row should tell you what to do next.
               </p>
             </div>
             <div className="mt-5 flex flex-col gap-3">
-              {matchupSummary.map((matchup) => (
-                <article
-                  key={matchup.opponentArchetype}
-                  className="rounded-md bg-[#0B1020]/40 p-4 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.04)]"
-                >
+              {matchupSummary.map((matchup) => {
+                const coachLabel = getMatchupCoachLabel(matchup);
+
+                return (
+                  <article
+                    key={matchup.opponentArchetype}
+                    className="rounded-md bg-[#0B1020]/40 p-4 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.04)]"
+                  >
                   <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px] lg:items-center">
                     <div>
-                      <div className="flex items-center gap-3">
+                      <div className="flex flex-wrap items-center gap-3">
                         <ArchetypeSprites
                           archetype={matchup.opponentArchetype}
                         />
                         <h3 className="font-medium text-[#F8FAFC]">
                           {matchup.opponentArchetype}
                         </h3>
+                        <span
+                          className={`rounded-md px-2 py-1 text-xs font-semibold ${coachLabel.className}`}
+                        >
+                          {coachLabel.label}
+                        </span>
                       </div>
                       <div className="mt-3 h-2 rounded-full bg-[#1A2238]/70">
                         <div
@@ -577,6 +631,10 @@ export default async function MatchupsPage({
                           Low sample. Log 3+ games before trusting this rate.
                         </p>
                       ) : null}
+                      <p className="mt-2 text-sm font-medium text-[#F8FAFC]">
+                        Suggested action:{" "}
+                        <span className="text-[#94A3B8]">{coachLabel.action}</span>
+                      </p>
                     </div>
                     <div className="grid grid-cols-4 gap-2 text-sm">
                       <p className="text-[#94A3B8]">{matchup.matches} played</p>
@@ -652,7 +710,8 @@ export default async function MatchupsPage({
                     </div>
                   </details>
                 </article>
-              ))}
+                );
+              })}
             </div>
           </section>
         ) : (

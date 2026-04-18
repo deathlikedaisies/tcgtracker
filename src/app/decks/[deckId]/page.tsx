@@ -18,6 +18,8 @@ import {
   textarea,
 } from "@/components/brand-styles";
 import { PrizeMapLogo } from "@/components/PrizeMapLogo";
+import { SessionCoachPanel } from "@/components/SessionCoachPanel";
+import { buildSessionCoachInsight } from "@/lib/session-coach";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { createDeckVersion, markDeckVersionActive } from "./actions";
 
@@ -71,6 +73,26 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
 
   const deckVersions = (versions ?? []) as DeckVersion[];
   const createVersion = createDeckVersion.bind(null, deck.id);
+  const { data: matches, error: matchesError } = await supabase
+    .from("matches")
+    .select("opponent_archetype, result, went_first, event_type, played_at, match_tags(tag)")
+    .eq("user_id", user.id)
+    .order("played_at", { ascending: false });
+
+  if (matchesError) {
+    throw new Error(matchesError.message);
+  }
+
+  const sessionCoach = buildSessionCoachInsight(
+    (matches ?? []) as {
+      opponent_archetype: string;
+      result: "win" | "loss";
+      went_first: boolean | null;
+      event_type: string | null;
+      played_at: string;
+      match_tags: { tag: string }[] | null;
+    }[]
+  );
 
   return (
     <main className={appShell}>
@@ -104,13 +126,19 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
           </div>
         </div>
 
+        {sessionCoach ? (
+          <SessionCoachPanel insight={sessionCoach} />
+        ) : null}
+
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
           <section className="flex flex-col gap-4">
             <div>
               <h2 className={sectionTitle}>
-                Versions
+                Test versions
               </h2>
-              <p className={`mt-1 ${sectionCopy}`}>Choose the current active build.</p>
+              <p className={`mt-1 ${sectionCopy}`}>
+                Mark the build you want future games to test.
+              </p>
             </div>
 
             {deckVersions.length ? (
@@ -152,7 +180,7 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                               type="submit"
                               className={`${secondaryButton} h-9 px-3`}
                             >
-                              Mark active
+                              Test version
                             </button>
                           </form>
                         ) : null}
@@ -187,10 +215,10 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
               className={card}
             >
               <h2 className="text-lg font-semibold text-[#F8FAFC]">
-                New Version
+                New test version
               </h2>
               <p className={`mt-1 ${sectionCopy}`}>
-                Save a list snapshot for testing.
+                Save the change you want to measure.
               </p>
               <div className="mt-5 flex flex-col gap-4">
                 <div className="flex flex-col gap-2">
@@ -247,7 +275,7 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                   type="submit"
                   className={primaryButton}
                 >
-                  Create version
+                  Create test version
                 </button>
               </div>
             </form>
