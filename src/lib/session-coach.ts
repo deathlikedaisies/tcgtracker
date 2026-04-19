@@ -14,7 +14,10 @@ export type SessionCoachInsight = {
   ctaLabel: string;
   completionStatus: string | null;
   completionSummary: string | null;
-  commonIssue: string | null;
+  commonIssue: {
+    count: number;
+    tag: string;
+  } | null;
   criteria: string;
   duringRecord: string;
   evidence: string;
@@ -23,6 +26,12 @@ export type SessionCoachInsight = {
   issueTrend: string | null;
   missionState: "active" | "complete";
   missionTitle: string;
+  missionResults: {
+    id?: string;
+    opponent: string;
+    playedAt: string;
+    result: "win" | "loss";
+  }[];
   nextAction: string;
   previousRecord: string | null;
   weakMatchup: string;
@@ -193,6 +202,28 @@ function getMostCommonValue(values: string[]) {
       }, new Map<string, number>())
       .entries()
   ).sort((first, second) => second[1] - first[1])[0]?.[0];
+}
+
+function getMostCommonTag(values: string[]) {
+  const [tag, count] = Array.from(
+    values
+      .reduce((counts, value) => {
+        counts.set(value, (counts.get(value) ?? 0) + 1);
+        return counts;
+      }, new Map<string, number>())
+      .entries()
+  ).sort((first, second) => second[1] - first[1])[0] ?? [null, 0];
+
+  return tag ? { count, tag } : null;
+}
+
+function toMissionResults(matches: CoachMatch[]) {
+  return matches.slice(0, 10).map((match) => ({
+    id: match.id,
+    opponent: match.opponent_archetype,
+    playedAt: match.played_at,
+    result: match.result,
+  }));
 }
 
 function getLossPatternTrend(matches: CoachMatch[]) {
@@ -381,6 +412,7 @@ export function buildSessionCoachInsight(
       issueTrend: getLossPatternTrend(strongestPositiveSignal.matches),
       missionState: completed >= 5 ? "complete" : "active",
       missionTitle: `Mission: Test ${strongestPositiveSignal.archetype}`,
+      missionResults: toMissionResults(strongestPositiveSignal.matches),
       nextAction:
         completed >= 5
           ? "Review the completed block before changing the list."
@@ -430,7 +462,7 @@ export function buildSessionCoachInsight(
   const lossTags = biggestLeak.matches
     .filter((match) => match.result === "loss")
     .flatMap(getTags);
-  const repeatedTag = getMostCommonValue(lossTags);
+  const repeatedTag = getMostCommonTag(lossTags);
   const eventType =
     getMostCommonValue(
       biggestLeak.matches
@@ -451,11 +483,11 @@ export function buildSessionCoachInsight(
   const condition = turnContext
     ? `Worse when ${turnContext}`
     : repeatedTag
-      ? `Losses repeat around ${repeatedTag}`
+      ? `🔁 ${repeatedTag.tag} (${repeatedTag.count}x)`
       : "Weakest recent matchup";
   const exactTest = `Play 5 games vs ${biggestLeak.archetype}${turnPhrase}.`;
   const focus = repeatedTag
-    ? `Focus on ${repeatedTag} in this matchup.`
+    ? `Focus on ${repeatedTag.tag} in this matchup.`
     : turnContext
       ? `Review your lines when ${turnContext}.`
       : "Focus on your opening plan and prize map.";
@@ -468,7 +500,7 @@ export function buildSessionCoachInsight(
         )} otherwise.`
       : `All recent losses in this matchup happened when ${turnContext}.`
     : repeatedTag
-      ? `${repeatedTag} appears most often in losses vs this matchup.`
+      ? `🔁 ${repeatedTag.tag} (${repeatedTag.count}x)`
       : `You are ${formatRecord(biggestLeak.wins, biggestLeak.losses)} against this matchup recently.`;
   const completed = Math.min(progressMatches.length, 5);
   const duringMatches = sortedProgressMatches.slice(0, 5);
@@ -481,7 +513,7 @@ export function buildSessionCoachInsight(
   );
   const remaining = Math.max(5 - completed, 0);
   const skillPhrase = repeatedTag
-    ? `${repeatedTag} vs ${biggestLeak.archetype}`
+    ? `${repeatedTag.tag} vs ${biggestLeak.archetype}`
     : turnContext
       ? `${biggestLeak.archetype} ${turnContext}`
       : biggestLeak.archetype;
@@ -492,7 +524,7 @@ export function buildSessionCoachInsight(
     ctaLabel: getMissionCta(biggestLeak.archetype, completed, 5),
     completionStatus: completion.completionStatus,
     completionSummary: completion.completionSummary,
-    commonIssue: repeatedTag ?? null,
+    commonIssue: repeatedTag,
     criteria: turnContext
       ? `Counts games vs ${biggestLeak.archetype} when ${turnContext}.`
       : `Counts games vs ${biggestLeak.archetype}.`,
@@ -507,6 +539,7 @@ export function buildSessionCoachInsight(
     missionTitle: repeatedTag
       ? `Mission: Improve ${skillPhrase}`
       : `Mission: Fix ${skillPhrase}`,
+    missionResults: toMissionResults(sortedProgressMatches),
     nextAction:
       completed >= 5
         ? "Review this block and decide whether to keep testing or change plans."

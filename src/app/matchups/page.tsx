@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { AppNav } from "@/components/AppNav";
 import { ArchetypePicker } from "@/components/ArchetypePicker";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
+import { MatchStrip } from "@/components/MatchStrip";
 import {
   appContainer,
   appShell,
@@ -326,6 +327,15 @@ export default async function MatchupsPage({
     return {
       opponentArchetype,
       matches: groupedMatches.length,
+      recentMatches: groupedMatches
+        .sort((first, second) => second.played_at.localeCompare(first.played_at))
+        .slice(0, 10)
+        .map((match) => ({
+          id: match.id,
+          opponent: match.opponent_archetype,
+          playedAt: match.played_at,
+          result: match.result,
+        })),
       wins,
       losses,
       winRate: formatWinRate(wins, groupedMatches.length),
@@ -635,6 +645,9 @@ export default async function MatchupsPage({
                         Suggested action:{" "}
                         <span className="text-[#94A3B8]">{coachLabel.action}</span>
                       </p>
+                      <div className="mt-3">
+                        <MatchStrip matches={matchup.recentMatches} />
+                      </div>
                     </div>
                     <div className="grid grid-cols-4 gap-2 text-sm">
                       <p className="text-[#94A3B8]">{matchup.matches} played</p>

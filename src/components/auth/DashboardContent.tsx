@@ -16,6 +16,7 @@ import {
 } from "recharts";
 import { AppNav } from "@/components/AppNav";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
+import { MatchStrip } from "@/components/MatchStrip";
 import {
   appContainer,
   appShell,
@@ -313,6 +314,22 @@ export function DashboardContent({
         ) : null}
 
         {hasMatches ? (
+          <section className="flex items-center justify-between gap-3 rounded-md bg-[#11182C]/42 p-3 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.04)]">
+            <span className="text-xs font-semibold uppercase text-[#94A3B8]/78">
+              Recent
+            </span>
+            <MatchStrip
+              matches={recentMatches.map((match) => ({
+                id: match.id,
+                opponent: match.opponentArchetype,
+                playedAt: match.playedAt,
+                result: match.result,
+              }))}
+            />
+          </section>
+        ) : null}
+
+        {hasMatches ? (
           <section className="grid gap-3 sm:grid-cols-3">
             <div className="rounded-md bg-[#11182C]/58 p-4 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.04)]">
               <p className="text-xs font-semibold uppercase text-[#94A3B8]/78">
@@ -324,9 +341,14 @@ export function DashboardContent({
                   : "No completed tests yet"}
               </p>
               {!trainingProgress.completedTestBlocks ? (
-                <p className="mt-1 text-xs text-[#94A3B8]">
-                  Finish a 5-game mission to unlock comparisons.
-                </p>
+                <div className="mt-2 flex gap-1.5" aria-label="No completed tests yet">
+                  {Array.from({ length: 5 }).map((_, index) => (
+                    <span
+                      key={index}
+                      className="size-2.5 rounded-full bg-[#1A2238]"
+                    />
+                  ))}
+                </div>
               ) : null}
             </div>
             <div className="rounded-md bg-[#11182C]/58 p-4 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.04)]">
@@ -339,9 +361,7 @@ export function DashboardContent({
                   : "Finish your first test block"}
               </p>
               {!trainingProgress.improvedMatchups ? (
-                <p className="mt-1 text-xs text-[#94A3B8]">
-                  Improvement appears after before-vs-during data exists.
-                </p>
+                <p className="mt-1 text-xs text-[#94A3B8]">📈 Awaiting comparison</p>
               ) : null}
             </div>
             <div className="rounded-md bg-[#11182C]/58 p-4 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.04)]">
@@ -353,9 +373,7 @@ export function DashboardContent({
                   "Tag losses to start identifying patterns."}
               </p>
               {!trainingProgress.lossPatternTrend ? (
-                <p className="mt-1 text-xs text-[#94A3B8]">
-                  Patterns stay quiet until there is enough evidence.
-                </p>
+                <p className="mt-1 text-xs text-[#94A3B8]">🔁 No pattern yet</p>
               ) : null}
             </div>
           </section>
