@@ -1,4 +1,5 @@
 export type CoachMatch = {
+  id?: string;
   opponent_archetype: string;
   result: "win" | "loss";
   went_first: boolean | null;
@@ -10,6 +11,7 @@ export type CoachMatch = {
 export type SessionCoachInsight = {
   archetype: string;
   confidence: string;
+  ctaLabel: string;
   completionStatus: string | null;
   completionSummary: string | null;
   commonIssue: string | null;
@@ -84,7 +86,15 @@ function getConfidence(matchCount: number) {
     return "Building signal";
   }
 
-  return "Early signal";
+  if (matchCount >= 3) {
+    return "Early read";
+  }
+
+  if (matchCount >= 2) {
+    return "Low-confidence read";
+  }
+
+  return "Needs more games";
 }
 
 function getProgressFeedback(completed: number, goal: number) {
@@ -103,6 +113,18 @@ function getProgressFeedback(completed: number, goal: number) {
   }
 
   return "Keep logging this exact test.";
+}
+
+function getMissionCta(archetype: string, completed: number, goal: number) {
+  if (completed >= goal) {
+    return `Review ${archetype} test`;
+  }
+
+  if (completed === 0) {
+    return `Log next game vs ${archetype}`;
+  }
+
+  return `Continue test (${completed}/${goal})`;
 }
 
 function getCompletionStatus(
@@ -243,6 +265,25 @@ export function buildTrainingProgressSummary(
   };
 }
 
+export function matchCountsTowardMission(
+  match: CoachMatch,
+  insight: SessionCoachInsight | null
+) {
+  if (!insight || match.opponent_archetype !== insight.archetype) {
+    return false;
+  }
+
+  if (insight.criteria.includes("going second")) {
+    return match.went_first === false;
+  }
+
+  if (insight.criteria.includes("going first")) {
+    return match.went_first === true;
+  }
+
+  return true;
+}
+
 export function buildSessionCoachInsight(
   matches: CoachMatch[]
 ): SessionCoachInsight | null {
@@ -326,6 +367,7 @@ export function buildSessionCoachInsight(
     return {
       archetype: strongestPositiveSignal.archetype,
       confidence: getConfidence(strongestPositiveSignal.matches.length),
+      ctaLabel: getMissionCta(strongestPositiveSignal.archetype, completed, 5),
       completionStatus: completion.completionStatus,
       completionSummary: completion.completionSummary,
       commonIssue: null,
@@ -438,10 +480,16 @@ export function buildSessionCoachInsight(
     previousMatches
   );
   const remaining = Math.max(5 - completed, 0);
+  const skillPhrase = repeatedTag
+    ? `${repeatedTag} vs ${biggestLeak.archetype}`
+    : turnContext
+      ? `${biggestLeak.archetype} ${turnContext}`
+      : biggestLeak.archetype;
 
   return {
     archetype: biggestLeak.archetype,
     confidence: getConfidence(biggestLeak.matches.length),
+    ctaLabel: getMissionCta(biggestLeak.archetype, completed, 5),
     completionStatus: completion.completionStatus,
     completionSummary: completion.completionSummary,
     commonIssue: repeatedTag ?? null,
@@ -456,7 +504,9 @@ export function buildSessionCoachInsight(
     improvementDelta: completion.improvementDelta,
     issueTrend: getLossPatternTrend(biggestLeak.matches),
     missionState: completed >= 5 ? "complete" : "active",
-    missionTitle: `Mission: Fix ${biggestLeak.archetype}${turnPhrase}`,
+    missionTitle: repeatedTag
+      ? `Mission: Improve ${skillPhrase}`
+      : `Mission: Fix ${skillPhrase}`,
     nextAction:
       completed >= 5
         ? "Review this block and decide whether to keep testing or change plans."

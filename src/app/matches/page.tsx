@@ -23,7 +23,12 @@ import {
   subtlePill,
 } from "@/components/brand-styles";
 import { PrizeMapLogo } from "@/components/PrizeMapLogo";
+import { SessionCoachPanel } from "@/components/SessionCoachPanel";
 import { getArchetypeOptions } from "@/lib/archetypes";
+import {
+  buildSessionCoachInsight,
+  matchCountsTowardMission,
+} from "@/lib/session-coach";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { deleteMatch } from "./actions";
 
@@ -35,6 +40,7 @@ type MatchesPageProps = {
     result?: string;
     start_date?: string;
     end_date?: string;
+    mission_only?: string;
     updated?: string;
   }>;
 };
@@ -196,6 +202,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
 
   const userDecks = (decks ?? []) as DeckWithVersions[];
   const matchRows = (matches ?? []) as unknown as MatchRow[];
+  const sessionCoach = buildSessionCoachInsight(matchRows);
   const allVersions = userDecks.flatMap((deck) =>
     deck.deck_versions.map((version) => ({
       ...version,
@@ -225,6 +232,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
     params.result === "win" || params.result === "loss" ? params.result : "";
   const startDate = parseDateStart(params.start_date);
   const endDate = parseDateEnd(params.end_date);
+  const missionOnly = params.mission_only === "1";
 
   const filteredMatches = matchRows.filter((match) => {
     const deckVersion = getDeckVersion(match);
@@ -257,6 +265,10 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
       return false;
     }
 
+    if (missionOnly && !matchCountsTowardMission(match, sessionCoach)) {
+      return false;
+    }
+
     return true;
   });
 
@@ -275,6 +287,10 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
           </div>
           <AppNav current="matches" />
         </header>
+
+        {sessionCoach ? (
+          <SessionCoachPanel insight={sessionCoach} />
+        ) : null}
 
         {params.updated === "1" ? (
           <div className="rounded-md bg-emerald-500/10 px-4 py-3 text-sm font-medium text-emerald-200">
@@ -392,6 +408,18 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                 Clear
               </Link>
             </div>
+            {sessionCoach ? (
+              <label className="flex min-h-10 items-center gap-2 rounded-md bg-[#0B1020]/36 px-3 text-sm font-medium text-[#F8FAFC] md:col-span-2 lg:col-span-6">
+                <input
+                  type="checkbox"
+                  name="mission_only"
+                  value="1"
+                  defaultChecked={missionOnly}
+                  className="h-4 w-4 rounded border-white/20 accent-[#F5C84C]"
+                />
+                Show only matches used for this mission
+              </label>
+            ) : null}
           </div>
         </form>
 
@@ -418,7 +446,8 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
               </h2>
               <p className={sectionCopy}>
                 {filteredMatches.length} match
-                {filteredMatches.length === 1 ? "" : "es"} in this view.
+                {filteredMatches.length === 1 ? "" : "es"} in this view
+                {missionOnly ? " for the current mission" : ""}.
               </p>
             </div>
             <div className="mt-5 flex flex-col gap-3">
@@ -426,6 +455,10 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                 const deckVersion = getDeckVersion(match);
                 const tags = match.match_tags?.map((tag) => tag.tag) ?? [];
                 const removeMatch = deleteMatch.bind(null, match.id);
+                const countsTowardMission = matchCountsTowardMission(
+                  match,
+                  sessionCoach
+                );
 
                 return (
                   <article
@@ -447,6 +480,11 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                           >
                             {match.result}
                           </span>
+                          {countsTowardMission ? (
+                            <span className="rounded-md bg-[#F5C84C]/14 px-2 py-1 text-xs font-semibold text-[#F5C84C]">
+                              Counts toward mission
+                            </span>
+                          ) : null}
                         </div>
                         <div className="mt-2 flex items-center gap-3">
                           <ArchetypeSprites archetype={match.opponent_archetype} />

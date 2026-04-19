@@ -93,6 +93,10 @@ export function MatchLogForm({
       return initialOpponentArchetype.trim();
     }
 
+    if (sessionCoach?.missionState === "active") {
+      return sessionCoach.archetype;
+    }
+
     if (typeof window === "undefined") {
       return "";
     }
@@ -108,6 +112,18 @@ export function MatchLogForm({
     return stored === "loss" ? "loss" : "win";
   });
   const [wentFirst, setWentFirst] = useState<"true" | "false">(() => {
+    if (initialWentFirst === "true" || initialWentFirst === "false") {
+      return initialWentFirst;
+    }
+
+    if (sessionCoach?.criteria.includes("going second")) {
+      return "false";
+    }
+
+    if (sessionCoach?.criteria.includes("going first")) {
+      return "true";
+    }
+
     if (typeof window === "undefined") {
       return "true";
     }
@@ -165,7 +181,10 @@ export function MatchLogForm({
     ) {
       sessionStorage.setItem(sessionKeys.eventType, initialEventType);
     }
-  }, [initialEventType, initialOpponentArchetype]);
+    if (!initialOpponentArchetype?.trim() && sessionCoach?.missionState === "active") {
+      sessionStorage.setItem(sessionKeys.opponentArchetype, sessionCoach.archetype);
+    }
+  }, [initialEventType, initialOpponentArchetype, sessionCoach]);
 
   function remember(key: string, value: string) {
     sessionStorage.setItem(key, value);

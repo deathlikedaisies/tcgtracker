@@ -25,6 +25,7 @@ import { PrizeMapLogo } from "@/components/PrizeMapLogo";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { getArchetypeOptions } from "@/lib/archetypes";
 import { LATEST_FORMAT } from "@/lib/formats";
+import { buildSessionCoachInsight } from "@/lib/session-coach";
 import { createDeck, deleteDeck } from "./actions";
 
 type Deck = {
@@ -63,7 +64,27 @@ export default async function DecksPage() {
     throw new Error(error.message);
   }
 
+  const { data: matches, error: matchesError } = await supabase
+    .from("matches")
+    .select("opponent_archetype, result, went_first, event_type, played_at, match_tags(tag)")
+    .eq("user_id", user.id)
+    .order("played_at", { ascending: false });
+
+  if (matchesError) {
+    throw new Error(matchesError.message);
+  }
+
   const userDecks = (decks ?? []) as Deck[];
+  const sessionCoach = buildSessionCoachInsight(
+    (matches ?? []) as {
+      opponent_archetype: string;
+      result: "win" | "loss";
+      went_first: boolean | null;
+      event_type: string | null;
+      played_at: string;
+      match_tags: { tag: string }[] | null;
+    }[]
+  );
   const archetypeOptions = getArchetypeOptions(
     LATEST_FORMAT,
     userDecks.map((deck) => deck.archetype)
@@ -123,6 +144,19 @@ export default async function DecksPage() {
                             <p className="mt-1 text-xs text-[#94A3B8]">
                               Created {formatDate(deck.created_at)}
                             </p>
+                            <span
+                              className={`mt-3 inline-flex rounded-md px-2 py-1 text-xs font-semibold ${
+                                sessionCoach?.archetype === deck.archetype
+                                  ? "bg-[#F5C84C]/14 text-[#F5C84C]"
+                                  : "bg-[#4F8CFF]/12 text-[#B8D1FF]"
+                              }`}
+                            >
+                              {sessionCoach?.archetype === deck.archetype
+                                ? "Improving current leak"
+                                : sessionCoach
+                                  ? "Unproven vs current mission"
+                                  : "No evidence yet"}
+                            </span>
                             {deck.notes ? (
                               <p className={`mt-3 ${sectionCopy}`}>
                                 {deck.notes}

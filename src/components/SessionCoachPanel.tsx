@@ -11,7 +11,7 @@ type SessionCoachPanelProps = {
 
 export function SessionCoachPanel({
   insight,
-  ctaLabel = "Run this test",
+  ctaLabel,
   isPostSave = false,
   showCta = true,
 }: SessionCoachPanelProps) {
@@ -21,8 +21,8 @@ export function SessionCoachPanel({
   );
 
   return (
-    <section className="rounded-md bg-[#11182C]/84 p-4 shadow-[0_22px_64px_rgba(0,0,0,0.28),0_0_38px_rgba(245,200,76,0.07),inset_0_0_0_1px_rgba(245,200,76,0.16)] sm:p-5">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+    <section className="rounded-md bg-[#11182C]/84 p-3 shadow-[0_22px_64px_rgba(0,0,0,0.28),0_0_38px_rgba(245,200,76,0.07),inset_0_0_0_1px_rgba(245,200,76,0.16)] sm:p-5">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <p className="text-xs font-semibold uppercase tracking-wide text-[#F5C84C]/84">
@@ -35,7 +35,7 @@ export function SessionCoachPanel({
           <div className="mt-3 flex min-w-0 items-start gap-3">
             <ArchetypeSprites archetype={insight.archetype} className="shrink-0" />
             <div className="min-w-0">
-              <h2 className="text-xl font-semibold leading-tight tracking-tight text-[#F8FAFC] sm:text-2xl">
+              <h2 className="text-lg font-semibold leading-tight tracking-tight text-[#F8FAFC] sm:text-2xl">
                 {insight.missionTitle}
               </h2>
               <p className="mt-1 text-sm font-medium text-[#94A3B8]">
@@ -50,12 +50,12 @@ export function SessionCoachPanel({
             href={insight.continueHref}
             className="inline-flex h-11 w-full items-center justify-center rounded-md bg-[#F5C84C] px-4 text-sm font-semibold text-[#0B1020] shadow-[0_14px_32px_rgba(245,200,76,0.22)] transition hover:-translate-y-0.5 hover:bg-[#ffd85f] active:translate-y-0 active:scale-[0.98] lg:w-fit"
           >
-            {ctaLabel}
+            {ctaLabel ?? insight.ctaLabel}
           </Link>
         ) : null}
       </div>
 
-      <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_1fr]">
+      <div className="mt-3 grid gap-2 lg:grid-cols-[1fr_1fr]">
         <div className="rounded-md bg-[#0B1020]/46 p-3 shadow-[inset_0_0_0_1px_rgba(244,63,94,0.14)]">
           <p className="text-xs font-semibold uppercase text-[#F43F5E]/84">
             Biggest leak
@@ -80,7 +80,7 @@ export function SessionCoachPanel({
         </div>
       </div>
 
-      <div className="mt-4 rounded-md bg-[#0B1020]/42 p-3 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.05)]">
+      <div className="mt-3 rounded-md bg-[#0B1020]/42 p-3 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.05)]">
         <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs font-semibold uppercase text-[#94A3B8]/78">
             Test progress
@@ -97,7 +97,7 @@ export function SessionCoachPanel({
             style={{ width: `${progressPercent}%` }}
           />
         </div>
-        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+        <div className="mt-2 grid gap-2 sm:grid-cols-2">
           <p className="text-sm font-medium text-[#F8FAFC]">
             {insight.progressFeedback}
           </p>
@@ -111,7 +111,7 @@ export function SessionCoachPanel({
       </div>
 
       {insight.completionStatus ? (
-        <div className="mt-4 rounded-md bg-emerald-500/10 p-3 shadow-[inset_0_0_0_1px_rgba(34,197,94,0.18)]">
+        <div className="mt-3 rounded-md bg-emerald-500/10 p-3 shadow-[inset_0_0_0_1px_rgba(34,197,94,0.18)]">
           <p className="text-xs font-semibold uppercase text-emerald-200">
             {insight.completionStatus}
           </p>

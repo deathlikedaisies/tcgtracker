@@ -318,25 +318,45 @@ export function DashboardContent({
               <p className="text-xs font-semibold uppercase text-[#94A3B8]/78">
                 Test blocks completed
               </p>
-              <p className="mt-2 text-2xl font-semibold text-[#F8FAFC]">
-                {trainingProgress.completedTestBlocks}
+              <p className="mt-2 text-sm font-semibold leading-6 text-[#F8FAFC]">
+                {trainingProgress.completedTestBlocks
+                  ? `${trainingProgress.completedTestBlocks} completed`
+                  : "No completed tests yet"}
               </p>
+              {!trainingProgress.completedTestBlocks ? (
+                <p className="mt-1 text-xs text-[#94A3B8]">
+                  Finish a 5-game mission to unlock comparisons.
+                </p>
+              ) : null}
             </div>
             <div className="rounded-md bg-[#11182C]/58 p-4 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.04)]">
               <p className="text-xs font-semibold uppercase text-[#94A3B8]/78">
                 Improved matchups
               </p>
-              <p className="mt-2 text-2xl font-semibold text-[#F8FAFC]">
-                {trainingProgress.improvedMatchups}
+              <p className="mt-2 text-sm font-semibold leading-6 text-[#F8FAFC]">
+                {trainingProgress.improvedMatchups
+                  ? `${trainingProgress.improvedMatchups} improved`
+                  : "Finish your first test block"}
               </p>
+              {!trainingProgress.improvedMatchups ? (
+                <p className="mt-1 text-xs text-[#94A3B8]">
+                  Improvement appears after before-vs-during data exists.
+                </p>
+              ) : null}
             </div>
             <div className="rounded-md bg-[#11182C]/58 p-4 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.04)]">
               <p className="text-xs font-semibold uppercase text-[#94A3B8]/78">
                 Loss pattern
               </p>
               <p className="mt-2 text-sm font-semibold leading-6 text-[#F8FAFC]">
-                {trainingProgress.lossPatternTrend ?? "Tag losses to track skill patterns."}
+                {trainingProgress.lossPatternTrend ??
+                  "Tag losses to start identifying patterns."}
               </p>
+              {!trainingProgress.lossPatternTrend ? (
+                <p className="mt-1 text-xs text-[#94A3B8]">
+                  Patterns stay quiet until there is enough evidence.
+                </p>
+              ) : null}
             </div>
           </section>
         ) : null}
