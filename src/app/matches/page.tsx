@@ -28,6 +28,7 @@ import { getArchetypeOptions } from "@/lib/archetypes";
 import {
   buildSessionCoachInsight,
   matchCountsTowardMission,
+  matchCountsTowardMissionContext,
 } from "@/lib/session-coach";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { deleteMatch } from "./actions";
@@ -417,7 +418,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                   defaultChecked={missionOnly}
                   className="h-4 w-4 rounded border-white/20 accent-[#F5C84C]"
                 />
-                Show only matches used for this mission
+                Show games that advance the current mission
               </label>
             ) : null}
           </div>
@@ -447,7 +448,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
               <p className={sectionCopy}>
                 {filteredMatches.length} match
                 {filteredMatches.length === 1 ? "" : "es"} in this view
-                {missionOnly ? " for the current mission" : ""}.
+                {missionOnly ? " that advance the current mission" : ""}.
               </p>
             </div>
             <div className="mt-5 flex flex-col gap-3">
@@ -456,6 +457,10 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                 const tags = match.match_tags?.map((tag) => tag.tag) ?? [];
                 const removeMatch = deleteMatch.bind(null, match.id);
                 const countsTowardMission = matchCountsTowardMission(
+                  match,
+                  sessionCoach
+                );
+                const countsTowardContext = matchCountsTowardMissionContext(
                   match,
                   sessionCoach
                 );
@@ -482,7 +487,12 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                           </span>
                           {countsTowardMission ? (
                             <span className="rounded-md bg-[#F5C84C]/14 px-2 py-1 text-xs font-semibold text-[#F5C84C]">
-                              Counts toward mission
+                              Mission progress
+                            </span>
+                          ) : null}
+                          {countsTowardContext ? (
+                            <span className="rounded-md bg-[#4F8CFF]/14 px-2 py-1 text-xs font-semibold text-[#B8D1FF]">
+                              Focus evidence
                             </span>
                           ) : null}
                         </div>

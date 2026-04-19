@@ -627,6 +627,11 @@ export default async function MatchupsPage({
                         >
                           {coachLabel.label}
                         </span>
+                        {sessionCoach?.archetype === matchup.opponentArchetype ? (
+                          <span className="rounded-md bg-[#F5C84C]/14 px-2 py-1 text-xs font-semibold text-[#F5C84C]">
+                            Focus area
+                          </span>
+                        ) : null}
                       </div>
                       <div className="mt-3 h-2 rounded-full bg-[#1A2238]/70">
                         <div

@@ -33,6 +33,7 @@ type NewMatchPageProps = {
   searchParams: Promise<{
     event?: string;
     opponent?: string;
+    result?: string;
     success?: string;
     went_first?: string;
   }>;
@@ -41,7 +42,13 @@ type NewMatchPageProps = {
 export default async function NewMatchPage({
   searchParams,
 }: NewMatchPageProps) {
-  const { event, opponent, success, went_first: wentFirst } = await searchParams;
+  const {
+    event,
+    opponent,
+    result,
+    success,
+    went_first: wentFirst,
+  } = await searchParams;
   const supabase = await createServerSupabaseClient();
   const {
     data: { user },
@@ -136,6 +143,7 @@ export default async function NewMatchPage({
             recentOpponentArchetypes={recentOpponentArchetypes}
             initialEventType={event}
             initialOpponentArchetype={opponent}
+            initialResult={result}
             initialWentFirst={wentFirst}
             sessionCoach={sessionCoach}
             wasSuccessful={success === "1"}

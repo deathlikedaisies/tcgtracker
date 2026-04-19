@@ -13,7 +13,11 @@ import {
   textarea,
 } from "@/components/brand-styles";
 import { MATCH_TAGS } from "@/lib/match-options";
-import type { SessionCoachInsight } from "@/lib/session-coach";
+import {
+  matchCountsTowardMission,
+  matchCountsTowardMissionContext,
+  type SessionCoachInsight,
+} from "@/lib/session-coach";
 
 type DeckOption = {
   id: string;
@@ -29,6 +33,7 @@ type MatchLogFormProps = {
   recentOpponentArchetypes: string[];
   initialEventType?: string;
   initialOpponentArchetype?: string;
+  initialResult?: string;
   initialWentFirst?: string;
   sessionCoach?: SessionCoachInsight | null;
   wasSuccessful: boolean;
@@ -73,6 +78,7 @@ export function MatchLogForm({
   opponentArchetypeOptions,
   initialEventType,
   initialOpponentArchetype,
+  initialResult,
   initialWentFirst,
   recentOpponentArchetypes,
   sessionCoach,
@@ -93,10 +99,6 @@ export function MatchLogForm({
       return initialOpponentArchetype.trim();
     }
 
-    if (sessionCoach?.missionState === "active") {
-      return sessionCoach.archetype;
-    }
-
     if (typeof window === "undefined") {
       return "";
     }
@@ -104,6 +106,10 @@ export function MatchLogForm({
     return sessionStorage.getItem(sessionKeys.opponentArchetype) ?? "";
   });
   const [result, setResult] = useState<"win" | "loss">(() => {
+    if (initialResult === "win" || initialResult === "loss") {
+      return initialResult;
+    }
+
     if (typeof window === "undefined") {
       return "win";
     }
@@ -116,11 +122,14 @@ export function MatchLogForm({
       return initialWentFirst;
     }
 
-    if (sessionCoach?.criteria.includes("going second")) {
+    if (sessionCoach?.missionSkill.toLowerCase().includes("going-second")) {
       return "false";
     }
 
-    if (sessionCoach?.criteria.includes("going first")) {
+    if (
+      sessionCoach?.missionSkill.toLowerCase().includes("going first") ||
+      sessionCoach?.missionSkill.toLowerCase().includes("going-first")
+    ) {
       return "true";
     }
 
@@ -159,12 +168,30 @@ export function MatchLogForm({
   const selectedDeck = deckOptions.find((option) => option.id === deckVersionId);
   const selectedDeckArchetype = selectedDeck?.detail ?? "";
   const loggedOpponent = initialOpponentArchetype?.trim() ?? "";
+  const loggedResult: "win" | "loss" = initialResult === "loss" ? "loss" : "win";
+  const loggedMatch =
+    sessionCoach && loggedOpponent
+      ? {
+          opponent_archetype: loggedOpponent,
+          result: loggedResult,
+          went_first:
+            initialWentFirst === "true"
+              ? true
+              : initialWentFirst === "false"
+                ? false
+                : null,
+          event_type: initialEventType ?? null,
+          played_at: new Date().toISOString(),
+        }
+      : null;
   const countedTowardMission =
-    wasSuccessful &&
-    sessionCoach &&
-    loggedOpponent === sessionCoach.archetype &&
-    (!sessionCoach.criteria.includes("going second") || initialWentFirst === "false") &&
-    (!sessionCoach.criteria.includes("going first") || initialWentFirst === "true");
+    wasSuccessful && loggedMatch
+      ? matchCountsTowardMission(loggedMatch, sessionCoach ?? null)
+      : false;
+  const countedTowardContext =
+    wasSuccessful && loggedMatch
+      ? matchCountsTowardMissionContext(loggedMatch, sessionCoach ?? null)
+      : false;
 
   useEffect(() => {
     if (initialOpponentArchetype?.trim()) {
@@ -181,10 +208,11 @@ export function MatchLogForm({
     ) {
       sessionStorage.setItem(sessionKeys.eventType, initialEventType);
     }
-    if (!initialOpponentArchetype?.trim() && sessionCoach?.missionState === "active") {
-      sessionStorage.setItem(sessionKeys.opponentArchetype, sessionCoach.archetype);
+
+    if (initialResult === "win" || initialResult === "loss") {
+      sessionStorage.setItem(sessionKeys.result, initialResult);
     }
-  }, [initialEventType, initialOpponentArchetype, sessionCoach]);
+  }, [initialEventType, initialOpponentArchetype, initialResult]);
 
   function remember(key: string, value: string) {
     sessionStorage.setItem(key, value);
@@ -266,14 +294,18 @@ export function MatchLogForm({
             {sessionCoach ? (
               <>
                 {countedTowardMission
-                  ? "Counts toward current test."
-                  : "Saved outside the current test."}{" "}
+                  ? countedTowardContext
+                    ? "Counts toward mission and focus evidence."
+                    : "Counts toward your current mission."
+                  : "Logged outside the current mission focus."}{" "}
                 <span className="text-emerald-100">
-                  {sessionCoach.progressCompleted} / {sessionCoach.progressGoal} done.
+                  {sessionCoach.missionProgress} / {sessionCoach.missionTargetCount} done.
                   {" "}
                   {countedTowardMission
                     ? sessionCoach.progressFeedback
-                    : `Current mission: ${sessionCoach.criteria}`}
+                    : sessionCoach.missionContextSeenCount > 0
+                      ? "Focus evidence is still separate."
+                      : "Focus area not seen yet."}
                 </span>
               </>
             ) : (

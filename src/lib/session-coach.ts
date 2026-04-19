@@ -26,6 +26,15 @@ export type SessionCoachInsight = {
   issueTrend: string | null;
   missionState: "active" | "complete";
   missionTitle: string;
+  missionSkill: string;
+  missionProgress: number;
+  missionTargetCount: number;
+  missionContextLabel: string;
+  missionContextSeenCount: number;
+  missionContextTargetCount: number;
+  missionReason: string;
+  missionConfidence: string;
+  missionNextAction: string;
   missionResults: {
     id?: string;
     opponent: string;
@@ -86,31 +95,27 @@ function getWinRate(matches: CoachMatch[]) {
   return Math.round((wins / matches.length) * 100);
 }
 
-function getConfidence(matchCount: number) {
-  if (matchCount >= 10) {
-    return "Strong signal";
+function getMissionConfidence(primaryCount: number, contextCount: number) {
+  if (primaryCount >= 10 && contextCount >= 3) {
+    return "Strong read";
   }
 
-  if (matchCount >= 5) {
-    return "Building signal";
+  if (primaryCount >= 5) {
+    return contextCount >= 2 ? "Building read" : "General read";
   }
 
-  if (matchCount >= 3) {
+  if (primaryCount >= 3) {
     return "Early read";
   }
 
-  if (matchCount >= 2) {
-    return "Low-confidence read";
-  }
-
-  return "Needs more games";
+  return "Needs games";
 }
 
 function getProgressFeedback(completed: number, goal: number) {
   const remaining = Math.max(goal - completed, 0);
 
   if (remaining === 0) {
-    return "Test block complete. Review the pattern before changing plans.";
+    return "Mission complete. Review the read before changing plans.";
   }
 
   if (remaining === 1) {
@@ -118,22 +123,22 @@ function getProgressFeedback(completed: number, goal: number) {
   }
 
   if (completed >= 3) {
-    return "You are building signal.";
+    return "Building signal.";
   }
 
-  return "Keep logging this exact test.";
+  return "Counts toward your current mission.";
 }
 
-function getMissionCta(archetype: string, completed: number, goal: number) {
+function getMissionCta(skill: string, completed: number, goal: number) {
   if (completed >= goal) {
-    return `Review ${archetype} test`;
+    return "Review mission";
   }
 
   if (completed === 0) {
-    return `Log next game vs ${archetype}`;
+    return "Log next game";
   }
 
-  return `Continue test (${completed}/${goal})`;
+  return `Continue mission (${completed}/${goal})`;
 }
 
 function getCompletionStatus(
@@ -226,6 +231,52 @@ function toMissionResults(matches: CoachMatch[]) {
   }));
 }
 
+function getSkillLabel(tag: string) {
+  const normalized = tag.toLowerCase();
+
+  if (normalized.includes("sequenc")) {
+    return "Improve sequencing";
+  }
+
+  if (normalized.includes("setup")) {
+    return "Clean up setup decisions";
+  }
+
+  if (normalized.includes("draw")) {
+    return "Stabilize early turns";
+  }
+
+  if (normalized.includes("misplay")) {
+    return "Reduce misplays";
+  }
+
+  if (normalized.includes("bad matchup")) {
+    return "Reduce bad matchup losses";
+  }
+
+  return `Improve ${tag}`;
+}
+
+function getMissionMatches(
+  matches: CoachMatch[],
+  missionSkill: string,
+  turnContext: string
+) {
+  if (turnContext === "going second") {
+    return matches.filter((match) => match.went_first === false);
+  }
+
+  if (turnContext === "going first") {
+    return matches.filter((match) => match.went_first === true);
+  }
+
+  if (missionSkill === "Reduce bad matchup losses") {
+    return matches.filter((match) => match.result === "loss");
+  }
+
+  return matches;
+}
+
 function getLossPatternTrend(matches: CoachMatch[]) {
   const sortedMatches = [...matches].sort((first, second) =>
     second.played_at.localeCompare(first.played_at)
@@ -300,19 +351,37 @@ export function matchCountsTowardMission(
   match: CoachMatch,
   insight: SessionCoachInsight | null
 ) {
-  if (!insight || match.opponent_archetype !== insight.archetype) {
+  if (!insight) {
     return false;
   }
 
-  if (insight.criteria.includes("going second")) {
+  if (insight.missionSkill.toLowerCase().includes("going-second")) {
     return match.went_first === false;
   }
 
-  if (insight.criteria.includes("going first")) {
+  if (
+    insight.missionSkill.toLowerCase().includes("going first") ||
+    insight.missionSkill.toLowerCase().includes("going-first")
+  ) {
     return match.went_first === true;
   }
 
+  if (insight.missionSkill === "Reduce bad matchup losses") {
+    return match.result === "loss";
+  }
+
   return true;
+}
+
+export function matchCountsTowardMissionContext(
+  match: CoachMatch,
+  insight: SessionCoachInsight | null
+) {
+  if (!insight) {
+    return false;
+  }
+
+  return match.opponent_archetype === insight.archetype;
 }
 
 export function buildSessionCoachInsight(
@@ -385,9 +454,20 @@ export function buildSessionCoachInsight(
           .filter((eventType): eventType is string => Boolean(eventType))
       ) ?? "testing";
 
-    const completed = Math.min(strongestPositiveSignal.matches.length, 5);
-    const duringMatches = strongestPositiveSignal.matches.slice(0, 5);
-    const previousMatches = strongestPositiveSignal.matches.slice(5, 10);
+    const primaryMatches = recentMatches;
+    const contextMatches = primaryMatches.filter(
+      (match) => match.opponent_archetype === strongestPositiveSignal.archetype
+    );
+    const completed = Math.min(primaryMatches.length, 5);
+    const duringMatches = primaryMatches.slice(0, 5);
+    const previousMatches = primaryMatches.slice(5, 10);
+    const contextSeen = Math.min(contextMatches.length, 3);
+    const missionSkill = "Stabilize testing baseline";
+    const missionContextLabel = `Focus area: ${strongestPositiveSignal.archetype}`;
+    const missionConfidence = getMissionConfidence(
+      primaryMatches.length,
+      contextMatches.length
+    );
     const completion = getCompletionStatus(
       completed,
       5,
@@ -397,12 +477,12 @@ export function buildSessionCoachInsight(
 
     return {
       archetype: strongestPositiveSignal.archetype,
-      confidence: getConfidence(strongestPositiveSignal.matches.length),
+      confidence: missionConfidence,
       ctaLabel: getMissionCta(strongestPositiveSignal.archetype, completed, 5),
       completionStatus: completion.completionStatus,
       completionSummary: completion.completionSummary,
       commonIssue: null,
-      criteria: `Counts games vs ${strongestPositiveSignal.archetype}.`,
+      criteria: `${missionContextLabel} adds context, but general testing advances the mission.`,
       duringRecord: formatComparisonRecord(duringMatches),
       evidence: `Based on ${strongestPositiveSignal.matches.length} recent game${
         strongestPositiveSignal.matches.length === 1 ? "" : "s"
@@ -411,12 +491,24 @@ export function buildSessionCoachInsight(
       improvementDelta: completion.improvementDelta,
       issueTrend: getLossPatternTrend(strongestPositiveSignal.matches),
       missionState: completed >= 5 ? "complete" : "active",
-      missionTitle: `Mission: Test ${strongestPositiveSignal.archetype}`,
-      missionResults: toMissionResults(strongestPositiveSignal.matches),
+      missionTitle: missionSkill,
+      missionSkill,
+      missionProgress: completed,
+      missionTargetCount: 5,
+      missionContextLabel,
+      missionContextSeenCount: contextSeen,
+      missionContextTargetCount: 3,
+      missionReason: "No leak has repeated yet. Keep testing the current plan.",
+      missionConfidence,
+      missionNextAction:
+        completed >= 5 ? "Review the baseline." : "Log the next game.",
+      missionResults: toMissionResults(primaryMatches),
       nextAction:
         completed >= 5
-          ? "Review the completed block before changing the list."
-          : `Log ${5 - completed} more game${5 - completed === 1 ? "" : "s"} in this matchup.`,
+          ? contextSeen >= 3
+            ? "Mission complete. Focus area had enough evidence to review."
+            : "Mission complete. The read is general because the focus area was rare."
+          : `Log ${5 - completed} more game${5 - completed === 1 ? "" : "s"}.`,
       previousRecord: completion.previousRecord,
       weakMatchup: strongestPositiveSignal.archetype,
       condition: "No loss cluster yet",
@@ -430,9 +522,7 @@ export function buildSessionCoachInsight(
       focus: "Keep the same deck and test whether the matchup stays stable.",
       record: formatRecord(strongestPositiveSignal.wins, 0),
       eventType,
-      continueHref: `/matches/new?opponent=${encodeURIComponent(
-        strongestPositiveSignal.archetype
-      )}&event=${encodeURIComponent(eventType)}`,
+      continueHref: `/matches/new?event=${encodeURIComponent(eventType)}`,
     };
   }
 
@@ -477,9 +567,6 @@ export function buildSessionCoachInsight(
           : match.went_first === true
       )
     : biggestLeak.matches;
-  const sortedProgressMatches = [...progressMatches].sort((first, second) =>
-    second.played_at.localeCompare(first.played_at)
-  );
   const condition = turnContext
     ? `Worse when ${turnContext}`
     : repeatedTag
@@ -502,9 +589,24 @@ export function buildSessionCoachInsight(
     : repeatedTag
       ? `🔁 ${repeatedTag.tag} (${repeatedTag.count}x)`
       : `You are ${formatRecord(biggestLeak.wins, biggestLeak.losses)} against this matchup recently.`;
-  const completed = Math.min(progressMatches.length, 5);
-  const duringMatches = sortedProgressMatches.slice(0, 5);
-  const previousMatches = sortedProgressMatches.slice(5, 10);
+  const missionSkill = repeatedTag
+    ? getSkillLabel(repeatedTag.tag)
+    : turnContext === "going second"
+      ? "Improve going-second play"
+      : turnContext === "going first"
+        ? "Improve going-first play"
+        : "Reduce bad matchup losses";
+  const primaryMatches = getMissionMatches(recentMatches, missionSkill, turnContext);
+  const sortedPrimaryMatches = [...primaryMatches].sort((first, second) =>
+    second.played_at.localeCompare(first.played_at)
+  );
+  const contextMatches = sortedPrimaryMatches.filter(
+    (match) => match.opponent_archetype === biggestLeak.archetype
+  );
+  const completed = Math.min(sortedPrimaryMatches.length, 5);
+  const contextSeen = Math.min(contextMatches.length, 3);
+  const duringMatches = sortedPrimaryMatches.slice(0, 5);
+  const previousMatches = sortedPrimaryMatches.slice(5, 10);
   const completion = getCompletionStatus(
     completed,
     5,
@@ -512,38 +614,63 @@ export function buildSessionCoachInsight(
     previousMatches
   );
   const remaining = Math.max(5 - completed, 0);
-  const skillPhrase = repeatedTag
-    ? `${repeatedTag.tag} vs ${biggestLeak.archetype}`
+  const missionContextLabel = `Focus area: ${biggestLeak.archetype}`;
+  const missionConfidence = getMissionConfidence(
+    sortedPrimaryMatches.length,
+    contextMatches.length
+  );
+  const contextEvidence =
+    contextSeen >= 3
+      ? "Focus area has enough evidence."
+      : contextSeen > 0
+        ? `Focus area seen ${contextSeen}/3.`
+        : "Focus area not seen yet.";
+  const missionReason = repeatedTag
+    ? `${repeatedTag.tag} appears in ${repeatedTag.count} recent loss${
+        repeatedTag.count === 1 ? "" : "es"
+      }.`
     : turnContext
-      ? `${biggestLeak.archetype} ${turnContext}`
-      : biggestLeak.archetype;
+      ? `Losses cluster when ${turnContext}.`
+      : `Weakest recent matchup is ${biggestLeak.archetype}.`;
 
   return {
     archetype: biggestLeak.archetype,
-    confidence: getConfidence(biggestLeak.matches.length),
-    ctaLabel: getMissionCta(biggestLeak.archetype, completed, 5),
+    confidence: missionConfidence,
+    ctaLabel: getMissionCta(missionSkill, completed, 5),
     completionStatus: completion.completionStatus,
-    completionSummary: completion.completionSummary,
+    completionSummary: completion.completionSummary
+      ? `${completion.completionSummary} ${contextEvidence}`
+      : null,
     commonIssue: repeatedTag,
     criteria: turnContext
-      ? `Counts games vs ${biggestLeak.archetype} when ${turnContext}.`
-      : `Counts games vs ${biggestLeak.archetype}.`,
+      ? `Counts games when ${turnContext}. ${missionContextLabel} adds context.`
+      : `Counts logged games for this skill. ${missionContextLabel} adds context.`,
     duringRecord: formatComparisonRecord(duringMatches),
-    evidence: `Based on ${biggestLeak.matches.length} recent game${
-      biggestLeak.matches.length === 1 ? "" : "s"
-    } vs ${biggestLeak.archetype}.`,
-    headline: `Your biggest leak right now is ${biggestLeak.archetype}.`,
+    evidence: `${missionConfidence} from ${sortedPrimaryMatches.length} qualifying game${
+      sortedPrimaryMatches.length === 1 ? "" : "s"
+    }. ${contextEvidence}`,
+    headline: missionSkill,
     improvementDelta: completion.improvementDelta,
     issueTrend: getLossPatternTrend(biggestLeak.matches),
     missionState: completed >= 5 ? "complete" : "active",
-    missionTitle: repeatedTag
-      ? `Mission: Improve ${skillPhrase}`
-      : `Mission: Fix ${skillPhrase}`,
-    missionResults: toMissionResults(sortedProgressMatches),
+    missionTitle: missionSkill,
+    missionSkill,
+    missionProgress: completed,
+    missionTargetCount: 5,
+    missionContextLabel,
+    missionContextSeenCount: contextSeen,
+    missionContextTargetCount: 3,
+    missionReason,
+    missionConfidence,
+    missionNextAction:
+      completed >= 5 ? "Review mission" : `Log ${remaining} more game${remaining === 1 ? "" : "s"}.`,
+    missionResults: toMissionResults(sortedPrimaryMatches),
     nextAction:
       completed >= 5
-        ? "Review this block and decide whether to keep testing or change plans."
-        : `Log ${remaining} more game${remaining === 1 ? "" : "s"} that match this test.`,
+        ? contextSeen >= 3
+          ? "Mission complete. Strongest evidence came from focus-area games."
+          : "Mission complete. The read is general because focus evidence was limited."
+        : `Log ${remaining} more game${remaining === 1 ? "" : "s"}.`,
     previousRecord: completion.previousRecord,
     weakMatchup: biggestLeak.archetype,
     condition,
@@ -551,7 +678,9 @@ export function buildSessionCoachInsight(
       ? `You are losing more often when ${turnContext}.`
       : "This matchup is costing you the clearest games right now.",
     exactTest,
-    nextTest: `Run 5 games vs ${biggestLeak.archetype}${turnPhrase}.`,
+    nextTest: turnContext
+      ? `Run 5 games ${turnContext}; watch ${biggestLeak.archetype}.`
+      : `Run 5 games with ${biggestLeak.archetype} as the focus area.`,
     progressCompleted: completed,
     progressGoal: 5,
     progressFeedback: getProgressFeedback(completed, 5),
@@ -559,8 +688,6 @@ export function buildSessionCoachInsight(
     focus,
     record: formatRecord(biggestLeak.wins, biggestLeak.losses),
     eventType,
-    continueHref: `/matches/new?opponent=${encodeURIComponent(
-      biggestLeak.archetype
-    )}&event=${encodeURIComponent(eventType)}`,
+    continueHref: `/matches/new?event=${encodeURIComponent(eventType)}`,
   };
 }

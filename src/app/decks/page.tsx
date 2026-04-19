@@ -146,16 +146,14 @@ export default async function DecksPage() {
                             </p>
                             <span
                               className={`mt-3 inline-flex rounded-md px-2 py-1 text-xs font-semibold ${
-                                sessionCoach?.archetype === deck.archetype
+                                sessionCoach
                                   ? "bg-[#F5C84C]/14 text-[#F5C84C]"
                                   : "bg-[#4F8CFF]/12 text-[#B8D1FF]"
                               }`}
                             >
-                              {sessionCoach?.archetype === deck.archetype
-                                ? "Improving current leak"
-                                : sessionCoach
-                                  ? "Unproven vs current mission"
-                                  : "No evidence yet"}
+                              {sessionCoach
+                                ? `Mission: ${sessionCoach.missionSkill}`
+                                : "No evidence yet"}
                             </span>
                             {deck.notes ? (
                               <p className={`mt-3 ${sectionCopy}`}>
