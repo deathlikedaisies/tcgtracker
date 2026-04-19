@@ -35,7 +35,10 @@ import {
 import { PrizeMapLogo } from "@/components/PrizeMapLogo";
 import { SessionCoachPanel } from "@/components/SessionCoachPanel";
 import { ShareReportButton, type ShareReport } from "@/components/ShareReportButton";
-import type { SessionCoachInsight } from "@/lib/session-coach";
+import type {
+  SessionCoachInsight,
+  TrainingProgressSummary,
+} from "@/lib/session-coach";
 import { createClient } from "@/lib/supabase";
 
 type DeckSummary = {
@@ -103,6 +106,7 @@ type DashboardContentProps = {
   trendData: TrendPoint[];
   deckPerformanceChart: DeckPerformanceChartPoint[];
   sessionCoach: SessionCoachInsight | null;
+  trainingProgress: TrainingProgressSummary;
 };
 
 function formatDate(value: string) {
@@ -160,6 +164,7 @@ export function DashboardContent({
   trendData,
   deckPerformanceChart,
   sessionCoach,
+  trainingProgress,
 }: DashboardContentProps) {
   const router = useRouter();
   const supabase = createClient();
@@ -305,6 +310,35 @@ export function DashboardContent({
 
         {hasMatches && sessionCoach ? (
           <SessionCoachPanel insight={sessionCoach} />
+        ) : null}
+
+        {hasMatches ? (
+          <section className="grid gap-3 sm:grid-cols-3">
+            <div className="rounded-md bg-[#11182C]/58 p-4 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.04)]">
+              <p className="text-xs font-semibold uppercase text-[#94A3B8]/78">
+                Test blocks completed
+              </p>
+              <p className="mt-2 text-2xl font-semibold text-[#F8FAFC]">
+                {trainingProgress.completedTestBlocks}
+              </p>
+            </div>
+            <div className="rounded-md bg-[#11182C]/58 p-4 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.04)]">
+              <p className="text-xs font-semibold uppercase text-[#94A3B8]/78">
+                Improved matchups
+              </p>
+              <p className="mt-2 text-2xl font-semibold text-[#F8FAFC]">
+                {trainingProgress.improvedMatchups}
+              </p>
+            </div>
+            <div className="rounded-md bg-[#11182C]/58 p-4 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.04)]">
+              <p className="text-xs font-semibold uppercase text-[#94A3B8]/78">
+                Loss pattern
+              </p>
+              <p className="mt-2 text-sm font-semibold leading-6 text-[#F8FAFC]">
+                {trainingProgress.lossPatternTrend ?? "Tag losses to track skill patterns."}
+              </p>
+            </div>
+          </section>
         ) : null}
 
         {hasMatches ? (

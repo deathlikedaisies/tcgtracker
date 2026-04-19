@@ -1,5 +1,8 @@
 import { DashboardContent } from "@/components/auth/DashboardContent";
-import { buildSessionCoachInsight } from "@/lib/session-coach";
+import {
+  buildSessionCoachInsight,
+  buildTrainingProgressSummary,
+} from "@/lib/session-coach";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
 
@@ -92,6 +95,7 @@ export default async function DashboardPage() {
 
   const matchRows = (matches ?? []) as unknown as MatchRow[];
   const sessionCoach = buildSessionCoachInsight(matchRows);
+  const trainingProgress = buildTrainingProgressSummary(matchRows);
   const filteredMatches = matchRows;
   const totalRecord = getRecord(filteredMatches);
   const wentFirstRecord = getRecord(
@@ -199,6 +203,7 @@ export default async function DashboardPage() {
       trendData={trendData}
       deckPerformanceChart={deckPerformanceChart}
       sessionCoach={sessionCoach}
+      trainingProgress={trainingProgress}
     />
   );
 }

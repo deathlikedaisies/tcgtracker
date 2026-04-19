@@ -26,7 +26,7 @@ export function SessionCoachPanel({
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <p className="text-xs font-semibold uppercase tracking-wide text-[#F5C84C]/84">
-              Session Coach
+              {insight.missionState === "complete" ? "Completed test" : "Current mission"}
             </p>
             <span className="rounded-md bg-[#0B1020]/58 px-2 py-1 text-xs font-semibold text-[#F8FAFC]">
               {insight.confidence}
@@ -36,7 +36,7 @@ export function SessionCoachPanel({
             <ArchetypeSprites archetype={insight.archetype} className="shrink-0" />
             <div className="min-w-0">
               <h2 className="text-xl font-semibold leading-tight tracking-tight text-[#F8FAFC] sm:text-2xl">
-                {insight.weakMatchup}
+                {insight.missionTitle}
               </h2>
               <p className="mt-1 text-sm font-medium text-[#94A3B8]">
                 {insight.reasoning}
@@ -109,6 +109,27 @@ export function SessionCoachPanel({
           </p>
         </div>
       </div>
+
+      {insight.completionStatus ? (
+        <div className="mt-4 rounded-md bg-emerald-500/10 p-3 shadow-[inset_0_0_0_1px_rgba(34,197,94,0.18)]">
+          <p className="text-xs font-semibold uppercase text-emerald-200">
+            {insight.completionStatus}
+          </p>
+          <p className="mt-2 text-sm leading-6 text-[#F8FAFC]">
+            {insight.completionSummary}
+          </p>
+          <p className="mt-1 text-sm text-[#94A3B8]">
+            {insight.nextAction}
+          </p>
+        </div>
+      ) : null}
+
+      {insight.issueTrend ? (
+        <p className="mt-3 text-sm font-medium text-[#94A3B8]">
+          Pattern trend:{" "}
+          <span className="text-[#F8FAFC]">{insight.issueTrend}</span>
+        </p>
+      ) : null}
     </section>
   );
 }

@@ -29,6 +29,7 @@ type MatchLogFormProps = {
   recentOpponentArchetypes: string[];
   initialEventType?: string;
   initialOpponentArchetype?: string;
+  initialWentFirst?: string;
   sessionCoach?: SessionCoachInsight | null;
   wasSuccessful: boolean;
 };
@@ -72,6 +73,7 @@ export function MatchLogForm({
   opponentArchetypeOptions,
   initialEventType,
   initialOpponentArchetype,
+  initialWentFirst,
   recentOpponentArchetypes,
   sessionCoach,
   wasSuccessful,
@@ -140,6 +142,13 @@ export function MatchLogForm({
   const [isChangingDeck, setIsChangingDeck] = useState(false);
   const selectedDeck = deckOptions.find((option) => option.id === deckVersionId);
   const selectedDeckArchetype = selectedDeck?.detail ?? "";
+  const loggedOpponent = initialOpponentArchetype?.trim() ?? "";
+  const countedTowardMission =
+    wasSuccessful &&
+    sessionCoach &&
+    loggedOpponent === sessionCoach.archetype &&
+    (!sessionCoach.criteria.includes("going second") || initialWentFirst === "false") &&
+    (!sessionCoach.criteria.includes("going first") || initialWentFirst === "true");
 
   useEffect(() => {
     if (initialOpponentArchetype?.trim()) {
@@ -228,17 +237,24 @@ export function MatchLogForm({
       <input type="hidden" name="deck_version_id" value={deckVersionId} />
       <div className="grid w-full max-w-full min-w-0 gap-4 overflow-x-hidden">
         {wasSuccessful ? (
-          <div className="rounded-md bg-emerald-500/10 px-3 py-2 text-sm font-medium text-emerald-200">
+          <div
+            className={`rounded-md px-3 py-2 text-sm font-medium ${
+              countedTowardMission
+                ? "bg-emerald-500/10 text-emerald-200"
+                : "bg-[#F5C84C]/10 text-[#F5C84C]"
+            }`}
+          >
             {sessionCoach ? (
               <>
-                {sessionCoach.condition === "No loss cluster yet"
-                  ? "Trend improving"
-                  : `Still your biggest leak: ${sessionCoach.weakMatchup}`}
-                .{" "}
+                {countedTowardMission
+                  ? "Counts toward current test."
+                  : "Saved outside the current test."}{" "}
                 <span className="text-emerald-100">
                   {sessionCoach.progressCompleted} / {sessionCoach.progressGoal} done.
                   {" "}
-                  {sessionCoach.progressFeedback}
+                  {countedTowardMission
+                    ? sessionCoach.progressFeedback
+                    : `Current mission: ${sessionCoach.criteria}`}
                 </span>
               </>
             ) : (

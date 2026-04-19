@@ -38,6 +38,36 @@ type DeckVersion = {
   created_at: string;
 };
 
+function getVersionTestStatus(matches: { result: "win" | "loss" }[]) {
+  const wins = matches.filter((match) => match.result === "win").length;
+  const winRate = matches.length ? Math.round((wins / matches.length) * 100) : 0;
+
+  if (matches.length < 3) {
+    return {
+      label: "Unproven",
+      detail: `${matches.length} game${matches.length === 1 ? "" : "s"} logged`,
+      className: "bg-[#4F8CFF]/14 text-[#B8D1FF]",
+    };
+  }
+
+  if (matches.length < 5) {
+    return {
+      label: "Early signal",
+      detail: `${winRate}% over ${matches.length} games`,
+      className: "bg-[#F5C84C]/14 text-[#F5C84C]",
+    };
+  }
+
+  return {
+    label: winRate >= 55 ? "Improving test" : "No clear improvement",
+    detail: `${winRate}% over ${matches.length} games`,
+    className:
+      winRate >= 55
+        ? "bg-emerald-500/14 text-emerald-200"
+        : "bg-[#F43F5E]/14 text-rose-200",
+  };
+}
+
 export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
   const { deckId } = await params;
   const supabase = await createServerSupabaseClient();
@@ -75,7 +105,7 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
   const createVersion = createDeckVersion.bind(null, deck.id);
   const { data: matches, error: matchesError } = await supabase
     .from("matches")
-    .select("opponent_archetype, result, went_first, event_type, played_at, match_tags(tag)")
+    .select("deck_version_id, opponent_archetype, result, went_first, event_type, played_at, match_tags(tag)")
     .eq("user_id", user.id)
     .order("played_at", { ascending: false });
 
@@ -149,6 +179,11 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                     deck.id,
                     version.id
                   );
+                  const versionMatches = ((matches ?? []) as {
+                    deck_version_id: string;
+                    result: "win" | "loss";
+                  }[]).filter((match) => match.deck_version_id === version.id);
+                  const testStatus = getVersionTestStatus(versionMatches);
 
                   return (
                     <article
@@ -166,12 +201,20 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                                 Active
                               </span>
                             ) : null}
+                            <span
+                              className={`rounded-md px-2 py-1 text-xs font-medium ${testStatus.className}`}
+                            >
+                              {testStatus.label}
+                            </span>
                           </div>
                           <p className="mt-1 text-xs text-[#94A3B8]">
                             Created{" "}
                             {new Intl.DateTimeFormat("en", {
                               dateStyle: "medium",
                             }).format(new Date(version.created_at))}
+                          </p>
+                          <p className="mt-2 text-xs font-medium text-[#94A3B8]">
+                            {testStatus.detail}
                           </p>
                         </div>
                         {!version.is_active ? (

@@ -100,6 +100,8 @@ export async function logMatch(formData: FormData) {
   redirect(
     `/matches/new?success=1&opponent=${encodeURIComponent(
       opponentArchetype
-    )}&event=${encodeURIComponent(eventType ?? "testing")}`
+    )}&event=${encodeURIComponent(eventType ?? "testing")}&went_first=${encodeURIComponent(
+      wentFirstValue ?? ""
+    )}`
   );
 }

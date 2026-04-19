@@ -10,10 +10,19 @@ export type CoachMatch = {
 export type SessionCoachInsight = {
   archetype: string;
   confidence: string;
+  completionStatus: string | null;
+  completionSummary: string | null;
   commonIssue: string | null;
   criteria: string;
+  duringRecord: string;
   evidence: string;
   headline: string;
+  improvementDelta: number | null;
+  issueTrend: string | null;
+  missionState: "active" | "complete";
+  missionTitle: string;
+  nextAction: string;
+  previousRecord: string | null;
   weakMatchup: string;
   condition: string;
   context: string;
@@ -27,6 +36,13 @@ export type SessionCoachInsight = {
   record: string;
   eventType: string;
   continueHref: string;
+};
+
+export type TrainingProgressSummary = {
+  completedTestBlocks: number;
+  improvedMatchups: number;
+  currentWeakestImproved: boolean;
+  lossPatternTrend: string | null;
 };
 
 function getTags(match: CoachMatch) {
@@ -48,6 +64,15 @@ function formatComparisonRecord(matches: CoachMatch[]) {
   const losses = matches.length - wins;
 
   return formatRecord(wins, losses);
+}
+
+function getWinRate(matches: CoachMatch[]) {
+  if (!matches.length) {
+    return null;
+  }
+
+  const wins = matches.filter((match) => match.result === "win").length;
+  return Math.round((wins / matches.length) * 100);
 }
 
 function getConfidence(matchCount: number) {
@@ -80,6 +105,63 @@ function getProgressFeedback(completed: number, goal: number) {
   return "Keep logging this exact test.";
 }
 
+function getCompletionStatus(
+  completed: number,
+  goal: number,
+  duringMatches: CoachMatch[],
+  previousMatches: CoachMatch[]
+) {
+  if (completed < goal) {
+    return {
+      completionStatus: null,
+      completionSummary: null,
+      improvementDelta: null,
+      previousRecord: previousMatches.length
+        ? formatComparisonRecord(previousMatches)
+        : null,
+    };
+  }
+
+  const duringRate = getWinRate(duringMatches) ?? 0;
+  const previousRate = getWinRate(previousMatches);
+  const improvementDelta =
+    previousRate === null ? null : duringRate - previousRate;
+
+  if (improvementDelta === null) {
+    return {
+      completionStatus: "Test complete: review the result",
+      completionSummary: `During test: ${formatComparisonRecord(duringMatches)}. No prior block to compare yet.`,
+      improvementDelta,
+      previousRecord: null,
+    };
+  }
+
+  if (improvementDelta > 0) {
+    return {
+      completionStatus: "Mission complete: improvement detected",
+      completionSummary: `Before: ${formatComparisonRecord(previousMatches)}. During: ${formatComparisonRecord(duringMatches)}.`,
+      improvementDelta,
+      previousRecord: formatComparisonRecord(previousMatches),
+    };
+  }
+
+  if (improvementDelta === 0) {
+    return {
+      completionStatus: "Test complete: no clear improvement yet",
+      completionSummary: `Before: ${formatComparisonRecord(previousMatches)}. During: ${formatComparisonRecord(duringMatches)}.`,
+      improvementDelta,
+      previousRecord: formatComparisonRecord(previousMatches),
+    };
+  }
+
+  return {
+    completionStatus: "Test complete: more work needed",
+    completionSummary: `Before: ${formatComparisonRecord(previousMatches)}. During: ${formatComparisonRecord(duringMatches)}.`,
+    improvementDelta,
+    previousRecord: formatComparisonRecord(previousMatches),
+  };
+}
+
 function getMostCommonValue(values: string[]) {
   return Array.from(
     values
@@ -89,6 +171,76 @@ function getMostCommonValue(values: string[]) {
       }, new Map<string, number>())
       .entries()
   ).sort((first, second) => second[1] - first[1])[0]?.[0];
+}
+
+function getLossPatternTrend(matches: CoachMatch[]) {
+  const sortedMatches = [...matches].sort((first, second) =>
+    second.played_at.localeCompare(first.played_at)
+  );
+  const recentLossTags = sortedMatches
+    .slice(0, 10)
+    .filter((match) => match.result === "loss")
+    .flatMap(getTags);
+  const previousLossTags = sortedMatches
+    .slice(10, 20)
+    .filter((match) => match.result === "loss")
+    .flatMap(getTags);
+  const recentMainTag = getMostCommonValue(recentLossTags);
+
+  if (!recentMainTag || recentLossTags.length < 2) {
+    return null;
+  }
+
+  const recentCount = recentLossTags.filter((tag) => tag === recentMainTag).length;
+  const previousCount = previousLossTags.filter((tag) => tag === recentMainTag).length;
+
+  if (previousLossTags.length >= 2 && recentCount < previousCount) {
+    return `${recentMainTag} is appearing less often in recent losses.`;
+  }
+
+  if (recentCount >= 2) {
+    return `${recentMainTag} is still common in recent losses.`;
+  }
+
+  return null;
+}
+
+export function buildTrainingProgressSummary(
+  matches: CoachMatch[]
+): TrainingProgressSummary {
+  const groupedByMatchup = Array.from(
+    matches
+      .reduce((groups, match) => {
+        const current = groups.get(match.opponent_archetype) ?? [];
+        current.push(match);
+        groups.set(match.opponent_archetype, current);
+        return groups;
+      }, new Map<string, CoachMatch[]>())
+      .values()
+  ).map((groupedMatches) =>
+    [...groupedMatches].sort((first, second) =>
+      second.played_at.localeCompare(first.played_at)
+    )
+  );
+  const completedTestBlocks = groupedByMatchup.reduce(
+    (total, groupedMatches) => total + Math.floor(groupedMatches.length / 5),
+    0
+  );
+  const improvedMatchups = groupedByMatchup.filter((groupedMatches) => {
+    const recentFive = groupedMatches.slice(0, 5);
+    const previousFive = groupedMatches.slice(5, 10);
+    const recentRate = getWinRate(recentFive);
+    const previousRate = getWinRate(previousFive);
+
+    return recentRate !== null && previousRate !== null && recentRate > previousRate;
+  }).length;
+
+  return {
+    completedTestBlocks,
+    improvedMatchups,
+    currentWeakestImproved: improvedMatchups > 0,
+    lossPatternTrend: getLossPatternTrend(matches),
+  };
 }
 
 export function buildSessionCoachInsight(
@@ -162,16 +314,36 @@ export function buildSessionCoachInsight(
       ) ?? "testing";
 
     const completed = Math.min(strongestPositiveSignal.matches.length, 5);
+    const duringMatches = strongestPositiveSignal.matches.slice(0, 5);
+    const previousMatches = strongestPositiveSignal.matches.slice(5, 10);
+    const completion = getCompletionStatus(
+      completed,
+      5,
+      duringMatches,
+      previousMatches
+    );
 
     return {
       archetype: strongestPositiveSignal.archetype,
       confidence: getConfidence(strongestPositiveSignal.matches.length),
+      completionStatus: completion.completionStatus,
+      completionSummary: completion.completionSummary,
       commonIssue: null,
       criteria: `Counts games vs ${strongestPositiveSignal.archetype}.`,
+      duringRecord: formatComparisonRecord(duringMatches),
       evidence: `Based on ${strongestPositiveSignal.matches.length} recent game${
         strongestPositiveSignal.matches.length === 1 ? "" : "s"
       } vs ${strongestPositiveSignal.archetype}.`,
       headline: `No clear leak yet. Stress-test ${strongestPositiveSignal.archetype}.`,
+      improvementDelta: completion.improvementDelta,
+      issueTrend: getLossPatternTrend(strongestPositiveSignal.matches),
+      missionState: completed >= 5 ? "complete" : "active",
+      missionTitle: `Mission: Test ${strongestPositiveSignal.archetype}`,
+      nextAction:
+        completed >= 5
+          ? "Review the completed block before changing the list."
+          : `Log ${5 - completed} more game${5 - completed === 1 ? "" : "s"} in this matchup.`,
+      previousRecord: completion.previousRecord,
       weakMatchup: strongestPositiveSignal.archetype,
       condition: "No loss cluster yet",
       context: "You have not logged a loss in your recent sample.",
@@ -231,6 +403,9 @@ export function buildSessionCoachInsight(
           : match.went_first === true
       )
     : biggestLeak.matches;
+  const sortedProgressMatches = [...progressMatches].sort((first, second) =>
+    second.played_at.localeCompare(first.played_at)
+  );
   const condition = turnContext
     ? `Worse when ${turnContext}`
     : repeatedTag
@@ -254,18 +429,39 @@ export function buildSessionCoachInsight(
       ? `${repeatedTag} appears most often in losses vs this matchup.`
       : `You are ${formatRecord(biggestLeak.wins, biggestLeak.losses)} against this matchup recently.`;
   const completed = Math.min(progressMatches.length, 5);
+  const duringMatches = sortedProgressMatches.slice(0, 5);
+  const previousMatches = sortedProgressMatches.slice(5, 10);
+  const completion = getCompletionStatus(
+    completed,
+    5,
+    duringMatches,
+    previousMatches
+  );
+  const remaining = Math.max(5 - completed, 0);
 
   return {
     archetype: biggestLeak.archetype,
     confidence: getConfidence(biggestLeak.matches.length),
+    completionStatus: completion.completionStatus,
+    completionSummary: completion.completionSummary,
     commonIssue: repeatedTag ?? null,
     criteria: turnContext
       ? `Counts games vs ${biggestLeak.archetype} when ${turnContext}.`
       : `Counts games vs ${biggestLeak.archetype}.`,
+    duringRecord: formatComparisonRecord(duringMatches),
     evidence: `Based on ${biggestLeak.matches.length} recent game${
       biggestLeak.matches.length === 1 ? "" : "s"
     } vs ${biggestLeak.archetype}.`,
     headline: `Your biggest leak right now is ${biggestLeak.archetype}.`,
+    improvementDelta: completion.improvementDelta,
+    issueTrend: getLossPatternTrend(biggestLeak.matches),
+    missionState: completed >= 5 ? "complete" : "active",
+    missionTitle: `Mission: Fix ${biggestLeak.archetype}${turnPhrase}`,
+    nextAction:
+      completed >= 5
+        ? "Review this block and decide whether to keep testing or change plans."
+        : `Log ${remaining} more game${remaining === 1 ? "" : "s"} that match this test.`,
+    previousRecord: completion.previousRecord,
     weakMatchup: biggestLeak.archetype,
     condition,
     context: turnContext
