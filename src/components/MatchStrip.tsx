@@ -26,11 +26,11 @@ export function MatchStrip({ matches, max = 10 }: MatchStripProps) {
 
   if (!visibleMatches.length) {
     return (
-      <div className="flex gap-1.5" aria-label="No matches yet">
+      <div className="flex gap-1" aria-label="No matches yet">
         {Array.from({ length: Math.min(max, 5) }).map((_, index) => (
           <span
             key={index}
-            className="size-3 rounded-full bg-[#1A2238]"
+            className="size-2.5 rounded-full bg-[#1A2238]"
           />
         ))}
       </div>
@@ -41,7 +41,7 @@ export function MatchStrip({ matches, max = 10 }: MatchStripProps) {
     <details className="group w-fit max-w-full">
       <summary
         aria-label="Recent match results"
-        className="flex cursor-pointer list-none gap-1.5 marker:hidden"
+        className="flex cursor-pointer list-none items-center gap-1 marker:hidden"
       >
         {visibleMatches.map((match, index) => (
           <span
@@ -49,7 +49,7 @@ export function MatchStrip({ matches, max = 10 }: MatchStripProps) {
             title={`${match.result.toUpperCase()}${
               match.opponent ? ` vs ${match.opponent}` : ""
             }${match.playedAt ? `, ${formatDate(match.playedAt)}` : ""}`}
-            className={`size-3 rounded-full shadow-[0_0_14px_rgba(0,0,0,0.16)] ${
+            className={`size-2.5 rounded-full shadow-[0_0_10px_rgba(0,0,0,0.12)] ${
               match.result === "win" ? "bg-[#22C55E]" : "bg-[#F43F5E]"
             }`}
           />

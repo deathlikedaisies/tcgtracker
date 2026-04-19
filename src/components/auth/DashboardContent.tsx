@@ -126,9 +126,9 @@ function StatCard({
   value: string | number;
 }) {
   return (
-    <div className={card}>
-      <p className="text-xs font-medium uppercase text-[#94A3B8]/74">{label}</p>
-      <p className="mt-2 text-2xl font-semibold tracking-tight text-[#F8FAFC] sm:text-3xl">
+    <div className={`${card} min-h-20 p-3 sm:p-3.5`}>
+      <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-[#94A3B8]/62">{label}</p>
+      <p className="mt-1 text-2xl font-bold tracking-tight text-[#F8FAFC] sm:text-3xl">
         {value}
       </p>
     </div>
@@ -138,12 +138,12 @@ function StatCard({
 function RecordPill({ result }: { result: "win" | "loss" }) {
   const className =
     result === "win"
-      ? "bg-emerald-500/15 text-emerald-300"
-      : "bg-[#F43F5E]/15 text-rose-200";
+      ? "bg-emerald-500/12 text-emerald-300"
+      : "bg-[#F43F5E]/12 text-rose-200";
 
   return (
     <span
-      className={`inline-flex rounded-md px-2 py-1 text-xs font-medium uppercase ${className}`}
+      className={`inline-flex rounded-md px-2 py-0.5 text-[11px] font-semibold uppercase ${className}`}
     >
       {result}
     </span>
@@ -314,8 +314,8 @@ export function DashboardContent({
         ) : null}
 
         {hasMatches ? (
-          <section className="flex items-center justify-between gap-3 rounded-md bg-[#11182C]/42 p-3 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.04)]">
-            <span className="text-xs font-semibold uppercase text-[#94A3B8]/78">
+          <section className="flex items-center justify-between gap-3 rounded-md bg-[#11182C]/34 px-3 py-2 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.035)]">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#94A3B8]/64">
               Recent
             </span>
             <MatchStrip
@@ -330,79 +330,79 @@ export function DashboardContent({
         ) : null}
 
         {hasMatches ? (
-          <section className="grid gap-3 sm:grid-cols-3">
-            <div className="rounded-md bg-[#11182C]/50 p-3 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.035)]">
-              <p className="text-xs font-semibold uppercase text-[#94A3B8]/78">
+          <section className="grid gap-2.5 sm:grid-cols-3">
+            <div className="rounded-md bg-[#11182C]/46 px-3 py-2.5 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.032)]">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]/62">
                 Tests completed
               </p>
-              <p className="mt-2 text-sm font-semibold leading-6 text-[#F8FAFC]">
+              <p className="mt-1 text-sm font-bold leading-5 text-[#F8FAFC]">
                 {trainingProgress.completedTestBlocks
                   ? `${trainingProgress.completedTestBlocks} completed`
                   : "First test in progress"}
               </p>
               {!trainingProgress.completedTestBlocks ? (
-                <div className="mt-2 flex gap-1.5" aria-label="First test in progress">
+                <div className="mt-1.5 flex gap-1" aria-label="First test in progress">
                   {Array.from({ length: 5 }).map((_, index) => (
                     <span
                       key={index}
-                      className="size-2.5 rounded-full bg-[#1A2238]"
+                      className="size-2 rounded-full bg-[#1A2238]"
                     />
                   ))}
                 </div>
               ) : null}
             </div>
-            <div className="rounded-md bg-[#11182C]/50 p-3 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.035)]">
-              <p className="text-xs font-semibold uppercase text-[#94A3B8]/78">
+            <div className="rounded-md bg-[#11182C]/46 px-3 py-2.5 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.032)]">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]/62">
                 Improved matchups
               </p>
-              <p className="mt-2 text-sm font-semibold leading-6 text-[#F8FAFC]">
+              <p className="mt-1 text-sm font-bold leading-5 text-[#F8FAFC]">
                 {trainingProgress.improvedMatchups
                   ? `${trainingProgress.improvedMatchups} improved`
                   : "Awaiting comparison"}
               </p>
               {!trainingProgress.improvedMatchups ? (
-                <p className="mt-1 text-xs text-[#94A3B8]">Finish a mission first</p>
+                <p className="mt-0.5 text-xs text-[#94A3B8]/60">Finish a mission first</p>
               ) : null}
             </div>
-            <div className="rounded-md bg-[#11182C]/50 p-3 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.035)]">
-              <p className="text-xs font-semibold uppercase text-[#94A3B8]/78">
+            <div className="rounded-md bg-[#11182C]/46 px-3 py-2.5 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.032)]">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]/62">
                 Loss pattern
               </p>
-              <p className="mt-2 text-sm font-semibold leading-6 text-[#F8FAFC]">
+              <p className="mt-1 text-sm font-bold leading-5 text-[#F8FAFC]">
                 {trainingProgress.lossPatternTrend ??
                   "No repeated issue yet"}
               </p>
               {!trainingProgress.lossPatternTrend ? (
-                <p className="mt-1 text-xs text-[#94A3B8]">Tags will reveal one</p>
+                <p className="mt-0.5 text-xs text-[#94A3B8]/60">Tags will reveal one</p>
               ) : null}
             </div>
           </section>
         ) : null}
 
         {hasMatches ? (
-          <details className="rounded-md bg-[#11182C]/62 p-4 shadow-[0_18px_50px_rgba(0,0,0,0.18),inset_0_0_0_1px_rgba(248,250,252,0.04)] sm:p-5">
+          <details className="rounded-md bg-[#11182C]/54 p-3 shadow-[0_14px_40px_rgba(0,0,0,0.14),inset_0_0_0_1px_rgba(248,250,252,0.032)] sm:p-4">
             <summary className="cursor-pointer list-none marker:hidden">
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-[#4F8CFF]">
+                  <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]/86">
                     Detailed stats
                   </p>
-                  <h2 className="mt-1 text-xl font-semibold tracking-tight text-[#F8FAFC]">
+                  <h2 className="mt-0.5 text-lg font-bold tracking-tight text-[#F8FAFC]">
                     Charts and totals
                   </h2>
                 </div>
-                <span className="text-sm font-medium text-[#94A3B8]">
+                <span className="text-xs font-medium text-[#94A3B8]/58">
                   Open
                 </span>
               </div>
             </summary>
-            <section className="mt-5 rounded-md bg-[#11182C]/78 p-4 shadow-[0_24px_70px_rgba(0,0,0,0.22),0_0_50px_rgba(79,140,255,0.06),inset_0_0_0_1px_rgba(248,250,252,0.04)] sm:p-5">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <section className="mt-4 rounded-md bg-[#11182C]/72 p-3 shadow-[0_20px_58px_rgba(0,0,0,0.18),0_0_42px_rgba(79,140,255,0.045),inset_0_0_0_1px_rgba(248,250,252,0.035)] sm:p-4">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <p className="text-sm font-semibold text-[#4F8CFF]">
+                <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]/88">
                   Testing snapshot
                 </p>
-                <h2 className="mt-1 text-2xl font-semibold tracking-tight text-[#F8FAFC]">
+                <h2 className="mt-0.5 text-xl font-bold tracking-tight text-[#F8FAFC]">
                   Fast context from your logged games.
                 </h2>
               </div>
@@ -422,19 +422,19 @@ export function DashboardContent({
                 <ShareReportButton report={shareReport} />
               </div>
             </div>
-            <div className="mt-5 grid grid-cols-2 gap-3 xl:grid-cols-4">
+            <div className="mt-4 grid grid-cols-2 gap-2.5 xl:grid-cols-4">
               {insights.map((insight) => (
                 <div
                   key={insight.label}
-                  className="rounded-md bg-[#0B1020]/44 p-4 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.04)]"
+                  className="rounded-md bg-[#0B1020]/42 p-3 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.035)]"
                 >
-                  <p className="text-xs font-medium uppercase text-[#94A3B8]">
+                  <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-[#94A3B8]/64">
                     {insight.label}
                   </p>
-                  <p className="mt-2 truncate text-lg font-semibold text-[#F8FAFC] sm:text-xl">
+                  <p className="mt-1 truncate text-lg font-bold text-[#F8FAFC] sm:text-xl">
                     {insight.value}
                   </p>
-                  <p className="mt-2 text-xs leading-5 text-[#94A3B8] sm:text-sm">
+                  <p className="mt-1.5 text-xs leading-5 text-[#94A3B8]/68 sm:text-sm">
                     {insight.detail}
                   </p>
                 </div>
@@ -445,12 +445,12 @@ export function DashboardContent({
         ) : null}
 
         {hasMatches ? (
-          <details className="rounded-md bg-[#11182C]/48 p-4 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.04)] sm:p-5">
-            <summary className="cursor-pointer list-none text-sm font-semibold text-[#F8FAFC] marker:hidden">
+          <details className="rounded-md bg-[#11182C]/46 p-3 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.035)] sm:p-4">
+            <summary className="cursor-pointer list-none text-sm font-semibold text-[#F8FAFC]/92 transition hover:text-[#F5C84C] marker:hidden">
               More records and charts
             </summary>
-            <div className="mt-5 grid gap-6">
-            <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
+            <div className="mt-4 grid gap-4">
+            <section className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-6">
               <StatCard label="Matches" value={stats.totalMatches} />
               <StatCard label="Wins" value={stats.totalWins} />
               <StatCard label="Losses" value={stats.totalLosses} />
@@ -459,8 +459,8 @@ export function DashboardContent({
               <StatCard label="Went second" value={stats.wentSecondWinRate} />
             </section>
 
-            <section className="grid gap-6 lg:grid-cols-2">
-              <div className={cardLarge}>
+            <section className="grid gap-4 lg:grid-cols-2">
+              <div className={`${cardLarge} p-3 sm:p-4`}>
                 <div className="flex flex-col gap-1">
                   <h2 className={sectionTitle}>
                     Result Trend
@@ -469,7 +469,7 @@ export function DashboardContent({
                     Daily wins and losses from your logged matches.
                   </p>
                 </div>
-                <div className="mt-5 h-72">
+                <div className="mt-3 h-64">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={trendData}>
                       <CartesianGrid stroke="rgba(148,163,184,0.22)" vertical={false} />
@@ -486,6 +486,12 @@ export function DashboardContent({
                         axisLine={false}
                       />
                       <Tooltip
+                        contentStyle={{
+                          background: "#0B1020",
+                          border: "1px solid rgba(148,163,184,0.18)",
+                          borderRadius: 8,
+                          color: "#F8FAFC",
+                        }}
                         formatter={(value, name) => [
                           value,
                           name === "wins"
@@ -515,7 +521,7 @@ export function DashboardContent({
                 </div>
               </div>
 
-              <div className={cardLarge}>
+              <div className={`${cardLarge} p-3 sm:p-4`}>
                 <div className="flex flex-col gap-1">
                   <h2 className={sectionTitle}>
                     Deck Comparison
@@ -524,7 +530,7 @@ export function DashboardContent({
                     Win rate by deck version, sorted by matches played.
                   </p>
                 </div>
-                <div className="mt-5 h-72">
+                <div className="mt-3 h-64">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={deckPerformanceChart} layout="vertical">
                       <CartesianGrid stroke="rgba(148,163,184,0.22)" horizontal={false} />
@@ -545,6 +551,12 @@ export function DashboardContent({
                         axisLine={false}
                       />
                       <Tooltip
+                        contentStyle={{
+                          background: "#0B1020",
+                          border: "1px solid rgba(148,163,184,0.18)",
+                          borderRadius: 8,
+                          color: "#F8FAFC",
+                        }}
                         formatter={(value, name) => [
                           `${value}%`,
                           name === "winRate" ? "Win rate" : name,
@@ -558,7 +570,7 @@ export function DashboardContent({
             </section>
             </div>
 
-            <section className={cardLarge}>
+            <section className={`${cardLarge} p-3 sm:p-4`}>
               <div className="flex flex-col gap-1">
                   <h2 className={sectionTitle}>
                   Recent Matches
@@ -567,24 +579,24 @@ export function DashboardContent({
                   Latest games from your testing.
                 </p>
               </div>
-              <div className={`mt-5 ${divider}`}>
+              <div className={`mt-3 ${divider}`}>
                 {recentMatches.map((match) => (
                   <div
                     key={match.id}
-                    className="grid gap-2 py-4 sm:grid-cols-[110px_minmax(0,1fr)_minmax(0,1.1fr)_76px_110px] sm:items-center"
+                    className="grid gap-1.5 py-3 sm:grid-cols-[104px_minmax(0,1fr)_minmax(0,1.1fr)_64px_96px] sm:items-center"
                   >
-                    <p className="text-sm text-[#94A3B8]">
+                    <p className="text-sm text-[#94A3B8]/70">
                       {formatDate(match.playedAt)}
                     </p>
-                    <p className="font-medium text-[#F8FAFC]">
+                    <p className="truncate font-medium text-[#F8FAFC]">
                       {match.deckVersionName}
                     </p>
-                    <div className="flex min-w-0 items-center gap-2 text-sm text-[#94A3B8]">
+                    <div className="flex min-w-0 items-center gap-2 text-sm text-[#94A3B8]/78">
                       <ArchetypeSprites archetype={match.opponentArchetype} />
                       <span className="truncate">vs {match.opponentArchetype}</span>
                     </div>
                     <RecordPill result={match.result} />
-                    <p className="text-sm capitalize text-[#94A3B8]">
+                    <p className="text-sm capitalize text-[#94A3B8]/70">
                       {match.eventType ?? "No event"}
                     </p>
                   </div>
@@ -592,8 +604,8 @@ export function DashboardContent({
               </div>
             </section>
 
-            <section className="grid gap-6 lg:grid-cols-2">
-              <div className={cardLarge}>
+            <section className="grid gap-4 lg:grid-cols-2">
+              <div className={`${cardLarge} p-3 sm:p-4`}>
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <h2 className={sectionTitle}>
                     Matchups
@@ -602,28 +614,28 @@ export function DashboardContent({
                     Analyze matchups
                   </Link>
                 </div>
-                <div className={`mt-5 ${divider}`}>
+                <div className={`mt-3 ${divider}`}>
                   {matchupSummary.map((matchup) => (
                     <div
                       key={matchup.opponentArchetype}
-                      className="grid gap-2 py-4 sm:grid-cols-[minmax(0,1fr)_80px_80px_80px_80px] sm:items-center"
+                      className="grid gap-1.5 py-3 sm:grid-cols-[minmax(0,1fr)_64px_52px_52px_64px] sm:items-center"
                     >
                       <div className="flex items-center gap-2">
                         <ArchetypeSprites archetype={matchup.opponentArchetype} />
-                        <p className="font-medium text-[#F8FAFC]">
+                        <p className="truncate font-semibold text-[#F8FAFC]">
                           {matchup.opponentArchetype}
                         </p>
                       </div>
-                      <p className="text-sm text-[#94A3B8]">
-                        {matchup.matches} played
+                      <p className="text-right text-xs text-[#94A3B8]/62 sm:text-sm">
+                        {matchup.matches}g
                       </p>
-                      <p className="text-sm text-[#94A3B8]">
-                        {matchup.wins} W
+                      <p className="text-right text-xs text-[#94A3B8]/62 sm:text-sm">
+                        {matchup.wins}W
                       </p>
-                      <p className="text-sm text-[#94A3B8]">
-                        {matchup.losses} L
+                      <p className="text-right text-xs text-[#94A3B8]/62 sm:text-sm">
+                        {matchup.losses}L
                       </p>
-                      <p className="text-sm font-medium text-[#F8FAFC]">
+                      <p className="text-right text-sm font-bold text-[#F8FAFC]">
                         {matchup.winRate}
                       </p>
                     </div>
@@ -631,29 +643,29 @@ export function DashboardContent({
                 </div>
               </div>
 
-              <div className={cardLarge}>
+              <div className={`${cardLarge} p-3 sm:p-4`}>
                 <h2 className={sectionTitle}>
                   Deck Performance
                 </h2>
-                <div className={`mt-5 ${divider}`}>
+                <div className={`mt-3 ${divider}`}>
                   {deckPerformance.map((deckVersion) => (
                     <div
                       key={deckVersion.deckVersionId}
-                      className="grid gap-2 py-4 sm:grid-cols-[minmax(0,1fr)_80px_80px_80px_80px] sm:items-center"
+                      className="grid gap-1.5 py-3 sm:grid-cols-[minmax(0,1fr)_64px_52px_52px_64px] sm:items-center"
                     >
-                      <p className="font-medium text-[#F8FAFC]">
+                      <p className="truncate font-semibold text-[#F8FAFC]">
                         {deckVersion.deckVersionName}
                       </p>
-                      <p className="text-sm text-[#94A3B8]">
-                        {deckVersion.matches} played
+                      <p className="text-right text-xs text-[#94A3B8]/62 sm:text-sm">
+                        {deckVersion.matches}g
                       </p>
-                      <p className="text-sm text-[#94A3B8]">
-                        {deckVersion.wins} W
+                      <p className="text-right text-xs text-[#94A3B8]/62 sm:text-sm">
+                        {deckVersion.wins}W
                       </p>
-                      <p className="text-sm text-[#94A3B8]">
-                        {deckVersion.losses} L
+                      <p className="text-right text-xs text-[#94A3B8]/62 sm:text-sm">
+                        {deckVersion.losses}L
                       </p>
-                      <p className="text-sm font-medium text-[#F8FAFC]">
+                      <p className="text-right text-sm font-bold text-[#F8FAFC]">
                         {deckVersion.winRate}
                       </p>
                     </div>
