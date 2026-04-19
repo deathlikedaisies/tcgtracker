@@ -23,16 +23,16 @@ export function AppNav({ current }: AppNavProps) {
   return (
     <nav
       aria-label="Primary"
-      className="grid w-full max-w-full grid-cols-5 gap-1 overflow-x-hidden rounded-md bg-[#0B1020]/34 p-1 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.05)] sm:w-auto sm:flex sm:flex-wrap sm:justify-end sm:gap-2 sm:p-1.5"
+      className="grid w-full max-w-full grid-cols-5 gap-1 overflow-x-hidden rounded-md bg-[#0B1020]/28 p-1 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.045)] sm:w-auto sm:flex sm:flex-wrap sm:justify-end sm:gap-1.5 sm:p-1.5"
     >
       {navItems.map((item) => {
         const isCurrent = item.section === current;
         const isLogAction = item.section === "log";
         const className = isCurrent
-          ? "inline-flex h-9 min-w-0 items-center justify-center rounded-md bg-[#4F8CFF]/24 px-1.5 text-[11px] font-semibold text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.34),0_10px_26px_rgba(79,140,255,0.12)] sm:h-10 sm:px-3 sm:text-sm"
+          ? "inline-flex h-9 min-w-0 items-center justify-center rounded-md bg-[#4F8CFF]/22 px-1.5 text-[11px] font-semibold text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.32),0_8px_22px_rgba(79,140,255,0.10)] sm:h-10 sm:px-3 sm:text-sm"
           : isLogAction
-            ? "inline-flex h-9 min-w-0 items-center justify-center rounded-md bg-[#4F8CFF]/18 px-1.5 text-[11px] font-semibold text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.26)] transition hover:bg-[#4F8CFF]/24 sm:h-10 sm:px-3 sm:text-sm"
-            : "inline-flex h-9 min-w-0 items-center justify-center rounded-md px-1.5 text-[11px] font-medium text-[#94A3B8] transition hover:bg-[#1A2238]/66 hover:text-[#F8FAFC] sm:h-10 sm:px-3 sm:text-sm";
+            ? "inline-flex h-9 min-w-0 items-center justify-center rounded-md bg-[#F5C84C]/92 px-1.5 text-[11px] font-semibold text-[#0B1020] shadow-[0_8px_20px_rgba(245,200,76,0.14)] transition hover:bg-[#ffd85f] active:scale-[0.98] sm:h-10 sm:px-3 sm:text-sm"
+            : "inline-flex h-9 min-w-0 items-center justify-center rounded-md px-1.5 text-[11px] font-medium text-[#94A3B8]/88 transition hover:bg-[#1A2238]/58 hover:text-[#F8FAFC] active:scale-[0.98] sm:h-10 sm:px-3 sm:text-sm";
 
         return (
           <Link

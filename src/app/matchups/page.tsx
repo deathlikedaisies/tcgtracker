@@ -611,7 +611,7 @@ export default async function MatchupsPage({
                 return (
                   <article
                     key={matchup.opponentArchetype}
-                    className="rounded-md bg-[#0B1020]/40 p-4 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.04)]"
+                    className="rounded-md bg-[#0B1020]/38 p-4 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.04)] transition hover:bg-[#0B1020]/48 hover:shadow-[0_14px_34px_rgba(0,0,0,0.16),inset_0_0_0_1px_rgba(248,250,252,0.05)]"
                   >
                   <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px] lg:items-center">
                     <div>
@@ -628,7 +628,7 @@ export default async function MatchupsPage({
                           {coachLabel.label}
                         </span>
                         {sessionCoach?.archetype === matchup.opponentArchetype ? (
-                          <span className="rounded-md bg-[#F5C84C]/14 px-2 py-1 text-xs font-semibold text-[#F5C84C]">
+                          <span className="rounded-md bg-[#F5C84C]/12 px-2 py-1 text-xs font-semibold text-[#F5C84C]">
                             Focus area
                           </span>
                         ) : null}
@@ -646,9 +646,8 @@ export default async function MatchupsPage({
                           Low sample. Log 3+ games before trusting this rate.
                         </p>
                       ) : null}
-                      <p className="mt-2 text-sm font-medium text-[#F8FAFC]">
-                        Suggested action:{" "}
-                        <span className="text-[#94A3B8]">{coachLabel.action}</span>
+                      <p className="mt-2 text-sm font-medium text-[#94A3B8]">
+                        {coachLabel.action}
                       </p>
                       <div className="mt-3">
                         <MatchStrip matches={matchup.recentMatches} />
@@ -664,8 +663,8 @@ export default async function MatchupsPage({
                     </div>
                   </div>
 
-                  <details className="mt-4 rounded-md bg-[#11182C]/58 p-3">
-                    <summary className="cursor-pointer text-sm font-medium text-[#F8FAFC]">
+                  <details className="mt-4 rounded-md bg-[#11182C]/50 p-3">
+                    <summary className="cursor-pointer text-sm font-medium text-[#F8FAFC] transition hover:text-[#F5C84C]">
                       Preparation notes
                     </summary>
                     <div className="mt-4 flex flex-col gap-3">

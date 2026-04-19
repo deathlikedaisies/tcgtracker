@@ -331,17 +331,17 @@ export function DashboardContent({
 
         {hasMatches ? (
           <section className="grid gap-3 sm:grid-cols-3">
-            <div className="rounded-md bg-[#11182C]/58 p-4 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.04)]">
+            <div className="rounded-md bg-[#11182C]/50 p-3 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.035)]">
               <p className="text-xs font-semibold uppercase text-[#94A3B8]/78">
-                Test blocks completed
+                Tests completed
               </p>
               <p className="mt-2 text-sm font-semibold leading-6 text-[#F8FAFC]">
                 {trainingProgress.completedTestBlocks
                   ? `${trainingProgress.completedTestBlocks} completed`
-                  : "No completed tests yet"}
+                  : "First test in progress"}
               </p>
               {!trainingProgress.completedTestBlocks ? (
-                <div className="mt-2 flex gap-1.5" aria-label="No completed tests yet">
+                <div className="mt-2 flex gap-1.5" aria-label="First test in progress">
                   {Array.from({ length: 5 }).map((_, index) => (
                     <span
                       key={index}
@@ -351,29 +351,29 @@ export function DashboardContent({
                 </div>
               ) : null}
             </div>
-            <div className="rounded-md bg-[#11182C]/58 p-4 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.04)]">
+            <div className="rounded-md bg-[#11182C]/50 p-3 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.035)]">
               <p className="text-xs font-semibold uppercase text-[#94A3B8]/78">
                 Improved matchups
               </p>
               <p className="mt-2 text-sm font-semibold leading-6 text-[#F8FAFC]">
                 {trainingProgress.improvedMatchups
                   ? `${trainingProgress.improvedMatchups} improved`
-                  : "Finish your first test block"}
+                  : "Awaiting comparison"}
               </p>
               {!trainingProgress.improvedMatchups ? (
-                <p className="mt-1 text-xs text-[#94A3B8]">📈 Awaiting comparison</p>
+                <p className="mt-1 text-xs text-[#94A3B8]">Finish a mission first</p>
               ) : null}
             </div>
-            <div className="rounded-md bg-[#11182C]/58 p-4 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.04)]">
+            <div className="rounded-md bg-[#11182C]/50 p-3 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.035)]">
               <p className="text-xs font-semibold uppercase text-[#94A3B8]/78">
                 Loss pattern
               </p>
               <p className="mt-2 text-sm font-semibold leading-6 text-[#F8FAFC]">
                 {trainingProgress.lossPatternTrend ??
-                  "Tag losses to start identifying patterns."}
+                  "No repeated issue yet"}
               </p>
               {!trainingProgress.lossPatternTrend ? (
-                <p className="mt-1 text-xs text-[#94A3B8]">🔁 No pattern yet</p>
+                <p className="mt-1 text-xs text-[#94A3B8]">Tags will reveal one</p>
               ) : null}
             </div>
           </section>

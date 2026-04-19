@@ -48,7 +48,7 @@ const sessionKeys = {
 };
 
 const toggleClass =
-  "flex h-12 w-full max-w-full min-w-0 cursor-pointer items-center justify-center rounded-md bg-[#0B1020]/42 px-3 text-center text-sm font-semibold text-[#94A3B8] transition hover:bg-[#4F8CFF]/12 hover:text-[#F8FAFC] has-[:checked]:bg-[#4F8CFF]/24 has-[:checked]:shadow-[0_0_24px_rgba(79,140,255,0.12)] has-[:checked]:text-[#F8FAFC]";
+  "flex h-12 w-full max-w-full min-w-0 cursor-pointer items-center justify-center rounded-md bg-[#0B1020]/38 px-3 text-center text-sm font-semibold text-[#94A3B8] transition hover:bg-[#4F8CFF]/12 hover:text-[#F8FAFC] active:scale-[0.98] has-[:checked]:bg-[#4F8CFF]/22 has-[:checked]:shadow-[inset_0_0_0_1px_rgba(79,140,255,0.26),0_8px_22px_rgba(79,140,255,0.10)] has-[:checked]:text-[#F8FAFC]";
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -279,7 +279,7 @@ export function MatchLogForm({
 
     <form
       action={action}
-      className="mt-5 w-full max-w-full min-w-0 overflow-x-hidden rounded-md bg-[#11182C]/68 p-3 pb-28 shadow-[0_20px_60px_rgba(0,0,0,0.20),inset_0_0_0_1px_rgba(248,250,252,0.04)] sm:p-5 md:pb-5"
+      className="mt-5 w-full max-w-full min-w-0 overflow-x-hidden rounded-md bg-[#11182C]/68 p-3 pb-28 shadow-[0_22px_62px_rgba(0,0,0,0.22),inset_0_0_0_1px_rgba(248,250,252,0.045)] sm:p-5 md:pb-5"
     >
       <input type="hidden" name="deck_version_id" value={deckVersionId} />
       <div className="grid w-full max-w-full min-w-0 gap-4 overflow-x-hidden">
@@ -314,7 +314,7 @@ export function MatchLogForm({
           </div>
         ) : null}
 
-        <div className="max-w-full overflow-x-hidden rounded-md bg-[#0B1020]/38 px-3 py-2.5 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.04)]">
+        <div className="max-w-full overflow-x-hidden rounded-md bg-[#0B1020]/36 px-3 py-3 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.04)]">
           <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
             <div className="min-w-0 flex-1">
               <p className="text-xs font-medium uppercase text-[#94A3B8]/72">
@@ -333,7 +333,7 @@ export function MatchLogForm({
             <button
               type="button"
               onClick={() => setIsChangingDeck((current) => !current)}
-              className="shrink-0 rounded-md bg-[#4F8CFF]/12 px-3 py-2 text-xs font-semibold text-[#F8FAFC] transition hover:bg-[#4F8CFF]/18"
+              className="shrink-0 rounded-md bg-[#4F8CFF]/10 px-3 py-2 text-xs font-semibold text-[#F8FAFC] transition hover:bg-[#4F8CFF]/16 active:scale-[0.98]"
             >
               {isChangingDeck ? "Done" : "Change deck"}
             </button>
@@ -363,7 +363,7 @@ export function MatchLogForm({
           ) : null}
         </div>
 
-        <section className="max-w-full overflow-x-hidden rounded-md bg-[#0B1020]/24 p-3 shadow-[0_14px_40px_rgba(0,0,0,0.14),inset_0_0_0_1px_rgba(79,140,255,0.08)] sm:p-4">
+        <section className="max-w-full overflow-x-hidden rounded-md bg-[#0B1020]/26 p-3 shadow-[0_14px_38px_rgba(0,0,0,0.14),inset_0_0_0_1px_rgba(79,140,255,0.08)] sm:p-4">
           <ArchetypePicker
             id="opponent_archetype"
             name="opponent_archetype"
@@ -393,7 +393,7 @@ export function MatchLogForm({
                       setOpponentArchetype(archetype);
                       remember(sessionKeys.opponentArchetype, archetype);
                     }}
-                    className="inline-flex max-w-full items-center gap-2 rounded-md bg-[#11182C]/82 px-3 py-2 text-xs font-semibold text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(248,250,252,0.05)] transition hover:bg-[#4F8CFF]/16"
+                    className="inline-flex max-w-full items-center gap-2 rounded-md bg-[#11182C]/78 px-3 py-2 text-xs font-semibold text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(248,250,252,0.045)] transition hover:bg-[#4F8CFF]/14 active:scale-[0.98]"
                   >
                     <ArchetypeSprites archetype={archetype} className="shrink-0" />
                     <span className="min-w-0 truncate">{archetype}</span>
@@ -463,7 +463,7 @@ export function MatchLogForm({
 
         </div>
 
-        <fieldset className="max-w-full overflow-x-hidden rounded-md bg-[#0B1020]/28 px-3 py-2.5 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.035)]">
+        <fieldset className="max-w-full overflow-x-hidden rounded-md bg-[#0B1020]/26 px-3 py-2.5 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.035)]">
           <legend className="mb-2 text-xs font-medium uppercase text-[#94A3B8]/72">
             Game type
           </legend>
@@ -497,7 +497,7 @@ export function MatchLogForm({
           onToggle={(event) => {
             setDetailsOpen(event.currentTarget.open);
           }}
-          className="group max-w-full overflow-x-hidden rounded-md bg-[#0B1020]/28 p-3 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.035)]"
+          className="group max-w-full overflow-x-hidden rounded-md bg-[#0B1020]/24 p-3 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.035)]"
         >
           <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3 text-sm font-semibold text-[#F8FAFC] marker:hidden">
             <span>More details</span>
@@ -526,7 +526,7 @@ export function MatchLogForm({
               <button
                 type="button"
                 onClick={importTcgLiveLog}
-                className="mt-3 max-w-full rounded-md bg-[#4F8CFF]/14 px-3 py-2 text-sm font-semibold text-[#F8FAFC] transition hover:bg-[#4F8CFF]/22"
+                className="mt-3 max-w-full rounded-md bg-[#4F8CFF]/12 px-3 py-2 text-sm font-semibold text-[#F8FAFC] transition hover:bg-[#4F8CFF]/20 active:scale-[0.98]"
               >
                 Use log
               </button>
@@ -598,7 +598,7 @@ export function MatchLogForm({
           </a>
         </div>
       </div>
-      <div className="fixed inset-x-0 bottom-0 z-40 max-w-full overflow-x-hidden bg-[#0B1020]/92 px-4 py-3 shadow-[0_-18px_44px_rgba(0,0,0,0.36),inset_0_1px_0_rgba(248,250,252,0.06)] backdrop-blur md:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-40 max-w-full overflow-x-hidden bg-[#0B1020]/92 px-4 py-3 shadow-[0_-18px_44px_rgba(0,0,0,0.36),inset_0_1px_0_rgba(248,250,252,0.055)] backdrop-blur md:hidden">
         <div className="mx-auto w-full max-w-2xl">
           <SubmitButton />
         </div>

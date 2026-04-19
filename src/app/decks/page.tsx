@@ -92,7 +92,7 @@ export default async function DecksPage() {
 
   return (
     <main className={appShell}>
-      <section className={`${appContainer} max-w-5xl gap-8`}>
+      <section className={`${appContainer} max-w-5xl`}>
         <header className={pageHeader}>
           <div>
             <PrizeMapLogo {...logoOnDark} />
@@ -106,7 +106,7 @@ export default async function DecksPage() {
           <AppNav current="decks" />
         </header>
 
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
+        <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
           <section className="flex flex-col gap-4">
             <div>
               <h2 className={sectionTitle}>
@@ -125,7 +125,7 @@ export default async function DecksPage() {
                   return (
                     <article
                       key={deck.id}
-                      className={`${card} transition hover:bg-[#11182C]/88 hover:shadow-[0_22px_62px_rgba(0,0,0,0.28),0_0_34px_rgba(79,140,255,0.08),inset_0_0_0_1px_rgba(248,250,252,0.06)]`}
+                      className={`${card} transition hover:-translate-y-0.5 hover:bg-[#11182C]/84 hover:shadow-[0_22px_58px_rgba(0,0,0,0.26),0_0_28px_rgba(79,140,255,0.06),inset_0_0_0_1px_rgba(248,250,252,0.055)]`}
                     >
                       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                         <div className="flex min-w-0 gap-3">
@@ -147,7 +147,7 @@ export default async function DecksPage() {
                             <span
                               className={`mt-3 inline-flex rounded-md px-2 py-1 text-xs font-semibold ${
                                 sessionCoach
-                                  ? "bg-[#F5C84C]/14 text-[#F5C84C]"
+                                  ? "bg-[#F5C84C]/12 text-[#F5C84C]"
                                   : "bg-[#4F8CFF]/12 text-[#B8D1FF]"
                               }`}
                             >
@@ -171,7 +171,7 @@ export default async function DecksPage() {
                           </Link>
                           <Link
                             href={`/dashboard`}
-                            className="inline-flex h-10 items-center justify-center rounded-md bg-[#4F8CFF]/12 px-3 text-sm font-semibold text-[#F8FAFC] transition hover:bg-[#4F8CFF]/18"
+                            className="inline-flex h-10 items-center justify-center rounded-md bg-[#4F8CFF]/10 px-3 text-sm font-semibold text-[#F8FAFC] transition hover:-translate-y-0.5 hover:bg-[#4F8CFF]/16 active:translate-y-0 active:scale-[0.98]"
                           >
                             Compare
                           </Link>
