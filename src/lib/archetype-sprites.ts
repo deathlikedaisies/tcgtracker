@@ -38,10 +38,6 @@ export const ARCHETYPE_POKEMON: Record<string, ArchetypePokemon[]> = {
   "Mega Lucario ex": [{ pokemon: "Lucario", label: "Mega Lucario ex" }],
   "Mega Lucario": [{ pokemon: "Lucario", label: "Mega Lucario" }],
   "Mega Absol Box": [{ pokemon: "Absol", label: "Mega Absol" }],
-  "Gholdengo Lunatone": [
-    { pokemon: "Gholdengo" },
-    { pokemon: "Lunatone" },
-  ],
   "N's Zoroark": [{ pokemon: "Zoroark", label: "N's Zoroark" }],
   "Ogerpon Meganium": [
     { pokemon: "Ogerpon" },
@@ -69,31 +65,24 @@ export const ARCHETYPE_POKEMON: Record<string, ArchetypePokemon[]> = {
   ],
   "Cynthia's Garchomp": [{ pokemon: "Garchomp", label: "Cynthia's Garchomp" }],
   "Okidogi": [{ pokemon: "Okidogi" }],
+  "Okidogi Barbaracle": [
+    { pokemon: "Okidogi" },
+    { pokemon: "Barbaracle" },
+  ],
   "Marnie's Grimmsnarl": [{ pokemon: "Grimmsnarl", label: "Marnie's Grimmsnarl" }],
   "Mega Froslass": [{ pokemon: "Froslass", label: "Mega Froslass" }],
-  "Gardevoir Jellicent": [
-    { pokemon: "Gardevoir" },
-    { pokemon: "Jellicent" },
-  ],
-  "Charizard Noctowl": [
-    { pokemon: "Charizard" },
-    { pokemon: "Noctowl" },
-  ],
-  "Charizard Pidgeot": [
-    { pokemon: "Charizard" },
-    { pokemon: "Pidgeot" },
-  ],
   "Greninja Froslass": [
     { pokemon: "Greninja" },
     { pokemon: "Froslass" },
   ],
+  "Greninja": [{ pokemon: "Greninja" }],
   "Dragapult Froslass": [
     { pokemon: "Dragapult", label: "Dragapult ex" },
     { pokemon: "Froslass" },
   ],
-  "Gholdengo Dragapult": [
-    { pokemon: "Gholdengo" },
+  "Dragapult Dudunsparce": [
     { pokemon: "Dragapult", label: "Dragapult ex" },
+    { pokemon: "Dudunsparce" },
   ],
   "Sinistcha Ogerpon": [
     { pokemon: "Sinistcha" },
@@ -109,6 +98,76 @@ export const ARCHETYPE_POKEMON: Record<string, ArchetypePokemon[]> = {
   ],
   "Garchomp": [{ pokemon: "Garchomp" }],
   "Spidops": [{ pokemon: "Spidops" }],
+  "Slowking": [{ pokemon: "Slowking" }],
+  "Mega Venusaur": [{ pokemon: "Venusaur", label: "Mega Venusaur" }],
+  "Steven's Metagross": [
+    { pokemon: "Metagross", label: "Steven's Metagross" },
+  ],
+  "Clefairy Ogerpon": [
+    { pokemon: "Clefairy" },
+    { pokemon: "Ogerpon" },
+  ],
+  "Ogerpon Box": [{ pokemon: "Ogerpon", label: "Ogerpon Box" }],
+  "Flareon Noctowl": [
+    { pokemon: "Flareon" },
+    { pokemon: "Noctowl" },
+  ],
+  "Ceruledge": [{ pokemon: "Ceruledge" }],
+  "Starmie Dusknoir": [
+    { pokemon: "Starmie" },
+    { pokemon: "Dusknoir" },
+  ],
+  "Diancie Dusknoir": [
+    { pokemon: "Diancie" },
+    { pokemon: "Dusknoir" },
+  ],
+  "Hop's Trevenant": [{ pokemon: "Trevenant", label: "Hop's Trevenant" }],
+  "Lopunny Dudunsparce": [
+    { pokemon: "Lopunny" },
+    { pokemon: "Dudunsparce" },
+  ],
+  "Ursaluna Lunatone": [
+    { pokemon: "Ursaluna" },
+    { pokemon: "Lunatone" },
+  ],
+  "Tera Box": [{ pokemon: "Terapagos", label: "Tera Box" }],
+  "Jellicent Dusknoir": [
+    { pokemon: "Jellicent" },
+    { pokemon: "Dusknoir" },
+  ],
+  "Decidueye": [{ pokemon: "Decidueye" }],
+  "Ethan's Typhlosion": [
+    { pokemon: "Typhlosion", label: "Ethan's Typhlosion" },
+  ],
+  "Hydrapple Ogerpon": [
+    { pokemon: "Hydrapple" },
+    { pokemon: "Ogerpon" },
+  ],
+  "Mega Starmie": [{ pokemon: "Starmie", label: "Mega Starmie" }],
+  "Yanmega": [{ pokemon: "Yanmega" }],
+  "Toxtricity Box": [{ pokemon: "Toxtricity", label: "Toxtricity Box" }],
+  "Archaludon": [{ pokemon: "Archaludon" }],
+  "Hydreigon": [{ pokemon: "Hydreigon" }],
+  "Sharpedo Toxtricity": [
+    { pokemon: "Sharpedo" },
+    { pokemon: "Toxtricity" },
+  ],
+  "Hop's Zacian": [{ pokemon: "Zacian", label: "Hop's Zacian" }],
+  "Kangaskhan Bouffalant": [
+    { pokemon: "Kangaskhan" },
+    { pokemon: "Bouffalant" },
+  ],
+  "Zygarde Barbaracle": [
+    { pokemon: "Zygarde" },
+    { pokemon: "Barbaracle" },
+  ],
+  "Mega Abomasnow": [{ pokemon: "Abomasnow", label: "Mega Abomasnow" }],
+  "Mega Dragonite": [{ pokemon: "Dragonite", label: "Mega Dragonite" }],
+  "Eelektrik": [{ pokemon: "Eelektrik" }],
+  "Dudunsparce Control": [
+    { pokemon: "Dudunsparce", label: "Dudunsparce Control" },
+  ],
+  "Mega Zygarde ex": [{ pokemon: "Zygarde", label: "Mega Zygarde ex" }],
   [OTHER_ARCHETYPE]: [],
 
   "Charizard ex": [{ pokemon: "Charizard", label: "Charizard ex" }],
