@@ -17,9 +17,21 @@ Set these variables locally and in Vercel:
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+SCRYDEX_API_KEY=
+SCRYDEX_TEAM_ID=
 ```
 
 Do not expose or configure a Supabase service role key in the frontend app.
+
+`SCRYDEX_API_KEY` and `SCRYDEX_TEAM_ID` are server-side only. Add them in
+Vercel as normal encrypted environment variables, not `NEXT_PUBLIC_*`
+variables. Locally, add them to `.env.local` when you want Scrydex card lookup
+and legality enrichment.
+
+If Scrydex variables are missing, PrizeMap still works: deck list parsing,
+archetype suggestion, match logging, missions, and dashboards continue to run.
+Only remote card lookup, resolved/unresolved card enrichment, and legality
+warnings are unavailable.
 
 ## Release Checks
 

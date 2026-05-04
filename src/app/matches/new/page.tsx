@@ -12,6 +12,7 @@ import {
 import { MatchLogForm } from "@/components/matches/MatchLogForm";
 import { PrizeMapLogo } from "@/components/PrizeMapLogo";
 import { getArchetypeOptions } from "@/lib/archetypes";
+import { analyzeDeckList } from "@/lib/decklist";
 import { LATEST_FORMAT } from "@/lib/formats";
 import { buildSessionCoachInsight } from "@/lib/session-coach";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
@@ -21,11 +22,12 @@ type DeckWithVersions = {
   id: string;
   name: string;
   archetype: string;
-  deck_versions: {
-    id: string;
-    name: string;
-    is_active: boolean;
-    created_at: string;
+    deck_versions: {
+      id: string;
+      decklist: string | null;
+      name: string;
+      is_active: boolean;
+      created_at: string;
   }[];
 };
 
@@ -61,7 +63,7 @@ export default async function NewMatchPage({
   const { data: decks, error } = await supabase
     .from("decks")
     .select(
-      "id, name, archetype, deck_versions(id, name, is_active, created_at)"
+      "id, name, archetype, deck_versions(id, name, decklist, is_active, created_at)"
     )
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
@@ -103,12 +105,18 @@ export default async function NewMatchPage({
     }[]
   );
   const deckOptions = userDecks.flatMap((deck) =>
-    deck.deck_versions.map((version) => ({
-      id: version.id,
-      label: `${deck.name} - ${version.name}`,
-      detail: deck.archetype,
-      isActive: version.is_active,
-    }))
+    deck.deck_versions.map((version) => {
+      const suggestion = analyzeDeckList(version.decklist).suggestion;
+
+      return {
+        id: version.id,
+        label: `${deck.name} - ${version.name}`,
+        detail: deck.archetype,
+        suggestedArchetype:
+          suggestion.confidence === "unknown" ? null : suggestion.archetype,
+        isActive: version.is_active,
+      };
+    })
   );
   const opponentArchetypeOptions = getArchetypeOptions(LATEST_FORMAT, [
     ...previousOpponentArchetypes,

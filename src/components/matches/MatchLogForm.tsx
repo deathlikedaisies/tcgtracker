@@ -24,6 +24,7 @@ type DeckOption = {
   label: string;
   detail: string;
   isActive: boolean;
+  suggestedArchetype: string | null;
 };
 
 type MatchLogFormProps = {
@@ -167,6 +168,7 @@ export function MatchLogForm({
   const [isChangingDeck, setIsChangingDeck] = useState(false);
   const selectedDeck = deckOptions.find((option) => option.id === deckVersionId);
   const selectedDeckArchetype = selectedDeck?.detail ?? "";
+  const selectedDeckSuggestion = selectedDeck?.suggestedArchetype ?? null;
   const loggedOpponent = initialOpponentArchetype?.trim() ?? "";
   const loggedResult: "win" | "loss" = initialResult === "loss" ? "loss" : "win";
   const loggedMatch =
@@ -322,13 +324,18 @@ export function MatchLogForm({
               </p>
               <div className="mt-1 flex min-w-0 items-center gap-2">
                 <ArchetypeSprites
-                  archetype={selectedDeckArchetype}
+                  archetype={selectedDeckSuggestion ?? selectedDeckArchetype}
                   className="shrink-0"
                 />
                 <p className="truncate text-sm font-semibold text-[#F8FAFC]">
                   {selectedDeck?.label ?? "Choose a deck version"}
                 </p>
               </div>
+              {selectedDeckSuggestion ? (
+                <p className="mt-1 truncate text-xs font-medium text-[#B8D1FF]">
+                  List reads as {selectedDeckSuggestion}
+                </p>
+              ) : null}
             </div>
             <button
               type="button"
