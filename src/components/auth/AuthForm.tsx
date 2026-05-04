@@ -3,13 +3,13 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
+import { submitAuthForm } from "@/app/auth/actions";
 import {
   inputH11,
   label,
   primaryButton,
   sectionCopy,
 } from "@/components/brand-styles";
-import { createClient } from "@/lib/supabase";
 
 type AuthMode = "login" | "signup";
 
@@ -19,7 +19,6 @@ type AuthFormProps = {
 
 export function AuthForm({ mode }: AuthFormProps) {
   const router = useRouter();
-  const supabase = createClient();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
@@ -32,29 +31,24 @@ export function AuthForm({ mode }: AuthFormProps) {
     setMessage("");
     setIsSubmitting(true);
 
-    const credentials = {
-      email,
-      password,
-    };
+    try {
+      const result = await submitAuthForm(mode, email, password);
 
-    const { data, error } = isLogin
-      ? await supabase.auth.signInWithPassword(credentials)
-      : await supabase.auth.signUp(credentials);
+      if (!result.ok) {
+        setMessage(result.message ?? "Authentication failed. Please try again.");
+        return;
+      }
 
-    setIsSubmitting(false);
+      if (result.needsEmailConfirmation) {
+        setMessage("Check your email to confirm your account, then log in.");
+        return;
+      }
 
-    if (error) {
-      setMessage(error.message);
-      return;
-    }
-
-    if (isLogin || data.session) {
       router.replace("/dashboard");
       router.refresh();
-      return;
+    } finally {
+      setIsSubmitting(false);
     }
-
-    setMessage("Check your email to confirm your account, then log in.");
   }
 
   return (
