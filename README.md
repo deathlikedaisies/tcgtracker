@@ -17,21 +17,21 @@ Set these variables locally and in Vercel:
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
-SCRYDEX_API_KEY=
-SCRYDEX_TEAM_ID=
+POKEMON_TCG_API_KEY=
 ```
 
 Do not expose or configure a Supabase service role key in the frontend app.
 
-`SCRYDEX_API_KEY` and `SCRYDEX_TEAM_ID` are server-side only. Add them in
-Vercel as normal encrypted environment variables, not `NEXT_PUBLIC_*`
-variables. Locally, add them to `.env.local` when you want Scrydex card lookup
-and legality enrichment.
+`POKEMON_TCG_API_KEY` is optional and server-side only. Add it in Vercel as a
+normal encrypted environment variable, not a `NEXT_PUBLIC_*` variable. Locally,
+add it to `.env.local` when you want higher Pokémon TCG API rate limits for card
+lookup and legality enrichment. You can get a free key from the Pokémon TCG API
+Developer Portal: https://dev.pokemontcg.io/
 
-If Scrydex variables are missing, PrizeMap still works: deck list parsing,
-archetype suggestion, match logging, missions, and dashboards continue to run.
-Only remote card lookup, resolved/unresolved card enrichment, and legality
-warnings are unavailable.
+If no Pokémon TCG API key is configured, PrizeMap still works with unauthenticated
+API calls at lower rate limits. If the public API is unavailable or rate limited,
+deck list parsing, archetype suggestion, match logging, missions, and dashboards
+continue to run; only remote card resolution and legality warnings degrade.
 
 ## Release Checks
 

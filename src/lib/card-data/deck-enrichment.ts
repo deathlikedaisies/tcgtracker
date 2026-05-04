@@ -1,12 +1,13 @@
 import "server-only";
 
 import { type DecklistAnalysis } from "@/lib/decklist";
-import { searchPokemonCards, type ScrydexCard } from "@/lib/scrydex/client";
+import { searchPokemonTcgCards } from "@/lib/card-data/pokemon-tcg-client";
+import type { NormalizedCard } from "@/lib/card-data/types";
 
 export type EnrichedDeckCard = {
   card: DecklistAnalysis["cards"][number];
-  scrydexCard: ScrydexCard | null;
-  status: "resolved" | "unresolved" | "lookup-unavailable";
+  providerCard: NormalizedCard | null;
+  status: "resolved" | "unresolved";
 };
 
 export type DeckEnrichment = {
@@ -18,10 +19,6 @@ export type DeckEnrichment = {
   legalityWarnings: string[];
 };
 
-function escapeQueryPhrase(value: string) {
-  return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
-}
-
 function normalize(value: string) {
   return value
     .trim()
@@ -30,18 +27,33 @@ function normalize(value: string) {
     .toLowerCase();
 }
 
-function chooseBestCard(name: string, cards: ScrydexCard[]) {
-  const normalizedName = normalize(name);
+function chooseBestCard(
+  source: DecklistAnalysis["cards"][number],
+  cards: NormalizedCard[]
+) {
+  const normalizedName = normalize(source.name);
+  const normalizedNumber = source.number ? normalize(source.number) : null;
+  const normalizedSetCode = source.setCode ? normalize(source.setCode) : null;
 
   return (
+    cards.find(
+      (card) =>
+        normalize(card.name) === normalizedName &&
+        (!normalizedNumber || normalize(card.number ?? "") === normalizedNumber) &&
+        (!normalizedSetCode || normalize(card.setCode ?? "") === normalizedSetCode)
+    ) ??
+    cards.find(
+      (card) =>
+        normalize(card.name) === normalizedName &&
+        (!normalizedNumber || normalize(card.number ?? "") === normalizedNumber)
+    ) ??
     cards.find((card) => normalize(card.name) === normalizedName) ??
-    cards.find((card) => normalize(card.name).includes(normalizedName)) ??
     cards[0] ??
     null
   );
 }
 
-function getLegalityWarning(card: ScrydexCard) {
+function getLegalityWarning(card: NormalizedCard) {
   const standard = card.legalities?.standard?.toLowerCase();
 
   if (standard && standard !== "legal") {
@@ -56,7 +68,7 @@ export async function enrichDeckAnalysis(
 ): Promise<DeckEnrichment> {
   if (!analysis.cards.length) {
     return {
-      available: false,
+      available: true,
       cards: [],
       error: null,
       resolvedCount: 0,
@@ -65,48 +77,34 @@ export async function enrichDeckAnalysis(
     };
   }
 
-  const uniqueNames = Array.from(new Set(analysis.cards.map((card) => card.name)));
   const lookupResults = await Promise.all(
-    uniqueNames.map(async (name) => {
-      const result = await searchPokemonCards(`name:"${escapeQueryPhrase(name)}"`, {
-        limit: 3,
-      });
+    analysis.cards.map(async (card) => {
+      const result = await searchPokemonTcgCards(
+        {
+          name: card.name,
+          number: card.number,
+          setCode: card.setCode,
+        },
+        { limit: 5 }
+      );
 
-      return [name, result] as const;
+      return [card.raw, result] as const;
     })
   );
-  const lookupByName = new Map(lookupResults);
-  const firstResult = lookupResults[0]?.[1];
-  const available = firstResult?.available ?? false;
-
-  if (!available) {
-    return {
-      available: false,
-      cards: analysis.cards.map((card) => ({
-        card,
-        scrydexCard: null,
-        status: "lookup-unavailable",
-      })),
-      error: firstResult?.error ?? "Card lookup unavailable.",
-      resolvedCount: 0,
-      unresolvedCount: analysis.cards.length + analysis.unresolved.length,
-      legalityWarnings: [],
-    };
-  }
-
+  const lookupByRaw = new Map(lookupResults);
   const enrichedCards = analysis.cards.map((card) => {
-    const lookup = lookupByName.get(card.name);
-    const scrydexCard = chooseBestCard(card.name, lookup?.cards ?? []);
+    const lookup = lookupByRaw.get(card.raw);
+    const providerCard = chooseBestCard(card, lookup?.cards ?? []);
 
     return {
       card,
-      scrydexCard,
-      status: scrydexCard ? "resolved" : "unresolved",
+      providerCard,
+      status: providerCard ? "resolved" : "unresolved",
     } satisfies EnrichedDeckCard;
   });
   const legalityWarnings = enrichedCards
     .map((entry) =>
-      entry.scrydexCard ? getLegalityWarning(entry.scrydexCard) : null
+      entry.providerCard ? getLegalityWarning(entry.providerCard) : null
     )
     .filter((warning): warning is string => Boolean(warning))
     .slice(0, 4);

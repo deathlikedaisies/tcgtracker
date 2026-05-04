@@ -18,7 +18,7 @@ import { PrizeMapLogo } from "@/components/PrizeMapLogo";
 import { SessionCoachPanel } from "@/components/SessionCoachPanel";
 import { analyzeDeckList } from "@/lib/decklist";
 import { buildSessionCoachInsight } from "@/lib/session-coach";
-import { enrichDeckAnalysis } from "@/lib/scrydex/deck-enrichment";
+import { enrichDeckAnalysis } from "@/lib/card-data/deck-enrichment";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { createDeckVersion, markDeckVersionActive } from "./actions";
 
@@ -304,6 +304,12 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                             <div className="mt-3 rounded-md bg-[#F5C84C]/10 p-3 text-xs leading-5 text-[#F5C84C]">
                               {enrichment.legalityWarnings[0]}
                             </div>
+                          ) : null}
+
+                          {enrichment?.error ? (
+                            <p className="mt-3 text-xs font-medium text-[#94A3B8]">
+                              {enrichment.error}
+                            </p>
                           ) : null}
 
                           <details className="mt-3">
