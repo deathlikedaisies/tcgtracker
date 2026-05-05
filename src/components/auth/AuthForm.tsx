@@ -15,9 +15,32 @@ type AuthMode = "login" | "signup";
 
 type AuthFormProps = {
   mode: AuthMode;
+  authConfigured?: boolean;
 };
 
-export function AuthForm({ mode }: AuthFormProps) {
+const missingConfigMessage =
+  "PrizeMap is not configured correctly. Please contact support.";
+const connectionMessage =
+  "Could not connect to PrizeMap. Check your connection and try again.";
+
+function getClientAuthErrorMessage(error: unknown) {
+  const errorName = error instanceof Error ? error.name.toLowerCase() : "";
+  const errorMessage =
+    error instanceof Error ? error.message.toLowerCase() : String(error ?? "");
+
+  if (
+    errorName.includes("typeerror") ||
+    errorMessage.includes("fetch failed") ||
+    errorMessage.includes("failed to fetch") ||
+    errorMessage.includes("network request failed")
+  ) {
+    return connectionMessage;
+  }
+
+  return "Authentication failed. Please try again.";
+}
+
+export function AuthForm({ mode, authConfigured = true }: AuthFormProps) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -25,9 +48,17 @@ export function AuthForm({ mode }: AuthFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isLogin = mode === "login";
+  const buttonLabel = isLogin ? "Log in" : "Create account";
+  const pendingLabel = isLogin ? "Logging in..." : "Creating account...";
+  const displayedMessage = authConfigured ? message : missingConfigMessage;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (isSubmitting || !authConfigured) {
+      return;
+    }
+
     setMessage("");
     setIsSubmitting(true);
 
@@ -46,6 +77,8 @@ export function AuthForm({ mode }: AuthFormProps) {
 
       router.replace("/dashboard");
       router.refresh();
+    } catch (error) {
+      setMessage(getClientAuthErrorMessage(error));
     } finally {
       setIsSubmitting(false);
     }
@@ -63,9 +96,10 @@ export function AuthForm({ mode }: AuthFormProps) {
           type="email"
           autoComplete="email"
           required
+          disabled={!authConfigured || isSubmitting}
           value={email}
           onChange={(event) => setEmail(event.target.value)}
-          className={inputH11}
+          className={`${inputH11} disabled:cursor-not-allowed disabled:opacity-70`}
         />
       </div>
       <div className="flex flex-col gap-2">
@@ -79,23 +113,37 @@ export function AuthForm({ mode }: AuthFormProps) {
           autoComplete={isLogin ? "current-password" : "new-password"}
           required
           minLength={6}
+          disabled={!authConfigured || isSubmitting}
           value={password}
           onChange={(event) => setPassword(event.target.value)}
-          className={inputH11}
+          className={`${inputH11} disabled:cursor-not-allowed disabled:opacity-70`}
         />
       </div>
-      {message ? (
-        <p className="rounded-md bg-[#4F8CFF]/10 px-3 py-2 text-sm text-[#F8FAFC]">
-          {message}
+      {displayedMessage ? (
+        <p
+          role="alert"
+          className="rounded-md bg-[#F43F5E]/10 px-3 py-2.5 text-sm leading-6 text-rose-100 shadow-[inset_0_0_0_1px_rgba(244,63,94,0.18)]"
+        >
+          {displayedMessage}
         </p>
       ) : null}
       <button
         type="submit"
-        disabled={isSubmitting}
-        className={`${primaryButton} h-11`}
+        disabled={isSubmitting || !authConfigured}
+        aria-busy={isSubmitting}
+        className={`${primaryButton} h-11 gap-2`}
       >
-        {isSubmitting ? "Please wait..." : isLogin ? "Log in" : "Create account"}
+        {isSubmitting ? (
+          <span
+            aria-hidden="true"
+            className="size-4 rounded-full border-2 border-[#0B1020]/25 border-t-[#0B1020] motion-safe:animate-spin"
+          />
+        ) : null}
+        {isSubmitting ? pendingLabel : buttonLabel}
       </button>
+      <p className="text-center text-xs leading-5 text-[#94A3B8]/70">
+        Your match data stays private to your account.
+      </p>
       <p className={sectionCopy}>
         {isLogin ? "Need an account?" : "Already have an account?"}{" "}
         <Link

@@ -1,16 +1,20 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { getSupabaseConfig } from "@/lib/supabase-config";
+import { getOptionalSupabaseConfig } from "@/lib/supabase-config";
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({
     request,
   });
-  const { url, key } = getSupabaseConfig();
+  const config = getOptionalSupabaseConfig();
+
+  if (!config) {
+    return response;
+  }
 
   const supabase = createServerClient(
-    url,
-    key,
+    config.url,
+    config.key,
     {
       cookies: {
         getAll() {
@@ -33,7 +37,16 @@ export async function proxy(request: NextRequest) {
     }
   );
 
-  await supabase.auth.getUser();
+  try {
+    await supabase.auth.getUser();
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error("Unable to refresh Supabase session in proxy", {
+        name: error.name,
+        message: error.message,
+      });
+    }
+  }
 
   return response;
 }

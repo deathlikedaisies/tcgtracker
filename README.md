@@ -20,7 +20,13 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 POKEMON_TCG_API_KEY=
 ```
 
-Do not expose or configure a Supabase service role key in the frontend app.
+`NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` are
+required for login, signup, and all account data. The app also accepts
+`NEXT_PUBLIC_SUPABASE_ANON_KEY` as a legacy fallback for the publishable key, but
+new deployments should use `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
+
+Do not add fake values. Do not expose or configure a Supabase service role key in
+the frontend app.
 
 `POKEMON_TCG_API_KEY` is optional and server-side only. Add it in Vercel as a
 normal encrypted environment variable, not a `NEXT_PUBLIC_*` variable. Locally,
@@ -44,8 +50,13 @@ git diff --check
 ## Deploy on Vercel
 
 1. Import the repository into Vercel.
-2. Add the two public Supabase environment variables above.
-3. In Supabase Auth, add the production Vercel URL to the allowed redirect/site URLs.
-4. Deploy after the release checks pass.
+2. Add `NEXT_PUBLIC_SUPABASE_URL` and
+   `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in Vercel Project Settings ->
+   Environment Variables for the intended environments.
+3. Redeploy after adding or changing these variables. `NEXT_PUBLIC_*` values are
+   bundled at build time.
+4. In Supabase Auth, set the Site URL to the production domain and add the
+   production Vercel URL to the allowed redirect URLs.
+5. Deploy after the release checks pass.
 
 Sprite assets are local files in `public/sprites/` and are referenced from `/sprites/{filename}` at runtime.
