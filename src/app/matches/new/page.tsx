@@ -1,7 +1,9 @@
 import { redirect } from "next/navigation";
 import { AppNav } from "@/components/AppNav";
+import { AppSidebar } from "@/components/AppSidebar";
 import {
-  appContainer,
+  appFrame,
+  appMain,
   appShell,
   emptyCard,
   logoOnDark,
@@ -128,19 +130,35 @@ export default async function NewMatchPage({
 
   return (
     <main className={appShell}>
-      <section className={`${appContainer} max-w-2xl`}>
+      <section className={appFrame}>
+        <AppSidebar
+          current="log"
+          deckLabel={deckOptions[0]?.label}
+          insight={
+            sessionCoach
+              ? {
+                  label: "Current mission",
+                  value: sessionCoach.missionTitle,
+                  helper: `${sessionCoach.missionProgress}/${sessionCoach.missionTargetCount} games`,
+                }
+              : undefined
+          }
+        />
+        <div className={`${appMain} mx-auto w-full max-w-6xl`}>
         <div className="flex max-w-full min-w-0 flex-col gap-4 overflow-x-hidden lg:flex-row lg:flex-wrap lg:items-start lg:justify-between">
           <div className="min-w-0 max-w-full">
             <PrizeMapLogo {...logoOnDark} />
-            <p className="mt-5 text-sm font-medium text-[#94A3B8]">Match log</p>
+            <p className="mt-5 text-sm font-medium text-[#4F8CFF]">Fast log</p>
             <h1 className={pageTitle}>
-              What just happened?
+              Log a game
             </h1>
             <p className={pageCopy}>
-              Capture the game, then get back to testing.
+              Capture the matchup, result, and context before the next queue.
             </p>
           </div>
-          <AppNav current="log" />
+          <div className="lg:hidden">
+            <AppNav current="log" />
+          </div>
         </div>
 
         {deckOptions.length ? (
@@ -166,6 +184,7 @@ export default async function NewMatchPage({
             </p>
           </div>
         )}
+        </div>
       </section>
     </main>
   );

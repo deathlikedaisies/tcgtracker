@@ -2,10 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
+import { Bolt, CheckCircle2, ClipboardList, Target } from "lucide-react";
 import { ArchetypePicker } from "@/components/ArchetypePicker";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
 import { SessionCoachPanel } from "@/components/SessionCoachPanel";
 import {
+  glassPanel,
+  glassPanelStrong,
   inputH11,
   label,
   primaryButton,
@@ -49,7 +52,7 @@ const sessionKeys = {
 };
 
 const toggleClass =
-  "flex h-12 w-full max-w-full min-w-0 cursor-pointer items-center justify-center rounded-md bg-[#0B1020]/38 px-3 text-center text-sm font-semibold text-[#94A3B8] transition hover:bg-[#4F8CFF]/12 hover:text-[#F8FAFC] active:scale-[0.98] has-[:checked]:bg-[#4F8CFF]/22 has-[:checked]:shadow-[inset_0_0_0_1px_rgba(79,140,255,0.26),0_8px_22px_rgba(79,140,255,0.10)] has-[:checked]:text-[#F8FAFC]";
+  "flex h-12 w-full max-w-full min-w-0 cursor-pointer items-center justify-center rounded-md bg-[#07111F]/52 px-3 text-center text-sm font-semibold text-[#94A3B8] transition hover:bg-[#4F8CFF]/12 hover:text-[#F8FAFC] active:scale-[0.98] has-[:checked]:bg-[#4F8CFF]/22 has-[:checked]:shadow-[inset_0_0_0_1px_rgba(79,140,255,0.30),0_8px_22px_rgba(79,140,255,0.10)] has-[:checked]:text-[#F8FAFC]";
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -60,8 +63,30 @@ function SubmitButton() {
       disabled={pending}
       className={`${primaryButton} h-11 w-full`}
     >
-      {pending ? "Saving..." : "Save & next game"}
+      {pending ? "Saving..." : "Save and log another"}
     </button>
+  );
+}
+
+function StepLabel({
+  index,
+  title,
+  helper,
+}: {
+  index: number;
+  title: string;
+  helper: string;
+}) {
+  return (
+    <div className="flex min-w-0 gap-3">
+      <span className="mt-0.5 inline-flex size-7 shrink-0 items-center justify-center rounded-full bg-[#4F8CFF] text-xs font-bold text-white shadow-[0_8px_18px_rgba(79,140,255,0.20)]">
+        {index}
+      </span>
+      <div className="min-w-0">
+        <p className="text-sm font-semibold text-[#F8FAFC]">{title}</p>
+        <p className="mt-0.5 text-xs leading-5 text-[#94A3B8]/72">{helper}</p>
+      </div>
+    </div>
   );
 }
 
@@ -268,20 +293,10 @@ export function MatchLogForm({
   }
 
   return (
-    <>
-      {sessionCoach ? (
-        <div className="mt-5">
-          <SessionCoachPanel
-            insight={sessionCoach}
-            isPostSave={wasSuccessful}
-            showCta={false}
-          />
-        </div>
-      ) : null}
-
+    <div className="mt-5 grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-start">
     <form
       action={action}
-      className="mt-5 w-full max-w-full min-w-0 overflow-x-hidden rounded-md bg-[#11182C]/68 p-3 pb-28 shadow-[0_22px_62px_rgba(0,0,0,0.22),inset_0_0_0_1px_rgba(248,250,252,0.045)] sm:p-5 md:pb-5"
+      className={`w-full max-w-full min-w-0 overflow-x-hidden p-3 pb-28 sm:p-5 md:pb-5 ${glassPanelStrong}`}
     >
       <input type="hidden" name="deck_version_id" value={deckVersionId} />
       <div className="grid w-full max-w-full min-w-0 gap-4 overflow-x-hidden">
@@ -316,8 +331,10 @@ export function MatchLogForm({
           </div>
         ) : null}
 
-        <div className="max-w-full overflow-x-hidden rounded-md bg-[#0B1020]/36 px-3 py-3 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.04)]">
-          <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
+        <div className="grid gap-3 border-b border-white/6 pb-4 lg:grid-cols-[180px_minmax(0,1fr)]">
+          <StepLabel index={1} title="Your deck" helper="Select the tested version." />
+          <div className="max-w-full overflow-x-hidden rounded-md bg-[#07111F]/44 px-3 py-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]">
+            <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
             <div className="min-w-0 flex-1">
               <p className="text-xs font-medium uppercase text-[#94A3B8]/72">
                 Current deck
@@ -344,74 +361,80 @@ export function MatchLogForm({
             >
               {isChangingDeck ? "Done" : "Change deck"}
             </button>
-          </div>
-          {isChangingDeck ? (
-            <div className="mt-3 flex flex-col gap-2">
-              <label htmlFor="deck_version_id_select" className={label}>
-                Session deck
-              </label>
-              <select
-                id="deck_version_id_select"
-                value={deckVersionId}
-                onChange={(event) => {
-                  setDeckVersionId(event.target.value);
-                  remember(sessionKeys.deckVersionId, event.target.value);
-                }}
-                className={inputH11}
-              >
-                {deckOptions.map((option) => (
-                  <option key={option.id} value={option.id}>
-                    {option.label}
-                    {option.isActive ? " (active)" : ""} - {option.detail}
-                  </option>
-                ))}
-              </select>
             </div>
-          ) : null}
+            {isChangingDeck ? (
+              <div className="mt-3 flex flex-col gap-2">
+                <label htmlFor="deck_version_id_select" className={label}>
+                  Session deck
+                </label>
+                <select
+                  id="deck_version_id_select"
+                  value={deckVersionId}
+                  onChange={(event) => {
+                    setDeckVersionId(event.target.value);
+                    remember(sessionKeys.deckVersionId, event.target.value);
+                  }}
+                  className={inputH11}
+                >
+                  {deckOptions.map((option) => (
+                    <option key={option.id} value={option.id}>
+                      {option.label}
+                      {option.isActive ? " (active)" : ""} - {option.detail}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ) : null}
+          </div>
         </div>
 
-        <section className="max-w-full overflow-x-hidden rounded-md bg-[#0B1020]/26 p-3 shadow-[0_14px_38px_rgba(0,0,0,0.14),inset_0_0_0_1px_rgba(79,140,255,0.08)] sm:p-4">
-          <ArchetypePicker
-            id="opponent_archetype"
-            name="opponent_archetype"
-            label="Who did you play?"
-            options={opponentArchetypeOptions}
-            value={opponentArchetype}
-            required
-            autoFocus
-            maxOptions={7}
-            listMaxHeightClassName="max-h-48"
-            onValueChange={(nextValue) => {
-              setOpponentArchetype(nextValue);
-              remember(sessionKeys.opponentArchetype, nextValue);
-            }}
-          />
-          {recentOpponentArchetypes.length ? (
-            <div className="mt-3">
-              <p className="mb-2 text-xs font-medium uppercase text-[#94A3B8]/70">
-                Recent opponents
-              </p>
-              <div className="flex max-w-full flex-wrap gap-2 overflow-x-hidden pb-1">
-                {recentOpponentArchetypes.map((archetype) => (
-                  <button
-                    key={archetype}
-                    type="button"
-                    onClick={() => {
-                      setOpponentArchetype(archetype);
-                      remember(sessionKeys.opponentArchetype, archetype);
-                    }}
-                    className="inline-flex max-w-full items-center gap-2 rounded-md bg-[#11182C]/78 px-3 py-2 text-xs font-semibold text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(248,250,252,0.045)] transition hover:bg-[#4F8CFF]/14 active:scale-[0.98]"
-                  >
-                    <ArchetypeSprites archetype={archetype} className="shrink-0" />
-                    <span className="min-w-0 truncate">{archetype}</span>
-                  </button>
-                ))}
+        <section className="grid gap-3 border-b border-white/6 pb-4 lg:grid-cols-[180px_minmax(0,1fr)]">
+          <StepLabel index={2} title="Opponent matchup" helper="Who did you play against?" />
+          <div className="max-w-full overflow-x-hidden rounded-md bg-[#07111F]/38 p-3 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.12)] sm:p-4">
+            <ArchetypePicker
+              id="opponent_archetype"
+              name="opponent_archetype"
+              label="Who did you play?"
+              options={opponentArchetypeOptions}
+              value={opponentArchetype}
+              required
+              autoFocus
+              maxOptions={7}
+              listMaxHeightClassName="max-h-48"
+              onValueChange={(nextValue) => {
+                setOpponentArchetype(nextValue);
+                remember(sessionKeys.opponentArchetype, nextValue);
+              }}
+            />
+            {recentOpponentArchetypes.length ? (
+              <div className="mt-3">
+                <p className="mb-2 text-xs font-medium uppercase text-[#94A3B8]/70">
+                  Recent opponents
+                </p>
+                <div className="flex max-w-full flex-wrap gap-2 overflow-x-hidden pb-1">
+                  {recentOpponentArchetypes.map((archetype) => (
+                    <button
+                      key={archetype}
+                      type="button"
+                      onClick={() => {
+                        setOpponentArchetype(archetype);
+                        remember(sessionKeys.opponentArchetype, archetype);
+                      }}
+                      className="inline-flex max-w-full items-center gap-2 rounded-md bg-[#11182C]/78 px-3 py-2 text-xs font-semibold text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(248,250,252,0.045)] transition hover:bg-[#4F8CFF]/14 active:scale-[0.98]"
+                    >
+                      <ArchetypeSprites archetype={archetype} className="shrink-0" />
+                      <span className="min-w-0 truncate">{archetype}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-          ) : null}
+            ) : null}
+          </div>
         </section>
 
-        <div className="grid min-w-0 gap-3 sm:grid-cols-2">
+        <div className="grid min-w-0 gap-3 border-b border-white/6 pb-4 lg:grid-cols-[180px_minmax(0,1fr)]">
+          <StepLabel index={3} title="Result and play order" helper="Record the key outcome." />
+          <div className="grid min-w-0 gap-3 sm:grid-cols-2">
           <fieldset className="flex flex-col gap-2">
             <legend className={label}>
               Did you win?
@@ -468,43 +491,47 @@ export function MatchLogForm({
             </div>
           </fieldset>
 
+          </div>
         </div>
 
-        <fieldset className="max-w-full overflow-x-hidden rounded-md bg-[#0B1020]/26 px-3 py-2.5 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.035)]">
-          <legend className="mb-2 text-xs font-medium uppercase text-[#94A3B8]/72">
-            Game type
-          </legend>
-          <div className="grid min-w-0 grid-cols-3 gap-1.5 sm:gap-2">
-            {(["casual", "testing", "tournament"] as const).map(
-              (eventTypeOption) => (
-                <label
-                  key={eventTypeOption}
-                  className={`${toggleClass} h-10 text-xs capitalize sm:text-sm`}
-                >
-                  <input
-                    type="radio"
-                    name="event_type"
-                    value={eventTypeOption}
-                    checked={eventType === eventTypeOption}
-                    onChange={() => {
-                      setEventType(eventTypeOption);
-                      remember(sessionKeys.eventType, eventTypeOption);
-                    }}
-                    className="sr-only"
-                  />
-                  {eventTypeOption}
-                </label>
-              )
-            )}
-          </div>
-        </fieldset>
+        <div className="grid gap-3 lg:grid-cols-[180px_minmax(0,1fr)]">
+          <StepLabel index={4} title="Session context" helper="Add only what helps review." />
+          <fieldset className="max-w-full overflow-x-hidden rounded-md bg-[#07111F]/38 px-3 py-2.5 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+            <legend className="mb-2 text-xs font-medium uppercase text-[#94A3B8]/72">
+              Game type
+            </legend>
+            <div className="grid min-w-0 grid-cols-3 gap-1.5 sm:gap-2">
+              {(["casual", "testing", "tournament"] as const).map(
+                (eventTypeOption) => (
+                  <label
+                    key={eventTypeOption}
+                    className={`${toggleClass} h-10 text-xs capitalize sm:text-sm`}
+                  >
+                    <input
+                      type="radio"
+                      name="event_type"
+                      value={eventTypeOption}
+                      checked={eventType === eventTypeOption}
+                      onChange={() => {
+                        setEventType(eventTypeOption);
+                        remember(sessionKeys.eventType, eventTypeOption);
+                      }}
+                      className="sr-only"
+                    />
+                    {eventTypeOption}
+                  </label>
+                )
+              )}
+            </div>
+          </fieldset>
+        </div>
 
         <details
           open={detailsOpen}
           onToggle={(event) => {
             setDetailsOpen(event.currentTarget.open);
           }}
-          className="group max-w-full overflow-x-hidden rounded-md bg-[#0B1020]/24 p-3 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.035)]"
+          className="group max-w-full overflow-x-hidden rounded-md bg-[#07111F]/34 p-3 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.035)]"
         >
           <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3 text-sm font-semibold text-[#F8FAFC] marker:hidden">
             <span>More details</span>
@@ -611,6 +638,47 @@ export function MatchLogForm({
         </div>
       </div>
     </form>
-    </>
+      <aside className="grid gap-3 xl:sticky xl:top-6">
+        {sessionCoach ? (
+          <SessionCoachPanel
+            insight={sessionCoach}
+            isPostSave={wasSuccessful}
+            showCta={false}
+          />
+        ) : (
+          <div className={`p-4 ${glassPanel}`}>
+            <Target className="size-5 text-[#F5C84C]" aria-hidden="true" />
+            <h2 className="mt-3 text-lg font-semibold text-[#F8FAFC]">
+              Active testing session
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
+              Log a few games and PrizeMap will build a focused mission.
+            </p>
+          </div>
+        )}
+        <div className={`p-4 ${glassPanel}`}>
+          <div className="flex items-center gap-2 text-[#F5C84C]">
+            <Bolt className="size-4" aria-hidden="true" />
+            <p className="text-xs font-semibold uppercase tracking-[0.1em]">
+              Fast log flow
+            </p>
+          </div>
+          <div className="mt-4 grid gap-3">
+            {[
+              [ClipboardList, selectedDeck?.label ?? "Choose deck"],
+              [Target, opponentArchetype || "Pick opponent"],
+              [CheckCircle2, `${result === "win" ? "Win" : "Loss"} · ${wentFirst === "true" ? "First" : "Second"}`],
+            ].map(([Icon, value]) => (
+              <div key={value as string} className="flex min-w-0 items-center gap-3 rounded-md bg-[#07111F]/44 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                <Icon className="size-4 shrink-0 text-[#4F8CFF]" aria-hidden="true" />
+                <span className="truncate text-sm font-medium text-[#F8FAFC]">
+                  {value as string}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </aside>
+    </div>
   );
 }

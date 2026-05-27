@@ -1,10 +1,13 @@
 import { notFound, redirect } from "next/navigation";
 import { AppNav } from "@/components/AppNav";
+import { AppSidebar } from "@/components/AppSidebar";
 import { ArchetypePicker } from "@/components/ArchetypePicker";
 import {
-  appContainer,
+  appFrame,
+  appMain,
   appShell,
   cardLarge,
+  glassPanelStrong,
   inputH11,
   label,
   logoOnDark,
@@ -129,7 +132,16 @@ export default async function EditMatchPage({ params }: EditMatchPageProps) {
 
   return (
     <main className={appShell}>
-      <section className={`${appContainer} max-w-2xl`}>
+      <section className={appFrame}>
+        <AppSidebar
+          current="matches"
+          insight={{
+            label: "Editing",
+            value: currentMatch.opponent_archetype,
+            helper: currentMatch.result,
+          }}
+        />
+        <div className={`${appMain} mx-auto w-full max-w-3xl`}>
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <PrizeMapLogo {...logoOnDark} />
@@ -143,12 +155,14 @@ export default async function EditMatchPage({ params }: EditMatchPageProps) {
               Update match details and tags.
             </p>
           </div>
-          <AppNav current="matches" />
+          <div className="lg:hidden">
+            <AppNav current="matches" />
+          </div>
         </div>
 
         <form
           action={saveMatch}
-          className={cardLarge}
+          className={`${cardLarge} ${glassPanelStrong}`}
         >
           <div className="grid gap-5">
             <div className="flex flex-col gap-2">
@@ -321,6 +335,7 @@ export default async function EditMatchPage({ params }: EditMatchPageProps) {
             </button>
           </div>
         </form>
+        </div>
       </section>
     </main>
   );

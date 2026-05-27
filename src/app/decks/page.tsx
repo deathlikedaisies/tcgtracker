@@ -1,15 +1,20 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Layers3, PlusCircle } from "lucide-react";
 import { AppNav } from "@/components/AppNav";
+import { AppSidebar } from "@/components/AppSidebar";
 import { ArchetypePicker } from "@/components/ArchetypePicker";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
 import { ConfirmSubmitButton } from "@/components/ConfirmSubmitButton";
 import {
-  appContainer,
+  appFrame,
+  appMain,
   appShell,
   card,
   dangerButton,
   emptyCard,
+  glassPanel,
+  glassPanelStrong,
   inputH10,
   label,
   logoOnDark,
@@ -92,7 +97,18 @@ export default async function DecksPage() {
 
   return (
     <main className={appShell}>
-      <section className={`${appContainer} max-w-5xl`}>
+      <section className={appFrame}>
+        <AppSidebar
+          current="decks"
+          insight={{
+            label: "Deck work",
+            value: sessionCoach?.missionSkill ?? "Create an experiment",
+            helper: userDecks.length
+              ? `${userDecks.length} deck${userDecks.length === 1 ? "" : "s"} saved`
+              : "Start with one test list",
+          }}
+        />
+        <div className={`${appMain} mx-auto w-full max-w-6xl`}>
         <header className={pageHeader}>
           <div>
             <PrizeMapLogo {...logoOnDark} />
@@ -103,18 +119,27 @@ export default async function DecksPage() {
               Treat every deck version like a testable hypothesis.
             </p>
           </div>
-          <AppNav current="decks" />
+          <div className="lg:hidden">
+            <AppNav current="decks" />
+          </div>
         </header>
 
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
           <section className="flex flex-col gap-4">
-            <div>
-              <h2 className={sectionTitle}>
-                Active experiments
-              </h2>
-              <p className={`mt-1 ${sectionCopy}`}>
-                Test versions, compare results, then keep the list that improves.
-              </p>
+            <div className={`p-4 ${glassPanelStrong}`}>
+              <div className="flex items-start gap-3">
+                <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-md bg-[#4F8CFF]/12 text-[#B8D1FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.18)]">
+                  <Layers3 className="size-5" aria-hidden="true" />
+                </span>
+                <div>
+                  <h2 className={sectionTitle}>
+                    Active experiments
+                  </h2>
+                  <p className={`mt-1 ${sectionCopy}`}>
+                    Version your lists, test them cleanly, and keep the build that improves.
+                  </p>
+                </div>
+              </div>
             </div>
 
             {userDecks.length ? (
@@ -125,7 +150,7 @@ export default async function DecksPage() {
                   return (
                     <article
                       key={deck.id}
-                      className={`${card} transition hover:-translate-y-0.5 hover:bg-[#11182C]/84 hover:shadow-[0_22px_58px_rgba(0,0,0,0.26),0_0_28px_rgba(79,140,255,0.06),inset_0_0_0_1px_rgba(248,250,252,0.055)]`}
+                      className={`${card} transition hover:-translate-y-0.5 hover:bg-[#11182C]/84 hover:shadow-[0_22px_58px_rgba(0,0,0,0.26),0_0_28px_rgba(79,140,255,0.06),inset_0_0_0_1px_rgba(79,140,255,0.12)]`}
                     >
                       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                         <div className="flex min-w-0 gap-3">
@@ -167,7 +192,7 @@ export default async function DecksPage() {
                             href={`/decks/${deck.id}`}
                             className={primaryButton}
                           >
-                            Test version
+                            Open
                           </Link>
                           <Link
                             href={`/dashboard`}
@@ -204,11 +229,14 @@ export default async function DecksPage() {
           <aside className="lg:sticky lg:top-6">
             <form
               action={createDeck}
-              className={card}
+              className={`p-4 ${glassPanel}`}
             >
-              <h2 className="text-lg font-semibold text-[#F8FAFC]">
-                New experiment
-              </h2>
+              <div className="flex items-center gap-2">
+                <PlusCircle className="size-5 text-[#F5C84C]" aria-hidden="true" />
+                <h2 className="text-lg font-semibold text-[#F8FAFC]">
+                  New experiment
+                </h2>
+              </div>
               <p className={`mt-1 ${sectionCopy}`}>
                 Start with the list family. Versions become your test subjects.
               </p>
@@ -258,6 +286,7 @@ export default async function DecksPage() {
               </div>
             </form>
           </aside>
+        </div>
         </div>
       </section>
     </main>

@@ -1,14 +1,19 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { AlertTriangle, Zap } from "lucide-react";
 import { AppNav } from "@/components/AppNav";
+import { AppSidebar } from "@/components/AppSidebar";
 import { ArchetypePicker } from "@/components/ArchetypePicker";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
 import { MatchStrip } from "@/components/MatchStrip";
 import {
-  appContainer,
+  appFrame,
+  appMain,
   appShell,
   cardLarge,
   emptyCard,
+  glassPanel,
+  glassPanelStrong,
   inputH10,
   label,
   logoOnDark,
@@ -433,30 +438,117 @@ export default async function MatchupsPage({
 
   return (
     <main className={appShell}>
-      <section className={`${appContainer} max-w-6xl`}>
+      <section className={appFrame}>
+        <AppSidebar
+          current="matchups"
+          deckLabel={reportDeckName}
+          insight={{
+            label: "Weakest read",
+            value: worstMatchup?.opponentArchetype ?? "No matchup yet",
+            helper: worstMatchup
+              ? `${worstMatchup.winRate} across ${worstMatchup.matches} games`
+              : "Log games to build signal",
+          }}
+        />
+        <div className={`${appMain} mx-auto w-full max-w-6xl`}>
         <header className={pageHeader}>
           <div>
             <PrizeMapLogo {...logoOnDark} />
             <h1 className={pageTitle}>
-              Matchups
+              Matchup Intelligence
             </h1>
             <p className={pageCopy}>
-              Find the matchup to test next.
+              Understand what is really happening and where to focus next.
             </p>
           </div>
           <div className="flex flex-col gap-3 lg:items-end">
-            <AppNav current="matchups" />
+            <div className="lg:hidden">
+              <AppNav current="matchups" />
+            </div>
             {hasFilteredMatches ? (
               <ShareReportButton report={shareReport} />
             ) : null}
           </div>
         </header>
 
-        {sessionCoach ? (
+        {hasFilteredMatches ? (
+          <section className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_340px]">
+            <article className={`p-4 ${glassPanelStrong}`}>
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="size-5 text-[#F43F5E]" aria-hidden="true" />
+                    <p className="text-xs font-semibold uppercase tracking-[0.1em] text-rose-200">
+                      Biggest leak
+                    </p>
+                  </div>
+                  <div className="mt-3 flex min-w-0 flex-wrap items-center gap-3">
+                    {worstMatchup ? (
+                      <ArchetypeSprites archetype={worstMatchup.opponentArchetype} />
+                    ) : null}
+                    <h2 className="text-2xl font-bold tracking-tight text-[#F8FAFC]">
+                      {worstMatchup?.opponentArchetype ?? "No matchup yet"}
+                    </h2>
+                  </div>
+                </div>
+                <p className="text-4xl font-bold text-[#F43F5E]">
+                  {worstMatchup?.winRate ?? "0%"}
+                </p>
+              </div>
+              <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                <div className="rounded-md bg-[#07111F]/44 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                  <p className="text-xs text-[#94A3B8]/72">Samples</p>
+                  <p className="mt-1 text-lg font-bold text-[#F8FAFC]">
+                    {worstMatchup?.matches ?? 0}
+                  </p>
+                </div>
+                <div className="rounded-md bg-[#07111F]/44 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                  <p className="text-xs text-[#94A3B8]/72">Record</p>
+                  <p className="mt-1 text-lg font-bold text-[#F8FAFC]">
+                    {worstMatchup ? `${worstMatchup.wins}-${worstMatchup.losses}` : "0-0"}
+                  </p>
+                </div>
+                <div className="rounded-md bg-[#07111F]/44 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                  <p className="text-xs text-[#94A3B8]/72">Action</p>
+                  <p className="mt-1 text-sm font-semibold leading-5 text-[#F8FAFC]">
+                    Run a focused set
+                  </p>
+                </div>
+              </div>
+            </article>
+
+            <aside className={`p-4 ${glassPanel}`}>
+              <div className="flex items-center gap-2">
+                <Zap className="size-5 text-[#F5C84C]" aria-hidden="true" />
+                <h2 className="text-lg font-bold text-[#F8FAFC]">
+                  What to test next
+                </h2>
+              </div>
+              <div className="mt-4 grid gap-2">
+                {[
+                  sessionCoach?.missionTitle ?? "Build a five-game sample",
+                  worstMatchup
+                    ? `Tag every loss vs ${worstMatchup.opponentArchetype}`
+                    : "Log your first matchup set",
+                  "Compare going first vs second",
+                ].map((item, index) => (
+                  <div key={item} className="flex gap-3 rounded-md bg-[#07111F]/44 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                    <span className="inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-[#4F8CFF] text-xs font-bold text-white">
+                      {index + 1}
+                    </span>
+                    <p className="text-sm font-medium leading-5 text-[#F8FAFC]">
+                      {item}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </aside>
+          </section>
+        ) : sessionCoach ? (
           <SessionCoachPanel insight={sessionCoach} />
         ) : null}
 
-        <form action="/matchups" className="rounded-md bg-[#11182C]/48 p-4 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.04)] sm:p-5">
+        <form action="/matchups" className={`p-4 sm:p-5 ${glassPanel}`}>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
             <div className="flex flex-col gap-2 lg:col-span-2">
               <label
@@ -598,7 +690,7 @@ export default async function MatchupsPage({
           <section className={cardLarge}>
             <div className="flex flex-col gap-1">
               <h2 className={sectionTitle}>
-                Matchup Summary
+                Matchup breakdown
               </h2>
               <p className={sectionCopy}>
                 Every row should tell you what to do next.
@@ -611,7 +703,7 @@ export default async function MatchupsPage({
                 return (
                   <article
                     key={matchup.opponentArchetype}
-                    className="rounded-md bg-[#0B1020]/38 p-4 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.04)] transition hover:bg-[#0B1020]/48 hover:shadow-[0_14px_34px_rgba(0,0,0,0.16),inset_0_0_0_1px_rgba(248,250,252,0.05)]"
+                    className="rounded-md bg-[#07111F]/46 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)] transition hover:bg-[#0B1020]/58 hover:shadow-[0_14px_34px_rgba(0,0,0,0.16),inset_0_0_0_1px_rgba(79,140,255,0.12)]"
                   >
                   <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px] lg:items-center">
                     <div>
@@ -748,6 +840,7 @@ export default async function MatchupsPage({
             </Link>
           </section>
         )}
+        </div>
       </section>
     </main>
   );

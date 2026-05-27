@@ -29,9 +29,11 @@ import {
   YAxis,
 } from "recharts";
 import { AppNav } from "@/components/AppNav";
+import { AppSidebar } from "@/components/AppSidebar";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
 import {
-  appContainer,
+  appFrame,
+  appMain,
   appShell,
   card,
   cardLarge,
@@ -494,7 +496,18 @@ export function DashboardContent({
 
   return (
     <main className={appShell}>
-      <section className={`${appContainer} prizemap-fade-in mx-auto max-w-6xl gap-4 px-0 sm:gap-5`}>
+      <section className={`${appFrame} prizemap-fade-in`}>
+        <AppSidebar
+          current="dashboard"
+          insight={{
+            label: "Next focus",
+            value: sessionCoach?.missionTitle ?? "Log games to unlock coaching",
+            helper: sessionCoach
+              ? `${sessionCoach.missionProgress}/${sessionCoach.missionTargetCount} games`
+              : "Start with a five-game sample",
+          }}
+        />
+        <div className={`${appMain} mx-auto w-full max-w-6xl`}>
         <header className="rounded-md bg-[#0B1020]/26 p-3 shadow-[0_14px_46px_rgba(0,0,0,0.16),inset_0_0_0_1px_rgba(248,250,252,0.04)] sm:p-4">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div className="min-w-0">
@@ -507,7 +520,9 @@ export function DashboardContent({
               </p>
             </div>
             <div className="flex min-w-0 flex-col gap-2 lg:items-end">
-              <AppNav current="dashboard" />
+              <div className="lg:hidden">
+                <AppNav current="dashboard" />
+              </div>
               <button
                 type="button"
                 onClick={handleSignOut}
@@ -964,6 +979,7 @@ export function DashboardContent({
             </div>
           )}
         </section>
+        </div>
       </section>
     </main>
   );

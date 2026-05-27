@@ -1,10 +1,18 @@
 export const appShell =
-  "min-h-screen w-full max-w-full overflow-x-hidden bg-[#0B1020] bg-[radial-gradient(ellipse_at_top,rgba(79,140,255,0.10),transparent_42%),linear-gradient(180deg,#0B1020_0%,#10172A_52%,#0B1020_100%)] px-4 py-4 text-[#F8FAFC] sm:px-6 sm:py-7";
+  "min-h-screen w-full max-w-full overflow-x-hidden bg-[#06101F] bg-[radial-gradient(ellipse_at_20%_0%,rgba(79,140,255,0.18),transparent_34%),radial-gradient(ellipse_at_85%_15%,rgba(124,58,237,0.10),transparent_30%),linear-gradient(180deg,#07111F_0%,#0B1020_48%,#050A14_100%)] px-4 py-4 text-[#F8FAFC] sm:px-6 sm:py-6";
+
+export const marketingShell =
+  "min-h-screen w-full max-w-full overflow-x-hidden bg-[#06101F] bg-[radial-gradient(ellipse_at_18%_10%,rgba(79,140,255,0.22),transparent_34%),radial-gradient(ellipse_at_78%_22%,rgba(245,200,76,0.08),transparent_24%),linear-gradient(180deg,#06101F_0%,#0B1020_48%,#050A14_100%)] text-[#F8FAFC]";
 
 export const appContainer = "mx-auto flex w-full max-w-full min-w-0 flex-col gap-4 overflow-x-hidden sm:gap-5";
 
+export const appFrame =
+  "mx-auto grid w-full max-w-7xl min-w-0 gap-4 overflow-x-hidden lg:grid-cols-[224px_minmax(0,1fr)]";
+
+export const appMain = "flex min-w-0 flex-col gap-4 overflow-x-hidden sm:gap-5";
+
 export const pageHeader =
-  "rounded-md bg-[#0B1020]/28 p-3 shadow-[0_14px_46px_rgba(0,0,0,0.16),inset_0_0_0_1px_rgba(248,250,252,0.04)] flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between";
+  "rounded-md bg-[#0B1020]/44 p-3 shadow-[0_16px_46px_rgba(0,0,0,0.22),inset_0_0_0_1px_rgba(148,163,184,0.10)] flex flex-col gap-3 backdrop-blur lg:flex-row lg:items-start lg:justify-between sm:p-4";
 
 export const logoOnDark = {
   variant: "app-icon" as const,
@@ -16,27 +24,33 @@ export const logoOnDark = {
 
 export const pageTitle = "mt-2 text-3xl font-bold tracking-tight text-[#F8FAFC] sm:text-4xl";
 
-export const pageCopy = "mt-1.5 max-w-2xl text-sm leading-6 text-[#94A3B8]/66";
+export const pageCopy = "mt-1.5 max-w-2xl text-sm leading-6 text-[#94A3B8]/78";
 
 export const sectionTitle = "text-lg font-semibold tracking-tight text-[#F8FAFC]/95 sm:text-xl";
 
-export const sectionCopy = "text-sm leading-6 text-[#94A3B8]/64";
+export const sectionCopy = "text-sm leading-6 text-[#94A3B8]/72";
 
 export const card =
-  "rounded-md bg-[#11182C]/70 p-3.5 shadow-[0_16px_42px_rgba(0,0,0,0.20),inset_0_0_0_1px_rgba(248,250,252,0.04)] sm:p-4";
+  "rounded-md bg-[#0F1A2D]/74 p-3.5 shadow-[0_16px_42px_rgba(0,0,0,0.24),inset_0_0_0_1px_rgba(148,163,184,0.09)] backdrop-blur sm:p-4";
 
 export const cardLarge =
-  "rounded-md bg-[#11182C]/70 p-4 shadow-[0_18px_48px_rgba(0,0,0,0.20),inset_0_0_0_1px_rgba(248,250,252,0.04)] sm:p-5";
+  "rounded-md bg-[#0F1A2D]/74 p-4 shadow-[0_20px_56px_rgba(0,0,0,0.26),inset_0_0_0_1px_rgba(148,163,184,0.09)] backdrop-blur sm:p-5";
+
+export const glassPanel =
+  "rounded-md bg-[#0B1020]/52 shadow-[0_18px_54px_rgba(0,0,0,0.26),inset_0_0_0_1px_rgba(148,163,184,0.11)] backdrop-blur";
+
+export const glassPanelStrong =
+  "rounded-md bg-[#0F1A2D]/82 shadow-[0_24px_72px_rgba(0,0,0,0.32),0_0_42px_rgba(79,140,255,0.055),inset_0_0_0_1px_rgba(148,163,184,0.12)] backdrop-blur";
 
 export const emptyCard =
-  "rounded-md bg-[#11182C]/58 p-6 shadow-[0_18px_52px_rgba(0,0,0,0.18),inset_0_0_0_1px_rgba(79,140,255,0.12)] sm:p-8";
+  "rounded-md bg-[#0F1A2D]/66 p-6 shadow-[0_18px_52px_rgba(0,0,0,0.22),inset_0_0_0_1px_rgba(79,140,255,0.16)] sm:p-8";
 
 export const divider = "divide-y divide-white/6";
 
 export const label = "text-sm font-medium text-[#F8FAFC]";
 
 export const input =
-  "w-full max-w-full min-w-0 rounded-md bg-[#0B1020]/62 px-3 text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(248,250,252,0.055)] outline-none transition placeholder:text-[#94A3B8]/52 focus:bg-[#0B1020]/78 focus:shadow-[inset_0_0_0_1px_rgba(79,140,255,0.62),0_0_20px_rgba(79,140,255,0.08)]";
+  "w-full max-w-full min-w-0 rounded-md bg-[#07111F]/72 px-3 text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.12)] outline-none transition placeholder:text-[#94A3B8]/52 focus:bg-[#07111F]/86 focus:shadow-[inset_0_0_0_1px_rgba(79,140,255,0.68),0_0_20px_rgba(79,140,255,0.10)]";
 
 export const inputH10 = `h-10 ${input}`;
 
@@ -45,13 +59,16 @@ export const inputH11 = `h-11 ${input}`;
 export const textarea = `${input} py-2`;
 
 export const primaryButton =
-  "inline-flex h-10 max-w-full items-center justify-center rounded-md bg-[#F5C84C] px-4 text-sm font-semibold text-[#0B1020] shadow-[0_12px_30px_rgba(245,200,76,0.20)] transition hover:-translate-y-0.5 hover:bg-[#ffd85f] active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-[#94A3B8]";
+  "inline-flex h-10 max-w-full items-center justify-center rounded-md bg-[#F5C84C] px-4 text-sm font-semibold text-[#07111F] shadow-[0_14px_34px_rgba(245,200,76,0.22)] transition hover:-translate-y-0.5 hover:bg-[#ffd85f] active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-[#94A3B8]";
 
 export const secondaryButton =
-  "inline-flex h-10 max-w-full items-center justify-center rounded-md bg-[#4F8CFF]/8 px-4 text-sm font-medium text-[#F8FAFC]/92 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.14),0_8px_20px_rgba(79,140,255,0.045)] transition hover:-translate-y-0.5 hover:bg-[#4F8CFF]/14 hover:shadow-[inset_0_0_0_1px_rgba(79,140,255,0.30),0_10px_24px_rgba(79,140,255,0.08)] active:translate-y-0 active:scale-[0.98]";
+  "inline-flex h-10 max-w-full items-center justify-center rounded-md bg-[#4F8CFF]/9 px-4 text-sm font-medium text-[#F8FAFC]/92 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.18),0_8px_20px_rgba(79,140,255,0.05)] transition hover:-translate-y-0.5 hover:bg-[#4F8CFF]/15 hover:shadow-[inset_0_0_0_1px_rgba(79,140,255,0.32),0_10px_24px_rgba(79,140,255,0.08)] active:translate-y-0 active:scale-[0.98]";
 
 export const dangerButton =
   "inline-flex h-10 max-w-full items-center justify-center rounded-md bg-[#F43F5E]/10 px-4 text-sm font-medium text-rose-200 transition hover:bg-[#F43F5E]/16";
 
 export const subtlePill =
-  "rounded-md bg-[#0B1020]/50 px-2 py-1 text-xs text-[#94A3B8]/86";
+  "rounded-md bg-[#07111F]/58 px-2 py-1 text-xs text-[#94A3B8]/86 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]";
+
+export const metricCard =
+  "rounded-md bg-[#0B1020]/42 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.09)]";

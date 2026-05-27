@@ -1,12 +1,17 @@
 import { notFound, redirect } from "next/navigation";
+import { Beaker } from "lucide-react";
 import { AppNav } from "@/components/AppNav";
+import { AppSidebar } from "@/components/AppSidebar";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
 import { DeckVersionForm } from "@/components/decks/DeckVersionForm";
 import {
-  appContainer,
+  appFrame,
+  appMain,
   appShell,
   card,
   emptyCard,
+  glassPanel,
+  glassPanelStrong,
   logoOnDark,
   pageCopy,
   pageTitle,
@@ -142,13 +147,25 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
 
   return (
     <main className={appShell}>
-      <section className={`${appContainer} max-w-4xl gap-8`}>
+      <section className={appFrame}>
+        <AppSidebar
+          current="decks"
+          deckLabel={deck.name}
+          insight={{
+            label: "Version test",
+            value: sessionCoach?.missionSkill ?? "Build a sample",
+            helper: `${deckVersions.length} version${deckVersions.length === 1 ? "" : "s"}`,
+          }}
+        />
+        <div className={`${appMain} mx-auto w-full max-w-6xl gap-6`}>
         <div>
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <PrizeMapLogo {...logoOnDark} />
-            <AppNav current="decks" />
+            <div className="lg:hidden">
+              <AppNav current="decks" />
+            </div>
           </div>
-          <div className="mt-5 rounded-md bg-[#11182C]/64 p-4 shadow-[0_18px_52px_rgba(0,0,0,0.18),inset_0_0_0_1px_rgba(248,250,252,0.05)] sm:p-5">
+          <div className={`mt-5 p-4 sm:p-5 ${glassPanelStrong}`}>
             <div className="flex gap-4">
               <ArchetypeSprites
                 archetype={deck.archetype}
@@ -178,13 +195,20 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
           <section className="flex flex-col gap-4">
-            <div>
-              <h2 className={sectionTitle}>
-                Test versions
-              </h2>
-              <p className={`mt-1 ${sectionCopy}`}>
-                Mark the build you want future games to test.
-              </p>
+            <div className={`p-4 ${glassPanel}`}>
+              <div className="flex items-start gap-3">
+                <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-md bg-[#F5C84C]/12 text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
+                  <Beaker className="size-5" aria-hidden="true" />
+                </span>
+                <div>
+                  <h2 className={sectionTitle}>
+                    Test versions
+                  </h2>
+                  <p className={`mt-1 ${sectionCopy}`}>
+                    Mark the build you want future games to test.
+                  </p>
+                </div>
+              </div>
             </div>
 
             {deckVersions.length ? (
@@ -207,7 +231,7 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                   return (
                     <article
                       key={version.id}
-                      className={card}
+                      className={`${card} transition hover:bg-[#11182C]/84 hover:shadow-[0_20px_54px_rgba(0,0,0,0.24),inset_0_0_0_1px_rgba(79,140,255,0.10)]`}
                     >
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div>
@@ -343,6 +367,7 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
           <aside className="lg:sticky lg:top-6">
             <DeckVersionForm action={createVersion} />
           </aside>
+        </div>
         </div>
       </section>
     </main>

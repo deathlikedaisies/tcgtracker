@@ -1,15 +1,18 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AppNav } from "@/components/AppNav";
+import { AppSidebar } from "@/components/AppSidebar";
 import { ArchetypePicker } from "@/components/ArchetypePicker";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
 import { ConfirmSubmitButton } from "@/components/ConfirmSubmitButton";
 import {
-  appContainer,
+  appFrame,
+  appMain,
   appShell,
   cardLarge,
   dangerButton,
   emptyCard,
+  glassPanel,
   inputH10,
   label,
   logoOnDark,
@@ -275,7 +278,16 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
 
   return (
     <main className={appShell}>
-      <section className={`${appContainer} max-w-6xl`}>
+      <section className={appFrame}>
+        <AppSidebar
+          current="matches"
+          insight={{
+            label: "Sessions",
+            value: `${filteredMatches.length} in view`,
+            helper: sessionCoach?.missionTitle,
+          }}
+        />
+        <div className={`${appMain} mx-auto w-full max-w-6xl`}>
         <header className={pageHeader}>
           <div>
             <PrizeMapLogo {...logoOnDark} />
@@ -286,7 +298,9 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
               Browse, filter, edit, and remove logged matches.
             </p>
           </div>
-          <AppNav current="matches" />
+          <div className="lg:hidden">
+            <AppNav current="matches" />
+          </div>
         </header>
 
         {sessionCoach ? (
@@ -299,7 +313,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
           </div>
         ) : null}
 
-        <form action="/matches" className="rounded-md bg-[#11182C]/48 p-4 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.04)] sm:p-5">
+        <form action="/matches" className={`p-4 sm:p-5 ${glassPanel}`}>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
             <div className="flex flex-col gap-2 lg:col-span-2">
               <label htmlFor="deck_id" className={label}>
@@ -575,6 +589,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
             </Link>
           </section>
         )}
+        </div>
       </section>
     </main>
   );
