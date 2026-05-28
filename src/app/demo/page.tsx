@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, ClipboardList, Layers3, Target, Trophy } from "lucide-react";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
+import { DemoConversionCta } from "@/components/demo/DemoConversionCta";
 import { DemoShell } from "@/components/demo/DemoShell";
 import { card, cardLarge, pageCopy, pageHeader, pageTitle, primaryButton, sectionCopy, sectionTitle } from "@/components/brand-styles";
 import {
@@ -138,6 +139,7 @@ export default function DemoPage() {
           ))}
         </div>
       </section>
+      <DemoConversionCta />
     </DemoShell>
   );
 }

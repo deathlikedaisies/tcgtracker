@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
+import { DemoConversionCta } from "@/components/demo/DemoConversionCta";
 import { DemoShell } from "@/components/demo/DemoShell";
 import { cardLarge, pageCopy, pageHeader, pageTitle, primaryButton, sectionCopy } from "@/components/brand-styles";
 import { demoDecks, demoMatches, getDeckMatchCount, getWinRate } from "@/lib/demo-data";
@@ -67,6 +68,7 @@ export default function DemoDecksPage() {
           );
         })}
       </section>
+      <DemoConversionCta />
     </DemoShell>
   );
 }

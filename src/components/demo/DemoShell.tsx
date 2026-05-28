@@ -21,7 +21,7 @@ type DemoShellProps = {
 const navItems = [
   { href: "/demo", label: "Overview", section: "dashboard" as const, icon: Gauge },
   { href: "/demo/matches/new", label: "Log game", section: "log" as const, icon: PlusCircle },
-  { href: "/demo/matches", label: "Sessions", section: "matches" as const, icon: ClipboardList },
+  { href: "/demo/matches", label: "Review", section: "matches" as const, icon: ClipboardList },
   { href: "/demo/decks", label: "Decks", section: "decks" as const, icon: Layers3 },
   { href: "/demo/matchups", label: "Matchups", section: "matchups" as const, icon: BarChart3 },
 ];

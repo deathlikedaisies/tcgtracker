@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
+import { DemoConversionCta } from "@/components/demo/DemoConversionCta";
 import { DemoShell } from "@/components/demo/DemoShell";
 import { cardLarge, pageCopy, pageHeader, pageTitle, primaryButton } from "@/components/brand-styles";
 import {
@@ -161,6 +162,7 @@ export default function DemoMatchupsPage() {
           ))}
         </div>
       </section>
+      <DemoConversionCta />
     </DemoShell>
   );
 }

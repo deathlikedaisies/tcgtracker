@@ -17,7 +17,6 @@ import {
   glassPanelStrong,
   marketingShell,
   primaryButton,
-  secondaryButton,
 } from "@/components/brand-styles";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 
@@ -67,7 +66,7 @@ function ProductPreview() {
               Run five focused games and tag every loss pattern.
             </p>
             <Link href="/signup" className={`mt-4 h-10 w-full ${primaryButton}`}>
-              Start tracking
+              Start tracking games
             </Link>
           </div>
 
@@ -162,7 +161,7 @@ export default async function Home() {
               Log in
             </Link>
             <Link href="/signup" className={`${primaryButton} h-10 px-3 sm:px-4`}>
-              Start tracking
+              Start tracking games
             </Link>
           </div>
         </div>
@@ -182,15 +181,28 @@ export default async function Home() {
               PrizeMap logs games fast, tracks matchup truth, compares deck
               versions, and tells you what to test next.
             </p>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-[#94A3B8]/86">
+              PrizeMap helps competitive Pokémon TCG players log games, find matchup leaks, compare deck versions, and decide what to test next.
+            </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
               <Link href="/signup" className={`${primaryButton} h-12 px-6`}>
-                Start tracking
+                Start tracking games
                 <ArrowRight className="ml-2 size-4" aria-hidden="true" />
               </Link>
-              <Link href="/demo" className={`${secondaryButton} h-12 px-6`}>
-                Try demo mode
+              <Link
+                href="/login"
+                className="inline-flex h-12 items-center justify-center rounded-md px-5 text-sm font-semibold text-[#C7D2E5] transition hover:bg-white/5 hover:text-[#F8FAFC] active:scale-[0.98]"
+              >
+                Log in
               </Link>
             </div>
+            <p className="mt-4 text-sm leading-6 text-[#94A3B8]/82">
+              Want a no-account look first?{" "}
+              <Link href="/demo" className="font-semibold text-[#B8D1FF] underline-offset-4 transition hover:text-[#F8FAFC] hover:underline">
+                Preview demo
+              </Link>{" "}
+              with sample data. Demo changes are not saved.
+            </p>
             <div className="mt-6 grid gap-2 sm:grid-cols-3">
               {[
                 [ClipboardList, "Fast logging"],
@@ -259,7 +271,7 @@ export default async function Home() {
             workspace for players who want cleaner data and sharper practice.
           </p>
           <Link href="/signup" className={`mx-auto h-12 px-6 ${primaryButton}`}>
-            Start tracking
+            Start tracking games
           </Link>
         </div>
       </section>

@@ -132,7 +132,7 @@ function getInsightUpdate({
         "If this matchup was urgent before, the pressure may drop after more wins.",
         "The coach would still wait for more samples before changing recommendations.",
       ],
-      recommendation: `Keep logging ${opponent} games until the trend is reliable.`,
+      recommendation: `Keep logging ${opponent} games until the trend has enough signal to change the plan.`,
       tone: "green" as const,
     };
   }
@@ -156,7 +156,7 @@ function getInsightUpdate({
       eyebrow: "Early warning",
       title: "Mega Lopunny stays on the low-confidence watchlist",
       bullets: [
-        "Too few games for a reliable trend.",
+        "Too few games to call this a clear trend.",
         "This result suggests a possible tempo or prize-trade issue.",
         "PrizeMap would hold this as a watchlist item before calling it a leak.",
       ],

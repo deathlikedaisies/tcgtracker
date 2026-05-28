@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
+import { DemoConversionCta } from "@/components/demo/DemoConversionCta";
 import { cardLarge, pageCopy, pageHeader, pageTitle, primaryButton } from "@/components/brand-styles";
 import { demoDecks, demoMatches, formatDemoDate, type DemoMatch } from "@/lib/demo-data";
 
@@ -277,6 +278,7 @@ export function DemoMatchesReview() {
           })}
         </div>
       </section>
+      <DemoConversionCta />
     </>
   );
 }
