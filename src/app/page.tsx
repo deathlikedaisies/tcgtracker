@@ -17,6 +17,7 @@ import {
   glassPanelStrong,
   marketingShell,
   primaryButton,
+  secondaryButton,
 } from "@/components/brand-styles";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 
@@ -185,6 +186,9 @@ export default async function Home() {
               <Link href="/signup" className={`${primaryButton} h-12 px-6`}>
                 Start tracking
                 <ArrowRight className="ml-2 size-4" aria-hidden="true" />
+              </Link>
+              <Link href="/demo" className={`${secondaryButton} h-12 px-6`}>
+                Try demo mode
               </Link>
             </div>
             <div className="mt-6 grid gap-2 sm:grid-cols-3">
