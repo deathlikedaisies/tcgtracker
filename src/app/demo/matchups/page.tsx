@@ -36,7 +36,7 @@ export default function DemoMatchupsPage() {
       <section className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
         <article className="rounded-md bg-[#2A1320]/84 p-4 shadow-[0_20px_56px_rgba(244,63,94,0.12),inset_0_0_0_1px_rgba(244,63,94,0.26)] backdrop-blur sm:p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.1em] text-rose-200">
-            Reliable leak
+            Actionable leak
           </p>
           <div className="mt-3 flex items-center gap-3">
             <ArchetypeSprites archetype={biggestLeak.archetype} size="md" />
@@ -65,7 +65,7 @@ export default function DemoMatchupsPage() {
             </div>
           </div>
           <p className="mt-4 text-sm leading-6 text-rose-100/82">
-            Reliable leak does not mean final truth. It means this matchup has enough games to act on before chasing noisier warnings.
+            Actionable leak means this matchup has enough games to test deliberately before chasing noisier warnings.
           </p>
         </article>
 
