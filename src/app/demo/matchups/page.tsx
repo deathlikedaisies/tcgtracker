@@ -117,7 +117,7 @@ export default function DemoMatchupsPage() {
                 </span>
               </div>
               <p className="mt-3 text-sm leading-6 text-[#94A3B8]/76">
-                Early warning: {matchup.winRate}% over only {matchup.games.length} games. Add three more games before treating this as a reliable leak.
+                Early warning: {matchup.winRate}% over only {matchup.games.length} games. Add three more games before turning it into an action plan.
               </p>
             </article>
           ))}
