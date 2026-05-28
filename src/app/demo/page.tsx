@@ -7,14 +7,17 @@ import {
   demoDecks,
   demoMatches,
   formatDemoDate,
-  getBiggestLeak,
+  getConfidenceLabel,
+  getConfidenceTone,
+  getDemoInsights,
   getDemoMatchups,
   getRecentSession,
   getWinRate,
 } from "@/lib/demo-data";
 
 export default function DemoPage() {
-  const biggestLeak = getBiggestLeak();
+  const insights = getDemoInsights();
+  const missionMatchup = insights.biggestStatisticalLeak;
   const matchups = getDemoMatchups();
   const recent = getRecentSession();
   const recentWins = recent.filter((match) => match.result === "win").length;
@@ -59,25 +62,33 @@ export default function DemoPage() {
                 Current mission
               </p>
               <h2 className="mt-2 text-3xl font-bold tracking-tight text-[#F8FAFC]">
-                Stabilize Mega Greninja going second
+                {insights.currentMission.title}
               </h2>
               <p className={sectionCopy}>
-                The seeded data shows repeated setup losses when Dragapult goes second into Mega Greninja.
+                {insights.currentMission.explanation}
               </p>
             </div>
-            <ArchetypeSprites archetype={biggestLeak.archetype} size="md" />
+            <div className="flex flex-col items-start gap-2 sm:items-end">
+              <ArchetypeSprites archetype={insights.currentMission.archetype} size="md" />
+              <span className={`rounded-md px-2 py-1 text-xs font-semibold ${getConfidenceTone(missionMatchup.games.length)}`}>
+                {getConfidenceLabel(missionMatchup.games.length)}
+              </span>
+            </div>
           </div>
           <div className="mt-5 grid gap-3 sm:grid-cols-[1fr_220px] sm:items-end">
             <div>
               <div className="flex items-center justify-between text-sm">
                 <span className="font-medium text-[#F8FAFC]">Progress</span>
-                <span className="text-[#94A3B8]">3/5 games</span>
+                <span className="text-[#94A3B8]">{insights.currentMission.progressLabel}</span>
               </div>
               <div className="mt-2 h-2 overflow-hidden rounded-full bg-[#07111F]/78">
                 <div className="h-full w-3/5 rounded-full bg-[#F5C84C]" />
               </div>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-[#94A3B8]/76">
+                Why this recommendation? {insights.currentMission.why}
+              </p>
               <div className="mt-3 flex flex-wrap gap-2">
-                {biggestLeak.tags.slice(0, 4).map((tag) => (
+                {missionMatchup.tags.slice(0, 4).map((tag) => (
                   <span key={tag} className="rounded-md bg-[#F43F5E]/10 px-2 py-1 text-xs font-medium text-rose-100">
                     {tag}
                   </span>
@@ -113,7 +124,12 @@ export default function DemoPage() {
           {matchups.slice(0, 5).map((matchup) => (
             <Link key={matchup.archetype} href="/demo/matchups" className="rounded-md bg-[#07111F]/52 p-3 transition hover:-translate-y-0.5">
               <ArchetypeSprites archetype={matchup.archetype} />
-              <p className="mt-2 truncate text-sm font-semibold text-[#F8FAFC]">{matchup.archetype}</p>
+              <div className="mt-2 flex min-w-0 items-center justify-between gap-2">
+                <p className="truncate text-sm font-semibold text-[#F8FAFC]">{matchup.archetype}</p>
+                <span className={`shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-semibold ${getConfidenceTone(matchup.games.length)}`}>
+                  {matchup.games.length < 6 ? "Needs more games" : getConfidenceLabel(matchup.games.length)}
+                </span>
+              </div>
               <p className={`mt-1 text-2xl font-bold ${matchup.winRate < 45 ? "text-[#F43F5E]" : matchup.winRate > 58 ? "text-[#22C55E]" : "text-[#F8FAFC]"}`}>
                 {matchup.winRate}%
               </p>

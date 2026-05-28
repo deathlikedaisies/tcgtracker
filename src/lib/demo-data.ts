@@ -40,6 +40,27 @@ export type DemoMatchup = {
   tags: string[];
 };
 
+export type DemoConfidence = "Low confidence" | "Building signal" | "Reliable trend";
+
+export type DemoInsightSummary = {
+  currentMission: {
+    archetype: string;
+    title: string;
+    progressLabel: string;
+    explanation: string;
+    why: string;
+  };
+  biggestStatisticalLeak: DemoMatchup;
+  lowConfidenceWatchlist: DemoMatchup[];
+  recommendedNextTest: {
+    archetype: string;
+    title: string;
+    cta: string;
+    why: string;
+    steps: string[];
+  };
+};
+
 export const demoDecks: DemoDeck[] = [
   {
     id: "dragapult-control",
@@ -234,8 +255,81 @@ export function getDemoMatchups(matches: DemoMatch[] = demoMatches): DemoMatchup
     .sort((first, second) => first.winRate - second.winRate);
 }
 
-export function getBiggestLeak() {
-  return getDemoMatchups().filter((matchup) => matchup.games.length >= 5)[0];
+export function getConfidenceLabel(gameCount: number): DemoConfidence {
+  if (gameCount < 6) {
+    return "Low confidence";
+  }
+
+  if (gameCount < 15) {
+    return "Building signal";
+  }
+
+  return "Reliable trend";
+}
+
+export function getConfidenceTone(gameCount: number) {
+  const label = getConfidenceLabel(gameCount);
+
+  if (label === "Low confidence") {
+    return "bg-[#F5C84C]/12 text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.22)]";
+  }
+
+  if (label === "Building signal") {
+    return "bg-[#4F8CFF]/14 text-[#B8D1FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.22)]";
+  }
+
+  return "bg-[#22C55E]/12 text-emerald-200 shadow-[inset_0_0_0_1px_rgba(34,197,94,0.22)]";
+}
+
+export function getBiggestStatisticalLeak() {
+  return (
+    getDemoMatchups()
+      .filter((matchup) => matchup.games.length >= 6)
+      .sort((first, second) => {
+        if (first.winRate !== second.winRate) {
+          return first.winRate - second.winRate;
+        }
+
+        return second.games.length - first.games.length;
+      })[0] ?? getDemoMatchups()[0]
+  );
+}
+
+export function getLowConfidenceWatchlist() {
+  return getDemoMatchups()
+    .filter((matchup) => matchup.games.length < 6 && matchup.winRate < 50)
+    .sort((first, second) => first.winRate - second.winRate);
+}
+
+export function getDemoInsights(): DemoInsightSummary {
+  const biggestStatisticalLeak = getBiggestStatisticalLeak();
+  const lowConfidenceWatchlist = getLowConfidenceWatchlist();
+
+  return {
+    currentMission: {
+      archetype: "Mega Greninja",
+      title: "Stabilize Mega Greninja going second",
+      progressLabel: "3/5 games",
+      explanation:
+        "Mega Greninja is the current mission because it has a meaningful sample and a repeated going-second setup pattern.",
+      why:
+        "Mega Lopunny looks scary at 2-3, but five games is still noisy. Mega Greninja has fourteen games, repeated missed-setup tags, and a clear first/second split, so it is the better next test.",
+    },
+    biggestStatisticalLeak,
+    lowConfidenceWatchlist,
+    recommendedNextTest: {
+      archetype: "Mega Greninja",
+      title: "Run five more Mega Greninja games going second",
+      cta: "Test Mega Greninja",
+      why:
+        "This is a building signal, not a final verdict. More games will confirm whether the issue is opening setup, bench pressure, or the current Dragapult version.",
+      steps: [
+        "Keep one extra switching card in the active Dragapult build.",
+        "Tag whether bench pressure or missed setup creates the first prize deficit.",
+        "Compare Dragapult v2 against v3 after five more Mega Greninja games.",
+      ],
+    },
+  };
 }
 
 export function getRecentSession() {
