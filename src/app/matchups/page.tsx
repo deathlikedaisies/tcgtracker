@@ -143,11 +143,19 @@ function getMatchupCoachLabel(matchup: {
   matches: number;
   winRateValue: number;
 }) {
-  if (matchup.matches < 3) {
+  if (matchup.matches < 6) {
     return {
       label: "Needs more data",
       className: "bg-[#4F8CFF]/14 text-[#B8D1FF]",
-      action: "Log 3 games before trusting this matchup.",
+      action: "Early signal based on limited games. Keep logging before changing plans.",
+    };
+  }
+
+  if (matchup.matches < 15) {
+    return {
+      label: "Building signal",
+      className: "bg-[#F5C84C]/14 text-[#F5C84C]",
+      action: "Run a focused set and watch whether the pattern repeats.",
     };
   }
 
@@ -161,7 +169,7 @@ function getMatchupCoachLabel(matchup: {
 
   if (matchup.winRateValue <= 45) {
     return {
-      label: "Weak matchup",
+      label: "Actionable leak",
       className: "bg-[#F43F5E]/14 text-rose-200",
       action: "Run 5 targeted games and tag every loss.",
     };
@@ -172,6 +180,25 @@ function getMatchupCoachLabel(matchup: {
     className: "bg-[#F5C84C]/14 text-[#F5C84C]",
     action: "Play a focused set to see which way this breaks.",
   };
+}
+
+function getHeadlineSignal(matchup: {
+  matches: number;
+  winRateValue: number;
+} | null) {
+  if (!matchup) {
+    return "Needs more games";
+  }
+
+  if (matchup.matches < 6) {
+    return "Early warning";
+  }
+
+  if (matchup.matches < 15) {
+    return "Building signal";
+  }
+
+  return matchup.winRateValue <= 45 ? "Actionable leak" : "Needs more games";
 }
 
 export default async function MatchupsPage({
@@ -213,6 +240,7 @@ export default async function MatchupsPage({
       deckName: deck.name,
     }))
   );
+  const hasAnyDeckVersions = allVersions.length > 0;
   const selectedDeck = userDecks.find((deck) => deck.id === params.deck_id);
   const selectedDeckId = selectedDeck?.id ?? "";
   const visibleVersions = selectedDeckId
@@ -479,7 +507,7 @@ export default async function MatchupsPage({
                   <div className="flex items-center gap-2">
                     <AlertTriangle className="size-5 text-[#F43F5E]" aria-hidden="true" />
                     <p className="text-xs font-semibold uppercase tracking-[0.1em] text-rose-200">
-                      Biggest leak
+                      {getHeadlineSignal(worstMatchup)}
                     </p>
                   </div>
                   <div className="mt-3 flex min-w-0 flex-wrap items-center gap-3">
@@ -511,7 +539,9 @@ export default async function MatchupsPage({
                 <div className="rounded-md bg-[#07111F]/44 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
                   <p className="text-xs text-[#94A3B8]/72">Action</p>
                   <p className="mt-1 text-sm font-semibold leading-5 text-[#F8FAFC]">
-                    Run a focused set
+                    {worstMatchup && worstMatchup.matches >= 15
+                      ? "Run a focused set"
+                      : "Keep building signal"}
                   </p>
                 </div>
               </div>
@@ -677,13 +707,14 @@ export default async function MatchupsPage({
               No matches logged yet.
             </h2>
             <p className={`mt-3 max-w-xl ${sectionCopy}`}>
-              Log a few games and PrizeMap will show your weakest matchup.
+              Matchup reports appear after you log games against a deck version.
+              Start by setting up a deck if you have not created one yet.
             </p>
             <Link
-              href="/matches/new"
+              href={hasAnyDeckVersions ? "/matches/new" : "/decks"}
               className={`mt-6 ${primaryButton}`}
             >
-              Log your next game
+              {hasAnyDeckVersions ? "Log your first game" : "Create your first deck"}
             </Link>
           </section>
         ) : hasFilteredMatches ? (

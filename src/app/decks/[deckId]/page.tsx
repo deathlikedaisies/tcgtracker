@@ -15,6 +15,7 @@ import {
   logoOnDark,
   pageCopy,
   pageTitle,
+  primaryButton,
   secondaryButton,
   sectionCopy,
   sectionTitle,
@@ -357,14 +358,21 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
               </div>
             ) : (
               <div className={emptyCard}>
+                <h3 className="text-lg font-semibold text-[#F8FAFC]">
+                  Add the first test version.
+                </h3>
                 <p className={sectionCopy}>
-                  No versions yet. Create the first list for this deck.
+                  Add a version before logging matches with this deck. Versions
+                  are what PrizeMap uses to compare builds over time.
                 </p>
+                <a href="#add-version" className={`mt-5 ${primaryButton}`}>
+                  Add first version
+                </a>
               </div>
             )}
           </section>
 
-          <aside className="lg:sticky lg:top-6">
+          <aside id="add-version" className="scroll-mt-6 lg:sticky lg:top-6">
             <DeckVersionForm action={createVersion} />
           </aside>
         </div>

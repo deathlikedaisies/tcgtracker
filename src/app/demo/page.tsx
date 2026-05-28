@@ -16,6 +16,13 @@ import {
   getWinRate,
 } from "@/lib/demo-data";
 
+const demoTourSteps = [
+  ["1", "See your current mission", "/demo"],
+  ["2", "Log a fake game", "/demo/matches/new"],
+  ["3", "Review the games causing the leak", "/demo/matches"],
+  ["4", "Open the matchup report and decide what to test next", "/demo/matchups"],
+];
+
 export default function DemoPage() {
   const insights = getDemoInsights();
   const missionMatchup = insights.biggestStatisticalLeak;
@@ -53,6 +60,34 @@ export default function DemoPage() {
             <p className="mt-1 text-xs text-[#94A3B8]/64">{helper as string}</p>
           </article>
         ))}
+      </section>
+
+      <section className={cardLarge}>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold text-[#4F8CFF]">Demo tour</p>
+            <h2 className={sectionTitle}>Follow the coaching loop</h2>
+          </div>
+          <span className="w-fit rounded-md bg-[#4F8CFF]/12 px-2.5 py-1 text-xs font-semibold text-[#B8D1FF]">
+            You are viewing sample data
+          </span>
+        </div>
+        <div className="mt-4 grid gap-2 lg:grid-cols-4">
+          {demoTourSteps.map(([step, label, href]) => (
+            <Link
+              key={step}
+              href={href}
+              className="group grid min-h-24 grid-rows-[auto_1fr] rounded-md bg-[#07111F]/52 p-3 transition hover:-translate-y-0.5 hover:bg-[#0F1A2D]/72"
+            >
+              <span className="inline-flex size-8 items-center justify-center rounded-md bg-[#F5C84C]/12 text-sm font-bold text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.18)]">
+                {step}
+              </span>
+              <span className="mt-3 text-sm font-semibold leading-5 text-[#F8FAFC] transition group-hover:text-[#FFF1B8]">
+                {label}
+              </span>
+            </Link>
+          ))}
+        </div>
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[1fr_0.82fr]">

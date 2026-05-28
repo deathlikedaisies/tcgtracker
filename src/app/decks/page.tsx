@@ -136,7 +136,7 @@ export default async function DecksPage() {
                     Active experiments
                   </h2>
                   <p className={`mt-1 ${sectionCopy}`}>
-                    Version your lists, test them cleanly, and keep the build that improves.
+                    Decks hold versions, and versions are what you use when logging matches.
                   </p>
                 </div>
               </div>
@@ -220,7 +220,7 @@ export default async function DecksPage() {
                   No decks yet.
                 </h3>
                 <p className={`mt-2 ${sectionCopy}`}>
-                  Create your first experiment, then log games against it.
+                  Create your first deck, add a test version, then log games against it.
                 </p>
               </div>
             )}
@@ -234,11 +234,11 @@ export default async function DecksPage() {
               <div className="flex items-center gap-2">
                 <PlusCircle className="size-5 text-[#F5C84C]" aria-hidden="true" />
                 <h2 className="text-lg font-semibold text-[#F8FAFC]">
-                  New experiment
+                  Create your first deck
                 </h2>
               </div>
               <p className={`mt-1 ${sectionCopy}`}>
-                Start with the list family. Versions become your test subjects.
+                Start with the list family. You will add a version next, then use that version when logging matches.
               </p>
               <div className="mt-5 flex flex-col gap-4">
                 <input type="hidden" name="format" value={LATEST_FORMAT} />
@@ -281,7 +281,7 @@ export default async function DecksPage() {
                   type="submit"
                   className={primaryButton}
                 >
-                  Create experiment
+                  Create deck
                 </button>
               </div>
             </form>

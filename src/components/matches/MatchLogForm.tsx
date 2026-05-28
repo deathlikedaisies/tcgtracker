@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { Bolt, CheckCircle2, ClipboardList, Target } from "lucide-react";
@@ -301,33 +302,46 @@ export function MatchLogForm({
       <input type="hidden" name="deck_version_id" value={deckVersionId} />
       <div className="grid w-full max-w-full min-w-0 gap-4 overflow-x-hidden">
         {wasSuccessful ? (
-          <div
-            className={`rounded-md px-3 py-2 text-sm font-medium ${
-              countedTowardMission
-                ? "bg-emerald-500/10 text-emerald-200"
-                : "bg-[#F5C84C]/10 text-[#F5C84C]"
-            }`}
-          >
-            {sessionCoach ? (
-              <>
-                {countedTowardMission
-                  ? countedTowardContext
-                    ? "Counts toward mission and focus evidence."
-                    : "Counts toward your current mission."
-                  : "Logged outside the current mission focus."}{" "}
-                <span className="text-emerald-100">
-                  {sessionCoach.missionProgress} / {sessionCoach.missionTargetCount} done.
-                  {" "}
+          <div className="rounded-md bg-[#07111F]/46 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]">
+            <div
+              className={`rounded-md px-3 py-2 text-sm font-medium ${
+                countedTowardMission
+                  ? "bg-emerald-500/10 text-emerald-200"
+                  : "bg-[#F5C84C]/10 text-[#F5C84C]"
+              }`}
+            >
+              {sessionCoach ? (
+                <>
                   {countedTowardMission
-                    ? sessionCoach.progressFeedback
-                    : sessionCoach.missionContextSeenCount > 0
-                      ? "Focus evidence is still separate."
-                      : "Focus area not seen yet."}
-                </span>
-              </>
-            ) : (
-              "Match logged. Ready for the next one."
-            )}
+                    ? countedTowardContext
+                      ? "Counts toward mission and focus evidence."
+                      : "Counts toward your current mission."
+                    : "Logged outside the current mission focus."}{" "}
+                  <span className="text-emerald-100">
+                    {sessionCoach.missionProgress} / {sessionCoach.missionTargetCount} done.
+                    {" "}
+                    {countedTowardMission
+                      ? sessionCoach.progressFeedback
+                      : sessionCoach.missionContextSeenCount > 0
+                        ? "Focus evidence is still separate."
+                        : "Focus area not seen yet."}
+                  </span>
+                </>
+              ) : (
+                "Match logged. Ready for the next one."
+              )}
+            </div>
+            <div className="mt-3 grid gap-2 sm:grid-cols-3">
+              <Link href="/dashboard" className={secondaryButton}>
+                Dashboard
+              </Link>
+              <Link href="/matchups" className={secondaryButton}>
+                Matchups
+              </Link>
+              <Link href="/matches" className={secondaryButton}>
+                Matches
+              </Link>
+            </div>
           </div>
         ) : null}
 

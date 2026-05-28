@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { AppNav } from "@/components/AppNav";
 import { AppSidebar } from "@/components/AppSidebar";
 import {
@@ -9,7 +10,9 @@ import {
   logoOnDark,
   pageCopy,
   pageTitle,
+  primaryButton,
   sectionCopy,
+  secondaryButton,
 } from "@/components/brand-styles";
 import { MatchLogForm } from "@/components/matches/MatchLogForm";
 import { PrizeMapLogo } from "@/components/PrizeMapLogo";
@@ -180,8 +183,17 @@ export default async function NewMatchPage({
               No deck versions yet.
             </h2>
             <p className={`mt-2 ${sectionCopy}`}>
-              Create a deck and add a version before logging matches.
+              Create a deck and add a version before logging a match. PrizeMap
+              uses the version to compare builds and keep your testing history clean.
             </p>
+            <div className="mt-5 flex flex-col gap-2 sm:flex-row">
+              <Link href="/decks" className={primaryButton}>
+                Create your first deck
+              </Link>
+              <Link href="/decks" className={secondaryButton}>
+                Manage decks
+              </Link>
+            </div>
           </div>
         )}
         </div>

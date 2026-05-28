@@ -4,6 +4,8 @@ import { LATEST_FORMAT } from "@/lib/formats";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 
 export default async function OnboardingPage() {
+  // TODO: Decide whether this legacy lightweight flow should become part of
+  // the main first-user path. Current setup guidance lives in dashboard/decks/matches.
   const supabase = await createServerSupabaseClient();
   const {
     data: { user },

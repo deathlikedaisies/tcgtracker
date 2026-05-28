@@ -214,6 +214,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
       deckName: deck.name,
     }))
   );
+  const hasAnyDeckVersions = allVersions.length > 0;
   const selectedDeck = userDecks.find((deck) => deck.id === params.deck_id);
   const selectedDeckId = selectedDeck?.id ?? "";
   const visibleVersions = selectedDeckId
@@ -444,13 +445,14 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
               No matches logged yet.
             </h2>
             <p className={`mt-3 max-w-xl ${sectionCopy}`}>
-              Log a game and start finding what is costing you wins.
+              Match history becomes useful once games are logged. PrizeMap needs
+              one deck version first so each game belongs to a real test build.
             </p>
             <Link
-              href="/matches/new"
+              href={hasAnyDeckVersions ? "/matches/new" : "/decks"}
               className={`mt-6 ${primaryButton}`}
             >
-              Log your next game
+              {hasAnyDeckVersions ? "Log your first game" : "Create your first deck"}
             </Link>
           </section>
         ) : filteredMatches.length ? (

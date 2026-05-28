@@ -26,6 +26,18 @@ type MatchRow = {
   }[] | null;
 };
 
+type DeckRow = {
+  id: string;
+  name: string;
+  archetype: string;
+  created_at: string;
+  deck_versions:
+    | {
+        id: string;
+      }[]
+    | null;
+};
+
 function formatWinRate(wins: number, total: number, emptyLabel = "0%") {
   if (total === 0) {
     return emptyLabel;
@@ -73,7 +85,7 @@ export default async function DashboardPage() {
 
   const { data: decks, error: decksError } = await supabase
     .from("decks")
-    .select("id, name, archetype, created_at")
+    .select("id, name, archetype, created_at, deck_versions(id)")
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 
@@ -94,6 +106,10 @@ export default async function DashboardPage() {
   }
 
   const matchRows = (matches ?? []) as unknown as MatchRow[];
+  const deckRows = (decks ?? []) as unknown as DeckRow[];
+  const hasAnyDeckVersions = deckRows.some(
+    (deck) => (deck.deck_versions ?? []).length > 0
+  );
   const sessionCoach = buildSessionCoachInsight(matchRows);
   const trainingProgress = buildTrainingProgressSummary(matchRows);
   const filteredMatches = matchRows;
@@ -187,8 +203,10 @@ export default async function DashboardPage() {
   return (
     <DashboardContent
       email={user.email ?? "Unknown email"}
-      decks={decks ?? []}
+      decks={deckRows}
       hasAnyMatches={matchRows.length > 0}
+      hasAnyDeckVersions={hasAnyDeckVersions}
+      firstDeckId={deckRows[0]?.id}
       stats={{
         totalMatches: totalRecord.matches,
         totalWins: totalRecord.wins,

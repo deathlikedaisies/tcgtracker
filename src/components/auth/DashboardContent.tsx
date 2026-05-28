@@ -41,7 +41,6 @@ import {
   emptyCard,
   logoOnDark,
   primaryButton,
-  secondaryButton,
   sectionCopy,
   sectionTitle,
 } from "@/components/brand-styles";
@@ -111,6 +110,8 @@ type DashboardContentProps = {
   email: string;
   decks: DeckSummary[];
   hasAnyMatches: boolean;
+  hasAnyDeckVersions: boolean;
+  firstDeckId?: string;
   stats: DashboardStats;
   recentMatches: RecentMatch[];
   matchupSummary: MatchupSummary[];
@@ -348,10 +349,100 @@ function MissionCoachCard({ insight }: { insight: SessionCoachInsight }) {
   );
 }
 
+function SetupChecklist({
+  hasDecks,
+  hasAnyDeckVersions,
+  firstDeckId,
+}: {
+  hasDecks: boolean;
+  hasAnyDeckVersions: boolean;
+  firstDeckId?: string;
+}) {
+  const steps = [
+    {
+      label: "Create your first deck",
+      complete: hasDecks,
+    },
+    {
+      label: "Add a test version",
+      complete: hasAnyDeckVersions,
+    },
+    {
+      label: "Log your first game",
+      complete: false,
+    },
+    {
+      label: "Unlock matchup insights",
+      complete: false,
+    },
+  ];
+  const cta = !hasDecks
+    ? {
+        label: "Create your first deck",
+        href: "/decks",
+      }
+    : !hasAnyDeckVersions
+      ? {
+          label: "Add a deck version",
+          href: firstDeckId ? `/decks/${firstDeckId}` : "/decks",
+        }
+      : {
+          label: "Log your first game",
+          href: "/matches/new",
+        };
+
+  return (
+    <section className={emptyCard}>
+      <PrizeMapLogo
+        variant="app-icon"
+        showText={false}
+        className="mb-5"
+        markClassName="size-12 bg-[#0B1020]/72 shadow-[0_0_28px_rgba(79,140,255,0.16),inset_0_0_0_1px_rgba(79,140,255,0.22)]"
+      />
+      <p className="text-sm font-semibold text-[#4F8CFF]">First setup</p>
+      <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[#F8FAFC]">
+        Set up your testing workspace.
+      </h2>
+      <p className={`mt-3 max-w-xl ${sectionCopy}`}>
+        PrizeMap needs one deck version before you can log games. After a few games,
+        matchup signals and testing recommendations will start to appear.
+      </p>
+      <div className="mt-5 grid gap-2 sm:grid-cols-2">
+        {steps.map((step, index) => (
+          <div
+            key={step.label}
+            className={`rounded-md p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.09)] ${
+              step.complete ? "bg-[#22C55E]/10" : "bg-[#07111F]/46"
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <span
+                className={`inline-flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+                  step.complete
+                    ? "bg-[#22C55E] text-[#07111F]"
+                    : "bg-[#1A2238] text-[#94A3B8]"
+                }`}
+              >
+                {index + 1}
+              </span>
+              <p className="text-sm font-semibold text-[#F8FAFC]">{step.label}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+      <Link href={cta.href} className={`mt-6 ${primaryButton}`}>
+        {cta.label}
+      </Link>
+    </section>
+  );
+}
+
 export function DashboardContent({
   email,
   decks,
   hasAnyMatches,
+  hasAnyDeckVersions,
+  firstDeckId,
   stats,
   recentMatches,
   matchupSummary,
@@ -888,38 +979,11 @@ export function DashboardContent({
             </section>
           </details>
         ) : !hasAnyMatches ? (
-          <section className={emptyCard}>
-            <PrizeMapLogo
-              variant="app-icon"
-              showText={false}
-              className="mb-5"
-              markClassName="size-12 bg-[#0B1020]/72 shadow-[0_0_28px_rgba(79,140,255,0.16),inset_0_0_0_1px_rgba(79,140,255,0.22)]"
-            />
-            <h2 className="text-2xl font-semibold tracking-tight text-[#F8FAFC]">
-              No matches logged yet.
-            </h2>
-            <p className={`mt-3 max-w-xl ${sectionCopy}`}>
-              Log a few games and PrizeMap will point at the matchup to fix.
-            </p>
-            <Link
-              href="/matches/new"
-              className={`mt-6 ${primaryButton}`}
-            >
-              <PrizeMapLogo
-                variant="favicon"
-                showText={false}
-                className="mr-2"
-                markClassName="size-5 bg-[#0B1020]/12 shadow-none"
-              />
-              Log your next game
-            </Link>
-            <Link
-              href="/decks"
-              className={`mt-3 sm:ml-3 sm:mt-6 ${secondaryButton}`}
-            >
-              Manage decks
-            </Link>
-          </section>
+          <SetupChecklist
+            hasDecks={decks.length > 0}
+            hasAnyDeckVersions={hasAnyDeckVersions}
+            firstDeckId={firstDeckId}
+          />
         ) : null}
 
         <section className={`${cardLarge} p-3 sm:p-4`}>
