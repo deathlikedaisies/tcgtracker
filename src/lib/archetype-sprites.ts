@@ -37,7 +37,9 @@ export const ARCHETYPE_POKEMON: Record<string, ArchetypePokemon[]> = {
   ],
   "Mega Lucario ex": [{ pokemon: "Lucario", label: "Mega Lucario ex" }],
   "Mega Lucario": [{ pokemon: "Lucario", label: "Mega Lucario" }],
+  "Mega Greninja": [{ pokemon: "Greninja", label: "Mega Greninja" }],
   "Mega Absol Box": [{ pokemon: "Absol", label: "Mega Absol" }],
+  "Mega Lopunny": [{ pokemon: "Lopunny", label: "Mega Lopunny" }],
   "N's Zoroark": [{ pokemon: "Zoroark", label: "N's Zoroark" }],
   "Ogerpon Meganium": [
     { pokemon: "Ogerpon" },
@@ -54,10 +56,12 @@ export const ARCHETYPE_POKEMON: Record<string, ArchetypePokemon[]> = {
   ],
   "Joltik Box": [{ pokemon: "Joltik" }],
   "Crustle": [{ pokemon: "Crustle" }],
+  "Beedrill": [{ pokemon: "Beedrill" }],
   "Raging Bolt Ogerpon": [
     { pokemon: "Raging Bolt" },
     { pokemon: "Ogerpon" },
   ],
+  "Raging Bolt": [{ pokemon: "Raging Bolt" }],
   "Alakazam": [{ pokemon: "Alakazam" }],
   "Alakazam Dudunsparce": [
     { pokemon: "Alakazam" },
@@ -100,6 +104,10 @@ export const ARCHETYPE_POKEMON: Record<string, ArchetypePokemon[]> = {
   "Spidops": [{ pokemon: "Spidops" }],
   "Slowking": [{ pokemon: "Slowking" }],
   "Mega Venusaur": [{ pokemon: "Venusaur", label: "Mega Venusaur" }],
+  "Metagross": [{ pokemon: "Metagross" }],
+  "Bloodmoon Ursaluna": [
+    { pokemon: "Ursaluna", label: "Bloodmoon Ursaluna" },
+  ],
   "Steven's Metagross": [
     { pokemon: "Metagross", label: "Steven's Metagross" },
   ],
@@ -122,6 +130,7 @@ export const ARCHETYPE_POKEMON: Record<string, ArchetypePokemon[]> = {
     { pokemon: "Dusknoir" },
   ],
   "Hop's Trevenant": [{ pokemon: "Trevenant", label: "Hop's Trevenant" }],
+  "Basic Box": [],
   "Lopunny Dudunsparce": [
     { pokemon: "Lopunny" },
     { pokemon: "Dudunsparce" },
@@ -139,6 +148,10 @@ export const ARCHETYPE_POKEMON: Record<string, ArchetypePokemon[]> = {
   "Ethan's Typhlosion": [
     { pokemon: "Typhlosion", label: "Ethan's Typhlosion" },
   ],
+  "Ethan's Magcargo": [
+    { pokemon: "Magcargo", label: "Ethan's Magcargo" },
+  ],
+  "Hydrapple": [{ pokemon: "Hydrapple" }],
   "Hydrapple Ogerpon": [
     { pokemon: "Hydrapple" },
     { pokemon: "Ogerpon" },
@@ -148,25 +161,53 @@ export const ARCHETYPE_POKEMON: Record<string, ArchetypePokemon[]> = {
   "Toxtricity Box": [{ pokemon: "Toxtricity", label: "Toxtricity Box" }],
   "Archaludon": [{ pokemon: "Archaludon" }],
   "Hydreigon": [{ pokemon: "Hydreigon" }],
+  "Blaziken": [{ pokemon: "Blaziken" }],
   "Sharpedo Toxtricity": [
     { pokemon: "Sharpedo" },
     { pokemon: "Toxtricity" },
   ],
+  "Mega Sharpedo": [{ pokemon: "Sharpedo", label: "Mega Sharpedo" }],
   "Hop's Zacian": [{ pokemon: "Zacian", label: "Hop's Zacian" }],
+  "Mega Charizard X": [{ pokemon: "Charizard", label: "Mega Charizard X" }],
+  "Mega Diancie": [{ pokemon: "Diancie", label: "Mega Diancie" }],
+  "Lillie's Clefairy": [{ pokemon: "Clefairy", label: "Lillie's Clefairy" }],
   "Kangaskhan Bouffalant": [
     { pokemon: "Kangaskhan" },
     { pokemon: "Bouffalant" },
   ],
+  "Mega Zygarde": [{ pokemon: "Zygarde", label: "Mega Zygarde" }],
+  "Flareon": [{ pokemon: "Flareon" }],
+  "Doublade": [{ pokemon: "Doublade" }],
   "Zygarde Barbaracle": [
     { pokemon: "Zygarde" },
     { pokemon: "Barbaracle" },
   ],
   "Mega Abomasnow": [{ pokemon: "Abomasnow", label: "Mega Abomasnow" }],
   "Mega Dragonite": [{ pokemon: "Dragonite", label: "Mega Dragonite" }],
+  "Mega Manectric": [{ pokemon: "Manectric", label: "Mega Manectric" }],
+  "Bronzong": [{ pokemon: "Bronzong" }],
+  "Toxtricity": [{ pokemon: "Toxtricity" }],
+  "Paldean Tauros": [{ pokemon: "Tauros", label: "Paldean Tauros" }],
+  "Mega Feraligatr": [{ pokemon: "Feraligatr", label: "Mega Feraligatr" }],
+  "Mega Gengar": [{ pokemon: "Gengar", label: "Mega Gengar" }],
+  "Iono's Bellibolt": [{ pokemon: "Bellibolt", label: "Iono's Bellibolt" }],
+  "Palafin": [{ pokemon: "Palafin" }],
   "Eelektrik": [{ pokemon: "Eelektrik" }],
   "Dudunsparce Control": [
     { pokemon: "Dudunsparce", label: "Dudunsparce Control" },
   ],
+  "Mamoswine": [{ pokemon: "Mamoswine" }],
+  "Azumarill": [{ pokemon: "Azumarill" }],
+  "Heatran Metang": [
+    { pokemon: "Heatran" },
+    { pokemon: "Metang" },
+  ],
+  "Slaking": [{ pokemon: "Slaking" }],
+  "Galvantula": [{ pokemon: "Galvantula" }],
+  "Milotic": [{ pokemon: "Milotic" }],
+  "Ogerpon": [{ pokemon: "Ogerpon" }],
+  "Misty's Gyarados": [{ pokemon: "Gyarados", label: "Misty's Gyarados" }],
+  "Cinderace": [{ pokemon: "Cinderace" }],
   "Mega Zygarde ex": [{ pokemon: "Zygarde", label: "Mega Zygarde ex" }],
   [OTHER_ARCHETYPE]: [],
 

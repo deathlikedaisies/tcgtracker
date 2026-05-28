@@ -21,10 +21,10 @@ import {
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 
 const matchupRows = [
-  { archetype: "Dragapult Dusknoir", winRate: 38, tone: "bg-[#F43F5E]" },
-  { archetype: "Gardevoir", winRate: 57, tone: "bg-[#4F8CFF]" },
-  { archetype: "Raging Bolt Ogerpon", winRate: 64, tone: "bg-[#22C55E]" },
-  { archetype: "Charizard Pidgeot", winRate: 49, tone: "bg-[#F5C84C]" },
+  { archetype: "Dragapult ex", winRate: 51, tone: "bg-[#4F8CFF]" },
+  { archetype: "Mega Greninja", winRate: 43, tone: "bg-[#F43F5E]" },
+  { archetype: "Ogerpon Meganium", winRate: 53, tone: "bg-[#22C55E]" },
+  { archetype: "Mega Lucario", winRate: 50, tone: "bg-[#F5C84C]" },
 ];
 
 function ProductPreview() {
@@ -49,18 +49,18 @@ function ProductPreview() {
         <div className="grid gap-3 lg:grid-cols-[0.95fr_1.05fr]">
           <div className="rounded-md bg-[#0B1020]/54 p-3 shadow-[inset_0_0_0_1px_rgba(244,63,94,0.20)]">
             <div className="flex items-center gap-2">
-              <ArchetypeSprites archetype="Dragapult Dusknoir" />
+              <ArchetypeSprites archetype="Mega Greninja" />
               <div className="min-w-0">
                 <p className="text-xs font-semibold uppercase text-rose-200">
-                  Biggest leak
+                  Focus matchup
                 </p>
                 <p className="truncate text-sm font-semibold text-[#F8FAFC]">
-                  vs Dragapult Dusknoir
+                  vs Mega Greninja
                 </p>
               </div>
             </div>
             <p className="mt-4 text-4xl font-bold tracking-tight text-[#F43F5E]">
-              38%
+              43%
             </p>
             <p className="mt-1 text-sm leading-6 text-[#94A3B8]/78">
               Run five focused games and tag every loss pattern.

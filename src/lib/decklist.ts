@@ -135,6 +135,48 @@ function suggestArchetype(cards: ParsedDeckCard[]): ArchetypeSuggestion {
     matches: (names: Set<string>) => boolean;
   }> = [
     {
+      archetype: "Mega Greninja",
+      confidence: "strong",
+      reason: "Mega Greninja is present.",
+      matches: (names) => hasAny(names, ["Mega Greninja ex", "Mega Greninja"]),
+    },
+    {
+      archetype: "Ogerpon Meganium",
+      confidence: "strong",
+      reason: "Ogerpon and Meganium are both present.",
+      matches: (names) => hasCard(names, "Ogerpon") && hasCard(names, "Meganium"),
+    },
+    {
+      archetype: "Mega Lucario",
+      confidence: "strong",
+      reason: "Mega Lucario is present.",
+      matches: (names) => hasAny(names, ["Mega Lucario ex", "Mega Lucario"]),
+    },
+    {
+      archetype: "Mega Starmie",
+      confidence: "possible",
+      reason: "Mega Starmie appears in the list.",
+      matches: (names) => hasAny(names, ["Mega Starmie ex", "Mega Starmie", "Starmie ex"]),
+    },
+    {
+      archetype: "Beedrill",
+      confidence: "possible",
+      reason: "Beedrill appears in the list.",
+      matches: (names) => hasCard(names, "Beedrill"),
+    },
+    {
+      archetype: "Mega Lopunny",
+      confidence: "possible",
+      reason: "Mega Lopunny appears in the list.",
+      matches: (names) => hasAny(names, ["Mega Lopunny ex", "Mega Lopunny"]),
+    },
+    {
+      archetype: "Raging Bolt",
+      confidence: "strong",
+      reason: "Raging Bolt is present.",
+      matches: (names) => hasAny(names, ["Raging Bolt ex", "Raging Bolt"]),
+    },
+    {
       archetype: "Dragapult Dusknoir",
       confidence: "strong",
       reason: "Dragapult ex and Dusknoir are both present.",
@@ -145,12 +187,6 @@ function suggestArchetype(cards: ParsedDeckCard[]): ArchetypeSuggestion {
       confidence: "strong",
       reason: "Dragapult ex and Blaziken are both present.",
       matches: (names) => hasCard(names, "Dragapult ex") && hasCard(names, "Blaziken"),
-    },
-    {
-      archetype: "Raging Bolt Ogerpon",
-      confidence: "strong",
-      reason: "Raging Bolt and Ogerpon are both present.",
-      matches: (names) => hasAny(names, ["Raging Bolt ex", "Raging Bolt"]) && hasCard(names, "Ogerpon"),
     },
     {
       archetype: "Froslass Munkidori",
@@ -171,12 +207,6 @@ function suggestArchetype(cards: ParsedDeckCard[]): ArchetypeSuggestion {
       matches: (names) => hasCard(names, "Archaludon") && hasCard(names, "Zoroark"),
     },
     {
-      archetype: "Mega Starmie",
-      confidence: "possible",
-      reason: "Mega Starmie appears in the list.",
-      matches: (names) => hasAny(names, ["Mega Starmie", "Starmie ex"]),
-    },
-    {
       archetype: "Starmie Froslass",
       confidence: "strong",
       reason: "Starmie and Froslass are both present.",
@@ -187,12 +217,6 @@ function suggestArchetype(cards: ParsedDeckCard[]): ArchetypeSuggestion {
       confidence: "strong",
       reason: "Lucario and Hariyama are both present.",
       matches: (names) => hasCard(names, "Lucario") && hasCard(names, "Hariyama"),
-    },
-    {
-      archetype: "Ogerpon Meganium",
-      confidence: "strong",
-      reason: "Ogerpon and Meganium are both present.",
-      matches: (names) => hasCard(names, "Ogerpon") && hasCard(names, "Meganium"),
     },
     {
       archetype: "Rocket's Mewtwo",
