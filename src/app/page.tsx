@@ -6,7 +6,6 @@ import {
   Bolt,
   CheckCircle2,
   ClipboardList,
-  PlayCircle,
   Target,
   Trophy,
   Users,
@@ -18,7 +17,6 @@ import {
   glassPanelStrong,
   marketingShell,
   primaryButton,
-  secondaryButton,
 } from "@/components/brand-styles";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 
@@ -188,10 +186,6 @@ export default async function Home() {
                 Start tracking
                 <ArrowRight className="ml-2 size-4" aria-hidden="true" />
               </Link>
-              <a href="#how-it-works" className={`${secondaryButton} h-12 px-6`}>
-                <PlayCircle className="mr-2 size-4" aria-hidden="true" />
-                See how it works
-              </a>
             </div>
             <div className="mt-6 grid gap-2 sm:grid-cols-3">
               {[
@@ -220,7 +214,7 @@ export default async function Home() {
             {[
               ["1", "Pick your deck", "Create a deck family and version your lists."],
               ["2", "Log your games", "Record matchup, result, turn order, notes, and tags."],
-              ["3", "Test the leak", "Use the current mission to focus the next session."],
+              ["3", "Focus your next test", "Use the current mission to choose the next matchup set."],
             ].map(([step, title, copy]) => (
               <div key={step} className="rounded-md bg-[#0B1020]/38 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
                 <div className="inline-flex size-9 items-center justify-center rounded-full bg-[#4F8CFF] text-sm font-bold text-white">
