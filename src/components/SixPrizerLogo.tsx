@@ -8,8 +8,8 @@ type SixPrizerLogoProps = {
 };
 
 const markSizes = {
-  primary: "size-6",
-  "app-icon": "size-6",
+  primary: "size-7",
+  "app-icon": "size-7",
   favicon: "size-5",
   watermark: "size-full",
 };
@@ -98,21 +98,22 @@ export function SixPrizerLogo({
   const isWatermark = variant === "watermark";
   const defaultMarkClassName = isWatermark
     ? "text-[#4F8CFF]"
-    : variant === "app-icon"
-      ? "flex size-9 items-center justify-center rounded bg-[#07111F] shadow-[0_0_24px_rgba(79,140,255,0.13),inset_0_0_0_1px_rgba(79,140,255,0.26)]"
+      : variant === "app-icon"
+      ? "flex size-10 items-center justify-center rounded-md bg-[#07111F] shadow-[0_0_28px_rgba(79,140,255,0.16),inset_0_0_0_1px_rgba(79,140,255,0.30)] sm:size-11"
       : variant === "favicon"
         ? "flex size-8 items-center justify-center rounded bg-[#0B1020] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.18)]"
-        : "flex size-9 items-center justify-center rounded-md bg-[#07111F] shadow-[0_0_24px_rgba(79,140,255,0.13),inset_0_0_0_1px_rgba(79,140,255,0.28)]";
+        : "flex size-10 items-center justify-center rounded-md bg-[#07111F] shadow-[0_0_28px_rgba(79,140,255,0.16),inset_0_0_0_1px_rgba(79,140,255,0.30)] sm:size-11";
   const textVisibility = hideTextOnMobile ? "hidden sm:inline" : "";
 
   return (
-    <div className={`flex items-center gap-2.5 ${className}`}>
+    <div className={`flex items-center gap-3 ${className}`}>
       <span className={`${defaultMarkClassName} ${markClassName}`}>
         <SixPrizerMark variant={variant} />
       </span>
       {showText ? (
         <span className={`font-semibold ${textVisibility} ${textClassName}`}>
-          SixPrizer
+          <span className="text-[#F8FAFC]">Six</span>
+          <span className="text-[#F5C84C]">Prizer</span>
         </span>
       ) : null}
     </div>

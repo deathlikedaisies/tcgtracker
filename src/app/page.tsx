@@ -29,17 +29,17 @@ const matchupRows = [
 
 function ProductPreview() {
   return (
-    <div className="relative min-w-0 overflow-hidden rounded-md bg-[#0D1728]/88 p-3 shadow-[0_30px_90px_rgba(0,0,0,0.44),0_0_70px_rgba(79,140,255,0.12),inset_0_0_0_1px_rgba(148,163,184,0.14)] backdrop-blur sm:p-4">
+    <div className="relative min-w-0 overflow-hidden rounded-md bg-[#0D1728]/88 p-4 shadow-[0_34px_96px_rgba(0,0,0,0.46),0_0_78px_rgba(79,140,255,0.14),inset_0_0_0_1px_rgba(148,163,184,0.14)] backdrop-blur sm:p-5">
       <div className="pointer-events-none absolute -right-16 -top-16 size-44 rounded-full bg-[#4F8CFF]/18 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-20 left-8 size-44 rounded-full bg-[#F5C84C]/10 blur-3xl" />
 
-      <div className="relative rounded-md bg-[#07111F]/90 p-4 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.06)] sm:p-5">
+      <div className="relative rounded-md bg-[#07111F]/90 p-5 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.06)] sm:p-6">
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#4F8CFF]">
               Overview
             </p>
-            <h2 className="mt-1 text-2xl font-bold tracking-tight text-[#F8FAFC]">
+            <h2 className="mt-1 text-2xl font-black tracking-tight text-[#F8FAFC] sm:text-3xl">
               Your testing at a glance
             </h2>
           </div>
@@ -48,15 +48,15 @@ function ProductPreview() {
           </span>
         </div>
 
-        <div className="mt-5 grid gap-3 xl:grid-cols-[1fr_0.86fr]">
-          <section className="min-w-0 rounded-md bg-[#0F1A2D]/82 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.09)]">
+        <div className="mt-6 grid gap-4 xl:grid-cols-[1fr_0.86fr]">
+          <section className="min-w-0 rounded-md bg-[#0F1A2D]/82 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.09)]">
             <div className="flex items-center justify-between gap-3">
               <h3 className="text-sm font-semibold text-[#F8FAFC]">
                 Matchup Win Rates
               </h3>
               <BarChart3 className="size-4 text-[#4F8CFF]" aria-hidden="true" />
             </div>
-            <div className="mt-4 grid gap-3">
+            <div className="mt-4 grid gap-3.5">
               {matchupRows.map((row) => (
                 <div
                   key={row.archetype}
@@ -84,7 +84,7 @@ function ProductPreview() {
             </div>
           </section>
 
-          <section className="rounded-md bg-[#1A1020]/44 p-3 shadow-[inset_0_0_0_1px_rgba(244,63,94,0.20)]">
+          <section className="rounded-md bg-[#1A1020]/44 p-4 shadow-[inset_0_0_0_1px_rgba(244,63,94,0.20),0_0_30px_rgba(244,63,94,0.05)]">
             <div className="flex min-w-0 items-center gap-2">
               <ArchetypeSprites archetype="Mega Greninja" />
               <div className="min-w-0">
@@ -105,8 +105,8 @@ function ProductPreview() {
           </section>
         </div>
 
-        <div className="mt-3 grid gap-3 md:grid-cols-[0.82fr_1.18fr]">
-          <section className="rounded-md bg-[#0F1A2D]/82 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.09)]">
+        <div className="mt-4 grid gap-4 md:grid-cols-[0.82fr_1.18fr]">
+          <section className="rounded-md bg-[#0F1A2D]/82 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.09)]">
             <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#94A3B8]/72">
               Deck Version Comparison
             </p>
@@ -126,7 +126,7 @@ function ProductPreview() {
             </p>
           </section>
 
-          <section className="rounded-md bg-[#0F1A2D]/82 p-3 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.16)]">
+          <section className="rounded-md bg-[#0F1A2D]/82 p-4 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.16),0_0_30px_rgba(79,140,255,0.05)]">
             <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
               Testing Insight
             </p>
@@ -160,8 +160,8 @@ export default async function Home() {
             variant="app-icon"
             hideTextOnMobile
             className="group transition hover:scale-[1.02]"
-            markClassName="bg-[#1A2238] transition group-hover:shadow-[0_0_22px_rgba(79,140,255,0.22)]"
-            textClassName="text-base text-[#F8FAFC]"
+            markClassName="bg-[#1A2238] transition group-hover:shadow-[0_0_28px_rgba(79,140,255,0.28)]"
+            textClassName="text-lg tracking-tight"
           />
           <div className="flex min-w-0 items-center justify-end gap-1.5 sm:gap-2">
             <Link
@@ -176,7 +176,10 @@ export default async function Home() {
             >
               Log in
             </Link>
-            <Link href="/signup" className={`${primaryButton} h-10 px-3 sm:px-4`}>
+            <Link
+              href="/signup"
+              className="inline-flex h-9 max-w-full items-center justify-center rounded-md bg-[#F5C84C]/92 px-3 text-xs font-bold text-[#07111F] shadow-[0_10px_24px_rgba(245,200,76,0.16)] transition hover:-translate-y-0.5 hover:bg-[#ffd85f] active:translate-y-0 active:scale-[0.98] sm:h-10 sm:px-4 sm:text-sm"
+            >
               Start tracking games
             </Link>
           </div>
@@ -190,9 +193,9 @@ export default async function Home() {
               <Bolt className="size-4" aria-hidden="true" />
               Built for competitive Pokémon TCG testing
             </p>
-            <h1 className="mt-5 max-w-3xl text-5xl font-black leading-[0.95] tracking-tight text-[#F8FAFC] sm:text-7xl">
-              From testing games to{" "}
-              <span className="text-[#F5C84C] drop-shadow-[0_0_22px_rgba(245,200,76,0.20)]">
+            <h1 className="mt-5 max-w-3xl text-4xl font-black leading-[0.95] tracking-tight text-[#F8FAFC] min-[390px]:text-5xl sm:text-6xl xl:text-7xl">
+              <span className="block">From testing games to</span>
+              <span className="block whitespace-nowrap text-[#F5C84C] drop-shadow-[0_0_22px_rgba(245,200,76,0.20)]">
                 six-prize turns.
               </span>
             </h1>
@@ -200,7 +203,7 @@ export default async function Home() {
               SixPrizer helps competitive Pokémon TCG players log games, spot the matchups costing them wins, compare deck versions, and decide what to test next.
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-              <Link href="/signup" className={`${primaryButton} h-12 px-6`}>
+              <Link href="/signup" className={`${primaryButton} min-h-12 px-7 text-base shadow-[0_18px_44px_rgba(245,200,76,0.30)]`}>
                 Start tracking games
                 <ArrowRight className="ml-2 size-4" aria-hidden="true" />
               </Link>
@@ -254,12 +257,12 @@ export default async function Home() {
           ].map(([Icon, title, copy]) => (
             <article
               key={title as string}
-              className="group rounded-md bg-[#0F1A2D]/70 p-4 shadow-[0_18px_54px_rgba(0,0,0,0.28),inset_0_0_0_1px_rgba(148,163,184,0.10)] backdrop-blur transition hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(0,0,0,0.34),0_0_34px_rgba(79,140,255,0.08),inset_0_0_0_1px_rgba(79,140,255,0.18)] sm:p-5"
+              className="group rounded-md bg-[#0F1A2D]/70 p-4 shadow-[0_18px_54px_rgba(0,0,0,0.28),inset_0_0_0_1px_rgba(148,163,184,0.10)] backdrop-blur transition hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(0,0,0,0.34),0_0_34px_rgba(79,140,255,0.10),inset_0_0_0_1px_rgba(79,140,255,0.22)] focus-within:-translate-y-1 focus-within:shadow-[0_24px_70px_rgba(0,0,0,0.34),0_0_34px_rgba(79,140,255,0.10),inset_0_0_0_1px_rgba(79,140,255,0.22)] sm:p-5"
             >
-              <div className="inline-flex size-10 items-center justify-center rounded-md bg-[#07111F] text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.18),0_0_24px_rgba(245,200,76,0.08)]">
-                <Icon className="size-5" aria-hidden="true" />
+              <div className="inline-flex size-12 items-center justify-center rounded-md bg-[#07111F] text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.22),0_0_28px_rgba(245,200,76,0.10)] transition group-hover:text-[#FFE27A] group-hover:shadow-[inset_0_0_0_1px_rgba(245,200,76,0.32),0_0_32px_rgba(79,140,255,0.10)]">
+                <Icon className="size-6" aria-hidden="true" />
               </div>
-              <h3 className="mt-4 text-base font-semibold text-[#F8FAFC]">
+              <h3 className="mt-5 text-base font-bold text-[#F8FAFC]">
                 {title as string}
               </h3>
               <p className="mt-2 text-sm leading-6 text-[#94A3B8]/78">
