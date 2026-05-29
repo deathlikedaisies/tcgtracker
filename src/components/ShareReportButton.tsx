@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { PrizeMapLogo } from "@/components/PrizeMapLogo";
+import { SixPrizerLogo } from "@/components/SixPrizerLogo";
 
 export type ShareReport = {
   title: string;
@@ -36,7 +36,7 @@ function buildShareText(report: ShareReport) {
     `${report.deckName}: ${report.winRate} win rate over ${report.totalMatches} matches`,
     `Best matchup: ${report.bestMatchup}`,
     `Worst matchup: ${report.worstMatchup}`,
-    "Generated with PrizeMap",
+    "Generated with SixPrizer",
   ].join("\n");
 }
 
@@ -63,8 +63,8 @@ function buildShareSvg(report: ShareReport) {
   <rect x="70" y="58" width="1060" height="514" rx="22" fill="#10182E" opacity="0.92" filter="url(#softShadow)"/>
   <path d="M116 112 146 96l30 16v45l-30 31-30-31v-45Z" fill="#0B1020" stroke="#4F8CFF" stroke-width="6" stroke-linejoin="round"/>
   <path d="M146 123 160 131v19l-14 14-14-14v-19l14-8Z" fill="none" stroke="#F5C84C" stroke-width="5" stroke-linejoin="round"/>
-  <text x="196" y="137" fill="#F8FAFC" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700">PrizeMap</text>
-  <text x="196" y="170" fill="#94A3B8" font-family="Arial, Helvetica, sans-serif" font-size="20">Generated with PrizeMap</text>
+  <text x="196" y="137" fill="#F8FAFC" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700">SixPrizer</text>
+  <text x="196" y="170" fill="#94A3B8" font-family="Arial, Helvetica, sans-serif" font-size="20">Generated with SixPrizer</text>
   <text x="116" y="244" fill="#94A3B8" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700">${context}</text>
   <text x="116" y="304" fill="#F8FAFC" font-family="Arial, Helvetica, sans-serif" font-size="52" font-weight="800">${title}</text>
   <text x="116" y="356" fill="#94A3B8" font-family="Arial, Helvetica, sans-serif" font-size="28">${deckName}</text>
@@ -164,12 +164,12 @@ export function ShareReportButton({ report }: ShareReportButtonProps) {
 
             <div className="mt-5 rounded-md bg-[#0B1020] p-5 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.06)]">
               <div className="flex items-center justify-between gap-4">
-                <PrizeMapLogo
+                <SixPrizerLogo
                   markClassName="size-8 bg-[#1A2238]"
                   textClassName="text-sm text-[#F8FAFC]"
                 />
                 <span className="text-xs font-medium uppercase text-[#94A3B8]">
-                  Generated with PrizeMap
+                  Generated with SixPrizer
                 </span>
               </div>
 

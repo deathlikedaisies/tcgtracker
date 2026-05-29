@@ -577,7 +577,7 @@ export function buildSessionCoachInsight(
     ? `Focus on ${repeatedTag.tag} in this matchup.`
     : turnContext
       ? `Review your lines when ${turnContext}.`
-      : "Focus on your opening plan and prize map.";
+      : "Focus on your opening plan and prize route.";
   const comparisonMatches =
     turnContext === "going second" ? firstMatches : secondMatches;
   const reasoning = turnContext

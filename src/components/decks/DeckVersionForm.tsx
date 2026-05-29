@@ -38,7 +38,7 @@ export function DeckVersionForm({ action }: DeckVersionFormProps) {
     <form action={action} className="rounded-md bg-[#11182C]/70 p-3.5 shadow-[0_16px_42px_rgba(0,0,0,0.20),inset_0_0_0_1px_rgba(248,250,252,0.04)] sm:p-4">
       <h2 className="text-lg font-semibold text-[#F8FAFC]">New test version</h2>
       <p className={`mt-1 ${sectionCopy}`}>
-        Paste a TCG Live list and PrizeMap will read the build.
+        Paste a TCG Live list and SixPrizer will read the build.
       </p>
       <div className="mt-5 flex flex-col gap-4">
         <div className="flex flex-col gap-2">

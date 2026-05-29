@@ -35,7 +35,7 @@ export default function DemoPage() {
       <section className={pageHeader}>
         <div>
           <p className="text-sm font-semibold text-[#4F8CFF]">Reviewer playtest</p>
-          <h1 className={pageTitle}>PrizeMap demo workspace</h1>
+          <h1 className={pageTitle}>SixPrizer demo workspace</h1>
           <p className={pageCopy}>
             Explore realistic seeded testing data without creating an account.
           </p>

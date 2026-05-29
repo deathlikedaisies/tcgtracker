@@ -7,7 +7,7 @@ import {
   PlusCircle,
   Target,
 } from "lucide-react";
-import { PrizeMapLogo } from "@/components/PrizeMapLogo";
+import { SixPrizerLogo } from "@/components/SixPrizerLogo";
 import { glassPanel, logoOnDark } from "@/components/brand-styles";
 
 type AppSection = "dashboard" | "decks" | "matches" | "log" | "matchups";
@@ -34,7 +34,7 @@ export function AppSidebar({ current, deckLabel, insight }: AppSidebarProps) {
   return (
     <aside className={`hidden min-h-[calc(100vh-3rem)] p-3 lg:sticky lg:top-6 lg:block ${glassPanel}`}>
       <div className="flex h-full flex-col">
-        <PrizeMapLogo {...logoOnDark} hideTextOnMobile={false} />
+        <SixPrizerLogo {...logoOnDark} hideTextOnMobile={false} />
 
         {deckLabel ? (
           <div className="mt-6 rounded-md bg-[#07111F]/48 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.09)]">

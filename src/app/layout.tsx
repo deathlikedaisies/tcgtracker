@@ -19,8 +19,30 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "PrizeMap",
-  description: "Track Pokemon TCG decks, matches, matchups, and preparation notes.",
+  metadataBase: new URL("https://sixprizer.com"),
+  title: {
+    default: "SixPrizer",
+    template: "%s | SixPrizer",
+  },
+  description:
+    "SixPrizer helps competitive Pokémon TCG players log games, spot the matchups costing them wins, compare deck versions, and decide what to test next.",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "SixPrizer",
+    description:
+      "SixPrizer helps competitive Pokémon TCG players log games, spot the matchups costing them wins, compare deck versions, and decide what to test next.",
+    url: "https://sixprizer.com",
+    siteName: "SixPrizer",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "SixPrizer",
+    description:
+      "SixPrizer helps competitive Pokémon TCG players log games, spot the matchups costing them wins, compare deck versions, and decide what to test next.",
+  },
 };
 
 export default function RootLayout({

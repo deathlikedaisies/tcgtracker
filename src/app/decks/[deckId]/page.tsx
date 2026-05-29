@@ -20,7 +20,7 @@ import {
   sectionCopy,
   sectionTitle,
 } from "@/components/brand-styles";
-import { PrizeMapLogo } from "@/components/PrizeMapLogo";
+import { SixPrizerLogo } from "@/components/SixPrizerLogo";
 import { SessionCoachPanel } from "@/components/SessionCoachPanel";
 import { analyzeDeckList } from "@/lib/decklist";
 import { buildSessionCoachInsight } from "@/lib/session-coach";
@@ -161,7 +161,7 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
         <div className={`${appMain} mx-auto w-full max-w-6xl gap-6`}>
         <div>
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <PrizeMapLogo {...logoOnDark} />
+            <SixPrizerLogo {...logoOnDark} />
             <div className="lg:hidden">
               <AppNav current="decks" />
             </div>
@@ -363,7 +363,7 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                 </h3>
                 <p className={sectionCopy}>
                   Add a version before logging matches with this deck. Versions
-                  are what PrizeMap uses to compare builds over time.
+                  are what SixPrizer uses to compare builds over time.
                 </p>
                 <a href="#add-version" className={`mt-5 ${primaryButton}`}>
                   Add first version

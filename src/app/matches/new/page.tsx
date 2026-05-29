@@ -15,7 +15,7 @@ import {
   secondaryButton,
 } from "@/components/brand-styles";
 import { MatchLogForm } from "@/components/matches/MatchLogForm";
-import { PrizeMapLogo } from "@/components/PrizeMapLogo";
+import { SixPrizerLogo } from "@/components/SixPrizerLogo";
 import { getArchetypeOptions } from "@/lib/archetypes";
 import { analyzeDeckList } from "@/lib/decklist";
 import { LATEST_FORMAT } from "@/lib/formats";
@@ -150,7 +150,7 @@ export default async function NewMatchPage({
         <div className={`${appMain} mx-auto w-full max-w-6xl`}>
         <div className="flex max-w-full min-w-0 flex-col gap-4 overflow-x-hidden lg:flex-row lg:flex-wrap lg:items-start lg:justify-between">
           <div className="min-w-0 max-w-full">
-            <PrizeMapLogo {...logoOnDark} />
+            <SixPrizerLogo {...logoOnDark} />
             <p className="mt-5 text-sm font-medium text-[#4F8CFF]">Fast log</p>
             <h1 className={pageTitle}>
               Log a game
@@ -183,7 +183,7 @@ export default async function NewMatchPage({
               No deck versions yet.
             </h2>
             <p className={`mt-2 ${sectionCopy}`}>
-              Create a deck and add a version before logging a match. PrizeMap
+              Create a deck and add a version before logging a match. SixPrizer
               uses the version to compare builds and keep your testing history clean.
             </p>
             <div className="mt-5 flex flex-col gap-2 sm:flex-row">

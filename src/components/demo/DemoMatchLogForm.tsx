@@ -45,7 +45,7 @@ const tagsByOpponent: Record<string, string[]> = {
     "review",
   ],
   "Dragapult ex": [
-    "prize map",
+    "prize route",
     "midgame trade",
     "bench pressure",
     "resource check",
@@ -128,7 +128,7 @@ function getInsightUpdate({
       eyebrow: "Trend improved",
       title: "This result would improve the matchup trend",
       bullets: [
-        "PrizeMap would add this win to the matchup sample.",
+        "SixPrizer would add this win to the matchup sample.",
         "If this matchup was urgent before, the pressure may drop after more wins.",
         "The coach would still wait for more samples before changing recommendations.",
       ],
@@ -144,7 +144,7 @@ function getInsightUpdate({
       bullets: [
         `This result reinforces the ${tagSummary} pattern.`,
         `Your ${direction} sample would increase.`,
-        "PrizeMap would keep this matchup at the top of the coaching queue.",
+        "SixPrizer would keep this matchup at the top of the coaching queue.",
       ],
       recommendation: "Recommended next test: 5 more games going first with Dragapult ex v2.",
       tone: "gold" as const,
@@ -158,7 +158,7 @@ function getInsightUpdate({
       bullets: [
         "Too few games to call this a clear trend.",
         "This result suggests a possible tempo or prize-trade issue.",
-        "PrizeMap would hold this as a watchlist item before calling it a leak.",
+        "SixPrizer would hold this as a watchlist item before calling it a leak.",
       ],
       recommendation: "Recommended next test: keep logging until this reaches 6+ games.",
       tone: "rose" as const,
@@ -167,11 +167,11 @@ function getInsightUpdate({
 
   return {
     eyebrow: "Sample updated",
-    title: "PrizeMap would add this game to the matchup signal",
+    title: "SixPrizer would add this game to the matchup signal",
     bullets: [
       "Sample size would increase.",
       "Tags would be tracked as recurring patterns.",
-      "PrizeMap would compare this result against previous games.",
+      "SixPrizer would compare this result against previous games.",
     ],
     recommendation: `Recommended next test: continue the ${opponent} sample before changing plans.`,
     tone: "blue" as const,
@@ -314,7 +314,7 @@ export function DemoMatchLogForm() {
                     Game logged
                   </p>
                   <h2 className="text-2xl font-bold text-[#F8FAFC] sm:text-3xl">
-                    What PrizeMap would update
+                    What SixPrizer would update
                   </h2>
                 </div>
               </div>

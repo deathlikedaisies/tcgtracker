@@ -25,7 +25,7 @@ import {
   sectionTitle,
   subtlePill,
 } from "@/components/brand-styles";
-import { PrizeMapLogo } from "@/components/PrizeMapLogo";
+import { SixPrizerLogo } from "@/components/SixPrizerLogo";
 import { SessionCoachPanel } from "@/components/SessionCoachPanel";
 import { getArchetypeOptions } from "@/lib/archetypes";
 import {
@@ -291,7 +291,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
         <div className={`${appMain} mx-auto w-full max-w-6xl`}>
         <header className={pageHeader}>
           <div>
-            <PrizeMapLogo {...logoOnDark} />
+            <SixPrizerLogo {...logoOnDark} />
             <h1 className={pageTitle}>
               Matches
             </h1>
@@ -445,7 +445,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
               No matches logged yet.
             </h2>
             <p className={`mt-3 max-w-xl ${sectionCopy}`}>
-              Match history becomes useful once games are logged. PrizeMap needs
+              Match history becomes useful once games are logged. SixPrizer needs
               one deck version first so each game belongs to a real test build.
             </p>
             <Link

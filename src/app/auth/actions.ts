@@ -13,9 +13,9 @@ export type AuthResult = {
 
 const AUTH_MESSAGES = {
   network:
-    "Could not connect to PrizeMap. Check your connection and try again.",
+    "Could not connect to SixPrizer. Check your connection and try again.",
   invalidCredentials: "Email or password is incorrect.",
-  missingConfig: "PrizeMap is not configured correctly. Please contact support.",
+  missingConfig: "SixPrizer is not configured correctly. Please contact support.",
   fallback: "Authentication failed. Please try again.",
 } as const;
 

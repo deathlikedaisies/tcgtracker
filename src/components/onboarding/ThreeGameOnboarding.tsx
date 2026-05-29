@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { ArchetypePicker } from "@/components/ArchetypePicker";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
-import { PrizeMapLogo } from "@/components/PrizeMapLogo";
+import { SixPrizerLogo } from "@/components/SixPrizerLogo";
 
 type Result = "win" | "loss";
 type TurnOrder = "first" | "second";
@@ -155,10 +155,10 @@ export function ThreeGameOnboarding({
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#0B1020] bg-[radial-gradient(ellipse_at_center,rgba(79,140,255,0.14),transparent_46%)] px-4 py-8 text-[#F8FAFC]">
         <section className="flex flex-col items-center text-center">
-          <PrizeMapLogo
+          <SixPrizerLogo
             variant="app-icon"
             showText={false}
-            className="prizemap-glow-pulse"
+            className="sixprizer-glow-pulse"
             markClassName="size-14 bg-[#11182C]"
           />
           <h1 className="mt-5 text-3xl font-semibold tracking-tight">
@@ -177,8 +177,8 @@ export function ThreeGameOnboarding({
 
     return (
       <main className="min-h-screen bg-[#0B1020] bg-[radial-gradient(ellipse_at_top,rgba(79,140,255,0.14),transparent_42%),linear-gradient(180deg,#0B1020_0%,#10172A_52%,#0B1020_100%)] px-4 py-5 text-[#F8FAFC] sm:px-6 sm:py-8">
-        <section className="prizemap-fade-in mx-auto flex max-w-3xl flex-col gap-5">
-          <PrizeMapLogo
+        <section className="sixprizer-fade-in mx-auto flex max-w-3xl flex-col gap-5">
+          <SixPrizerLogo
             variant="app-icon"
             textClassName="text-base text-[#F8FAFC]"
             markClassName="bg-[#1A2238]"
@@ -221,7 +221,7 @@ export function ThreeGameOnboarding({
 
             <article className="rounded bg-[#11182C]/92 p-4 shadow-[0_18px_48px_rgba(245,200,76,0.1),inset_0_0_0_1px_rgba(245,200,76,0.32)] sm:p-5">
               <div className="flex items-center gap-3">
-                <PrizeMapLogo
+                <SixPrizerLogo
                   variant="app-icon"
                   showText={false}
                   markClassName="size-8 bg-transparent shadow-none"
@@ -253,7 +253,7 @@ export function ThreeGameOnboarding({
   return (
     <main className="min-h-screen bg-[#0B1020] bg-[radial-gradient(ellipse_at_top,rgba(79,140,255,0.14),transparent_42%),linear-gradient(180deg,#0B1020_0%,#10172A_52%,#0B1020_100%)] px-4 py-5 text-[#F8FAFC] sm:px-6 sm:py-8">
       <section className="mx-auto flex max-w-2xl flex-col gap-5">
-        <PrizeMapLogo
+        <SixPrizerLogo
           variant="app-icon"
           textClassName="text-base text-[#F8FAFC]"
           markClassName="bg-[#1A2238]"

@@ -1,6 +1,6 @@
 import { AuthForm } from "@/components/auth/AuthForm";
 import { glassPanelStrong, marketingShell, pageCopy } from "@/components/brand-styles";
-import { PrizeMapLogo } from "@/components/PrizeMapLogo";
+import { SixPrizerLogo } from "@/components/SixPrizerLogo";
 import { getOptionalSupabaseConfig } from "@/lib/supabase-config";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
@@ -39,12 +39,12 @@ export default async function SignupPage() {
     <main className={`flex items-center justify-center px-4 py-8 sm:px-6 sm:py-12 ${marketingShell}`}>
       <section className={`w-full max-w-sm p-5 sm:p-6 ${glassPanelStrong}`}>
         <div className="mb-6">
-          <PrizeMapLogo
+          <SixPrizerLogo
             markClassName="size-8 bg-[#1A2238]"
             textClassName="text-sm text-[#F8FAFC]"
           />
           <h1 className="mt-2 text-2xl font-semibold tracking-tight text-[#F8FAFC]">
-            Sign up
+            Create your SixPrizer account
           </h1>
           <p className={pageCopy}>
             Create an account to start tracking your matches.

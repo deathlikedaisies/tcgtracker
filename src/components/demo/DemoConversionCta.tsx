@@ -8,7 +8,7 @@ export function DemoConversionCta() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-base font-bold text-[#F8FAFC]">
-            Ready to use PrizeMap with your own games?
+            Ready to use SixPrizer with your own games?
           </p>
           <p className="mt-1 text-sm leading-6 text-[#94A3B8]/76">
             Create a workspace to save real matches, deck versions, and coaching notes.

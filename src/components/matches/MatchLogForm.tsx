@@ -666,7 +666,7 @@ export function MatchLogForm({
               Active testing session
             </h2>
             <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
-              Log a few games and PrizeMap will build a focused mission.
+              Log a few games and SixPrizer will build a focused mission.
             </p>
           </div>
         )}

@@ -11,7 +11,7 @@ import {
   Users,
 } from "lucide-react";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
-import { PrizeMapLogo } from "@/components/PrizeMapLogo";
+import { SixPrizerLogo } from "@/components/SixPrizerLogo";
 import {
   glassPanel,
   glassPanelStrong,
@@ -35,7 +35,7 @@ function ProductPreview() {
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#94A3B8]/78">
-              PrizeMap coach preview
+              SixPrizer coach preview
             </p>
             <h2 className="mt-1 truncate text-lg font-bold text-[#F8FAFC]">
               What to test next
@@ -135,7 +135,7 @@ export default async function Home() {
     <main className={marketingShell}>
       <header className="px-4 py-4 sm:px-6">
         <div className={`mx-auto flex max-w-7xl items-center justify-between gap-4 px-3 py-3 ${glassPanel}`}>
-          <PrizeMapLogo
+          <SixPrizerLogo
             variant="app-icon"
             hideTextOnMobile
             className="group transition hover:scale-[1.02]"
@@ -149,8 +149,8 @@ export default async function Home() {
             <a href="#features" className="transition hover:text-[#F8FAFC]">
               Features
             </a>
-            <a href="#why-prizemap" className="transition hover:text-[#F8FAFC]">
-              Why PrizeMap
+            <a href="#why-sixprizer" className="transition hover:text-[#F8FAFC]">
+              Why SixPrizer
             </a>
           </nav>
           <div className="flex items-center gap-2">
@@ -169,20 +169,20 @@ export default async function Home() {
 
       <section className="px-4 pb-8 pt-4 sm:px-6 sm:pb-12 sm:pt-10">
         <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[0.82fr_1.18fr] lg:items-center">
-          <div className="prizemap-fade-in min-w-0">
+          <div className="sixprizer-fade-in min-w-0">
             <p className="inline-flex items-center gap-2 rounded-md bg-[#4F8CFF]/12 px-3 py-1.5 text-sm font-semibold text-[#B8D1FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.22)]">
               <Bolt className="size-4" aria-hidden="true" />
               Built for competitive Pokemon TCG testing
             </p>
             <h1 className="mt-5 max-w-3xl text-5xl font-bold leading-[0.95] tracking-tight text-[#F8FAFC] sm:text-7xl">
-              Turn every game into better testing.
+              From testing games to six-prize turns.
             </h1>
             <p className="mt-5 max-w-2xl text-lg leading-8 text-[#C7D2E5]">
-              PrizeMap logs games fast, tracks matchup truth, compares deck
+              SixPrizer logs games fast, tracks matchup truth, compares deck
               versions, and tells you what to test next.
             </p>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-[#94A3B8]/86">
-              PrizeMap helps competitive Pokémon TCG players log games, find matchup leaks, compare deck versions, and decide what to test next.
+              SixPrizer helps competitive Pokémon TCG players log games, spot the matchups costing them wins, compare deck versions, and decide what to test next.
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
               <Link href="/signup" className={`${primaryButton} h-12 px-6`}>
@@ -265,13 +265,13 @@ export default async function Home() {
         </div>
       </section>
 
-      <section id="why-prizemap" className="px-4 pb-10 sm:px-6 sm:pb-14">
+      <section id="why-sixprizer" className="px-4 pb-10 sm:px-6 sm:pb-14">
         <div className={`mx-auto flex max-w-5xl flex-col gap-4 p-5 text-center sm:p-7 ${glassPanelStrong}`}>
           <h2 className="text-3xl font-bold tracking-tight text-[#F8FAFC]">
             Stop guessing your matchups.
           </h2>
           <p className="mx-auto max-w-2xl text-sm leading-6 text-[#94A3B8]/78">
-            PrizeMap is not official Pokemon branding. It is a focused testing
+            SixPrizer is not official Pokemon branding. It is a focused testing
             workspace for players who want cleaner data and sharper practice.
           </p>
           <Link href="/signup" className={`mx-auto h-12 px-6 ${primaryButton}`}>

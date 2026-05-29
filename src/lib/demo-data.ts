@@ -98,7 +98,7 @@ export const demoDecks: DemoDeck[] = [
       {
         id: "lucario-v1",
         name: "v1 - Maximum pressure",
-        notes: "Fast prize mapping, inconsistent recovery.",
+        notes: "Fast prize routeping, inconsistent recovery.",
         createdAt: "2026-05-16",
       },
       {
@@ -135,7 +135,7 @@ export const demoDecks: DemoDeck[] = [
 
 const matchupPlan = [
   { archetype: "Mega Greninja", games: 14, wins: 5, firstWins: 4, firstGames: 6, tags: ["missed setup", "bench pressure"] },
-  { archetype: "Dragapult ex", games: 12, wins: 7, firstWins: 4, firstGames: 6, tags: ["prize map", "midgame trade"] },
+  { archetype: "Dragapult ex", games: 12, wins: 7, firstWins: 4, firstGames: 6, tags: ["prize route", "midgame trade"] },
   { archetype: "Ogerpon Meganium", games: 10, wins: 6, firstWins: 4, firstGames: 5, tags: ["tempo lead", "resource check"] },
   { archetype: "Mega Lucario", games: 9, wins: 5, firstWins: 3, firstGames: 5, tags: ["early pressure"] },
   { archetype: "Rocket's Mewtwo", games: 8, wins: 5, firstWins: 3, firstGames: 4, tags: ["hand disruption"] },
@@ -149,7 +149,7 @@ const matchupPlan = [
 const notesByTag: Record<string, string> = {
   "missed setup": "Opening was too slow; missed second attacker by turn three.",
   "bench pressure": "Opponent punished exposed support Pokemon.",
-  "prize map": "Prize route was clear after the first two turns.",
+  "prize route": "Prize route was clear after the first two turns.",
   "midgame trade": "Midgame exchange decided the final prize swing.",
   "tempo lead": "Early board lead converted into cleaner trades.",
   "resource check": "Recovery cards mattered in the last two turns.",

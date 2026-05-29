@@ -16,7 +16,7 @@ import {
   primaryButton,
   textarea,
 } from "@/components/brand-styles";
-import { PrizeMapLogo } from "@/components/PrizeMapLogo";
+import { SixPrizerLogo } from "@/components/SixPrizerLogo";
 import { getArchetypeOptions } from "@/lib/archetypes";
 import { MATCH_TAGS } from "@/lib/match-options";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
@@ -144,7 +144,7 @@ export default async function EditMatchPage({ params }: EditMatchPageProps) {
         <div className={`${appMain} mx-auto w-full max-w-3xl`}>
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <PrizeMapLogo {...logoOnDark} />
+            <SixPrizerLogo {...logoOnDark} />
             <p className="mt-5 text-sm font-medium text-[#94A3B8]">
               Match history
             </p>

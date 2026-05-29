@@ -26,7 +26,7 @@ import {
   sectionTitle,
   textarea,
 } from "@/components/brand-styles";
-import { PrizeMapLogo } from "@/components/PrizeMapLogo";
+import { SixPrizerLogo } from "@/components/SixPrizerLogo";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { getArchetypeOptions } from "@/lib/archetypes";
 import { LATEST_FORMAT } from "@/lib/formats";
@@ -111,7 +111,7 @@ export default async function DecksPage() {
         <div className={`${appMain} mx-auto w-full max-w-6xl`}>
         <header className={pageHeader}>
           <div>
-            <PrizeMapLogo {...logoOnDark} />
+            <SixPrizerLogo {...logoOnDark} />
             <h1 className={pageTitle}>
               Deck Experiments
             </h1>

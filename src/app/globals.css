@@ -39,7 +39,7 @@ body {
   min-width: 0;
 }
 
-@keyframes prizemap-fade-in {
+@keyframes sixprizer-fade-in {
   from {
     opacity: 0;
     transform: translateY(6px);
@@ -51,7 +51,7 @@ body {
   }
 }
 
-@keyframes prizemap-glow-pulse {
+@keyframes sixprizer-glow-pulse {
   0%,
   100% {
     filter: drop-shadow(0 0 10px rgba(79, 140, 255, 0.2));
@@ -64,7 +64,7 @@ body {
   }
 }
 
-@keyframes prizemap-scan {
+@keyframes sixprizer-scan {
   0% {
     transform: translateX(-120%);
   }
@@ -74,21 +74,21 @@ body {
   }
 }
 
-.prizemap-fade-in {
-  animation: prizemap-fade-in 420ms ease-out both;
+.sixprizer-fade-in {
+  animation: sixprizer-fade-in 420ms ease-out both;
 }
 
-.prizemap-glow-pulse {
-  animation: prizemap-glow-pulse 3.5s ease-in-out infinite;
+.sixprizer-glow-pulse {
+  animation: sixprizer-glow-pulse 3.5s ease-in-out infinite;
 }
 
-.prizemap-scan {
+.sixprizer-scan {
   overflow: hidden;
   position: relative;
 }
 
-.prizemap-scan::after {
-  animation: prizemap-scan 3.8s ease-in-out infinite;
+.sixprizer-scan::after {
+  animation: sixprizer-scan 3.8s ease-in-out infinite;
   background: linear-gradient(
     90deg,
     transparent,

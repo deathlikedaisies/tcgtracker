@@ -1,4 +1,4 @@
-type PrizeMapLogoProps = {
+type SixPrizerLogoProps = {
   className?: string;
   markClassName?: string;
   textClassName?: string;
@@ -14,11 +14,11 @@ const markSizes = {
   watermark: "size-full",
 };
 
-function PrizeMapMark({
+function SixPrizerMark({
   variant = "primary",
   className = "",
 }: {
-  variant?: NonNullable<PrizeMapLogoProps["variant"]>;
+  variant?: NonNullable<SixPrizerLogoProps["variant"]>;
   className?: string;
 }) {
   if (variant === "favicon") {
@@ -81,14 +81,14 @@ function PrizeMapMark({
   );
 }
 
-export function PrizeMapLogo({
+export function SixPrizerLogo({
   className = "",
   markClassName = "",
   textClassName = "",
   variant = "primary",
   showText = true,
   hideTextOnMobile = false,
-}: PrizeMapLogoProps) {
+}: SixPrizerLogoProps) {
   const isWatermark = variant === "watermark";
   const defaultMarkClassName = isWatermark
     ? "text-[#4F8CFF]"
@@ -102,11 +102,11 @@ export function PrizeMapLogo({
   return (
     <div className={`flex items-center gap-2.5 ${className}`}>
       <span className={`${defaultMarkClassName} ${markClassName}`}>
-        <PrizeMapMark variant={variant} />
+        <SixPrizerMark variant={variant} />
       </span>
       {showText ? (
         <span className={`font-semibold ${textVisibility} ${textClassName}`}>
-          PrizeMap
+          SixPrizer
         </span>
       ) : null}
     </div>

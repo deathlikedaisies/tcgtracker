@@ -19,9 +19,9 @@ type AuthFormProps = {
 };
 
 const missingConfigMessage =
-  "PrizeMap is not configured correctly. Please contact support.";
+  "SixPrizer is not configured correctly. Please contact support.";
 const connectionMessage =
-  "Could not connect to PrizeMap. Check your connection and try again.";
+  "Could not connect to SixPrizer. Check your connection and try again.";
 
 function getClientAuthErrorMessage(error: unknown) {
   const errorName = error instanceof Error ? error.name.toLowerCase() : "";
@@ -78,8 +78,7 @@ export function AuthForm({ mode, authConfigured = true }: AuthFormProps) {
       }
 
       if (result.needsEmailConfirmation) {
-        // TODO: Customize Supabase confirmation email subject/body and sender branding in the Supabase dashboard.
-        // Custom sender/domain may require custom SMTP.
+        // TODO: Supabase confirmation email subject/body and sender branding should be customized in the Supabase dashboard/custom SMTP.
         setMessage("Check your email to confirm your account, then log in.");
         return;
       }

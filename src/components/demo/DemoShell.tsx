@@ -8,7 +8,7 @@ import {
   PlusCircle,
 } from "lucide-react";
 import { DemoBadge } from "@/components/demo/DemoBadge";
-import { PrizeMapLogo } from "@/components/PrizeMapLogo";
+import { SixPrizerLogo } from "@/components/SixPrizerLogo";
 import { appFrame, appMain, appShell, glassPanel, logoOnDark } from "@/components/brand-styles";
 
 type DemoSection = "dashboard" | "decks" | "matches" | "log" | "matchups";
@@ -32,7 +32,7 @@ export function DemoShell({ current, children }: DemoShellProps) {
       <div className={appFrame}>
         <aside className={`hidden min-h-[calc(100vh-3rem)] p-3 lg:sticky lg:top-6 lg:block ${glassPanel}`}>
           <div className="flex h-full flex-col">
-            <PrizeMapLogo {...logoOnDark} hideTextOnMobile={false} />
+            <SixPrizerLogo {...logoOnDark} hideTextOnMobile={false} />
             <div className="mt-4">
               <DemoBadge />
             </div>
@@ -75,7 +75,7 @@ export function DemoShell({ current, children }: DemoShellProps) {
         <section className={appMain}>
           <header className="flex flex-col gap-3 rounded-md bg-[#0B1020]/44 p-3 shadow-[0_16px_46px_rgba(0,0,0,0.22),inset_0_0_0_1px_rgba(148,163,184,0.10)] backdrop-blur sm:p-4 lg:hidden">
             <div className="flex items-center justify-between gap-3">
-              <PrizeMapLogo {...logoOnDark} />
+              <SixPrizerLogo {...logoOnDark} />
               <DemoBadge />
             </div>
             <nav className="grid grid-cols-5 gap-1 rounded-md bg-[#07111F]/52 p-1">

@@ -26,7 +26,7 @@ import {
   sectionTitle,
   textarea,
 } from "@/components/brand-styles";
-import { PrizeMapLogo } from "@/components/PrizeMapLogo";
+import { SixPrizerLogo } from "@/components/SixPrizerLogo";
 import { SessionCoachPanel } from "@/components/SessionCoachPanel";
 import { ShareReportButton, type ShareReport } from "@/components/ShareReportButton";
 import { getArchetypeOptions } from "@/lib/archetypes";
@@ -481,7 +481,7 @@ export default async function MatchupsPage({
         <div className={`${appMain} mx-auto w-full max-w-6xl`}>
         <header className={pageHeader}>
           <div>
-            <PrizeMapLogo {...logoOnDark} />
+            <SixPrizerLogo {...logoOnDark} />
             <h1 className={pageTitle}>
               Matchup Intelligence
             </h1>

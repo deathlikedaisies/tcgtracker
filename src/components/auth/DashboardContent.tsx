@@ -44,7 +44,7 @@ import {
   sectionCopy,
   sectionTitle,
 } from "@/components/brand-styles";
-import { PrizeMapLogo } from "@/components/PrizeMapLogo";
+import { SixPrizerLogo } from "@/components/SixPrizerLogo";
 import { ShareReportButton, type ShareReport } from "@/components/ShareReportButton";
 import type {
   SessionCoachInsight,
@@ -401,7 +401,7 @@ function SetupChecklist({
 
   return (
     <section className={emptyCard}>
-      <PrizeMapLogo
+      <SixPrizerLogo
         variant="app-icon"
         showText={false}
         className="mb-5"
@@ -412,7 +412,7 @@ function SetupChecklist({
         Set up your testing workspace.
       </h2>
       <p className={`mt-3 max-w-xl ${sectionCopy}`}>
-        PrizeMap needs one deck version before you can log games. After a few games,
+        SixPrizer needs one deck version before you can log games. After a few games,
         matchup signals and testing recommendations will start to appear.
       </p>
       <div className="mt-5 grid gap-2 sm:grid-cols-2">
@@ -596,7 +596,7 @@ export function DashboardContent({
 
   return (
     <main className={appShell}>
-      <section className={`${appFrame} prizemap-fade-in`}>
+      <section className={`${appFrame} sixprizer-fade-in`}>
         <AppSidebar
           current="dashboard"
           insight={{
@@ -611,7 +611,7 @@ export function DashboardContent({
         <header className="rounded-md bg-[#0B1020]/26 p-3 shadow-[0_14px_46px_rgba(0,0,0,0.16),inset_0_0_0_1px_rgba(248,250,252,0.04)] sm:p-4">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div className="min-w-0">
-              <PrizeMapLogo {...logoOnDark} />
+              <SixPrizerLogo {...logoOnDark} />
               <h1 className="mt-2 text-2xl font-bold tracking-tight text-[#F8FAFC] sm:text-3xl">
                 Coach home
               </h1>
@@ -724,7 +724,7 @@ export function DashboardContent({
                     href="/matches/new"
                     className={primaryButton}
                   >
-                    <PrizeMapLogo
+                    <SixPrizerLogo
                       variant="favicon"
                       showText={false}
                       className="mr-2"
