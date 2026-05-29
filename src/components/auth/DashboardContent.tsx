@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import {
   Activity,
   ArrowRight,
@@ -143,6 +143,14 @@ function StatCard({
       <p className="mt-1 text-2xl font-bold tracking-tight text-[#F8FAFC] sm:text-3xl">
         {value}
       </p>
+    </div>
+  );
+}
+
+function ChartPlaceholder({ children }: { children: ReactNode }) {
+  return (
+    <div className="mt-3 flex min-h-[220px] items-center justify-center rounded-md bg-[#07111F]/38 px-4 py-6 text-center text-sm leading-6 text-[#94A3B8]/76 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+      {children}
     </div>
   );
 }
@@ -454,6 +462,7 @@ export function DashboardContent({
 }: DashboardContentProps) {
   const router = useRouter();
   const supabase = createClient();
+  const [chartsExpanded, setChartsExpanded] = useState(false);
   const hasMatches = stats.totalMatches > 0;
   const sampledMatchups = matchupSummary.filter((matchup) => matchup.matches >= 3);
   const worstMatchup = sampledMatchups.reduce<MatchupSummary | null>(
@@ -749,7 +758,10 @@ export function DashboardContent({
         ) : null}
 
         {hasMatches ? (
-          <details className="rounded-md bg-[#11182C]/46 p-3 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.035)] sm:p-4">
+          <details
+            className="rounded-md bg-[#11182C]/46 p-3 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.035)] sm:p-4"
+            onToggle={(event) => setChartsExpanded(event.currentTarget.open)}
+          >
             <summary className="cursor-pointer list-none text-sm font-semibold text-[#F8FAFC]/92 transition hover:text-[#F5C84C] marker:hidden">
               More records and charts
             </summary>
@@ -773,56 +785,64 @@ export function DashboardContent({
                     Daily wins and losses from your logged matches.
                   </p>
                 </div>
-                <div className="mt-3 h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={trendData}>
-                      <CartesianGrid stroke="rgba(148,163,184,0.22)" vertical={false} />
-                      <XAxis
-                        dataKey="label"
-                        tick={{ fill: "#94A3B8", fontSize: 12 }}
-                        tickLine={false}
-                        axisLine={false}
-                      />
-                      <YAxis
-                        allowDecimals={false}
-                        tick={{ fill: "#94A3B8", fontSize: 12 }}
-                        tickLine={false}
-                        axisLine={false}
-                      />
-                      <Tooltip
-                        contentStyle={{
-                          background: "#0B1020",
-                          border: "1px solid rgba(148,163,184,0.18)",
-                          borderRadius: 8,
-                          color: "#F8FAFC",
-                        }}
-                        formatter={(value, name) => [
-                          value,
-                          name === "wins"
-                            ? "Wins"
-                            : name === "losses"
-                              ? "Losses"
-                              : name,
-                        ]}
-                      />
-                      <Legend />
-                      <Line
-                        type="monotone"
-                        dataKey="wins"
-                        stroke="#22C55E"
-                        strokeWidth={2}
-                        dot={false}
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="losses"
-                        stroke="#F43F5E"
-                        strokeWidth={2}
-                        dot={false}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
+                {chartsExpanded && trendData.length ? (
+                  <div className="mt-3 h-64 min-h-[256px] min-w-0">
+                    <ResponsiveContainer width="100%" height="100%" minHeight={220}>
+                      <LineChart data={trendData}>
+                        <CartesianGrid stroke="rgba(148,163,184,0.22)" vertical={false} />
+                        <XAxis
+                          dataKey="label"
+                          tick={{ fill: "#94A3B8", fontSize: 12 }}
+                          tickLine={false}
+                          axisLine={false}
+                        />
+                        <YAxis
+                          allowDecimals={false}
+                          tick={{ fill: "#94A3B8", fontSize: 12 }}
+                          tickLine={false}
+                          axisLine={false}
+                        />
+                        <Tooltip
+                          contentStyle={{
+                            background: "#0B1020",
+                            border: "1px solid rgba(148,163,184,0.18)",
+                            borderRadius: 8,
+                            color: "#F8FAFC",
+                          }}
+                          formatter={(value, name) => [
+                            value,
+                            name === "wins"
+                              ? "Wins"
+                              : name === "losses"
+                                ? "Losses"
+                                : name,
+                          ]}
+                        />
+                        <Legend />
+                        <Line
+                          type="monotone"
+                          dataKey="wins"
+                          stroke="#22C55E"
+                          strokeWidth={2}
+                          dot={false}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="losses"
+                          stroke="#F43F5E"
+                          strokeWidth={2}
+                          dot={false}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <ChartPlaceholder>
+                    {chartsExpanded
+                      ? "Log more games to build a result trend."
+                      : "Open this section to view charts."}
+                  </ChartPlaceholder>
+                )}
               </div>
 
               <div className={`${cardLarge} p-3 sm:p-4`}>
@@ -834,42 +854,50 @@ export function DashboardContent({
                     Win rate by deck version, sorted by matches played.
                   </p>
                 </div>
-                <div className="mt-3 h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={deckPerformanceChart} layout="vertical">
-                      <CartesianGrid stroke="rgba(148,163,184,0.22)" horizontal={false} />
-                      <XAxis
-                        type="number"
-                        domain={[0, 100]}
-                        tickFormatter={(value) => `${value}%`}
-                        tick={{ fill: "#94A3B8", fontSize: 12 }}
-                        tickLine={false}
-                        axisLine={false}
-                      />
-                      <YAxis
-                        type="category"
-                        dataKey="name"
-                        width={120}
-                        tick={{ fill: "#94A3B8", fontSize: 12 }}
-                        tickLine={false}
-                        axisLine={false}
-                      />
-                      <Tooltip
-                        contentStyle={{
-                          background: "#0B1020",
-                          border: "1px solid rgba(148,163,184,0.18)",
-                          borderRadius: 8,
-                          color: "#F8FAFC",
-                        }}
-                        formatter={(value, name) => [
-                          `${value}%`,
-                          name === "winRate" ? "Win rate" : name,
-                        ]}
-                      />
-                      <Bar dataKey="winRate" fill="#4F8CFF" radius={[0, 4, 4, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
+                {chartsExpanded && deckPerformanceChart.length ? (
+                  <div className="mt-3 h-64 min-h-[256px] min-w-0">
+                    <ResponsiveContainer width="100%" height="100%" minHeight={220}>
+                      <BarChart data={deckPerformanceChart} layout="vertical">
+                        <CartesianGrid stroke="rgba(148,163,184,0.22)" horizontal={false} />
+                        <XAxis
+                          type="number"
+                          domain={[0, 100]}
+                          tickFormatter={(value) => `${value}%`}
+                          tick={{ fill: "#94A3B8", fontSize: 12 }}
+                          tickLine={false}
+                          axisLine={false}
+                        />
+                        <YAxis
+                          type="category"
+                          dataKey="name"
+                          width={120}
+                          tick={{ fill: "#94A3B8", fontSize: 12 }}
+                          tickLine={false}
+                          axisLine={false}
+                        />
+                        <Tooltip
+                          contentStyle={{
+                            background: "#0B1020",
+                            border: "1px solid rgba(148,163,184,0.18)",
+                            borderRadius: 8,
+                            color: "#F8FAFC",
+                          }}
+                          formatter={(value, name) => [
+                            `${value}%`,
+                            name === "winRate" ? "Win rate" : name,
+                          ]}
+                        />
+                        <Bar dataKey="winRate" fill="#4F8CFF" radius={[0, 4, 4, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <ChartPlaceholder>
+                    {chartsExpanded
+                      ? "Add another deck version to compare testing results."
+                      : "Open this section to view charts."}
+                  </ChartPlaceholder>
+                )}
               </div>
             </section>
             </div>

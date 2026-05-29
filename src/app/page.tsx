@@ -149,7 +149,7 @@ export default async function Home() {
             <a href="#features" className="transition hover:text-[#F8FAFC]">
               Features
             </a>
-            <a href="#why" className="transition hover:text-[#F8FAFC]">
+            <a href="#why-prizemap" className="transition hover:text-[#F8FAFC]">
               Why PrizeMap
             </a>
           </nav>
@@ -249,7 +249,11 @@ export default async function Home() {
           {[
             [Trophy, "Tournament-ready review", "Spot the matchup and turn-order splits that matter."],
             [Users, "Team testing friendly", "Keep deck experiments and prep notes organized."],
-            [CheckCircle2, "Private by account", "Your testing data stays tied to your login."],
+            [
+              CheckCircle2,
+              "Compare deck versions",
+              "Track each list change separately and see whether your new version actually improves the matchups you care about.",
+            ],
             [Target, "No fake certainty", "Low samples stay labeled until the signal is real."],
           ].map(([Icon, title, copy]) => (
             <article key={title as string} className={`p-4 ${glassPanel}`}>
@@ -261,7 +265,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <section id="why" className="px-4 pb-10 sm:px-6 sm:pb-14">
+      <section id="why-prizemap" className="px-4 pb-10 sm:px-6 sm:pb-14">
         <div className={`mx-auto flex max-w-5xl flex-col gap-4 p-5 text-center sm:p-7 ${glassPanelStrong}`}>
           <h2 className="text-3xl font-bold tracking-tight text-[#F8FAFC]">
             Stop guessing your matchups.

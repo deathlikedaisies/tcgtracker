@@ -44,6 +44,7 @@ export function AuthForm({ mode, authConfigured = true }: AuthFormProps) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -60,6 +61,12 @@ export function AuthForm({ mode, authConfigured = true }: AuthFormProps) {
     }
 
     setMessage("");
+
+    if (!isLogin && password !== confirmPassword) {
+      setMessage("Passwords do not match.");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -71,6 +78,8 @@ export function AuthForm({ mode, authConfigured = true }: AuthFormProps) {
       }
 
       if (result.needsEmailConfirmation) {
+        // TODO: Customize Supabase confirmation email subject/body and sender branding in the Supabase dashboard.
+        // Custom sender/domain may require custom SMTP.
         setMessage("Check your email to confirm your account, then log in.");
         return;
       }
@@ -112,13 +121,37 @@ export function AuthForm({ mode, authConfigured = true }: AuthFormProps) {
           type="password"
           autoComplete={isLogin ? "current-password" : "new-password"}
           required
-          minLength={6}
+          minLength={isLogin ? 6 : 8}
           disabled={!authConfigured || isSubmitting}
           value={password}
           onChange={(event) => setPassword(event.target.value)}
           className={`${inputH11} disabled:cursor-not-allowed disabled:opacity-70`}
         />
+        {!isLogin ? (
+          <p className="text-xs leading-5 text-[#94A3B8]/72">
+            Use at least 8 characters.
+          </p>
+        ) : null}
       </div>
+      {!isLogin ? (
+        <div className="flex flex-col gap-2">
+          <label htmlFor="confirm-password" className={label}>
+            Confirm password
+          </label>
+          <input
+            id="confirm-password"
+            name="confirm-password"
+            type="password"
+            autoComplete="new-password"
+            required
+            minLength={8}
+            disabled={!authConfigured || isSubmitting}
+            value={confirmPassword}
+            onChange={(event) => setConfirmPassword(event.target.value)}
+            className={`${inputH11} disabled:cursor-not-allowed disabled:opacity-70`}
+          />
+        </div>
+      ) : null}
       {displayedMessage ? (
         <p
           role="alert"
