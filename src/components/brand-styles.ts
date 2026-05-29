@@ -16,6 +16,7 @@ export const pageHeader =
 
 export const logoOnDark = {
   variant: "app-icon" as const,
+  size: "sm" as const,
   hideTextOnMobile: true,
   className: "group transition hover:scale-[1.02]",
   markClassName: "size-8 bg-[#1A2238] transition group-hover:shadow-[0_0_22px_rgba(79,140,255,0.22)]",
