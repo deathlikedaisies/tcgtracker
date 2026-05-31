@@ -17,6 +17,7 @@ type ArchetypePickerProps = {
   placeholder?: string;
   maxOptions?: number;
   listMaxHeightClassName?: string;
+  customOptionLabel?: (value: string) => string;
 };
 
 function normalize(value: string) {
@@ -40,6 +41,7 @@ export function ArchetypePicker({
   placeholder = "Search or type an archetype",
   maxOptions = 12,
   listMaxHeightClassName = "max-h-72",
+  customOptionLabel = (value) => `Use custom matchup: ${value}`,
 }: ArchetypePickerProps) {
   const isControlled = value !== undefined;
   const [internalValue, setInternalValue] = useState(defaultValue);
@@ -142,7 +144,7 @@ export function ArchetypePicker({
             >
               <ArchetypeSprites archetype={query.trim()} className="shrink-0" />
               <span className="min-w-0 flex-1 truncate text-sm font-medium">
-                Use &quot;{query.trim()}&quot;
+                {customOptionLabel(query.trim())}
               </span>
             </button>
           ) : null}

@@ -3,10 +3,12 @@ import {
   buildSessionCoachInsight,
   buildTrainingProgressSummary,
 } from "@/lib/session-coach";
+import {
+  countMatchResults,
+  type MatchResult,
+} from "@/lib/match-types";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
-
-type MatchResult = "win" | "loss";
 
 type MatchRow = {
   id: string;
@@ -47,14 +49,14 @@ function formatWinRate(wins: number, total: number, emptyLabel = "0%") {
 }
 
 function getRecord(matches: MatchRow[], emptyLabel?: string) {
-  const wins = matches.filter((match) => match.result === "win").length;
-  const losses = matches.filter((match) => match.result === "loss").length;
+  const { wins, losses, ties, total } = countMatchResults(matches);
 
   return {
-    matches: matches.length,
+    matches: total,
     wins,
     losses,
-    winRate: formatWinRate(wins, matches.length, emptyLabel),
+    ties,
+    winRate: formatWinRate(wins, total, emptyLabel),
   };
 }
 
@@ -178,17 +180,20 @@ export default async function DashboardPage() {
           label: formatChartDate(dateKey),
           wins: 0,
           losses: 0,
+          ties: 0,
         };
 
         if (match.result === "win") {
           current.wins += 1;
-        } else {
+        } else if (match.result === "loss") {
           current.losses += 1;
+        } else {
+          current.ties += 1;
         }
 
         summary.set(dateKey, current);
         return summary;
-      }, new Map<string, { date: string; label: string; wins: number; losses: number }>())
+      }, new Map<string, { date: string; label: string; wins: number; losses: number; ties: number }>())
       .values()
   ).sort((first, second) => first.date.localeCompare(second.date));
   const deckPerformanceChart = deckPerformance.slice(0, 8).map((deckVersion) => ({
@@ -211,6 +216,7 @@ export default async function DashboardPage() {
         totalMatches: totalRecord.matches,
         totalWins: totalRecord.wins,
         totalLosses: totalRecord.losses,
+        totalTies: totalRecord.ties,
         overallWinRate: totalRecord.winRate,
         wentFirstWinRate: wentFirstRecord.winRate,
         wentSecondWinRate: wentSecondRecord.winRate,

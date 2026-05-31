@@ -1,3 +1,9 @@
+import {
+  countMatchResults,
+  formatMatchRecord,
+  type MatchResult,
+} from "@/lib/match-types";
+
 export type DemoDeckVersion = {
   id: string;
   name: string;
@@ -19,7 +25,7 @@ export type DemoMatch = {
   deckId: string;
   deckVersionId: string;
   opponentArchetype: string;
-  result: "win" | "loss";
+  result: MatchResult;
   wentFirst: boolean;
   eventType: string;
   playedAt: string;
@@ -32,12 +38,14 @@ export type DemoMatchup = {
   games: DemoMatch[];
   wins: number;
   losses: number;
+  ties: number;
   winRate: number;
   firstWins: number;
   firstGames: number;
   secondWins: number;
   secondGames: number;
   tags: string[];
+  record: string;
 };
 
 export type DemoConfidence = "Low confidence" | "Building signal" | "Reliable trend";
@@ -219,9 +227,7 @@ export function getWinRate(matches: DemoMatch[]) {
     return 0;
   }
 
-  return Math.round(
-    (matches.filter((match) => match.result === "win").length / matches.length) * 100
-  );
+  return Math.round((countMatchResults(matches).wins / matches.length) * 100);
 }
 
 export function getDemoMatchups(matches: DemoMatch[] = demoMatches): DemoMatchup[] {
@@ -238,18 +244,21 @@ export function getDemoMatchups(matches: DemoMatch[] = demoMatches): DemoMatchup
       const firstGames = games.filter((match) => match.wentFirst);
       const secondGames = games.filter((match) => !match.wentFirst);
       const tags = Array.from(new Set(games.flatMap((match) => match.tags)));
+      const { wins, losses, ties } = countMatchResults(games);
 
       return {
         archetype,
         games,
-        wins: games.filter((match) => match.result === "win").length,
-        losses: games.filter((match) => match.result === "loss").length,
+        wins,
+        losses,
+        ties,
         winRate: getWinRate(games),
         firstWins: firstGames.filter((match) => match.result === "win").length,
         firstGames: firstGames.length,
         secondWins: secondGames.filter((match) => match.result === "win").length,
         secondGames: secondGames.length,
         tags,
+        record: formatMatchRecord(wins, losses, ties),
       };
     })
     .sort((first, second) => first.winRate - second.winRate);

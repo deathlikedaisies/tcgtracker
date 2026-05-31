@@ -25,6 +25,10 @@ import { SessionCoachPanel } from "@/components/SessionCoachPanel";
 import { analyzeDeckList } from "@/lib/decklist";
 import { buildSessionCoachInsight } from "@/lib/session-coach";
 import { enrichDeckAnalysis } from "@/lib/card-data/deck-enrichment";
+import {
+  countMatchResults,
+  type MatchResult,
+} from "@/lib/match-types";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { createDeckVersion, markDeckVersionActive } from "./actions";
 
@@ -43,32 +47,32 @@ type DeckVersion = {
   created_at: string;
 };
 
-function getVersionTestStatus(matches: { result: "win" | "loss" }[]) {
-  const wins = matches.filter((match) => match.result === "win").length;
-  const winRate = matches.length ? Math.round((wins / matches.length) * 100) : 0;
+function getVersionTestStatus(matches: { result: MatchResult }[]) {
+  const { wins, total } = countMatchResults(matches);
+  const winRate = total ? Math.round((wins / total) * 100) : 0;
 
-  if (matches.length < 3) {
+  if (total < 3) {
     return {
       label: "Unproven",
-      detail: `${matches.length} game${matches.length === 1 ? "" : "s"} logged`,
+      detail: `${total} game${total === 1 ? "" : "s"} logged`,
       className: "bg-[#4F8CFF]/14 text-[#B8D1FF]",
     };
   }
 
-  if (matches.length < 5) {
+  if (total < 5) {
     return {
       label: "Early signal",
-      detail: `${winRate}% over ${matches.length} games`,
+      detail: `${winRate}% over ${total} games`,
       className: "bg-[#F5C84C]/14 text-[#F5C84C]",
     };
   }
 
-  return {
-    label: winRate >= 55 ? "Improving test" : "No clear improvement",
-    detail: `${winRate}% over ${matches.length} games`,
-    className:
-      winRate >= 55
-        ? "bg-emerald-500/14 text-emerald-200"
+    return {
+      label: winRate >= 55 ? "Improving test" : "No clear improvement",
+      detail: `${winRate}% over ${total} games`,
+      className:
+        winRate >= 55
+          ? "bg-emerald-500/14 text-emerald-200"
         : "bg-[#F43F5E]/14 text-rose-200",
   };
 }
@@ -121,7 +125,7 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
   const sessionCoach = buildSessionCoachInsight(
     (matches ?? []) as {
       opponent_archetype: string;
-      result: "win" | "loss";
+      result: MatchResult;
       went_first: boolean | null;
       event_type: string | null;
       played_at: string;
@@ -222,7 +226,7 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                   );
                   const versionMatches = ((matches ?? []) as {
                     deck_version_id: string;
-                    result: "win" | "loss";
+                    result: MatchResult;
                   }[]).filter((match) => match.deck_version_id === version.id);
                   const testStatus = getVersionTestStatus(versionMatches);
                   const insight = versionInsightById.get(version.id);

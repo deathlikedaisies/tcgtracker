@@ -1,14 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
-import { Bolt, CheckCircle2, ClipboardList, Target } from "lucide-react";
 import { ArchetypePicker } from "@/components/ArchetypePicker";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
 import { SessionCoachPanel } from "@/components/SessionCoachPanel";
 import {
-  glassPanel,
   glassPanelStrong,
   inputH11,
   label,
@@ -16,7 +14,26 @@ import {
   secondaryButton,
   textarea,
 } from "@/components/brand-styles";
-import { MATCH_TAGS } from "@/lib/match-options";
+import {
+  MATCH_ISSUE_TAG_OPTIONS,
+  MATCH_POSITIVE_TAG_OPTIONS,
+} from "@/lib/match-options";
+import {
+  deriveInitialGameContext,
+  getGameContextLabel,
+  getMatchResultLabel,
+  getQualityLabel,
+  MATCH_GAME_CONTEXT_OPTIONS,
+  MATCH_OPENING_HAND_OPTIONS,
+  MATCH_SEQUENCING_OPTIONS,
+  MATCH_START_QUALITY_OPTIONS,
+  type MatchGameContext,
+  type MatchMetadata,
+  type MatchOpeningHandQuality,
+  type MatchResult,
+  type MatchSequencingQuality,
+  type MatchStartQuality,
+} from "@/lib/match-types";
 import {
   matchCountsTowardMission,
   matchCountsTowardMissionContext,
@@ -35,12 +52,19 @@ type MatchLogFormProps = {
   action: (formData: FormData) => void;
   deckOptions: DeckOption[];
   opponentArchetypeOptions: string[];
-  recentOpponentArchetypes: string[];
+  initialDeckVersionId?: string;
   initialEventType?: string;
   initialOpponentArchetype?: string;
+  initialOpponentVariant?: string;
   initialResult?: string;
   initialWentFirst?: string;
+  initialNotes?: string;
+  initialTags?: string[];
+  initialMetadata?: MatchMetadata | null;
   sessionCoach?: SessionCoachInsight | null;
+  secondaryHref?: string;
+  secondaryLabel?: string;
+  submitLabel?: string;
   wasSuccessful: boolean;
 };
 
@@ -49,69 +73,220 @@ const sessionKeys = {
   opponentArchetype: "tcgtracker.matchLog.opponentArchetype",
   result: "tcgtracker.matchLog.result",
   wentFirst: "tcgtracker.matchLog.wentFirst",
-  eventType: "tcgtracker.matchLog.eventType",
+  gameContext: "tcgtracker.matchLog.gameContext",
+  eventName: "tcgtracker.matchLog.eventName",
+  roundNumber: "tcgtracker.matchLog.roundNumber",
+  testingSessionName: "tcgtracker.matchLog.testingSessionName",
+  focusMatchup: "tcgtracker.matchLog.focusMatchup",
+  startQuality: "tcgtracker.matchLog.startQuality",
+  openingHandQuality: "tcgtracker.matchLog.openingHandQuality",
+  sequencingQuality: "tcgtracker.matchLog.sequencingQuality",
 };
 
-const toggleClass =
-  "flex h-12 w-full max-w-full min-w-0 cursor-pointer items-center justify-center rounded-md bg-[#07111F]/52 px-3 text-center text-sm font-semibold text-[#94A3B8] transition hover:bg-[#4F8CFF]/12 hover:text-[#F8FAFC] active:scale-[0.98] has-[:checked]:bg-[#4F8CFF]/22 has-[:checked]:shadow-[inset_0_0_0_1px_rgba(79,140,255,0.30),0_8px_22px_rgba(79,140,255,0.10)] has-[:checked]:text-[#F8FAFC]";
+const subCardClass =
+  "rounded-xl bg-[#0B1020]/46 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]";
 
-function SubmitButton() {
+const largeToggleClass =
+  "flex min-h-14 w-full min-w-0 items-center justify-center rounded-xl bg-[#07111F]/58 px-3 text-center text-base font-semibold text-[#D7E0EF] transition hover:bg-[#4F8CFF]/14 hover:text-[#F8FAFC] active:scale-[0.98]";
+
+const mediumToggleClass =
+  "flex min-h-12 w-full min-w-0 items-center justify-center rounded-lg bg-[#07111F]/56 px-3 text-center text-sm font-semibold text-[#B9C4D6] transition hover:bg-[#4F8CFF]/12 hover:text-[#F8FAFC] active:scale-[0.98]";
+
+const tagToggleClass =
+  "inline-flex min-h-11 w-full min-w-0 items-center justify-start rounded-lg bg-[#07111F]/52 px-3 py-2 text-left text-sm font-semibold text-[#A8B5C8] transition hover:bg-[#4F8CFF]/10 hover:text-[#F8FAFC] active:scale-[0.98]";
+
+const selectedToggleClass =
+  "bg-[#4F8CFF]/22 text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.32),0_10px_24px_rgba(79,140,255,0.08)]";
+
+const sectionToggleClass =
+  "flex w-full items-center justify-between rounded-xl bg-[#07111F]/48 px-3 py-3 text-left transition hover:bg-[#07111F]/66";
+
+const QUICK_ISSUE_TAG_OPTIONS = [
+  "missed setup",
+  "poor prize trade",
+  "bad sequencing",
+  "supporter drought",
+  "energy issue",
+  "bench pressure",
+] as const satisfies readonly string[];
+
+const EXTRA_ISSUE_TAG_OPTIONS: string[] = MATCH_ISSUE_TAG_OPTIONS.filter(
+  (tag) => !QUICK_ISSUE_TAG_OPTIONS.includes(tag as (typeof QUICK_ISSUE_TAG_OPTIONS)[number])
+);
+
+function SubmitButton({ label }: { label: string }) {
   const { pending } = useFormStatus();
 
   return (
     <button
       type="submit"
       disabled={pending}
-      className={`${primaryButton} h-11 w-full`}
+      className={`${primaryButton} h-12 w-full text-base`}
     >
-      {pending ? "Saving..." : "Save and log another"}
+      {pending ? "Saving..." : label}
     </button>
-  );
-}
-
-function StepLabel({
-  index,
-  title,
-  helper,
-}: {
-  index: number;
-  title: string;
-  helper: string;
-}) {
-  return (
-    <div className="flex min-w-0 gap-3">
-      <span className="mt-0.5 inline-flex size-7 shrink-0 items-center justify-center rounded-full bg-[#4F8CFF] text-xs font-bold text-white shadow-[0_8px_18px_rgba(79,140,255,0.20)]">
-        {index}
-      </span>
-      <div className="min-w-0">
-        <p className="text-sm font-semibold text-[#F8FAFC]">{title}</p>
-        <p className="mt-0.5 text-xs leading-5 text-[#94A3B8]/72">{helper}</p>
-      </div>
-    </div>
   );
 }
 
 function normalize(value: string) {
   return value
     .trim()
-    .replace(/[’‘`]/g, "'")
+    .replace(/[\u2018\u2019'`]/g, "'")
     .replace(/\s+/g, " ")
     .toLowerCase();
+}
+
+function cleanChipValue(value: string) {
+  return value
+    .trim()
+    .replace(/\s+/g, " ");
+}
+
+function toggleSelection(values: string[], value: string) {
+  return values.includes(value)
+    ? values.filter((candidate) => candidate !== value)
+    : [...values, value];
+}
+
+function mapLegacyTagsToIssueTags(tags: string[]) {
+  return Array.from(
+    new Set(
+      tags.flatMap((tag) => {
+        if (tag === "setup issue") {
+          return ["missed setup"];
+        }
+
+        if (tag === "prize plan") {
+          return ["poor prize trade"];
+        }
+
+        if (tag === "sequencing") {
+          return ["bad sequencing"];
+        }
+
+        if (tag === "dead draw") {
+          return ["supporter drought"];
+        }
+
+        if (tag === "bad matchup") {
+          return ["matchup knowledge"];
+        }
+
+        if (tag === "misplay") {
+          return ["misplay"];
+        }
+
+        return [];
+      })
+    )
+  );
+}
+
+function ChipInput({
+  labelText,
+  values,
+  onChange,
+  placeholder,
+  fieldName,
+}: {
+  labelText: string;
+  values: string[];
+  onChange: (values: string[]) => void;
+  placeholder: string;
+  fieldName: string;
+}) {
+  const [draft, setDraft] = useState("");
+
+  function addDraftValue() {
+    const nextValue = cleanChipValue(draft);
+
+    if (!nextValue || values.includes(nextValue)) {
+      setDraft("");
+      return;
+    }
+
+    onChange([...values, nextValue]);
+    setDraft("");
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      <label className={label}>{labelText}</label>
+      <div className="rounded-lg bg-[#11182C]/58 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+        <div className="flex flex-wrap gap-2">
+          {values.map((value) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() =>
+                onChange(values.filter((candidate) => candidate !== value))
+              }
+              className="inline-flex items-center gap-2 rounded-md bg-[#4F8CFF]/18 px-2.5 py-1.5 text-xs font-semibold text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.28)]"
+            >
+              {value}
+              <span aria-hidden="true">x</span>
+            </button>
+          ))}
+        </div>
+        <div className="mt-3 flex gap-2">
+          <input
+            value={draft}
+            onChange={(event) => setDraft(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === ",") {
+                event.preventDefault();
+                addDraftValue();
+              }
+            }}
+            onBlur={() => {
+              if (draft.trim()) {
+                addDraftValue();
+              }
+            }}
+            placeholder={placeholder}
+            className={inputH11}
+          />
+          <button
+            type="button"
+            onClick={addDraftValue}
+            className="rounded-md bg-[#4F8CFF]/12 px-3 text-sm font-semibold text-[#F8FAFC] transition hover:bg-[#4F8CFF]/18 active:scale-[0.98]"
+          >
+            Add
+          </button>
+        </div>
+        {values.map((value) => (
+          <input key={value} type="hidden" name={fieldName} value={value} />
+        ))}
+      </div>
+    </div>
+  );
 }
 
 export function MatchLogForm({
   action,
   deckOptions,
   opponentArchetypeOptions,
+  initialDeckVersionId,
   initialEventType,
   initialOpponentArchetype,
+  initialOpponentVariant,
   initialResult,
   initialWentFirst,
-  recentOpponentArchetypes,
+  initialNotes,
+  initialTags = [],
+  initialMetadata,
   sessionCoach,
+  secondaryHref = "/matches",
+  secondaryLabel = "Match history",
+  submitLabel = "Save and log another",
   wasSuccessful,
 }: MatchLogFormProps) {
+  const metadata = initialMetadata ?? {};
   const [deckVersionId, setDeckVersionId] = useState(() => {
+    if (initialDeckVersionId?.trim()) {
+      return initialDeckVersionId;
+    }
+
     if (typeof window === "undefined") {
       return deckOptions[0]?.id ?? "";
     }
@@ -120,6 +295,73 @@ export function MatchLogForm({
     return stored && deckOptions.some((option) => option.id === stored)
       ? stored
       : deckOptions[0]?.id ?? "";
+  });
+  const [gameContext, setGameContext] = useState<MatchGameContext>(() => {
+    const initialContext = deriveInitialGameContext(
+      metadata,
+      initialEventType ?? null
+    );
+
+    if (metadata.game_context || initialEventType || initialDeckVersionId) {
+      return initialContext;
+    }
+
+    if (typeof window !== "undefined") {
+      const stored = sessionStorage.getItem(sessionKeys.gameContext);
+
+      if (
+        stored === MATCH_GAME_CONTEXT_OPTIONS[0] ||
+        stored === MATCH_GAME_CONTEXT_OPTIONS[1]
+      ) {
+        return stored;
+      }
+    }
+
+    return initialContext;
+  });
+  const [eventName, setEventName] = useState(() => {
+    if (metadata.event_name) {
+      return metadata.event_name;
+    }
+
+    if (typeof window === "undefined") {
+      return "";
+    }
+
+    return sessionStorage.getItem(sessionKeys.eventName) ?? "";
+  });
+  const [roundNumber, setRoundNumber] = useState(() => {
+    if (metadata.round_number) {
+      return metadata.round_number;
+    }
+
+    if (typeof window === "undefined") {
+      return "";
+    }
+
+    return sessionStorage.getItem(sessionKeys.roundNumber) ?? "";
+  });
+  const [testingSessionName, setTestingSessionName] = useState(() => {
+    if (metadata.testing_session_name) {
+      return metadata.testing_session_name;
+    }
+
+    if (typeof window === "undefined") {
+      return "";
+    }
+
+    return sessionStorage.getItem(sessionKeys.testingSessionName) ?? "";
+  });
+  const [focusMatchup, setFocusMatchup] = useState(() => {
+    if (metadata.focus_matchup) {
+      return metadata.focus_matchup;
+    }
+
+    if (typeof window === "undefined") {
+      return "";
+    }
+
+    return sessionStorage.getItem(sessionKeys.focusMatchup) ?? "";
   });
   const [opponentArchetype, setOpponentArchetype] = useState(() => {
     if (initialOpponentArchetype?.trim()) {
@@ -132,8 +374,15 @@ export function MatchLogForm({
 
     return sessionStorage.getItem(sessionKeys.opponentArchetype) ?? "";
   });
-  const [result, setResult] = useState<"win" | "loss">(() => {
-    if (initialResult === "win" || initialResult === "loss") {
+  const [opponentVariant, setOpponentVariant] = useState(
+    initialOpponentVariant ?? ""
+  );
+  const [result, setResult] = useState<MatchResult>(() => {
+    if (
+      initialResult === "win" ||
+      initialResult === "loss" ||
+      initialResult === "tie"
+    ) {
       return initialResult;
     }
 
@@ -142,7 +391,7 @@ export function MatchLogForm({
     }
 
     const stored = sessionStorage.getItem(sessionKeys.result);
-    return stored === "loss" ? "loss" : "win";
+    return stored === "loss" || stored === "tie" ? stored : "win";
   });
   const [wentFirst, setWentFirst] = useState<"true" | "false">(() => {
     if (initialWentFirst === "true" || initialWentFirst === "false") {
@@ -167,36 +416,106 @@ export function MatchLogForm({
     const stored = sessionStorage.getItem(sessionKeys.wentFirst);
     return stored === "false" ? "false" : "true";
   });
-  const [eventType, setEventType] = useState<
-    "casual" | "testing" | "tournament"
+  const [startQuality, setStartQuality] = useState<
+    MatchStartQuality | undefined
   >(() => {
-    if (
-      initialEventType === "casual" ||
-      initialEventType === "testing" ||
-      initialEventType === "tournament"
-    ) {
-      return initialEventType;
+    if (metadata.start_quality) {
+      return metadata.start_quality;
     }
 
     if (typeof window === "undefined") {
-      return "testing";
+      return undefined;
     }
 
-    const stored = sessionStorage.getItem(sessionKeys.eventType);
-    return stored === "casual" || stored === "tournament"
-      ? stored
-      : "testing";
+    const stored = sessionStorage.getItem(sessionKeys.startQuality);
+    return MATCH_START_QUALITY_OPTIONS.includes(stored as MatchStartQuality)
+      ? (stored as MatchStartQuality)
+      : undefined;
   });
-  const [detailsOpen, setDetailsOpen] = useState(false);
-  const [notes, setNotes] = useState("");
+  const [openingHandQuality, setOpeningHandQuality] = useState<
+    MatchOpeningHandQuality | undefined
+  >(() => {
+    if (metadata.opening_hand_quality) {
+      return metadata.opening_hand_quality;
+    }
+
+    if (typeof window === "undefined") {
+      return undefined;
+    }
+
+    const stored = sessionStorage.getItem(sessionKeys.openingHandQuality);
+    return MATCH_OPENING_HAND_OPTIONS.includes(
+      stored as MatchOpeningHandQuality
+    )
+      ? (stored as MatchOpeningHandQuality)
+      : undefined;
+  });
+  const [sequencingQuality, setSequencingQuality] = useState<
+    MatchSequencingQuality | undefined
+  >(() => {
+    if (metadata.sequencing_quality) {
+      return metadata.sequencing_quality;
+    }
+
+    if (typeof window === "undefined") {
+      return undefined;
+    }
+
+    const stored = sessionStorage.getItem(sessionKeys.sequencingQuality);
+    return MATCH_SEQUENCING_OPTIONS.includes(
+      stored as MatchSequencingQuality
+    )
+      ? (stored as MatchSequencingQuality)
+      : undefined;
+  });
+  const [issueTags, setIssueTags] = useState<string[]>(
+    metadata.issue_tags ?? mapLegacyTagsToIssueTags(initialTags)
+  );
+  const [positiveTags, setPositiveTags] = useState<string[]>(
+    metadata.positive_tags ?? []
+  );
+  const [cardsShined, setCardsShined] = useState<string[]>(
+    metadata.cards_shined ?? []
+  );
+  const [cardsFailed, setCardsFailed] = useState<string[]>(
+    metadata.cards_failed ?? []
+  );
+  const [notes, setNotes] = useState(initialNotes ?? "");
   const [tcgLiveLog, setTcgLiveLog] = useState("");
   const [importStatus, setImportStatus] = useState("");
   const [isChangingDeck, setIsChangingDeck] = useState(false);
+  const [advancedOpen, setAdvancedOpen] = useState(() =>
+    Boolean(
+      initialOpponentVariant?.trim() ||
+        metadata.game_context === "competitive" ||
+        metadata.event_name ||
+        metadata.round_number ||
+        metadata.testing_session_name ||
+        metadata.focus_matchup ||
+        metadata.start_quality ||
+        metadata.opening_hand_quality ||
+        metadata.sequencing_quality
+    )
+  );
+  const [notesOpen, setNotesOpen] = useState(() =>
+    Boolean(
+      metadata.positive_tags?.length ||
+        metadata.cards_shined?.length ||
+        metadata.cards_failed?.length ||
+        (initialNotes ?? "").trim()
+    )
+  );
+  const [moreIssueTagsOpen, setMoreIssueTagsOpen] = useState(() =>
+    (metadata.issue_tags ?? mapLegacyTagsToIssueTags(initialTags)).some((tag) =>
+      EXTRA_ISSUE_TAG_OPTIONS.includes(tag)
+    )
+  );
   const selectedDeck = deckOptions.find((option) => option.id === deckVersionId);
   const selectedDeckArchetype = selectedDeck?.detail ?? "";
   const selectedDeckSuggestion = selectedDeck?.suggestedArchetype ?? null;
   const loggedOpponent = initialOpponentArchetype?.trim() ?? "";
-  const loggedResult: "win" | "loss" = initialResult === "loss" ? "loss" : "win";
+  const loggedResult: MatchResult =
+    initialResult === "loss" || initialResult === "tie" ? initialResult : "win";
   const loggedMatch =
     sessionCoach && loggedOpponent
       ? {
@@ -222,29 +541,90 @@ export function MatchLogForm({
       : false;
 
   useEffect(() => {
-    if (initialOpponentArchetype?.trim()) {
-      sessionStorage.setItem(
-        sessionKeys.opponentArchetype,
-        initialOpponentArchetype.trim()
-      );
+    sessionStorage.setItem(sessionKeys.deckVersionId, deckVersionId);
+  }, [deckVersionId]);
+
+  useEffect(() => {
+    sessionStorage.setItem(sessionKeys.opponentArchetype, opponentArchetype);
+  }, [opponentArchetype]);
+
+  useEffect(() => {
+    sessionStorage.setItem(sessionKeys.result, result);
+  }, [result]);
+
+  useEffect(() => {
+    sessionStorage.setItem(sessionKeys.wentFirst, wentFirst);
+  }, [wentFirst]);
+
+  useEffect(() => {
+    sessionStorage.setItem(sessionKeys.gameContext, gameContext);
+  }, [gameContext]);
+
+  useEffect(() => {
+    sessionStorage.setItem(sessionKeys.eventName, eventName);
+  }, [eventName]);
+
+  useEffect(() => {
+    sessionStorage.setItem(sessionKeys.roundNumber, roundNumber);
+  }, [roundNumber]);
+
+  useEffect(() => {
+    sessionStorage.setItem(sessionKeys.testingSessionName, testingSessionName);
+  }, [testingSessionName]);
+
+  useEffect(() => {
+    sessionStorage.setItem(sessionKeys.focusMatchup, focusMatchup);
+  }, [focusMatchup]);
+
+  useEffect(() => {
+    sessionStorage.setItem(sessionKeys.startQuality, startQuality ?? "");
+  }, [startQuality]);
+
+  useEffect(() => {
+    sessionStorage.setItem(
+      sessionKeys.openingHandQuality,
+      openingHandQuality ?? ""
+    );
+  }, [openingHandQuality]);
+
+  useEffect(() => {
+    sessionStorage.setItem(
+      sessionKeys.sequencingQuality,
+      sequencingQuality ?? ""
+    );
+  }, [sequencingQuality]);
+
+  const readySummary = useMemo(() => {
+    const parts: string[] = [];
+    const deckLabel = selectedDeck?.label ?? selectedDeckSuggestion ?? selectedDeckArchetype;
+
+    if (deckLabel && opponentArchetype) {
+      parts.push(`${deckLabel} vs ${opponentArchetype}`);
+    } else if (deckLabel) {
+      parts.push(deckLabel);
+    } else if (opponentArchetype) {
+      parts.push(opponentArchetype);
     }
 
-    if (
-      initialEventType === "casual" ||
-      initialEventType === "testing" ||
-      initialEventType === "tournament"
-    ) {
-      sessionStorage.setItem(sessionKeys.eventType, initialEventType);
+    parts.push(getMatchResultLabel(result));
+    parts.push(wentFirst === "true" ? "First" : "Second");
+
+    const highlightTags = [...issueTags, ...positiveTags].slice(0, 3);
+    if (highlightTags.length) {
+      parts.push(highlightTags.join(", "));
     }
 
-    if (initialResult === "win" || initialResult === "loss") {
-      sessionStorage.setItem(sessionKeys.result, initialResult);
-    }
-  }, [initialEventType, initialOpponentArchetype, initialResult]);
-
-  function remember(key: string, value: string) {
-    sessionStorage.setItem(key, value);
-  }
+    return parts.filter(Boolean).join(" | ");
+  }, [
+    issueTags,
+    opponentArchetype,
+    positiveTags,
+    result,
+    selectedDeck,
+    selectedDeckArchetype,
+    selectedDeckSuggestion,
+    wentFirst,
+  ]);
 
   function importTcgLiveLog() {
     const log = tcgLiveLog.trim();
@@ -264,11 +644,11 @@ export function MatchLogForm({
       !/\b(opponent won|opponent wins|you lost|defeat)\b/.test(normalizedLog)
     ) {
       setResult("win");
-      remember(sessionKeys.result, "win");
       detectedResult = "Win";
-    } else if (/\b(you lost|defeat|opponent won|opponent wins)\b/.test(normalizedLog)) {
+    } else if (
+      /\b(you lost|defeat|opponent won|opponent wins)\b/.test(normalizedLog)
+    ) {
       setResult("loss");
-      remember(sessionKeys.result, "loss");
       detectedResult = "Loss";
     }
 
@@ -280,419 +660,616 @@ export function MatchLogForm({
 
     if (inferredOpponent) {
       setOpponentArchetype(inferredOpponent);
-      remember(sessionKeys.opponentArchetype, inferredOpponent);
     }
 
     setTcgLiveLog("");
+    setNotesOpen(true);
     setImportStatus(
-      `Imported to notes.${
+      `Imported to learnings.${
         detectedResult || inferredOpponent
-          ? ` Detected: ${[detectedResult, inferredOpponent].filter(Boolean).join(" · ")}.`
+          ? ` Detected: ${[detectedResult, inferredOpponent]
+              .filter(Boolean)
+              .join(" | ")}.`
           : " Opponent/result not detected."
       }`
     );
   }
 
   return (
-    <div className="mt-5 grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-start">
-    <form
-      action={action}
-      className={`w-full max-w-full min-w-0 overflow-x-hidden p-3 pb-28 sm:p-5 md:pb-5 ${glassPanelStrong}`}
-    >
-      <input type="hidden" name="deck_version_id" value={deckVersionId} />
-      <div className="grid w-full max-w-full min-w-0 gap-4 overflow-x-hidden">
-        {wasSuccessful ? (
-          <div className="rounded-md bg-[#07111F]/46 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]">
-            <div
-              className={`rounded-md px-3 py-2 text-sm font-medium ${
-                countedTowardMission
-                  ? "bg-emerald-500/10 text-emerald-200"
-                  : "bg-[#F5C84C]/10 text-[#F5C84C]"
-              }`}
-            >
-              {sessionCoach ? (
-                <>
-                  {countedTowardMission
-                    ? countedTowardContext
-                      ? "Counts toward mission and focus evidence."
-                      : "Counts toward your current mission."
-                    : "Logged outside the current mission focus."}{" "}
-                  <span className="text-emerald-100">
-                    {sessionCoach.missionProgress} / {sessionCoach.missionTargetCount} done.
-                    {" "}
-                    {countedTowardMission
-                      ? sessionCoach.progressFeedback
-                      : sessionCoach.missionContextSeenCount > 0
-                        ? "Focus evidence is still separate."
-                        : "Focus area not seen yet."}
-                  </span>
-                </>
-              ) : (
-                "Match logged. Ready for the next one."
-              )}
-            </div>
-            <div className="mt-3 grid gap-2 sm:grid-cols-3">
-              <Link href="/dashboard" className={secondaryButton}>
-                Dashboard
-              </Link>
-              <Link href="/matchups" className={secondaryButton}>
-                Matchups
-              </Link>
-              <Link href="/matches" className={secondaryButton}>
-                Matches
-              </Link>
-            </div>
-          </div>
+    <div className="mt-5 grid gap-4">
+      {sessionCoach ? (
+        <SessionCoachPanel
+          insight={sessionCoach}
+          isPostSave={wasSuccessful}
+          showCta={false}
+        />
+      ) : null}
+
+      <form
+        action={action}
+        className={`w-full max-w-full min-w-0 overflow-x-hidden p-3 sm:p-5 ${glassPanelStrong}`}
+      >
+        <input type="hidden" name="deck_version_id" value={deckVersionId} />
+        <input type="hidden" name="game_context" value={gameContext} />
+        <input type="hidden" name="result" value={result} />
+        <input type="hidden" name="went_first" value={wentFirst} />
+        {startQuality ? (
+          <input type="hidden" name="start_quality" value={startQuality} />
         ) : null}
+        {openingHandQuality ? (
+          <input
+            type="hidden"
+            name="opening_hand_quality"
+            value={openingHandQuality}
+          />
+        ) : null}
+        {sequencingQuality ? (
+          <input
+            type="hidden"
+            name="sequencing_quality"
+            value={sequencingQuality}
+          />
+        ) : null}
+        {issueTags.map((tag) => (
+          <input key={`issue-${tag}`} type="hidden" name="issue_tags" value={tag} />
+        ))}
+        {positiveTags.map((tag) => (
+          <input
+            key={`positive-${tag}`}
+            type="hidden"
+            name="positive_tags"
+            value={tag}
+          />
+        ))}
 
-        <div className="grid gap-3 border-b border-white/6 pb-4 lg:grid-cols-[180px_minmax(0,1fr)]">
-          <StepLabel index={1} title="Your deck" helper="Select the tested version." />
-          <div className="max-w-full overflow-x-hidden rounded-md bg-[#07111F]/44 px-3 py-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]">
-            <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium uppercase text-[#94A3B8]/72">
-                Current deck
+        <div className="grid gap-4">
+          {wasSuccessful ? (
+            <div className="rounded-md bg-[#07111F]/46 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]">
+              <div
+                className={`rounded-md px-3 py-2 text-sm font-medium ${
+                  countedTowardMission
+                    ? "bg-emerald-500/10 text-emerald-200"
+                    : "bg-[#F5C84C]/10 text-[#F5C84C]"
+                }`}
+              >
+                {sessionCoach ? (
+                  <>
+                    {countedTowardMission
+                      ? countedTowardContext
+                        ? "Counts toward mission and focus evidence."
+                        : "Counts toward your current mission."
+                      : "Logged outside the current mission focus."}{" "}
+                    <span className="text-emerald-100">
+                      This game will contribute to matchup, turn-order, opening-hand, and sequencing patterns.
+                    </span>
+                  </>
+                ) : (
+                  "This game will contribute to matchup, turn-order, opening-hand, and sequencing patterns."
+                )}
+              </div>
+              <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                <Link href="/dashboard" className={secondaryButton}>
+                  Dashboard
+                </Link>
+                <Link href="/matchups" className={secondaryButton}>
+                  Matchups
+                </Link>
+                <Link href="/matches" className={secondaryButton}>
+                  Matches
+                </Link>
+              </div>
+            </div>
+          ) : null}
+
+          <section className="rounded-xl bg-[#07111F]/36 p-4 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.12)] sm:p-5">
+            <div className="flex flex-col gap-1">
+              <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
+                Quick log
               </p>
-              <div className="mt-1 flex min-w-0 items-center gap-2">
-                <ArchetypeSprites
-                  archetype={selectedDeckSuggestion ?? selectedDeckArchetype}
-                  className="shrink-0"
-                />
-                <p className="truncate text-sm font-semibold text-[#F8FAFC]">
-                  {selectedDeck?.label ?? "Choose a deck version"}
-                </p>
-              </div>
-              {selectedDeckSuggestion ? (
-                <p className="mt-1 truncate text-xs font-medium text-[#B8D1FF]">
-                  List reads as {selectedDeckSuggestion}
-                </p>
-              ) : null}
+              <h2 className="text-xl font-semibold text-[#F8FAFC]">
+                Log a game fast
+              </h2>
+              <p className="text-sm leading-6 text-[#94A3B8]/76">
+                Pick matchup, result, turn order, and the main leak before you queue again.
+              </p>
             </div>
-            <button
-              type="button"
-              onClick={() => setIsChangingDeck((current) => !current)}
-              className="shrink-0 rounded-md bg-[#4F8CFF]/10 px-3 py-2 text-xs font-semibold text-[#F8FAFC] transition hover:bg-[#4F8CFF]/16 active:scale-[0.98]"
-            >
-              {isChangingDeck ? "Done" : "Change deck"}
-            </button>
-            </div>
-            {isChangingDeck ? (
-              <div className="mt-3 flex flex-col gap-2">
-                <label htmlFor="deck_version_id_select" className={label}>
-                  Session deck
-                </label>
-                <select
-                  id="deck_version_id_select"
-                  value={deckVersionId}
-                  onChange={(event) => {
-                    setDeckVersionId(event.target.value);
-                    remember(sessionKeys.deckVersionId, event.target.value);
-                  }}
-                  className={inputH11}
-                >
-                  {deckOptions.map((option) => (
-                    <option key={option.id} value={option.id}>
-                      {option.label}
-                      {option.isActive ? " (active)" : ""} - {option.detail}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            ) : null}
-          </div>
-        </div>
 
-        <section className="grid gap-3 border-b border-white/6 pb-4 lg:grid-cols-[180px_minmax(0,1fr)]">
-          <StepLabel index={2} title="Opponent matchup" helper="Who did you play against?" />
-          <div className="max-w-full overflow-x-hidden rounded-md bg-[#07111F]/38 p-3 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.12)] sm:p-4">
-            <ArchetypePicker
-              id="opponent_archetype"
-              name="opponent_archetype"
-              label="Who did you play?"
-              options={opponentArchetypeOptions}
-              value={opponentArchetype}
-              required
-              autoFocus
-              maxOptions={7}
-              listMaxHeightClassName="max-h-48"
-              onValueChange={(nextValue) => {
-                setOpponentArchetype(nextValue);
-                remember(sessionKeys.opponentArchetype, nextValue);
-              }}
-            />
-            {recentOpponentArchetypes.length ? (
-              <div className="mt-3">
-                <p className="mb-2 text-xs font-medium uppercase text-[#94A3B8]/70">
-                  Recent opponents
-                </p>
-                <div className="flex max-w-full flex-wrap gap-2 overflow-x-hidden pb-1">
-                  {recentOpponentArchetypes.map((archetype) => (
-                    <button
-                      key={archetype}
-                      type="button"
-                      onClick={() => {
-                        setOpponentArchetype(archetype);
-                        remember(sessionKeys.opponentArchetype, archetype);
-                      }}
-                      className="inline-flex max-w-full items-center gap-2 rounded-md bg-[#11182C]/78 px-3 py-2 text-xs font-semibold text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(248,250,252,0.045)] transition hover:bg-[#4F8CFF]/14 active:scale-[0.98]"
+            <div className="mt-4 grid gap-4">
+              <div className={subCardClass}>
+                <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-medium uppercase tracking-[0.08em] text-[#94A3B8]/72">
+                      Your deck
+                    </p>
+                    <div className="mt-2 flex min-w-0 items-center gap-2">
+                      <ArchetypeSprites
+                        archetype={selectedDeckSuggestion ?? selectedDeckArchetype}
+                        className="shrink-0"
+                      />
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold text-[#F8FAFC]">
+                          {selectedDeck?.label ?? "Choose a deck version"}
+                        </p>
+                        {selectedDeckSuggestion ? (
+                          <p className="truncate text-xs text-[#B8D1FF]">
+                            Reads as {selectedDeckSuggestion}
+                          </p>
+                        ) : null}
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsChangingDeck((current) => !current)}
+                    className="rounded-md bg-[#4F8CFF]/10 px-3 py-2 text-xs font-semibold text-[#F8FAFC] transition hover:bg-[#4F8CFF]/16 active:scale-[0.98]"
+                  >
+                    {isChangingDeck ? "Done" : "Change deck"}
+                  </button>
+                </div>
+                {isChangingDeck ? (
+                  <div className="mt-3 flex flex-col gap-2">
+                    <label htmlFor="deck_version_id_select" className={label}>
+                      Session deck
+                    </label>
+                    <select
+                      id="deck_version_id_select"
+                      value={deckVersionId}
+                      onChange={(event) => setDeckVersionId(event.target.value)}
+                      className={inputH11}
                     >
-                      <ArchetypeSprites archetype={archetype} className="shrink-0" />
-                      <span className="min-w-0 truncate">{archetype}</span>
+                      {deckOptions.map((option) => (
+                        <option key={option.id} value={option.id}>
+                          {option.label}
+                          {option.isActive ? " (active)" : ""} - {option.detail}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ) : null}
+              </div>
+
+              <div className={subCardClass}>
+                <ArchetypePicker
+                  id="opponent_archetype"
+                  name="opponent_archetype"
+                  label="Opponent deck"
+                  options={opponentArchetypeOptions}
+                  value={opponentArchetype}
+                  required
+                  autoFocus
+                  maxOptions={7}
+                  listMaxHeightClassName="max-h-48"
+                  onValueChange={setOpponentArchetype}
+                />
+                {opponentArchetype ? (
+                  <p className="mt-2 text-xs font-medium text-[#B8D1FF]">
+                    Selected matchup: {opponentArchetype}
+                  </p>
+                ) : null}
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+                <fieldset className={subCardClass}>
+                  <legend className={label}>Result</legend>
+                  <div className="mt-2 grid grid-cols-3 gap-2">
+                    {(["win", "loss", "tie"] as const).map((resultOption) => (
+                      <button
+                        key={resultOption}
+                        type="button"
+                        onClick={() => setResult(resultOption)}
+                        className={`${largeToggleClass} ${
+                          result === resultOption ? selectedToggleClass : ""
+                        }`}
+                      >
+                        {getMatchResultLabel(resultOption)}
+                      </button>
+                    ))}
+                  </div>
+                </fieldset>
+
+                <fieldset className={subCardClass}>
+                  <legend className={label}>Turn order</legend>
+                  <div className="mt-2 grid grid-cols-2 gap-2">
+                    {[
+                      ["true", "First"],
+                      ["false", "Second"],
+                    ].map(([value, turnLabel]) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => setWentFirst(value as "true" | "false")}
+                        className={`${mediumToggleClass} ${
+                          wentFirst === value ? selectedToggleClass : ""
+                        }`}
+                      >
+                        {turnLabel}
+                      </button>
+                    ))}
+                  </div>
+                </fieldset>
+              </div>
+
+              <fieldset className={subCardClass}>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <legend className={label}>Quick tags</legend>
+                    <p className="mt-1 text-xs leading-5 text-[#94A3B8]/72">
+                      Mark the main leak first. Add more detail only if it matters.
+                    </p>
+                  </div>
+                  {EXTRA_ISSUE_TAG_OPTIONS.length ? (
+                    <button
+                      type="button"
+                      onClick={() => setMoreIssueTagsOpen((current) => !current)}
+                      className="rounded-md bg-[#4F8CFF]/10 px-3 py-2 text-xs font-semibold text-[#F8FAFC] transition hover:bg-[#4F8CFF]/16"
+                    >
+                      {moreIssueTagsOpen ? "Fewer tags" : "More tags"}
+                    </button>
+                  ) : null}
+                </div>
+                <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                  {QUICK_ISSUE_TAG_OPTIONS.map((tag) => (
+                    <button
+                      key={tag}
+                      type="button"
+                      onClick={() => setIssueTags(toggleSelection(issueTags, tag))}
+                      className={`${tagToggleClass} ${
+                        issueTags.includes(tag) ? selectedToggleClass : ""
+                      }`}
+                    >
+                      {tag}
                     </button>
                   ))}
                 </div>
-              </div>
-            ) : null}
-          </div>
-        </section>
+                {moreIssueTagsOpen ? (
+                  <div className="mt-2 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                    {EXTRA_ISSUE_TAG_OPTIONS.map((tag) => (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() => setIssueTags(toggleSelection(issueTags, tag))}
+                        className={`${tagToggleClass} ${
+                          issueTags.includes(tag) ? selectedToggleClass : ""
+                        }`}
+                      >
+                        {tag}
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+              </fieldset>
 
-        <div className="grid min-w-0 gap-3 border-b border-white/6 pb-4 lg:grid-cols-[180px_minmax(0,1fr)]">
-          <StepLabel index={3} title="Result and play order" helper="Record the key outcome." />
-          <div className="grid min-w-0 gap-3 sm:grid-cols-2">
-          <fieldset className="flex flex-col gap-2">
-            <legend className={label}>
-              Did you win?
-            </legend>
-            <div className="grid grid-cols-2 gap-2">
-              {(["win", "loss"] as const).map((resultOption) => (
-                <label
-                  key={resultOption}
-                  className={`${toggleClass} capitalize`}
+              <div className="grid gap-2">
+                <button
+                  type="button"
+                  onClick={() => setAdvancedOpen((current) => !current)}
+                  className={sectionToggleClass}
                 >
-                  <input
-                    type="radio"
-                    name="result"
-                    value={resultOption}
-                    checked={result === resultOption}
-                    onChange={() => {
-                      setResult(resultOption);
-                      remember(sessionKeys.result, resultOption);
-                    }}
-                    className="sr-only"
-                  />
-                  {resultOption}
-                </label>
-              ))}
-            </div>
-          </fieldset>
-          <fieldset className="flex flex-col gap-2">
-            <legend className={label}>
-              Did you go first?
-            </legend>
-            <div className="grid grid-cols-2 gap-2">
-              {[
-                ["true", "First"],
-                ["false", "Second"],
-              ].map(([value, label]) => (
-                <label
-                  key={value}
-                  className={toggleClass}
+                  <span>
+                    <span className="block text-sm font-semibold text-[#F8FAFC]">
+                      Advanced game details
+                    </span>
+                    <span className="block text-xs text-[#94A3B8]/72">
+                      Context, matchup detail, and game quality.
+                    </span>
+                  </span>
+                  <span className="text-xs font-semibold text-[#B8D1FF]">
+                    {advancedOpen ? "Hide" : "Add game quality"}
+                  </span>
+                </button>
+
+                {advancedOpen ? (
+                  <div className="grid gap-3 rounded-xl bg-[#07111F]/28 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                    <div className="grid grid-cols-2 gap-2">
+                      {MATCH_GAME_CONTEXT_OPTIONS.map((contextOption) => (
+                        <button
+                          key={contextOption}
+                          type="button"
+                          onClick={() => setGameContext(contextOption)}
+                          className={`${mediumToggleClass} ${
+                            gameContext === contextOption
+                              ? selectedToggleClass
+                              : ""
+                          }`}
+                        >
+                          {getGameContextLabel(contextOption)}
+                        </button>
+                      ))}
+                    </div>
+
+                    {gameContext === "competitive" ? (
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <div className="flex flex-col gap-2">
+                          <label htmlFor="event_name" className={label}>
+                            Event name
+                          </label>
+                          <input
+                            id="event_name"
+                            name="event_name"
+                            value={eventName}
+                            onChange={(event) => setEventName(event.target.value)}
+                            placeholder="Optional"
+                            className={inputH11}
+                          />
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          <label htmlFor="round_number" className={label}>
+                            Round number
+                          </label>
+                          <input
+                            id="round_number"
+                            name="round_number"
+                            value={roundNumber}
+                            onChange={(event) => setRoundNumber(event.target.value)}
+                            placeholder="Optional"
+                            className={inputH11}
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <div className="flex flex-col gap-2">
+                          <label htmlFor="testing_session_name" className={label}>
+                            Testing session name
+                          </label>
+                          <input
+                            id="testing_session_name"
+                            name="testing_session_name"
+                            value={testingSessionName}
+                            onChange={(event) =>
+                              setTestingSessionName(event.target.value)
+                            }
+                            placeholder="Optional"
+                            className={inputH11}
+                          />
+                        </div>
+                        <ArchetypePicker
+                          id="focus_matchup"
+                          name="focus_matchup"
+                          label="Focus matchup"
+                          options={opponentArchetypeOptions}
+                          value={focusMatchup}
+                          placeholder="Optional"
+                          maxOptions={5}
+                          listMaxHeightClassName="max-h-40"
+                          onValueChange={setFocusMatchup}
+                        />
+                      </div>
+                    )}
+
+                    <div className="flex flex-col gap-2">
+                      <label htmlFor="opponent_variant" className={label}>
+                        Opponent variant
+                      </label>
+                      <input
+                        id="opponent_variant"
+                        name="opponent_variant"
+                        value={opponentVariant}
+                        onChange={(event) => setOpponentVariant(event.target.value)}
+                        placeholder="Optional detail"
+                        className={inputH11}
+                      />
+                    </div>
+
+                    <div className={subCardClass}>
+                      <p className="text-sm font-semibold text-[#F8FAFC]">
+                        Game quality
+                      </p>
+                      <div className="mt-3 grid gap-3 lg:grid-cols-3">
+                        <fieldset className="flex flex-col gap-2">
+                          <legend className={label}>Start</legend>
+                          <div className="grid grid-cols-3 gap-2">
+                            {MATCH_START_QUALITY_OPTIONS.map((value) => (
+                              <button
+                                key={value}
+                                type="button"
+                                onClick={() =>
+                                  setStartQuality(
+                                    startQuality === value ? undefined : value
+                                  )
+                                }
+                                className={`${mediumToggleClass} ${
+                                  startQuality === value
+                                    ? selectedToggleClass
+                                    : ""
+                                }`}
+                              >
+                                {getQualityLabel(value)}
+                              </button>
+                            ))}
+                          </div>
+                        </fieldset>
+                        <fieldset className="flex flex-col gap-2">
+                          <legend className={label}>Opening hand</legend>
+                          <div className="grid grid-cols-2 gap-2">
+                            {MATCH_OPENING_HAND_OPTIONS.map((value) => (
+                              <button
+                                key={value}
+                                type="button"
+                                onClick={() =>
+                                  setOpeningHandQuality(
+                                    openingHandQuality === value
+                                      ? undefined
+                                      : value
+                                  )
+                                }
+                                className={`${mediumToggleClass} ${
+                                  openingHandQuality === value
+                                    ? selectedToggleClass
+                                    : ""
+                                }`}
+                              >
+                                {getQualityLabel(value)}
+                              </button>
+                            ))}
+                          </div>
+                        </fieldset>
+                        <fieldset className="flex flex-col gap-2">
+                          <legend className={label}>Sequencing</legend>
+                          <div className="grid grid-cols-2 gap-2">
+                            {MATCH_SEQUENCING_OPTIONS.map((value) => (
+                              <button
+                                key={value}
+                                type="button"
+                                onClick={() =>
+                                  setSequencingQuality(
+                                    sequencingQuality === value
+                                      ? undefined
+                                      : value
+                                  )
+                                }
+                                className={`${mediumToggleClass} ${
+                                  sequencingQuality === value
+                                    ? selectedToggleClass
+                                    : ""
+                                }`}
+                              >
+                                {getQualityLabel(value)}
+                              </button>
+                            ))}
+                          </div>
+                        </fieldset>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+
+                <button
+                  type="button"
+                  onClick={() => setNotesOpen((current) => !current)}
+                  className={sectionToggleClass}
                 >
-                  <input
-                    type="radio"
-                    name="went_first"
-                    value={value}
-                    checked={wentFirst === value}
-                    onChange={() => {
-                      setWentFirst(value as "true" | "false");
-                      remember(sessionKeys.wentFirst, value);
-                    }}
-                    className="sr-only"
-                  />
-                  {label}
-                </label>
-              ))}
-            </div>
-          </fieldset>
+                  <span>
+                    <span className="block text-sm font-semibold text-[#F8FAFC]">
+                      Add notes and learnings
+                    </span>
+                    <span className="block text-xs text-[#94A3B8]/72">
+                      Positive tags, cards to remember, and optional notes.
+                    </span>
+                  </span>
+                  <span className="text-xs font-semibold text-[#B8D1FF]">
+                    {notesOpen ? "Hide" : "Open"}
+                  </span>
+                </button>
 
-          </div>
-        </div>
+                {notesOpen ? (
+                  <div className="grid gap-3 rounded-xl bg-[#07111F]/28 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                    <fieldset className={subCardClass}>
+                      <legend className={label}>What went well?</legend>
+                      <div className="mt-2 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                        {MATCH_POSITIVE_TAG_OPTIONS.map((tag) => (
+                          <button
+                            key={tag}
+                            type="button"
+                            onClick={() =>
+                              setPositiveTags(toggleSelection(positiveTags, tag))
+                            }
+                            className={`${tagToggleClass} ${
+                              positiveTags.includes(tag)
+                                ? selectedToggleClass
+                                : ""
+                            }`}
+                          >
+                            {tag}
+                          </button>
+                        ))}
+                      </div>
+                    </fieldset>
 
-        <div className="grid gap-3 lg:grid-cols-[180px_minmax(0,1fr)]">
-          <StepLabel index={4} title="Session context" helper="Add only what helps review." />
-          <fieldset className="max-w-full overflow-x-hidden rounded-md bg-[#07111F]/38 px-3 py-2.5 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
-            <legend className="mb-2 text-xs font-medium uppercase text-[#94A3B8]/72">
-              Game type
-            </legend>
-            <div className="grid min-w-0 grid-cols-3 gap-1.5 sm:gap-2">
-              {(["casual", "testing", "tournament"] as const).map(
-                (eventTypeOption) => (
-                  <label
-                    key={eventTypeOption}
-                    className={`${toggleClass} h-10 text-xs capitalize sm:text-sm`}
-                  >
-                    <input
-                      type="radio"
-                      name="event_type"
-                      value={eventTypeOption}
-                      checked={eventType === eventTypeOption}
-                      onChange={() => {
-                        setEventType(eventTypeOption);
-                        remember(sessionKeys.eventType, eventTypeOption);
-                      }}
-                      className="sr-only"
-                    />
-                    {eventTypeOption}
-                  </label>
-                )
-              )}
-            </div>
-          </fieldset>
-        </div>
+                    <div className={subCardClass}>
+                      <p className="text-sm font-semibold text-[#F8FAFC]">
+                        Cards to remember
+                      </p>
+                      <div className="mt-3 grid gap-3 xl:grid-cols-2">
+                        <ChipInput
+                          labelText="Cards that shined"
+                          values={cardsShined}
+                          onChange={setCardsShined}
+                          placeholder="Type a card name and press Enter"
+                          fieldName="cards_shined"
+                        />
+                        <ChipInput
+                          labelText="Cards that failed"
+                          values={cardsFailed}
+                          onChange={setCardsFailed}
+                          placeholder="Type a card name and press Enter"
+                          fieldName="cards_failed"
+                        />
+                      </div>
+                    </div>
 
-        <details
-          open={detailsOpen}
-          onToggle={(event) => {
-            setDetailsOpen(event.currentTarget.open);
-          }}
-          className="group max-w-full overflow-x-hidden rounded-md bg-[#07111F]/34 p-3 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.035)]"
-        >
-          <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3 text-sm font-semibold text-[#F8FAFC] marker:hidden">
-            <span>More details</span>
-            <span className="text-xs font-medium text-[#94A3B8] group-open:hidden">
-              Variant, tags, notes, import
-            </span>
-            <span className="hidden text-xs font-medium text-[#94A3B8] group-open:inline">
-              Hide
-            </span>
-          </summary>
-          <div className="mt-4 grid gap-4">
-            <div className="max-w-full overflow-x-hidden rounded-md bg-[#11182C]/58 p-3">
-              <div className="flex flex-col gap-2">
-                <label htmlFor="tcg_live_log" className={label}>
-                  Import TCG Live log
-                </label>
-                <textarea
-                  id="tcg_live_log"
-                  value={tcgLiveLog}
-                  onChange={(event) => setTcgLiveLog(event.target.value)}
-                  rows={3}
-                  placeholder="Paste a TCG Live battle log"
-                  className={`${textarea} min-h-24`}
-                />
+                    <div className={subCardClass}>
+                      <label htmlFor="notes" className={label}>
+                        Learnings
+                      </label>
+                      <textarea
+                        id="notes"
+                        name="notes"
+                        value={notes}
+                        onChange={(event) => setNotes(event.target.value)}
+                        rows={3}
+                        placeholder="What did this game teach you? Example: Lost because I missed second attacker and fell behind on prizes."
+                        className={`${textarea} mt-2 min-h-24 transition-all focus:min-h-28`}
+                      />
+                    </div>
+
+                    <details className={subCardClass}>
+                      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold text-[#F8FAFC] marker:hidden">
+                        <span>Import TCG Live log</span>
+                        <span className="text-xs text-[#94A3B8]">
+                          Optional helper
+                        </span>
+                      </summary>
+                      <div className="mt-3 flex flex-col gap-2">
+                        <textarea
+                          id="tcg_live_log"
+                          value={tcgLiveLog}
+                          onChange={(event) => setTcgLiveLog(event.target.value)}
+                          rows={3}
+                          placeholder="Paste a TCG Live battle log"
+                          className={`${textarea} min-h-24`}
+                        />
+                        <button
+                          type="button"
+                          onClick={importTcgLiveLog}
+                          className="w-fit rounded-md bg-[#4F8CFF]/12 px-3 py-2 text-sm font-semibold text-[#F8FAFC] transition hover:bg-[#4F8CFF]/20 active:scale-[0.98]"
+                        >
+                          Use log
+                        </button>
+                        {importStatus ? (
+                          <p className="text-xs font-medium text-[#94A3B8]">
+                            {importStatus}
+                          </p>
+                        ) : null}
+                      </div>
+                    </details>
+                  </div>
+                ) : null}
               </div>
-              <button
-                type="button"
-                onClick={importTcgLiveLog}
-                className="mt-3 max-w-full rounded-md bg-[#4F8CFF]/12 px-3 py-2 text-sm font-semibold text-[#F8FAFC] transition hover:bg-[#4F8CFF]/20 active:scale-[0.98]"
-              >
-                Use log
-              </button>
-              {importStatus ? (
-                <p className="mt-2 text-xs font-medium text-[#94A3B8]">
-                  {importStatus}
-                </p>
-              ) : null}
             </div>
 
-            <div className="flex flex-col gap-2">
-              <label
-                htmlFor="opponent_variant"
-                className={label}
-              >
-                Opponent variant
-              </label>
-              <input
-                id="opponent_variant"
-                name="opponent_variant"
-                placeholder="Optional detail"
-                className={inputH11}
-              />
+            <div className="mt-4 rounded-xl bg-[#0B1020]/52 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+              <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#F5C84C]">
+                Ready to save
+              </p>
+              <p className="mt-2 text-sm font-medium leading-6 text-[#F8FAFC]">
+                {readySummary ||
+                  "Choose a matchup, result, and turn order to finish the quick log."}
+              </p>
+              <p className="mt-2 text-sm text-[#94A3B8]/76">
+                One more data point for your testing loop.
+              </p>
             </div>
 
-            <fieldset className="flex flex-col gap-2">
-              <legend className={label}>Tags</legend>
-              <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                {MATCH_TAGS.map((tag) => (
-                  <label
-                    key={tag}
-                    className="cursor-pointer rounded-md bg-[#11182C]/76 px-2.5 py-2 text-xs font-medium text-[#F8FAFC] transition hover:bg-[#4F8CFF]/12 has-[:checked]:bg-[#4F8CFF]/24 has-[:checked]:text-[#F8FAFC] sm:text-sm"
-                  >
-                    <input
-                      type="checkbox"
-                      name="tags"
-                      value={tag}
-                      className="sr-only"
-                    />
-                    {tag}
-                  </label>
-                ))}
-              </div>
-            </fieldset>
-
-            <div className="flex flex-col gap-2">
-              <label htmlFor="notes" className={label}>
-                Notes
-              </label>
-              <textarea
-                id="notes"
-                name="notes"
-                value={notes}
-                onChange={(event) => setNotes(event.target.value)}
-                rows={2}
-                placeholder="Optional"
-                className={`${textarea} min-h-16 transition-all focus:min-h-28`}
-              />
+            <div className="grid gap-2 pt-1 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
+              <SubmitButton label={submitLabel} />
+              <Link href={secondaryHref} className={`w-full ${secondaryButton}`}>
+                {secondaryLabel}
+              </Link>
             </div>
-          </div>
-        </details>
-
-        <div className="grid gap-2 pt-1 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
-          <div className="hidden md:block">
-            <SubmitButton />
-          </div>
-          <a href="/matches" className={`w-full ${secondaryButton}`}>
-            Match history
-          </a>
+          </section>
         </div>
-      </div>
-      <div className="fixed inset-x-0 bottom-0 z-40 max-w-full overflow-x-hidden bg-[#0B1020]/92 px-4 py-3 shadow-[0_-18px_44px_rgba(0,0,0,0.36),inset_0_1px_0_rgba(248,250,252,0.055)] backdrop-blur md:hidden">
-        <div className="mx-auto w-full max-w-2xl">
-          <SubmitButton />
-        </div>
-      </div>
-    </form>
-      <aside className="grid gap-3 xl:sticky xl:top-6">
-        {sessionCoach ? (
-          <SessionCoachPanel
-            insight={sessionCoach}
-            isPostSave={wasSuccessful}
-            showCta={false}
-          />
-        ) : (
-          <div className={`p-4 ${glassPanel}`}>
-            <Target className="size-5 text-[#F5C84C]" aria-hidden="true" />
-            <h2 className="mt-3 text-lg font-semibold text-[#F8FAFC]">
-              Active testing session
-            </h2>
-            <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
-              Log a few games and SixPrizer will build a focused mission.
-            </p>
-          </div>
-        )}
-        <div className={`p-4 ${glassPanel}`}>
-          <div className="flex items-center gap-2 text-[#F5C84C]">
-            <Bolt className="size-4" aria-hidden="true" />
-            <p className="text-xs font-semibold uppercase tracking-[0.1em]">
-              Fast log flow
-            </p>
-          </div>
-          <div className="mt-4 grid gap-3">
-            {[
-              [ClipboardList, selectedDeck?.label ?? "Choose deck"],
-              [Target, opponentArchetype || "Pick opponent"],
-              [CheckCircle2, `${result === "win" ? "Win" : "Loss"} · ${wentFirst === "true" ? "First" : "Second"}`],
-            ].map(([Icon, value]) => (
-              <div key={value as string} className="flex min-w-0 items-center gap-3 rounded-md bg-[#07111F]/44 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
-                <Icon className="size-4 shrink-0 text-[#4F8CFF]" aria-hidden="true" />
-                <span className="truncate text-sm font-medium text-[#F8FAFC]">
-                  {value as string}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </aside>
+      </form>
     </div>
   );
 }

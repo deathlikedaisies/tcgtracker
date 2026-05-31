@@ -46,6 +46,11 @@ import {
 } from "@/components/brand-styles";
 import { SixPrizerLogo } from "@/components/SixPrizerLogo";
 import { ShareReportButton, type ShareReport } from "@/components/ShareReportButton";
+import {
+  formatMatchRecord,
+  getMatchResultLabel,
+  type MatchResult,
+} from "@/lib/match-types";
 import type {
   SessionCoachInsight,
   TrainingProgressSummary,
@@ -63,6 +68,7 @@ type DashboardStats = {
   totalMatches: number;
   totalWins: number;
   totalLosses: number;
+  totalTies: number;
   overallWinRate: string;
   wentFirstWinRate: string;
   wentSecondWinRate: string;
@@ -73,7 +79,7 @@ type RecentMatch = {
   playedAt: string;
   deckVersionName: string;
   opponentArchetype: string;
-  result: "win" | "loss";
+  result: MatchResult;
   eventType: string | null;
 };
 
@@ -81,6 +87,7 @@ type SummaryRow = {
   matches: number;
   wins: number;
   losses: number;
+  ties: number;
   winRate: string;
 };
 
@@ -98,6 +105,7 @@ type TrendPoint = {
   label: string;
   wins: number;
   losses: number;
+  ties: number;
 };
 
 type DeckPerformanceChartPoint = {
@@ -155,17 +163,19 @@ function ChartPlaceholder({ children }: { children: ReactNode }) {
   );
 }
 
-function RecordPill({ result }: { result: "win" | "loss" }) {
+function RecordPill({ result }: { result: MatchResult }) {
   const className =
     result === "win"
       ? "bg-emerald-500/12 text-emerald-300"
-      : "bg-[#F43F5E]/12 text-rose-200";
+      : result === "loss"
+        ? "bg-[#F43F5E]/12 text-rose-200"
+        : "bg-slate-400/12 text-slate-200";
 
   return (
     <span
       className={`inline-flex rounded-md px-2 py-0.5 text-[11px] font-semibold uppercase ${className}`}
     >
-      {result}
+      {getMatchResultLabel(result)}
     </span>
   );
 }
@@ -538,9 +548,13 @@ export function DashboardContent({
         return { ...record, wins: record.wins + 1 };
       }
 
-      return { ...record, losses: record.losses + 1 };
+      if (match.result === "loss") {
+        return { ...record, losses: record.losses + 1 };
+      }
+
+      return { ...record, ties: record.ties + 1 };
     },
-    { wins: 0, losses: 0 }
+    { wins: 0, losses: 0, ties: 0 }
   );
   const insights = [
     {
@@ -564,7 +578,11 @@ export function DashboardContent({
     },
     {
       label: "Recent trend",
-      value: `${recentRecord.wins}-${recentRecord.losses}`,
+      value: formatMatchRecord(
+        recentRecord.wins,
+        recentRecord.losses,
+        recentRecord.ties
+      ),
       detail: `Last ${Math.min(recentMatches.length, 5)} logged matches`,
     },
   ];
@@ -578,7 +596,11 @@ export function DashboardContent({
     context: "Your testing",
   };
   const recentFormValue = recentMatches.length
-    ? `${recentRecord.wins}-${recentRecord.losses}`
+    ? formatMatchRecord(
+        recentRecord.wins,
+        recentRecord.losses,
+        recentRecord.ties
+      )
     : "No games yet";
   const lossPatternValue =
     trainingProgress.lossPatternTrend ?? "No pattern yet";
@@ -774,6 +796,7 @@ export function DashboardContent({
                 <StatCard label="Matches" value={stats.totalMatches} />
                 <StatCard label="Wins" value={stats.totalWins} />
                 <StatCard label="Losses" value={stats.totalLosses} />
+                <StatCard label="Ties" value={stats.totalTies} />
                 <StatCard label="Win rate" value={stats.overallWinRate} />
                 <StatCard label="Went first" value={stats.wentFirstWinRate} />
                 <StatCard label="Went second" value={stats.wentSecondWinRate} />
@@ -786,7 +809,7 @@ export function DashboardContent({
                     Result Trend
                   </h2>
                   <p className={sectionCopy}>
-                    Daily wins and losses from your logged matches.
+                    Daily wins, losses, and ties from your logged matches.
                   </p>
                 </div>
                 {chartsExpanded && trendData.length ? (
@@ -819,8 +842,10 @@ export function DashboardContent({
                               ? "Wins"
                               : name === "losses"
                                 ? "Losses"
+                                : name === "ties"
+                                  ? "Ties"
                                 : name,
-                          ]}
+                           ]}
                         />
                         <Legend />
                         <Line
@@ -834,6 +859,13 @@ export function DashboardContent({
                           type="monotone"
                           dataKey="losses"
                           stroke="#F43F5E"
+                          strokeWidth={2}
+                          dot={false}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="ties"
+                          stroke="#94A3B8"
                           strokeWidth={2}
                           dot={false}
                         />
@@ -954,8 +986,8 @@ export function DashboardContent({
                   {matchupSummary.map((matchup) => (
                     <div
                       key={matchup.opponentArchetype}
-                      className="grid gap-1.5 py-3 sm:grid-cols-[minmax(0,1fr)_64px_52px_52px_64px] sm:items-center"
-                    >
+                    className="grid gap-1.5 py-3 sm:grid-cols-[minmax(0,1fr)_64px_52px_52px_52px_64px] sm:items-center"
+                  >
                       <div className="flex items-center gap-2">
                         <ArchetypeSprites archetype={matchup.opponentArchetype} />
                         <p className="truncate font-semibold text-[#F8FAFC]">
@@ -970,6 +1002,9 @@ export function DashboardContent({
                       </p>
                       <p className="text-right text-xs text-[#94A3B8]/62 sm:text-sm">
                         {matchup.losses}L
+                      </p>
+                      <p className="text-right text-xs text-[#94A3B8]/62 sm:text-sm">
+                        {matchup.ties}T
                       </p>
                       <p className="text-right text-sm font-bold text-[#F8FAFC]">
                         {matchup.winRate}
@@ -987,8 +1022,8 @@ export function DashboardContent({
                   {deckPerformance.map((deckVersion) => (
                     <div
                       key={deckVersion.deckVersionId}
-                      className="grid gap-1.5 py-3 sm:grid-cols-[minmax(0,1fr)_64px_52px_52px_64px] sm:items-center"
-                    >
+                    className="grid gap-1.5 py-3 sm:grid-cols-[minmax(0,1fr)_64px_52px_52px_52px_64px] sm:items-center"
+                  >
                       <p className="truncate font-semibold text-[#F8FAFC]">
                         {deckVersion.deckVersionName}
                       </p>
@@ -1000,6 +1035,9 @@ export function DashboardContent({
                       </p>
                       <p className="text-right text-xs text-[#94A3B8]/62 sm:text-sm">
                         {deckVersion.losses}L
+                      </p>
+                      <p className="text-right text-xs text-[#94A3B8]/62 sm:text-sm">
+                        {deckVersion.ties}T
                       </p>
                       <p className="text-right text-sm font-bold text-[#F8FAFC]">
                         {deckVersion.winRate}

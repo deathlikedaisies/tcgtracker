@@ -2,16 +2,21 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { EVENT_TYPES, MATCH_RESULTS, parseSelectedTags } from "@/lib/match-options";
+import {
+  buildMatchMetadataFromFormData,
+  getGameContextEventType,
+  optionalText,
+} from "@/lib/match-form";
+import {
+  EVENT_TYPES,
+  flattenStructuredMatchTags,
+  MATCH_RESULTS,
+} from "@/lib/match-options";
+import { replaceKnownMatchMetadata } from "@/lib/match-types";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 
 const results = new Set<string>(MATCH_RESULTS);
 const eventTypes = new Set<string>(EVENT_TYPES);
-
-function optionalText(value: FormDataEntryValue | null) {
-  const text = String(value ?? "").trim();
-  return text || null;
-}
 
 async function getSignedInUser() {
   const supabase = await createServerSupabaseClient();
@@ -30,7 +35,7 @@ async function verifyMatchOwner(matchId: string) {
   const { supabase, user } = await getSignedInUser();
   const { data: match, error } = await supabase
     .from("matches")
-    .select("id")
+    .select("id, metadata")
     .eq("id", matchId)
     .eq("user_id", user.id)
     .single();
@@ -39,7 +44,7 @@ async function verifyMatchOwner(matchId: string) {
     throw new Error("Match not found.");
   }
 
-  return { supabase, user };
+  return { supabase, user, match };
 }
 
 async function verifyDeckVersionOwner(deckVersionId: string) {
@@ -62,8 +67,11 @@ function getMatchPayload(formData: FormData) {
     formData.get("opponent_archetype") ?? ""
   ).trim();
   const result = String(formData.get("result") ?? "").trim();
-  const eventType = optionalText(formData.get("event_type"));
   const wentFirstValue = optionalText(formData.get("went_first"));
+  const metadata = buildMatchMetadataFromFormData(formData);
+  const eventType = metadata.game_context
+    ? getGameContextEventType(metadata.game_context)
+    : optionalText(formData.get("event_type"));
 
   if (!deckVersionId) {
     throw new Error("Deck version is required.");
@@ -74,7 +82,7 @@ function getMatchPayload(formData: FormData) {
   }
 
   if (!results.has(result)) {
-    throw new Error("Result must be win or loss.");
+    throw new Error("Result must be win, loss, or tie.");
   }
 
   if (eventType && !eventTypes.has(eventType)) {
@@ -83,7 +91,10 @@ function getMatchPayload(formData: FormData) {
 
   return {
     deckVersionId,
-    tags: parseSelectedTags(formData.getAll("tags")),
+    tags: flattenStructuredMatchTags({
+      issueTags: metadata.issue_tags ?? [],
+      positiveTags: metadata.positive_tags ?? [],
+    }),
     match: {
       deck_version_id: deckVersionId,
       opponent_archetype: opponentArchetype,
@@ -92,6 +103,7 @@ function getMatchPayload(formData: FormData) {
       went_first: wentFirstValue === null ? null : wentFirstValue === "true",
       event_type: eventType,
       notes: optionalText(formData.get("notes")),
+      metadata,
     },
   };
 }
@@ -118,14 +130,20 @@ export async function deleteMatch(matchId: string) {
 }
 
 export async function updateMatch(matchId: string, formData: FormData) {
-  const { supabase, user } = await verifyMatchOwner(matchId);
+  const { supabase, user, match } = await verifyMatchOwner(matchId);
   const payload = getMatchPayload(formData);
 
   await verifyDeckVersionOwner(payload.deckVersionId);
 
   const { error: updateError } = await supabase
     .from("matches")
-    .update(payload.match)
+    .update({
+      ...payload.match,
+      metadata: replaceKnownMatchMetadata(
+        match.metadata,
+        payload.match.metadata
+      ),
+    })
     .eq("id", matchId)
     .eq("user_id", user.id);
 

@@ -30,6 +30,11 @@ import { SixPrizerLogo } from "@/components/SixPrizerLogo";
 import { SessionCoachPanel } from "@/components/SessionCoachPanel";
 import { ShareReportButton, type ShareReport } from "@/components/ShareReportButton";
 import { getArchetypeOptions } from "@/lib/archetypes";
+import {
+  countMatchResults,
+  formatMatchRecord,
+  type MatchResult,
+} from "@/lib/match-types";
 import { buildSessionCoachInsight } from "@/lib/session-coach";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { saveMatchupNote } from "./actions";
@@ -62,7 +67,7 @@ type MatchRow = {
   id: string;
   deck_version_id: string;
   opponent_archetype: string;
-  result: "win" | "loss";
+  result: MatchResult;
   went_first: boolean | null;
   event_type: string | null;
   played_at: string;
@@ -352,14 +357,11 @@ export default async function MatchupsPage({
       }, new Map<string, MatchRow[]>())
       .entries()
   ).map(([opponentArchetype, groupedMatches]) => {
-    const wins = groupedMatches.filter((match) => match.result === "win").length;
-    const losses = groupedMatches.filter(
-      (match) => match.result === "loss"
-    ).length;
+    const { wins, losses, ties, total } = countMatchResults(groupedMatches);
 
     return {
       opponentArchetype,
-      matches: groupedMatches.length,
+      matches: total,
       recentMatches: groupedMatches
         .sort((first, second) => second.played_at.localeCompare(first.played_at))
         .slice(0, 10)
@@ -371,8 +373,9 @@ export default async function MatchupsPage({
         })),
       wins,
       losses,
-      winRate: formatWinRate(wins, groupedMatches.length),
-      winRateValue: formatWinRateValue(wins, groupedMatches.length),
+      ties,
+      winRate: formatWinRate(wins, total),
+      winRateValue: formatWinRateValue(wins, total),
     };
   });
 
@@ -533,7 +536,13 @@ export default async function MatchupsPage({
                 <div className="rounded-md bg-[#07111F]/44 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
                   <p className="text-xs text-[#94A3B8]/72">Record</p>
                   <p className="mt-1 text-lg font-bold text-[#F8FAFC]">
-                    {worstMatchup ? `${worstMatchup.wins}-${worstMatchup.losses}` : "0-0"}
+                    {worstMatchup
+                      ? formatMatchRecord(
+                          worstMatchup.wins,
+                          worstMatchup.losses,
+                          worstMatchup.ties
+                        )
+                      : "0-0"}
                   </p>
                 </div>
                 <div className="rounded-md bg-[#07111F]/44 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
@@ -776,10 +785,11 @@ export default async function MatchupsPage({
                         <MatchStrip matches={matchup.recentMatches} />
                       </div>
                     </div>
-                    <div className="grid grid-cols-4 gap-2 text-sm">
+                    <div className="grid grid-cols-5 gap-2 text-sm">
                       <p className="text-[#94A3B8]">{matchup.matches} played</p>
                       <p className="text-[#94A3B8]">{matchup.wins} W</p>
                       <p className="text-[#94A3B8]">{matchup.losses} L</p>
+                      <p className="text-[#94A3B8]">{matchup.ties} T</p>
                       <p className="font-semibold text-[#F8FAFC]">
                         {matchup.winRate}
                       </p>

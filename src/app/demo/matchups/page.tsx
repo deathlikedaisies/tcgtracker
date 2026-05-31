@@ -9,6 +9,7 @@ import {
   getDemoInsights,
   getDemoMatchups,
 } from "@/lib/demo-data";
+import { formatMatchRecord } from "@/lib/match-types";
 
 function pct(wins: number, games: number) {
   return games ? Math.round((wins / games) * 100) : 0;
@@ -44,7 +45,11 @@ export default function DemoMatchupsPage() {
             <div>
               <h2 className="text-3xl font-bold text-[#F8FAFC]">{biggestLeak.archetype}</h2>
               <p className="text-sm text-rose-100/78">
-                {biggestLeak.wins}-{biggestLeak.losses}, {biggestLeak.winRate}% win rate
+                {formatMatchRecord(
+                  biggestLeak.wins,
+                  biggestLeak.losses,
+                  biggestLeak.ties
+                )}, {biggestLeak.winRate}% win rate
               </p>
             </div>
           </div>
@@ -109,7 +114,7 @@ export default function DemoMatchupsPage() {
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-[#F8FAFC]">{matchup.archetype}</p>
                     <p className="text-xs text-[#94A3B8]/70">
-                      {matchup.wins}-{matchup.losses}, {matchup.games.length} games
+                      {matchup.record}, {matchup.games.length} games
                     </p>
                   </div>
                 </div>

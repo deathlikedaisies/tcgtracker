@@ -5,14 +5,19 @@ import { useMemo, useState } from "react";
 import { ArchetypePicker } from "@/components/ArchetypePicker";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
 import { SixPrizerLogo } from "@/components/SixPrizerLogo";
+import {
+  countMatchResults,
+  formatMatchRecord,
+  getMatchResultLabel,
+  type MatchResult,
+} from "@/lib/match-types";
 
-type Result = "win" | "loss";
 type TurnOrder = "first" | "second";
 type FlowStep = "log" | "analyzing" | "aha";
 
 type GameEntry = {
   opponentArchetype: string;
-  result: Result;
+  result: MatchResult;
   turnOrder: TurnOrder;
 };
 
@@ -26,6 +31,7 @@ type MatchupGroup = {
   games: GameEntry[];
   wins: number;
   losses: number;
+  ties: number;
   winRate: number;
   firstLosses: number;
   secondLosses: number;
@@ -38,6 +44,12 @@ const emptyGame: GameEntry = {
 };
 
 function getLossSummary(matchup: MatchupGroup) {
+  const record = formatMatchRecord(matchup.wins, matchup.losses, matchup.ties);
+
+  if (matchup.ties > 0) {
+    return `${record} across ${matchup.games.length} games`;
+  }
+
   return matchup.losses === 1
     ? `Lost 1 of ${matchup.games.length} games`
     : `Lost ${matchup.losses} of ${matchup.games.length} games`;
@@ -86,14 +98,14 @@ function analyzeGames(games: GameEntry[]) {
       }, new Map<string, GameEntry[]>())
       .entries()
   ).map<MatchupGroup>(([archetype, groupedGames]) => {
-    const wins = groupedGames.filter((game) => game.result === "win").length;
-    const losses = groupedGames.length - wins;
+    const { wins, losses, ties } = countMatchResults(groupedGames);
 
     return {
       archetype,
       games: groupedGames,
       wins,
       losses,
+      ties,
       winRate: groupedGames.length ? wins / groupedGames.length : 0,
       firstLosses: groupedGames.filter(
         (game) => game.result === "loss" && game.turnOrder === "first"
@@ -210,7 +222,7 @@ export function ThreeGameOnboarding({
               <p className="mt-4 text-lg font-semibold text-rose-100">
                 {hasLeak
                   ? getLossSummary(analysis)
-                  : `${analysis.wins} wins from ${analysis.games.length} games`}
+                  : `${formatMatchRecord(analysis.wins, analysis.losses, analysis.ties)} from ${analysis.games.length} games`}
               </p>
               <p className="mt-2 text-sm leading-6 text-rose-100/78">
                 {hasLeak
@@ -293,21 +305,23 @@ export function ThreeGameOnboarding({
 
           <fieldset className="mt-5">
             <legend className="text-sm font-medium text-[#F8FAFC]">Result</legend>
-            <div className="mt-2 grid grid-cols-2 gap-2">
-              {(["win", "loss"] as const).map((result) => (
+            <div className="mt-2 grid grid-cols-3 gap-2">
+              {(["win", "loss", "tie"] as const).map((result) => (
                 <button
                   key={result}
                   type="button"
                   onClick={() => setCurrentGame((game) => ({ ...game, result }))}
-                  className={`h-12 rounded text-sm font-semibold capitalize transition active:scale-[0.98] ${
+                  className={`h-12 rounded text-sm font-semibold transition active:scale-[0.98] ${
                     currentGame.result === result
                       ? result === "win"
                         ? "bg-emerald-500/18 text-emerald-200 shadow-[inset_0_0_0_1px_rgba(34,197,94,0.38)]"
-                        : "bg-[#F43F5E]/18 text-rose-100 shadow-[inset_0_0_0_1px_rgba(244,63,94,0.38)]"
+                        : result === "loss"
+                          ? "bg-[#F43F5E]/18 text-rose-100 shadow-[inset_0_0_0_1px_rgba(244,63,94,0.38)]"
+                          : "bg-[#4F8CFF]/22 text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.38)]"
                       : "bg-[#0B1020]/50 text-[#94A3B8] hover:bg-[#1A2238]/58 hover:text-[#F8FAFC]"
                   }`}
                 >
-                  {result}
+                  {getMatchResultLabel(result)}
                 </button>
               ))}
             </div>

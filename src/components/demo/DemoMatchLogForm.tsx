@@ -3,76 +3,67 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { CheckCircle2, RotateCcw } from "lucide-react";
-import { ArchetypeSprites } from "@/components/ArchetypeSprites";
-import { inputH11, label, primaryButton, secondaryButton, textarea } from "@/components/brand-styles";
+import { ArchetypePicker } from "@/components/ArchetypePicker";
+import {
+  inputH11,
+  label,
+  primaryButton,
+  secondaryButton,
+  textarea,
+} from "@/components/brand-styles";
+import { getArchetypeOptions } from "@/lib/archetypes";
 import { demoDecks } from "@/lib/demo-data";
+import {
+  MATCH_ISSUE_TAG_OPTIONS,
+  MATCH_POSITIVE_TAG_OPTIONS,
+} from "@/lib/match-options";
+import {
+  getGameContextLabel,
+  getMatchResultLabel,
+  getQualityLabel,
+  MATCH_GAME_CONTEXT_OPTIONS,
+  MATCH_OPENING_HAND_OPTIONS,
+  MATCH_SEQUENCING_OPTIONS,
+  MATCH_START_QUALITY_OPTIONS,
+  type MatchOpeningHandQuality,
+  type MatchResult,
+  type MatchSequencingQuality,
+  type MatchStartQuality,
+} from "@/lib/match-types";
 
-type Result = "win" | "loss";
 type SignalTone = "blue" | "gold" | "green" | "rose";
+type GameContext = "testing" | "competitive";
 
-const commonOpponents = [
-  "Mega Greninja",
-  "Mega Lopunny",
-  "Dragapult ex",
-  "Ogerpon Meganium",
-  "Rocket's Mewtwo",
-  "Raging Bolt",
-];
+const subCardClass =
+  "rounded-xl bg-[#0B1020]/46 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]";
 
-const defaultTags = [
+const largeToggleClass =
+  "flex min-h-14 w-full items-center justify-center rounded-xl bg-[#07111F]/58 px-3 text-center text-base font-semibold text-[#D7E0EF] transition hover:bg-[#1A2238]/60 hover:text-[#F8FAFC] active:scale-[0.98]";
+
+const mediumToggleClass =
+  "flex min-h-12 w-full items-center justify-center rounded-lg bg-[#07111F]/56 px-3 text-center text-sm font-semibold text-[#B9C4D6] transition hover:bg-[#1A2238]/60 hover:text-[#F8FAFC] active:scale-[0.98]";
+
+const tagToggleClass =
+  "inline-flex min-h-11 w-full items-center justify-start rounded-lg bg-[#07111F]/52 px-3 py-2 text-left text-sm font-semibold text-[#A8B5C8] transition hover:bg-[#1A2238]/60 hover:text-[#F8FAFC] active:scale-[0.98]";
+
+const selectedToggleClass =
+  "bg-[#4F8CFF]/22 text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.38),0_10px_24px_rgba(79,140,255,0.08)]";
+
+const sectionToggleClass =
+  "flex w-full items-center justify-between rounded-xl bg-[#07111F]/48 px-3 py-3 text-left transition hover:bg-[#07111F]/66";
+
+const QUICK_ISSUE_TAG_OPTIONS = [
   "missed setup",
+  "poor prize trade",
+  "bad sequencing",
+  "supporter drought",
+  "energy issue",
   "bench pressure",
-  "prize deficit",
-  "bad opening hand",
-  "recovery issue",
-  "misplay",
-];
+] as const satisfies readonly string[];
 
-const tagsByOpponent: Record<string, string[]> = {
-  "Mega Greninja": [
-    "missed setup",
-    "bench pressure",
-    "prize deficit",
-    "bad opening hand",
-    "recovery issue",
-    "misplay",
-  ],
-  "Mega Lopunny": [
-    "pace mismatch",
-    "missed setup",
-    "tempo loss",
-    "poor prize trade",
-    "review",
-  ],
-  "Dragapult ex": [
-    "prize route",
-    "midgame trade",
-    "bench pressure",
-    "resource check",
-    "review",
-  ],
-  "Ogerpon Meganium": [
-    "tempo lead",
-    "resource check",
-    "missed gust",
-    "late recovery",
-    "review",
-  ],
-  "Rocket's Mewtwo": [
-    "hand disruption",
-    "bad opening hand",
-    "recovery issue",
-    "misplay",
-    "review",
-  ],
-  "Raging Bolt": [
-    "race plan",
-    "poor prize trade",
-    "bad opening hand",
-    "tempo loss",
-    "review",
-  ],
-};
+const EXTRA_ISSUE_TAG_OPTIONS: string[] = MATCH_ISSUE_TAG_OPTIONS.filter(
+  (tag) => !QUICK_ISSUE_TAG_OPTIONS.includes(tag as (typeof QUICK_ISSUE_TAG_OPTIONS)[number])
+);
 
 function getVersionLabel(versionId: string) {
   const deck = demoDecks.find((candidate) =>
@@ -85,157 +76,6 @@ function getVersionLabel(versionId: string) {
   }
 
   return `${deck.archetype} ${version.name.replace(/^v/i, "v")}`;
-}
-
-function chipClass(active: boolean, tone: "gold" | "blue" | "green" | "rose" = "blue") {
-  if (!active) {
-    return "bg-[#07111F]/58 text-[#94A3B8] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)] hover:bg-[#1A2238]/60 hover:text-[#F8FAFC]";
-  }
-
-  if (tone === "gold") {
-    return "bg-[#F5C84C] text-[#07111F] shadow-[0_12px_28px_rgba(245,200,76,0.20)]";
-  }
-
-  if (tone === "green") {
-    return "bg-[#22C55E]/18 text-emerald-200 shadow-[inset_0_0_0_1px_rgba(34,197,94,0.36)]";
-  }
-
-  if (tone === "rose") {
-    return "bg-[#F43F5E]/18 text-rose-100 shadow-[inset_0_0_0_1px_rgba(244,63,94,0.36)]";
-  }
-
-  return "bg-[#4F8CFF]/22 text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.38),0_10px_24px_rgba(79,140,255,0.08)]";
-}
-
-function getInsightUpdate({
-  opponent,
-  result,
-  wentFirst,
-  selectedTags,
-}: {
-  opponent: string;
-  result: Result;
-  wentFirst: boolean;
-  selectedTags: string[];
-}) {
-  const direction = wentFirst ? "going-first" : "going-second";
-  const tagSummary = selectedTags.length
-    ? selectedTags.slice(0, 2).join(" and ")
-    : "the selected pattern";
-
-  if (result === "win") {
-    return {
-      eyebrow: "Trend improved",
-      title: "This result would improve the matchup trend",
-      bullets: [
-        "SixPrizer would add this win to the matchup sample.",
-        "If this matchup was urgent before, the pressure may drop after more wins.",
-        "The coach would still wait for more samples before changing recommendations.",
-      ],
-      recommendation: `Keep logging ${opponent} games until the trend has enough signal to change the plan.`,
-      tone: "green" as const,
-    };
-  }
-
-  if (opponent === "Mega Greninja") {
-    return {
-      eyebrow: "Mission reinforced",
-      title: "Mega Greninja remains your current mission",
-      bullets: [
-        `This result reinforces the ${tagSummary} pattern.`,
-        `Your ${direction} sample would increase.`,
-        "SixPrizer would keep this matchup at the top of the coaching queue.",
-      ],
-      recommendation: "Recommended next test: 5 more games going first with Dragapult ex v2.",
-      tone: "gold" as const,
-    };
-  }
-
-  if (opponent === "Mega Lopunny") {
-    return {
-      eyebrow: "Early warning",
-      title: "Mega Lopunny stays on the low-confidence watchlist",
-      bullets: [
-        "Too few games to call this a clear trend.",
-        "This result suggests a possible tempo or prize-trade issue.",
-        "SixPrizer would hold this as a watchlist item before calling it a leak.",
-      ],
-      recommendation: "Recommended next test: keep logging until this reaches 6+ games.",
-      tone: "rose" as const,
-    };
-  }
-
-  return {
-    eyebrow: "Sample updated",
-    title: "SixPrizer would add this game to the matchup signal",
-    bullets: [
-      "Sample size would increase.",
-      "Tags would be tracked as recurring patterns.",
-      "SixPrizer would compare this result against previous games.",
-    ],
-    recommendation: `Recommended next test: continue the ${opponent} sample before changing plans.`,
-    tone: "blue" as const,
-  };
-}
-
-function getUpdatedSignals({
-  opponent,
-  result,
-  wentFirst,
-  selectedTags,
-}: {
-  opponent: string;
-  result: Result;
-  wentFirst: boolean;
-  selectedTags: string[];
-}) {
-  const lowConfidenceMatchups = new Set(["Mega Lopunny", "Raging Bolt"]);
-  const confidence = lowConfidenceMatchups.has(opponent)
-    ? "Low confidence"
-    : opponent === "Mega Greninja"
-      ? "Building signal"
-      : "Building sample";
-
-  const leakStatus =
-    result === "win"
-      ? "Urgency may drop"
-      : opponent === "Mega Greninja"
-        ? "Current mission"
-        : opponent === "Mega Lopunny"
-          ? "Early warning"
-          : "Pattern check";
-
-  return [
-    {
-      label: "Matchup confidence",
-      value: confidence,
-      helper: lowConfidenceMatchups.has(opponent) ? "Needs more games" : "Sample would grow",
-      tone: lowConfidenceMatchups.has(opponent) ? "gold" : "blue",
-    },
-    {
-      label: "Leak status",
-      value: leakStatus,
-      helper: result === "win" ? "Win added to trend" : "Loss added to review",
-      tone: result === "win" ? "green" : opponent === "Mega Lopunny" ? "rose" : "gold",
-    },
-    {
-      label: "First/second trend",
-      value: `${wentFirst ? "Going first" : "Going second"} +1`,
-      helper: "Split performance would update",
-      tone: "blue",
-    },
-    {
-      label: "Recurring tags",
-      value: selectedTags.length ? selectedTags.slice(0, 2).join(", ") : "No tags",
-      helper: selectedTags.length > 2 ? `+${selectedTags.length - 2} more tracked` : "Used for coaching notes",
-      tone: selectedTags.length ? "gold" : "blue",
-    },
-  ] satisfies {
-    label: string;
-    value: string;
-    helper: string;
-    tone: SignalTone;
-  }[];
 }
 
 function signalCardClass(tone: SignalTone) {
@@ -254,29 +94,217 @@ function signalCardClass(tone: SignalTone) {
   return "bg-[#4F8CFF]/[0.09] text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.18)]";
 }
 
+function toggleSelection(values: string[], value: string) {
+  return values.includes(value)
+    ? values.filter((candidate) => candidate !== value)
+    : [...values, value];
+}
+
+function cleanChipValue(value: string) {
+  return value
+    .trim()
+    .replace(/\s+/g, " ");
+}
+
+function ChipInput({
+  labelText,
+  values,
+  onChange,
+  placeholder,
+}: {
+  labelText: string;
+  values: string[];
+  onChange: (values: string[]) => void;
+  placeholder: string;
+}) {
+  const [draft, setDraft] = useState("");
+
+  function addDraftValue() {
+    const nextValue = cleanChipValue(draft);
+
+    if (!nextValue || values.includes(nextValue)) {
+      setDraft("");
+      return;
+    }
+
+    onChange([...values, nextValue]);
+    setDraft("");
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      <label className={label}>{labelText}</label>
+      <div className="rounded-lg bg-[#11182C]/58 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+        <div className="flex flex-wrap gap-2">
+          {values.map((value) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() =>
+                onChange(values.filter((candidate) => candidate !== value))
+              }
+              className="inline-flex items-center gap-2 rounded-md bg-[#4F8CFF]/18 px-2.5 py-1.5 text-xs font-semibold text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.28)]"
+            >
+              {value}
+              <span aria-hidden="true">x</span>
+            </button>
+          ))}
+        </div>
+        <div className="mt-3 flex gap-2">
+          <input
+            value={draft}
+            onChange={(event) => setDraft(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === ",") {
+                event.preventDefault();
+                addDraftValue();
+              }
+            }}
+            onBlur={() => {
+              if (draft.trim()) {
+                addDraftValue();
+              }
+            }}
+            placeholder={placeholder}
+            className={inputH11}
+          />
+          <button
+            type="button"
+            onClick={addDraftValue}
+            className="rounded-md bg-[#4F8CFF]/12 px-3 text-sm font-semibold text-[#F8FAFC] transition hover:bg-[#4F8CFF]/18 active:scale-[0.98]"
+          >
+            Add
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function getInsightUpdate({
+  gameContext,
+  result,
+  issueTags,
+  positiveTags,
+}: {
+  gameContext: GameContext;
+  result: MatchResult;
+  issueTags: string[];
+  positiveTags: string[];
+}) {
+  if (result === "win") {
+    return {
+      eyebrow: "Trend improved",
+      title: "This demo game would improve the matchup sample",
+      bullets: [
+        "The win would raise the matchup sample without changing production data.",
+        "Turn-order, opening-hand, and sequencing splits would still update.",
+        "SixPrizer would wait for more games before making a big recommendation change.",
+      ],
+      recommendation:
+        "Keep adding structured games until the pattern becomes a stronger signal.",
+      tone: "green" as const,
+    };
+  }
+
+  if (result === "tie") {
+    return {
+      eyebrow: "Sample updated",
+      title: "This demo game would add context without changing the win/loss split",
+      bullets: [
+        "A tie still counts as a logged game in SixPrizer.",
+        "Confidence and turn-order patterns would continue to build.",
+        "Ties usually mean you need more testing before changing the deck.",
+      ],
+      recommendation:
+        "Treat this as a building signal and keep logging the matchup.",
+      tone: "blue" as const,
+    };
+  }
+
+  return {
+    eyebrow: gameContext === "competitive" ? "Competitive review" : "Testing review",
+    title: "This demo loss would add a structured review point",
+    bullets: [
+      issueTags.length
+        ? `Issue tags tracked: ${issueTags.slice(0, 2).join(", ")}.`
+        : "No issue tags selected yet.",
+      positiveTags.length
+        ? `Positive tags still tracked: ${positiveTags.slice(0, 2).join(", ")}.`
+        : "No positive tags selected yet.",
+      "SixPrizer would use this structured log to compare future games.",
+    ],
+    recommendation:
+      "Keep the sample moving until the issue pattern is clear enough to trust.",
+    tone: "gold" as const,
+  };
+}
+
 export function DemoMatchLogForm() {
   const [versionId, setVersionId] = useState("dragapult-v2");
-  const [eventType, setEventType] = useState("Best-of-three testing");
+  const [gameContext, setGameContext] = useState<GameContext>("testing");
+  const [eventName, setEventName] = useState("");
+  const [roundNumber, setRoundNumber] = useState("");
+  const [testingSessionName, setTestingSessionName] = useState("League block A");
+  const [focusMatchup, setFocusMatchup] = useState("Mega Greninja");
   const [opponent, setOpponent] = useState("Mega Greninja");
-  const [result, setResult] = useState<Result>("loss");
+  const [opponentVariant, setOpponentVariant] = useState("");
+  const [result, setResult] = useState<MatchResult>("loss");
   const [wentFirst, setWentFirst] = useState(false);
-  const [selectedTags, setSelectedTags] = useState<string[]>([
+  const [startQuality, setStartQuality] = useState<
+    MatchStartQuality | undefined
+  >("okay");
+  const [openingHandQuality, setOpeningHandQuality] = useState<
+    MatchOpeningHandQuality | undefined
+  >("good");
+  const [sequencingQuality, setSequencingQuality] = useState<
+    MatchSequencingQuality | undefined
+  >("okay");
+  const [issueTags, setIssueTags] = useState<string[]>([
     "missed setup",
-    "bench pressure",
+    "poor prize trade",
   ]);
-  const [note, setNote] = useState("");
+  const [positiveTags, setPositiveTags] = useState<string[]>([]);
+  const [cardsShined, setCardsShined] = useState<string[]>([]);
+  const [cardsFailed, setCardsFailed] = useState<string[]>([]);
+  const [learnings, setLearnings] = useState("");
   const [saved, setSaved] = useState(false);
-  const quickTags = tagsByOpponent[opponent] ?? defaultTags;
-  const summary = `${getVersionLabel(versionId)} vs ${opponent} · ${result === "win" ? "Win" : "Loss"} · Went ${wentFirst ? "first" : "second"} · ${selectedTags.length ? selectedTags.join(", ") : "no tags yet"}`;
-  const insightUpdate = getInsightUpdate({ opponent, result, wentFirst, selectedTags });
-  const updatedSignals = getUpdatedSignals({ opponent, result, wentFirst, selectedTags });
+  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [notesOpen, setNotesOpen] = useState(false);
+  const [moreIssueTagsOpen, setMoreIssueTagsOpen] = useState(false);
+  const opponentOptions = useMemo(
+    () => getArchetypeOptions(null, [focusMatchup, opponent]),
+    [focusMatchup, opponent]
+  );
+
+  const readySummary = useMemo(() => {
+    const parts = [
+      `${getVersionLabel(versionId)} vs ${opponent}`,
+      getMatchResultLabel(result),
+      wentFirst ? "First" : "Second",
+    ];
+    const highlightTags = [...issueTags, ...positiveTags].slice(0, 3);
+
+    if (highlightTags.length) {
+      parts.push(highlightTags.join(", "));
+    }
+
+    return parts.join(" | ");
+  }, [issueTags, opponent, positiveTags, result, versionId, wentFirst]);
+
+  const insightUpdate = getInsightUpdate({
+    gameContext,
+    result,
+    issueTags,
+    positiveTags,
+  });
 
   const versionOptions = useMemo(
     () =>
       demoDecks.flatMap((deck) =>
         deck.versions.map((version) => ({
           id: version.id,
-          label: `${deck.name} · ${version.name}`,
+          label: `${deck.name} | ${version.name}`,
           archetype: deck.archetype,
           active: version.isActive,
         }))
@@ -284,59 +312,70 @@ export function DemoMatchLogForm() {
     []
   );
 
-  function toggleTag(tag: string) {
-    setSelectedTags((current) =>
-      current.includes(tag)
-        ? current.filter((candidate) => candidate !== tag)
-        : [...current, tag]
-    );
-  }
-
   function resetForAnotherGame() {
     setSaved(false);
+    setGameContext("testing");
+    setEventName("");
+    setRoundNumber("");
+    setTestingSessionName("League block A");
+    setFocusMatchup("Mega Greninja");
     setOpponent("Mega Greninja");
+    setOpponentVariant("");
     setResult("loss");
     setWentFirst(false);
-    setSelectedTags(["missed setup", "bench pressure"]);
-    setNote("");
+    setStartQuality("okay");
+    setOpeningHandQuality("good");
+    setSequencingQuality("okay");
+    setIssueTags(["missed setup", "poor prize trade"]);
+    setPositiveTags([]);
+    setCardsShined([]);
+    setCardsFailed([]);
+    setLearnings("");
+    setAdvancedOpen(false);
+    setNotesOpen(false);
+    setMoreIssueTagsOpen(false);
   }
 
   if (saved) {
     return (
-      <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
+      <section className="grid gap-4">
         <div className="rounded-md bg-[#0F1A2D]/74 p-5 shadow-[0_20px_56px_rgba(0,0,0,0.26),inset_0_0_0_1px_rgba(34,197,94,0.18)] backdrop-blur sm:p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">
               <div className="flex items-center gap-3">
-                <CheckCircle2 className="size-10 shrink-0 text-[#22C55E]" aria-hidden="true" />
+                <CheckCircle2
+                  className="size-10 shrink-0 text-[#22C55E]"
+                  aria-hidden="true"
+                />
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#22C55E]">
-                    Game logged
+                    Demo game logged
                   </p>
                   <h2 className="text-2xl font-bold text-[#F8FAFC] sm:text-3xl">
-                    What SixPrizer would update
+                    Structured signal preview
                   </h2>
                 </div>
               </div>
               <p className="mt-3 text-sm leading-6 text-[#94A3B8]/82">
-                Demo mode shows the analytics loop without saving anything to your account.
+                Demo mode mirrors the structured logging flow without saving anything to your account.
               </p>
             </div>
             <span
-              className={`w-fit rounded px-2.5 py-1 text-xs font-bold uppercase tracking-[0.08em] ${signalCardClass(insightUpdate.tone)}`}
+              className={`w-fit rounded px-2.5 py-1 text-xs font-bold uppercase tracking-[0.08em] ${signalCardClass(
+                insightUpdate.tone
+              )}`}
             >
               {insightUpdate.eyebrow}
             </span>
           </div>
 
           <div className="mt-5 rounded-md bg-[#07111F]/58 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
-            <div className="flex items-center gap-3">
-              <ArchetypeSprites archetype={opponent} size="md" />
-              <div className="min-w-0">
-                <p className="text-lg font-bold text-[#F8FAFC]">{insightUpdate.title}</p>
-                <p className="mt-1 text-sm leading-6 text-[#94A3B8]/80">{summary}</p>
-              </div>
-            </div>
+            <p className="text-lg font-bold text-[#F8FAFC]">
+              {insightUpdate.title}
+            </p>
+            <p className="mt-2 text-sm leading-6 text-[#94A3B8]/80">
+              {readySummary}
+            </p>
             <div className="mt-4 grid gap-2">
               {insightUpdate.bullets.map((bullet) => (
                 <div
@@ -352,26 +391,15 @@ export function DemoMatchLogForm() {
             </p>
           </div>
 
-          <div className="mt-5">
-            <p className="text-sm font-bold text-[#F8FAFC]">Updated signals</p>
-            <div className="mt-3 grid gap-2 sm:grid-cols-2">
-              {updatedSignals.map((signal) => (
-                <div key={signal.label} className={`rounded-md p-3 ${signalCardClass(signal.tone)}`}>
-                  <p className="text-[0.68rem] font-bold uppercase tracking-[0.08em] opacity-72">
-                    {signal.label}
-                  </p>
-                  <p className="mt-2 text-base font-bold text-[#F8FAFC]">{signal.value}</p>
-                  <p className="mt-1 text-xs leading-5 opacity-75">{signal.helper}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <p className="mt-3 text-sm font-medium text-[#F5C84C]">
+          <p className="mt-4 text-sm font-medium text-[#F5C84C]">
             Demo mode only: no production data was changed.
           </p>
           <div className="mt-6 flex flex-col gap-2 sm:flex-row">
-            <button type="button" className={`${primaryButton} h-12`} onClick={resetForAnotherGame}>
+            <button
+              type="button"
+              className={`${primaryButton} h-12`}
+              onClick={resetForAnotherGame}
+            >
               <RotateCcw className="mr-2 size-4" aria-hidden="true" />
               Log another game
             </button>
@@ -380,19 +408,12 @@ export function DemoMatchLogForm() {
             </Link>
           </div>
         </div>
-        <LiveSummary
-          opponent={opponent}
-          summary={summary}
-          result={result}
-          selectedTags={selectedTags}
-          wentFirst={wentFirst}
-        />
       </section>
     );
   }
 
   return (
-    <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
+    <section className="grid gap-4">
       <form
         className="grid gap-4 rounded-md bg-[#0F1A2D]/74 p-4 shadow-[0_20px_56px_rgba(0,0,0,0.26),inset_0_0_0_1px_rgba(148,163,184,0.09)] backdrop-blur sm:p-5"
         onSubmit={(event) => {
@@ -400,193 +421,419 @@ export function DemoMatchLogForm() {
           setSaved(true);
         }}
       >
-        <section className="rounded-md bg-[#07111F]/42 p-3">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
-                Step 1
-              </p>
-              <h2 className="text-lg font-bold text-[#F8FAFC]">Your deck/version</h2>
+        <section className="rounded-xl bg-[#07111F]/36 p-4 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.12)] sm:p-5">
+          <div className="flex flex-col gap-1">
+            <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
+              Quick log
+            </p>
+            <h2 className="text-xl font-semibold text-[#F8FAFC]">
+              Log a game fast
+            </h2>
+            <p className="text-sm leading-6 text-[#94A3B8]/76">
+              Pick matchup, result, turn order, and the main leak before you queue again.
+            </p>
+          </div>
+
+          <div className="mt-4 grid gap-4">
+            <div className={subCardClass}>
+              <label className={label}>Your deck</label>
+              <div className="mt-2 grid gap-2">
+                {versionOptions.map((version) => (
+                  <button
+                    key={version.id}
+                    type="button"
+                    onClick={() => setVersionId(version.id)}
+                    className={`${tagToggleClass} ${
+                      versionId === version.id ? selectedToggleClass : ""
+                    }`}
+                  >
+                    <span className="block">
+                      <span className="block text-sm font-semibold">
+                        {version.label}
+                      </span>
+                      <span className="block text-xs opacity-75">
+                        {version.archetype}
+                        {version.active ? " | active" : ""}
+                      </span>
+                    </span>
+                  </button>
+                ))}
+              </div>
             </div>
-            <select
-              className={`${inputH11} max-w-[180px] text-xs sm:max-w-xs`}
-              value={eventType}
-              onChange={(event) => setEventType(event.target.value)}
-              aria-label="Event type"
-            >
-              <option>Best-of-three testing</option>
-              <option>League night</option>
-              <option>Solo testing</option>
-              <option>Online ladder</option>
-            </select>
-          </div>
-          <div className="mt-3 grid gap-2">
-            {versionOptions.map((version) => (
-              <button
-                key={version.id}
-                type="button"
-                onClick={() => setVersionId(version.id)}
-                className={`min-h-14 rounded-md px-3 py-2 text-left transition active:scale-[0.99] ${chipClass(versionId === version.id)}`}
-              >
-                <span className="block text-sm font-semibold">{version.label}</span>
-                <span className="text-xs opacity-75">{version.archetype}{version.active ? " · active" : ""}</span>
-              </button>
-            ))}
-          </div>
-        </section>
 
-        <section className="rounded-md bg-[#07111F]/42 p-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
-            Step 2
-          </p>
-          <h2 className="text-lg font-bold text-[#F8FAFC]">Opponent matchup</h2>
-          <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {commonOpponents.map((archetype) => (
-              <button
-                key={archetype}
-                type="button"
-                onClick={() => {
-                  setOpponent(archetype);
-                  setSelectedTags((tagsByOpponent[archetype] ?? defaultTags).slice(0, 2));
-                }}
-                className={`min-h-16 rounded-md p-2 text-left transition active:scale-[0.98] ${chipClass(opponent === archetype)}`}
-              >
-                <ArchetypeSprites archetype={archetype} />
-                <span className="mt-1 block truncate text-sm font-semibold">{archetype}</span>
-              </button>
-            ))}
-          </div>
-        </section>
-
-        <section className="grid gap-3 sm:grid-cols-2">
-          <fieldset className="rounded-md bg-[#07111F]/42 p-3">
-            <legend>
-              <span className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
-                Step 3
-              </span>
-              <span className="block text-lg font-bold text-[#F8FAFC]">Result</span>
-            </legend>
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              {(["win", "loss"] as const).map((value) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => setResult(value)}
-                  className={`min-h-14 rounded-md text-base font-bold capitalize transition active:scale-[0.98] ${chipClass(result === value, value === "win" ? "green" : "rose")}`}
-                >
-                  {value}
-                </button>
-              ))}
+            <div className={subCardClass}>
+              <ArchetypePicker
+                id="demo_opponent_archetype"
+                name="demo_opponent_archetype"
+                label="Opponent deck"
+                options={opponentOptions}
+                value={opponent}
+                placeholder="Search all known archetypes or type your own"
+                maxOptions={7}
+                listMaxHeightClassName="max-h-48"
+                onValueChange={setOpponent}
+              />
+              {opponent ? (
+                <p className="mt-2 text-xs font-medium text-[#B8D1FF]">
+                  Selected matchup: {opponent}
+                </p>
+              ) : null}
             </div>
-          </fieldset>
 
-          <fieldset className="rounded-md bg-[#07111F]/42 p-3">
-            <legend>
-              <span className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
-                Step 4
-              </span>
-              <span className="block text-lg font-bold text-[#F8FAFC]">First/second</span>
-            </legend>
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              {[true, false].map((value) => (
-                <button
-                  key={String(value)}
-                  type="button"
-                  onClick={() => setWentFirst(value)}
-                  className={`min-h-14 rounded-md text-base font-bold transition active:scale-[0.98] ${chipClass(wentFirst === value, "blue")}`}
-                >
-                  {value ? "Went first" : "Went second"}
-                </button>
-              ))}
+            <div className="grid gap-3 md:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+              <fieldset className={subCardClass}>
+                <legend className={label}>Result</legend>
+                <div className="mt-2 grid grid-cols-3 gap-2">
+                  {(["win", "loss", "tie"] as const).map((value) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => setResult(value)}
+                      className={`${largeToggleClass} ${
+                        result === value ? selectedToggleClass : ""
+                      }`}
+                    >
+                      {getMatchResultLabel(value)}
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+
+              <fieldset className={subCardClass}>
+                <legend className={label}>Turn order</legend>
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                  {[true, false].map((value) => (
+                    <button
+                      key={String(value)}
+                      type="button"
+                      onClick={() => setWentFirst(value)}
+                      className={`${mediumToggleClass} ${
+                        wentFirst === value ? selectedToggleClass : ""
+                      }`}
+                    >
+                      {value ? "First" : "Second"}
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
             </div>
-          </fieldset>
-        </section>
 
-        <section className="rounded-md bg-[#07111F]/42 p-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
-            Step 5
-          </p>
-          <h2 className="text-lg font-bold text-[#F8FAFC]">Tags and optional note</h2>
-          <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {quickTags.map((tag) => (
+            <fieldset className={subCardClass}>
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <legend className={label}>Quick tags</legend>
+                  <p className="mt-1 text-xs leading-5 text-[#94A3B8]/72">
+                    Mark the main leak first. Add more detail only if it matters.
+                  </p>
+                </div>
+                {EXTRA_ISSUE_TAG_OPTIONS.length ? (
+                  <button
+                    type="button"
+                    onClick={() => setMoreIssueTagsOpen((current) => !current)}
+                    className="rounded-md bg-[#4F8CFF]/10 px-3 py-2 text-xs font-semibold text-[#F8FAFC] transition hover:bg-[#4F8CFF]/16"
+                  >
+                    {moreIssueTagsOpen ? "Fewer tags" : "More tags"}
+                  </button>
+                ) : null}
+              </div>
+              <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                {QUICK_ISSUE_TAG_OPTIONS.map((tag) => (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => setIssueTags(toggleSelection(issueTags, tag))}
+                    className={`${tagToggleClass} ${
+                      issueTags.includes(tag) ? selectedToggleClass : ""
+                    }`}
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
+              {moreIssueTagsOpen ? (
+                <div className="mt-2 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                  {EXTRA_ISSUE_TAG_OPTIONS.map((tag) => (
+                    <button
+                      key={tag}
+                      type="button"
+                      onClick={() => setIssueTags(toggleSelection(issueTags, tag))}
+                      className={`${tagToggleClass} ${
+                        issueTags.includes(tag) ? selectedToggleClass : ""
+                      }`}
+                    >
+                      {tag}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </fieldset>
+
+            <div className="grid gap-2">
               <button
-                key={tag}
                 type="button"
-                onClick={() => toggleTag(tag)}
-                className={`min-h-11 rounded-md px-2 text-sm font-semibold transition active:scale-[0.98] ${chipClass(selectedTags.includes(tag), "gold")}`}
+                onClick={() => setAdvancedOpen((current) => !current)}
+                className={sectionToggleClass}
               >
-                {tag}
+                <span>
+                  <span className="block text-sm font-semibold text-[#F8FAFC]">
+                    Advanced game details
+                  </span>
+                  <span className="block text-xs text-[#94A3B8]/72">
+                    Context, matchup detail, and game quality.
+                  </span>
+                </span>
+                <span className="text-xs font-semibold text-[#B8D1FF]">
+                  {advancedOpen ? "Hide" : "Add game quality"}
+                </span>
               </button>
-            ))}
-          </div>
-          <label className="mt-4 grid gap-2">
-            <span className={`${label} text-[#94A3B8]/86`}>Optional note</span>
-            <textarea
-              className={`${textarea} min-h-20 text-sm`}
-              value={note}
-              onChange={(event) => setNote(event.target.value)}
-              placeholder="Only add detail if the tags do not cover it."
-            />
-          </label>
-        </section>
 
-        <button type="submit" className={`${primaryButton} h-12 w-full text-base`}>
-          Save demo game
-        </button>
+              {advancedOpen ? (
+                <div className="grid gap-3 rounded-xl bg-[#07111F]/28 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                  <div className="grid grid-cols-2 gap-2">
+                    {MATCH_GAME_CONTEXT_OPTIONS.map((value) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => setGameContext(value)}
+                        className={`${mediumToggleClass} ${
+                          gameContext === value ? selectedToggleClass : ""
+                        }`}
+                      >
+                        {getGameContextLabel(value)}
+                      </button>
+                    ))}
+                  </div>
+
+                  {gameContext === "competitive" ? (
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="flex flex-col gap-2">
+                        <label className={label}>Event name</label>
+                        <input
+                          value={eventName}
+                          onChange={(event) => setEventName(event.target.value)}
+                          placeholder="Optional"
+                          className={inputH11}
+                        />
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <label className={label}>Round number</label>
+                        <input
+                          value={roundNumber}
+                          onChange={(event) => setRoundNumber(event.target.value)}
+                          placeholder="Optional"
+                          className={inputH11}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="flex flex-col gap-2">
+                        <label className={label}>Testing session name</label>
+                        <input
+                          value={testingSessionName}
+                          onChange={(event) =>
+                            setTestingSessionName(event.target.value)
+                          }
+                          placeholder="Optional"
+                          className={inputH11}
+                        />
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <label className={label}>Focus matchup</label>
+                        <input
+                          value={focusMatchup}
+                          onChange={(event) => setFocusMatchup(event.target.value)}
+                          placeholder="Optional"
+                          className={inputH11}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex flex-col gap-2">
+                    <label className={label}>Opponent variant</label>
+                    <input
+                      value={opponentVariant}
+                      onChange={(event) => setOpponentVariant(event.target.value)}
+                      placeholder="Optional detail"
+                      className={inputH11}
+                    />
+                  </div>
+
+                  <div className={subCardClass}>
+                    <p className="text-sm font-semibold text-[#F8FAFC]">
+                      Game quality
+                    </p>
+                    <div className="mt-3 grid gap-3 lg:grid-cols-3">
+                      <fieldset className="flex flex-col gap-2">
+                        <legend className={label}>Start</legend>
+                        <div className="grid grid-cols-3 gap-2">
+                          {MATCH_START_QUALITY_OPTIONS.map((value) => (
+                            <button
+                              key={value}
+                              type="button"
+                              onClick={() =>
+                                setStartQuality(
+                                  startQuality === value ? undefined : value
+                                )
+                              }
+                              className={`${mediumToggleClass} ${
+                                startQuality === value
+                                  ? selectedToggleClass
+                                  : ""
+                              }`}
+                            >
+                              {getQualityLabel(value)}
+                            </button>
+                          ))}
+                        </div>
+                      </fieldset>
+                      <fieldset className="flex flex-col gap-2">
+                        <legend className={label}>Opening hand</legend>
+                        <div className="grid grid-cols-2 gap-2">
+                          {MATCH_OPENING_HAND_OPTIONS.map((value) => (
+                            <button
+                              key={value}
+                              type="button"
+                              onClick={() =>
+                                setOpeningHandQuality(
+                                  openingHandQuality === value ? undefined : value
+                                )
+                              }
+                              className={`${mediumToggleClass} ${
+                                openingHandQuality === value
+                                  ? selectedToggleClass
+                                  : ""
+                              }`}
+                            >
+                              {getQualityLabel(value)}
+                            </button>
+                          ))}
+                        </div>
+                      </fieldset>
+                      <fieldset className="flex flex-col gap-2">
+                        <legend className={label}>Sequencing</legend>
+                        <div className="grid grid-cols-2 gap-2">
+                          {MATCH_SEQUENCING_OPTIONS.map((value) => (
+                            <button
+                              key={value}
+                              type="button"
+                              onClick={() =>
+                                setSequencingQuality(
+                                  sequencingQuality === value
+                                    ? undefined
+                                    : value
+                                )
+                              }
+                              className={`${mediumToggleClass} ${
+                                sequencingQuality === value
+                                  ? selectedToggleClass
+                                  : ""
+                              }`}
+                            >
+                              {getQualityLabel(value)}
+                            </button>
+                          ))}
+                        </div>
+                      </fieldset>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+
+              <button
+                type="button"
+                onClick={() => setNotesOpen((current) => !current)}
+                className={sectionToggleClass}
+              >
+                <span>
+                  <span className="block text-sm font-semibold text-[#F8FAFC]">
+                    Add notes and learnings
+                  </span>
+                  <span className="block text-xs text-[#94A3B8]/72">
+                    Positive tags, cards to remember, and optional notes.
+                  </span>
+                </span>
+                <span className="text-xs font-semibold text-[#B8D1FF]">
+                  {notesOpen ? "Hide" : "Open"}
+                </span>
+              </button>
+
+              {notesOpen ? (
+                <div className="grid gap-3 rounded-xl bg-[#07111F]/28 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                  <fieldset className={subCardClass}>
+                    <legend className={label}>What went well?</legend>
+                    <div className="mt-2 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                      {MATCH_POSITIVE_TAG_OPTIONS.map((tag) => (
+                        <button
+                          key={tag}
+                          type="button"
+                          onClick={() =>
+                            setPositiveTags(toggleSelection(positiveTags, tag))
+                          }
+                          className={`${tagToggleClass} ${
+                            positiveTags.includes(tag)
+                              ? selectedToggleClass
+                              : ""
+                          }`}
+                        >
+                          {tag}
+                        </button>
+                      ))}
+                    </div>
+                  </fieldset>
+
+                  <div className={subCardClass}>
+                    <p className="text-sm font-semibold text-[#F8FAFC]">
+                      Cards to remember
+                    </p>
+                    <div className="mt-3 grid gap-3 xl:grid-cols-2">
+                      <ChipInput
+                        labelText="Cards that shined"
+                        values={cardsShined}
+                        onChange={setCardsShined}
+                        placeholder="Type a card name and press Enter"
+                      />
+                      <ChipInput
+                        labelText="Cards that failed"
+                        values={cardsFailed}
+                        onChange={setCardsFailed}
+                        placeholder="Type a card name and press Enter"
+                      />
+                    </div>
+                  </div>
+
+                  <div className={subCardClass}>
+                    <label className={label}>Learnings</label>
+                    <textarea
+                      className={`${textarea} mt-2 min-h-24 text-sm`}
+                      value={learnings}
+                      onChange={(event) => setLearnings(event.target.value)}
+                      placeholder="What did this game teach you? Example: Lost because I missed second attacker and fell behind on prizes."
+                    />
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          </div>
+
+          <div className="mt-4 rounded-xl bg-[#0B1020]/52 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+            <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#F5C84C]">
+              Ready to save
+            </p>
+            <p className="mt-2 text-sm font-medium leading-6 text-[#F8FAFC]">
+              {readySummary}
+            </p>
+            <p className="mt-2 text-sm text-[#94A3B8]/76">
+              One more data point for your testing loop.
+            </p>
+          </div>
+
+          <button type="submit" className={`${primaryButton} h-12 w-full text-base`}>
+            Save demo game
+          </button>
+        </section>
       </form>
-
-      <LiveSummary
-        opponent={opponent}
-        summary={summary}
-        result={result}
-        selectedTags={selectedTags}
-        wentFirst={wentFirst}
-      />
     </section>
-  );
-}
-
-function LiveSummary({
-  opponent,
-  summary,
-  result,
-  selectedTags,
-  wentFirst,
-}: {
-  opponent: string;
-  summary: string;
-  result: Result;
-  selectedTags: string[];
-  wentFirst: boolean;
-}) {
-  return (
-    <aside className="rounded-md bg-[#0F1A2D]/74 p-4 shadow-[0_20px_56px_rgba(0,0,0,0.26),inset_0_0_0_1px_rgba(148,163,184,0.09)] backdrop-blur lg:sticky lg:top-6 lg:self-start">
-      <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#94A3B8]/72">
-        Live summary
-      </p>
-      <div className="mt-3 flex items-center gap-3">
-        <ArchetypeSprites archetype={opponent} size="md" />
-        <div>
-          <p className="text-lg font-semibold text-[#F8FAFC]">{opponent}</p>
-          <p className="text-sm text-[#94A3B8]/76">
-            {result === "win" ? "Win" : "Loss"} · Went {wentFirst ? "first" : "second"}
-          </p>
-        </div>
-      </div>
-      <div className="mt-4 rounded-md bg-[#07111F]/52 p-3 text-sm leading-6 text-[#F8FAFC]/90">
-        {summary}
-      </div>
-      <div className="mt-3 flex flex-wrap gap-1.5">
-        {selectedTags.map((tag) => (
-          <span key={tag} className="rounded bg-[#F5C84C]/12 px-2 py-1 text-xs font-semibold text-[#F5C84C]">
-            {tag}
-          </span>
-        ))}
-      </div>
-      <p className="mt-4 text-sm leading-6 text-[#94A3B8]/76">
-        Demo insight: this would update the matchup sample and confidence badge,
-        but it never writes to production data.
-      </p>
-    </aside>
   );
 }

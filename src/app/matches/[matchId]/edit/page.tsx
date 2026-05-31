@@ -1,29 +1,24 @@
 import { notFound, redirect } from "next/navigation";
 import { AppNav } from "@/components/AppNav";
 import { AppSidebar } from "@/components/AppSidebar";
-import { ArchetypePicker } from "@/components/ArchetypePicker";
 import {
   appFrame,
   appMain,
   appShell,
-  cardLarge,
-  glassPanelStrong,
-  inputH11,
-  label,
   logoOnDark,
   pageCopy,
   pageTitle,
-  primaryButton,
-  textarea,
 } from "@/components/brand-styles";
+import { MatchLogForm } from "@/components/matches/MatchLogForm";
 import { SixPrizerLogo } from "@/components/SixPrizerLogo";
 import { getArchetypeOptions } from "@/lib/archetypes";
-import { MATCH_TAGS } from "@/lib/match-options";
+import {
+  parseMatchMetadata,
+  type MatchMetadata,
+  type MatchResult,
+} from "@/lib/match-types";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { updateMatch } from "../../actions";
-
-const editToggleClass =
-  "flex h-11 cursor-pointer items-center justify-center rounded-md bg-[#0B1020]/38 px-3 text-sm font-medium text-[#F8FAFC] transition hover:bg-[#4F8CFF]/10 has-[:checked]:bg-[#4F8CFF]/22 has-[:checked]:text-[#F8FAFC]";
 
 type EditMatchPageProps = {
   params: Promise<{
@@ -47,10 +42,11 @@ type MatchRow = {
   deck_version_id: string;
   opponent_archetype: string;
   opponent_variant: string | null;
-  result: "win" | "loss";
+  result: MatchResult;
   went_first: boolean | null;
   event_type: string | null;
   notes: string | null;
+  metadata: MatchMetadata | Record<string, unknown> | null;
   match_tags:
     | {
         tag: string;
@@ -72,7 +68,7 @@ export default async function EditMatchPage({ params }: EditMatchPageProps) {
   const { data: match, error: matchError } = await supabase
     .from("matches")
     .select(
-      "id, deck_version_id, opponent_archetype, opponent_variant, result, went_first, event_type, notes, match_tags(tag)"
+      "id, deck_version_id, opponent_archetype, opponent_variant, result, went_first, event_type, notes, metadata, match_tags(tag)"
     )
     .eq("id", matchId)
     .eq("user_id", user.id)
@@ -103,7 +99,8 @@ export default async function EditMatchPage({ params }: EditMatchPageProps) {
   const { data: previousMatches, error: previousMatchesError } = await supabase
     .from("matches")
     .select("opponent_archetype")
-    .eq("user_id", user.id);
+    .eq("user_id", user.id)
+    .order("played_at", { ascending: false });
 
   if (previousMatchesError) {
     throw new Error(previousMatchesError.message);
@@ -117,10 +114,10 @@ export default async function EditMatchPage({ params }: EditMatchPageProps) {
       label: `${deck.name} - ${version.name}`,
       detail: deck.archetype,
       isActive: version.is_active,
+      suggestedArchetype: null,
     }))
   );
   const currentTags = currentMatch.match_tags?.map((tag) => tag.tag) ?? [];
-  const tagOptions = Array.from(new Set([...MATCH_TAGS, ...currentTags]));
   const opponentArchetypeOptions = getArchetypeOptions(null, [
     ...((previousMatches ?? []) as { opponent_archetype: string }[]).map(
       (previousMatch) => previousMatch.opponent_archetype
@@ -141,200 +138,47 @@ export default async function EditMatchPage({ params }: EditMatchPageProps) {
             helper: currentMatch.result,
           }}
         />
-        <div className={`${appMain} mx-auto w-full max-w-3xl`}>
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div>
-            <SixPrizerLogo {...logoOnDark} />
-            <p className="mt-5 text-sm font-medium text-[#94A3B8]">
-              Match history
-            </p>
-            <h1 className={pageTitle}>
-              Edit Match
-            </h1>
-            <p className={pageCopy}>
-              Update match details and tags.
-            </p>
+        <div className={`${appMain} mx-auto w-full max-w-6xl`}>
+          <div className="flex max-w-full min-w-0 flex-col gap-4 overflow-x-hidden lg:flex-row lg:flex-wrap lg:items-start lg:justify-between">
+            <div className="min-w-0 max-w-full">
+              <SixPrizerLogo {...logoOnDark} />
+              <p className="mt-5 text-sm font-medium text-[#94A3B8]">
+                Match history
+              </p>
+              <h1 className={pageTitle}>Edit Match</h1>
+              <p className={pageCopy}>
+                Update the structured context, result, and learnings for this game.
+              </p>
+            </div>
+            <div className="lg:hidden">
+              <AppNav current="matches" />
+            </div>
           </div>
-          <div className="lg:hidden">
-            <AppNav current="matches" />
-          </div>
-        </div>
 
-        <form
-          action={saveMatch}
-          className={`${cardLarge} ${glassPanelStrong}`}
-        >
-          <div className="grid gap-5">
-            <div className="flex flex-col gap-2">
-              <label
-                htmlFor="deck_version_id"
-                className={label}
-              >
-                Deck version
-              </label>
-              <select
-                id="deck_version_id"
-                name="deck_version_id"
-                required
-                defaultValue={currentMatch.deck_version_id}
-                className={inputH11}
-              >
-                {deckOptions.map((option) => (
-                  <option key={option.id} value={option.id}>
-                    {option.label}
-                    {option.isActive ? " (active)" : ""} - {option.detail}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="grid gap-5 sm:grid-cols-2">
-              <ArchetypePicker
-                id="opponent_archetype"
-                name="opponent_archetype"
-                label="Opponent archetype"
-                options={opponentArchetypeOptions}
-                defaultValue={currentMatch.opponent_archetype}
-                required
-              />
-              <div className="flex flex-col gap-2">
-                <label
-                  htmlFor="opponent_variant"
-                  className={label}
-                >
-                  Opponent variant
-                </label>
-                <input
-                  id="opponent_variant"
-                  name="opponent_variant"
-                  defaultValue={currentMatch.opponent_variant ?? ""}
-                  className={inputH11}
-                />
-              </div>
-            </div>
-
-            <fieldset className="flex flex-col gap-2">
-              <legend className={label}>
-                Result
-              </legend>
-              <div className="grid grid-cols-2 gap-2">
-                {(["win", "loss"] as const).map((result) => (
-                  <label
-                    key={result}
-                    className={`${editToggleClass} capitalize`}
-                  >
-                    <input
-                      type="radio"
-                      name="result"
-                      value={result}
-                      defaultChecked={currentMatch.result === result}
-                      className="sr-only"
-                    />
-                    {result}
-                  </label>
-                ))}
-              </div>
-            </fieldset>
-
-            <div className="grid gap-5 sm:grid-cols-2">
-              <fieldset className="flex flex-col gap-2">
-                <legend className={label}>
-                  Went first
-                </legend>
-                <div className="grid grid-cols-2 gap-2">
-                  <label className={editToggleClass}>
-                    <input
-                      type="radio"
-                      name="went_first"
-                      value="true"
-                      defaultChecked={currentMatch.went_first !== false}
-                      className="sr-only"
-                    />
-                    Yes
-                  </label>
-                  <label className={editToggleClass}>
-                    <input
-                      type="radio"
-                      name="went_first"
-                      value="false"
-                      defaultChecked={currentMatch.went_first === false}
-                      className="sr-only"
-                    />
-                    No
-                  </label>
-                </div>
-              </fieldset>
-
-              <fieldset className="flex flex-col gap-2">
-                <legend className={label}>
-                  Event type
-                </legend>
-                <div className="grid grid-cols-3 gap-2">
-                  {(["casual", "testing", "tournament"] as const).map(
-                    (eventType) => (
-                      <label
-                        key={eventType}
-                        className={`${editToggleClass} px-2 capitalize`}
-                      >
-                        <input
-                          type="radio"
-                          name="event_type"
-                          value={eventType}
-                          defaultChecked={currentMatch.event_type === eventType}
-                          className="sr-only"
-                        />
-                        {eventType}
-                      </label>
-                    )
-                  )}
-                </div>
-              </fieldset>
-            </div>
-
-            <fieldset className="flex flex-col gap-2">
-              <legend className={label}>
-                Tags
-              </legend>
-              <div className="flex flex-wrap gap-2">
-                {tagOptions.map((tag) => (
-                  <label
-                    key={tag}
-                    className="cursor-pointer rounded-md bg-[#0B1020]/38 px-3 py-2 text-sm font-medium text-[#F8FAFC] transition hover:bg-[#4F8CFF]/10 has-[:checked]:bg-[#4F8CFF]/22"
-                  >
-                    <input
-                      type="checkbox"
-                      name="tags"
-                      value={tag}
-                      defaultChecked={currentTags.includes(tag)}
-                      className="sr-only"
-                    />
-                    {tag}
-                  </label>
-                ))}
-              </div>
-            </fieldset>
-
-            <div className="flex flex-col gap-2">
-              <label htmlFor="notes" className={label}>
-                Notes
-              </label>
-              <textarea
-                id="notes"
-                name="notes"
-                rows={5}
-                defaultValue={currentMatch.notes ?? ""}
-                className={textarea}
-              />
-            </div>
-
-            <button
-              type="submit"
-              className={`${primaryButton} h-11`}
-            >
-              Save match
-            </button>
-          </div>
-        </form>
+          <MatchLogForm
+            action={saveMatch}
+            deckOptions={deckOptions}
+            opponentArchetypeOptions={opponentArchetypeOptions}
+            initialDeckVersionId={currentMatch.deck_version_id}
+            initialEventType={currentMatch.event_type ?? undefined}
+            initialOpponentArchetype={currentMatch.opponent_archetype}
+            initialOpponentVariant={currentMatch.opponent_variant ?? undefined}
+            initialResult={currentMatch.result}
+            initialWentFirst={
+              currentMatch.went_first === null
+                ? undefined
+                : currentMatch.went_first
+                  ? "true"
+                  : "false"
+            }
+            initialNotes={currentMatch.notes ?? undefined}
+            initialTags={currentTags}
+            initialMetadata={parseMatchMetadata(currentMatch.metadata)}
+            secondaryHref="/matches"
+            secondaryLabel="Back to matches"
+            submitLabel="Save match"
+            wasSuccessful={false}
+          />
         </div>
       </section>
     </main>

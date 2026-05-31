@@ -30,6 +30,7 @@ import { SixPrizerLogo } from "@/components/SixPrizerLogo";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { getArchetypeOptions } from "@/lib/archetypes";
 import { LATEST_FORMAT } from "@/lib/formats";
+import { type MatchResult } from "@/lib/match-types";
 import { buildSessionCoachInsight } from "@/lib/session-coach";
 import { createDeck, deleteDeck } from "./actions";
 
@@ -83,7 +84,7 @@ export default async function DecksPage() {
   const sessionCoach = buildSessionCoachInsight(
     (matches ?? []) as {
       opponent_archetype: string;
-      result: "win" | "loss";
+      result: MatchResult;
       went_first: boolean | null;
       event_type: string | null;
       played_at: string;

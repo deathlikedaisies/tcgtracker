@@ -4,6 +4,7 @@ import { ArchetypeSprites } from "@/components/ArchetypeSprites";
 import { DemoShell } from "@/components/demo/DemoShell";
 import { cardLarge, pageCopy, pageHeader, pageTitle, primaryButton } from "@/components/brand-styles";
 import { demoMatches, formatDemoDate, getDemoDeck, getDemoMatchups, getWinRate } from "@/lib/demo-data";
+import { formatMatchRecord } from "@/lib/match-types";
 
 type DemoDeckDetailPageProps = {
   params: Promise<{ deckId: string }>;
@@ -73,7 +74,7 @@ export default async function DemoDeckDetailPage({ params }: DemoDeckDetailPageP
                   <div className="h-full rounded-full bg-[#4F8CFF]" style={{ width: `${matchup.winRate}%` }} />
                 </div>
                 <p className="mt-2 text-sm text-[#94A3B8]/72">
-                  {matchup.wins}-{matchup.losses}, {matchup.winRate}%
+                  {formatMatchRecord(matchup.wins, matchup.losses, matchup.ties)}, {matchup.winRate}%
                 </p>
               </div>
             ))}
@@ -86,7 +87,15 @@ export default async function DemoDeckDetailPage({ params }: DemoDeckDetailPageP
         <div className="mt-4 grid gap-2">
           {matches.slice(0, 10).map((match) => (
             <div key={match.id} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-md bg-[#07111F]/52 p-3">
-              <span className={`size-2.5 rounded-full ${match.result === "win" ? "bg-[#22C55E]" : "bg-[#F43F5E]"}`} />
+              <span
+                className={`size-2.5 rounded-full ${
+                  match.result === "win"
+                    ? "bg-[#22C55E]"
+                    : match.result === "loss"
+                      ? "bg-[#F43F5E]"
+                      : "bg-[#94A3B8]"
+                }`}
+              />
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold text-[#F8FAFC]">{match.opponentArchetype}</p>
                 <p className="truncate text-xs text-[#94A3B8]/70">{match.notes}</p>

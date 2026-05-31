@@ -19,6 +19,7 @@ import { SixPrizerLogo } from "@/components/SixPrizerLogo";
 import { getArchetypeOptions } from "@/lib/archetypes";
 import { analyzeDeckList } from "@/lib/decklist";
 import { LATEST_FORMAT } from "@/lib/formats";
+import { type MatchResult } from "@/lib/match-types";
 import { buildSessionCoachInsight } from "@/lib/session-coach";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { logMatch } from "./actions";
@@ -102,7 +103,7 @@ export default async function NewMatchPage({
   const sessionCoach = buildSessionCoachInsight(
     (previousMatches ?? []) as {
       opponent_archetype: string;
-      result: "win" | "loss";
+      result: MatchResult;
       went_first: boolean | null;
       event_type: string | null;
       played_at: string;
@@ -127,9 +128,6 @@ export default async function NewMatchPage({
     ...previousOpponentArchetypes,
     ...userDecks.map((deck) => deck.archetype),
   ]);
-  const recentOpponentArchetypes = Array.from(
-    new Set(previousOpponentArchetypes)
-  ).slice(0, 5);
 
   return (
     <main className={appShell}>
@@ -169,7 +167,6 @@ export default async function NewMatchPage({
             action={logMatch}
             deckOptions={deckOptions}
             opponentArchetypeOptions={opponentArchetypeOptions}
-            recentOpponentArchetypes={recentOpponentArchetypes}
             initialEventType={event}
             initialOpponentArchetype={opponent}
             initialResult={result}

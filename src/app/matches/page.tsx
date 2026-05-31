@@ -33,6 +33,15 @@ import {
   matchCountsTowardMission,
   matchCountsTowardMissionContext,
 } from "@/lib/session-coach";
+import {
+  getGameContextLabel,
+  getMatchResultLabel,
+  getQualityLabel,
+  isMatchResult,
+  parseMatchMetadata,
+  type MatchMetadata,
+  type MatchResult,
+} from "@/lib/match-types";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { deleteMatch } from "./actions";
 
@@ -64,9 +73,10 @@ type MatchRow = {
   deck_version_id: string;
   opponent_archetype: string;
   opponent_variant: string | null;
-  result: "win" | "loss";
+  result: MatchResult;
   went_first: boolean | null;
   event_type: string | null;
+  metadata: MatchMetadata | Record<string, unknown> | null;
   notes: string | null;
   played_at: string;
   deck_versions:
@@ -195,7 +205,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
   const { data: matches, error: matchesError } = await supabase
     .from("matches")
     .select(
-      "id, deck_version_id, opponent_archetype, opponent_variant, result, went_first, event_type, notes, played_at, deck_versions(id, name, deck_id, decks(id, name)), match_tags(tag)"
+      "id, deck_version_id, opponent_archetype, opponent_variant, result, went_first, event_type, metadata, notes, played_at, deck_versions(id, name, deck_id, decks(id, name)), match_tags(tag)"
     )
     .eq("user_id", user.id)
     .order("played_at", { ascending: false });
@@ -233,8 +243,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
   )
     ? params.opponent_archetype ?? ""
     : "";
-  const selectedResult =
-    params.result === "win" || params.result === "loss" ? params.result : "";
+  const selectedResult = isMatchResult(params.result ?? null) ? params.result : "";
   const startDate = parseDateStart(params.start_date);
   const endDate = parseDateEnd(params.end_date);
   const missionOnly = params.mission_only === "1";
@@ -381,6 +390,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                 <option value="">All results</option>
                 <option value="win">Win</option>
                 <option value="loss">Loss</option>
+                <option value="tie">Tie</option>
               </select>
             </div>
             <div className="flex flex-col gap-2">
@@ -471,6 +481,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
               {filteredMatches.map((match) => {
                 const deckVersion = getDeckVersion(match);
                 const tags = match.match_tags?.map((tag) => tag.tag) ?? [];
+                const metadata = parseMatchMetadata(match.metadata);
                 const removeMatch = deleteMatch.bind(null, match.id);
                 const countsTowardMission = matchCountsTowardMission(
                   match,
@@ -496,10 +507,12 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                             className={`rounded-md px-2 py-1 text-xs font-medium uppercase ${
                               match.result === "win"
                                 ? "bg-emerald-500/15 text-emerald-300"
-                                : "bg-[#F43F5E]/15 text-rose-200"
+                                : match.result === "loss"
+                                  ? "bg-[#F43F5E]/15 text-rose-200"
+                                  : "bg-slate-400/15 text-slate-200"
                             }`}
                           >
-                            {match.result}
+                            {getMatchResultLabel(match.result)}
                           </span>
                           {countsTowardMission ? (
                             <span className="rounded-md bg-[#F5C84C]/14 px-2 py-1 text-xs font-semibold text-[#F5C84C]">
@@ -536,7 +549,69 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                           <span className={`${subtlePill} capitalize`}>
                             {match.event_type ?? "No event"}
                           </span>
+                          {metadata.game_context ? (
+                            <span className={subtlePill}>
+                              {getGameContextLabel(metadata.game_context)}
+                            </span>
+                          ) : null}
+                          {metadata.round_number ? (
+                            <span className={subtlePill}>
+                              Round {metadata.round_number}
+                            </span>
+                          ) : null}
+                          {metadata.event_name ? (
+                            <span className={subtlePill}>{metadata.event_name}</span>
+                          ) : null}
+                          {metadata.testing_session_name ? (
+                            <span className={subtlePill}>
+                              {metadata.testing_session_name}
+                            </span>
+                          ) : null}
+                          {metadata.focus_matchup ? (
+                            <span className={subtlePill}>
+                              Focus: {metadata.focus_matchup}
+                            </span>
+                          ) : null}
+                          {metadata.start_quality ? (
+                            <span className={subtlePill}>
+                              Start: {getQualityLabel(metadata.start_quality)}
+                            </span>
+                          ) : null}
+                          {metadata.opening_hand_quality ? (
+                            <span className={subtlePill}>
+                              Hand: {getQualityLabel(
+                                metadata.opening_hand_quality
+                              )}
+                            </span>
+                          ) : null}
+                          {metadata.sequencing_quality ? (
+                            <span className={subtlePill}>
+                              Sequencing: {getQualityLabel(
+                                metadata.sequencing_quality
+                              )}
+                            </span>
+                          ) : null}
                         </div>
+                        {metadata.issue_tags?.length || metadata.positive_tags?.length ? (
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {metadata.issue_tags?.map((tag) => (
+                              <span
+                                key={`issue-${match.id}-${tag}`}
+                                className="rounded-md bg-[#F43F5E]/12 px-2 py-1 text-xs font-medium text-rose-100"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                            {metadata.positive_tags?.map((tag) => (
+                              <span
+                                key={`positive-${match.id}-${tag}`}
+                                className="rounded-md bg-emerald-500/12 px-2 py-1 text-xs font-medium text-emerald-100"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        ) : null}
                         {tags.length ? (
                           <div className="mt-3 flex flex-wrap gap-2">
                             {tags.map((tag) => (
@@ -547,6 +622,26 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                                 {tag}
                               </span>
                             ))}
+                          </div>
+                        ) : null}
+                        {metadata.cards_shined?.length || metadata.cards_failed?.length ? (
+                          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                            {metadata.cards_shined?.length ? (
+                              <div className="rounded-md bg-[#07111F]/40 px-3 py-2 text-xs text-[#94A3B8]">
+                                <span className="font-semibold text-[#F8FAFC]">
+                                  Shined:
+                                </span>{" "}
+                                {metadata.cards_shined.join(", ")}
+                              </div>
+                            ) : null}
+                            {metadata.cards_failed?.length ? (
+                              <div className="rounded-md bg-[#07111F]/40 px-3 py-2 text-xs text-[#94A3B8]">
+                                <span className="font-semibold text-[#F8FAFC]">
+                                  Failed:
+                                </span>{" "}
+                                {metadata.cards_failed.join(", ")}
+                              </div>
+                            ) : null}
                           </div>
                         ) : null}
                         <p className={`mt-3 ${sectionCopy}`}>

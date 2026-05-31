@@ -15,6 +15,7 @@ import {
   getRecentSession,
   getWinRate,
 } from "@/lib/demo-data";
+import { countMatchResults, formatMatchRecord } from "@/lib/match-types";
 
 const demoTourSteps = [
   ["1", "See your current mission", "/demo"],
@@ -28,7 +29,7 @@ export default function DemoPage() {
   const missionMatchup = insights.biggestStatisticalLeak;
   const matchups = getDemoMatchups();
   const recent = getRecentSession();
-  const recentWins = recent.filter((match) => match.result === "win").length;
+  const recentRecord = countMatchResults(recent);
 
   return (
     <DemoShell current="dashboard">
@@ -51,7 +52,16 @@ export default function DemoPage() {
           [Layers3, "Sample decks", String(demoDecks.length), "3 deck families"],
           [ClipboardList, "Logged matches", String(demoMatches.length), "Seeded test history"],
           [Trophy, "Overall win rate", `${getWinRate(demoMatches)}%`, "Across all decks"],
-          [Target, "Recent session", `${recentWins}-${recent.length - recentWins}`, "Last 12 games"],
+          [
+            Target,
+            "Recent session",
+            formatMatchRecord(
+              recentRecord.wins,
+              recentRecord.losses,
+              recentRecord.ties
+            ),
+            "Last 12 games",
+          ],
         ].map(([Icon, label, value, helper]) => (
           <article key={label as string} className={card}>
             <Icon className="size-5 text-[#F5C84C]" aria-hidden="true" />
@@ -142,7 +152,15 @@ export default function DemoPage() {
           <div className="mt-4 grid gap-2">
             {recent.slice(0, 6).map((match) => (
               <div key={match.id} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-md bg-[#07111F]/52 p-2.5">
-                <span className={`size-2.5 rounded-full ${match.result === "win" ? "bg-[#22C55E]" : "bg-[#F43F5E]"}`} />
+                <span
+                  className={`size-2.5 rounded-full ${
+                    match.result === "win"
+                      ? "bg-[#22C55E]"
+                      : match.result === "loss"
+                        ? "bg-[#F43F5E]"
+                        : "bg-[#94A3B8]"
+                  }`}
+                />
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-[#F8FAFC]">{match.opponentArchetype}</p>
                   <p className="truncate text-xs text-[#94A3B8]/70">{match.tags.join(", ")}</p>
@@ -169,7 +187,7 @@ export default function DemoPage() {
               <p className={`mt-1 text-2xl font-bold ${matchup.winRate < 45 ? "text-[#F43F5E]" : matchup.winRate > 58 ? "text-[#22C55E]" : "text-[#F8FAFC]"}`}>
                 {matchup.winRate}%
               </p>
-              <p className="text-xs text-[#94A3B8]/70">{matchup.wins}-{matchup.losses}</p>
+              <p className="text-xs text-[#94A3B8]/70">{matchup.record}</p>
             </Link>
           ))}
         </div>

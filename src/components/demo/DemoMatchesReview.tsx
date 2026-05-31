@@ -6,6 +6,7 @@ import { ArchetypeSprites } from "@/components/ArchetypeSprites";
 import { DemoConversionCta } from "@/components/demo/DemoConversionCta";
 import { cardLarge, pageCopy, pageHeader, pageTitle, primaryButton } from "@/components/brand-styles";
 import { demoDecks, demoMatches, formatDemoDate, type DemoMatch } from "@/lib/demo-data";
+import { getMatchResultLabel } from "@/lib/match-types";
 
 type FilterKey =
   | "mission"
@@ -268,8 +269,16 @@ export function DemoMatchesReview() {
                   </div>
                 </div>
                 <div className="flex items-center justify-between gap-3 sm:block sm:text-right">
-                  <p className={`text-sm font-bold ${match.result === "win" ? "text-[#22C55E]" : "text-[#F43F5E]"}`}>
-                    {match.result.toUpperCase()}
+                  <p
+                    className={`text-sm font-bold ${
+                      match.result === "win"
+                        ? "text-[#22C55E]"
+                        : match.result === "loss"
+                          ? "text-[#F43F5E]"
+                          : "text-[#94A3B8]"
+                    }`}
+                  >
+                    {getMatchResultLabel(match.result).toUpperCase()}
                   </p>
                   <p className="text-xs text-[#94A3B8]/70">{formatDemoDate(match.playedAt)}</p>
                 </div>

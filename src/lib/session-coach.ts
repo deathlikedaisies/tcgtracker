@@ -1,7 +1,13 @@
+import {
+  countMatchResults,
+  formatMatchRecord,
+  type MatchResult,
+} from "@/lib/match-types";
+
 export type CoachMatch = {
   id?: string;
   opponent_archetype: string;
-  result: "win" | "loss";
+  result: MatchResult;
   went_first: boolean | null;
   event_type: string | null;
   played_at: string;
@@ -39,7 +45,7 @@ export type SessionCoachInsight = {
     id?: string;
     opponent: string;
     playedAt: string;
-    result: "win" | "loss";
+    result: MatchResult;
   }[];
   nextAction: string;
   previousRecord: string | null;
@@ -75,15 +81,10 @@ function getTags(match: CoachMatch) {
     : [match.match_tags.tag];
 }
 
-function formatRecord(wins: number, losses: number) {
-  return `${wins}-${losses}`;
-}
-
 function formatComparisonRecord(matches: CoachMatch[]) {
-  const wins = matches.filter((match) => match.result === "win").length;
-  const losses = matches.length - wins;
+  const { wins, losses, ties } = countMatchResults(matches);
 
-  return formatRecord(wins, losses);
+  return formatMatchRecord(wins, losses, ties);
 }
 
 function getWinRate(matches: CoachMatch[]) {
@@ -461,8 +462,7 @@ export function buildSessionCoachInsight(
 
   const matchupCandidates = matchupGroups
     .map(([archetype, groupedMatches]) => {
-      const wins = groupedMatches.filter((match) => match.result === "win").length;
-      const losses = groupedMatches.length - wins;
+      const { wins, losses } = countMatchResults(groupedMatches);
       const winRate = wins / groupedMatches.length;
 
       return {
@@ -491,7 +491,7 @@ export function buildSessionCoachInsight(
       .map(([archetype, groupedMatches]) => ({
         archetype,
         matches: groupedMatches,
-        wins: groupedMatches.filter((match) => match.result === "win").length,
+        wins: countMatchResults(groupedMatches).wins,
         losses: 0,
       }))
       .sort((first, second) => second.matches.length - first.matches.length)[0];
@@ -571,9 +571,9 @@ export function buildSessionCoachInsight(
       progressCompleted: completed,
       progressGoal: 5,
       progressFeedback: getProgressFeedback(completed, 5),
-      reasoning: `You are ${formatRecord(strongestPositiveSignal.wins, 0)} in this matchup so far.`,
+      reasoning: `You are ${formatMatchRecord(strongestPositiveSignal.wins, 0)} in this matchup so far.`,
       focus: "Keep the same deck and test whether the matchup stays stable.",
-      record: formatRecord(strongestPositiveSignal.wins, 0),
+      record: formatMatchRecord(strongestPositiveSignal.wins, 0),
       eventType,
       continueHref: `/matches/new?event=${encodeURIComponent(eventType)}`,
     };
@@ -641,7 +641,7 @@ export function buildSessionCoachInsight(
       : `All recent losses in this matchup happened when ${turnContext}.`
     : repeatedTag
       ? `🔁 ${repeatedTag.tag} (${repeatedTag.count}x)`
-      : `You are ${formatRecord(biggestLeak.wins, biggestLeak.losses)} against this matchup recently.`;
+      : `You are ${formatMatchRecord(biggestLeak.wins, biggestLeak.losses)} against this matchup recently.`;
   const missionSkill = repeatedTag
     ? getSkillLabel(repeatedTag.tag)
     : turnContext === "going second"
@@ -746,7 +746,7 @@ export function buildSessionCoachInsight(
     progressFeedback: getProgressFeedback(completed, 5),
     reasoning,
     focus,
-    record: formatRecord(biggestLeak.wins, biggestLeak.losses),
+    record: formatMatchRecord(biggestLeak.wins, biggestLeak.losses),
     eventType,
     continueHref: `/matches/new?event=${encodeURIComponent(eventType)}`,
   };

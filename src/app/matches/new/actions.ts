@@ -4,15 +4,18 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { LATEST_FORMAT } from "@/lib/formats";
-import { EVENT_TYPES, MATCH_RESULTS, parseSelectedTags } from "@/lib/match-options";
-
+import {
+  buildMatchMetadataFromFormData,
+  getGameContextEventType,
+  optionalText,
+} from "@/lib/match-form";
+import {
+  EVENT_TYPES,
+  flattenStructuredMatchTags,
+  MATCH_RESULTS,
+} from "@/lib/match-options";
 const results = new Set<string>(MATCH_RESULTS);
 const eventTypes = new Set<string>(EVENT_TYPES);
-
-function optionalText(value: FormDataEntryValue | null) {
-  const text = String(value ?? "").trim();
-  return text || null;
-}
 
 export async function logMatch(formData: FormData) {
   const supabase = await createServerSupabaseClient();
@@ -29,8 +32,11 @@ export async function logMatch(formData: FormData) {
     formData.get("opponent_archetype") ?? ""
   ).trim();
   const result = String(formData.get("result") ?? "").trim();
-  const eventType = optionalText(formData.get("event_type"));
   const wentFirstValue = optionalText(formData.get("went_first"));
+  const metadata = buildMatchMetadataFromFormData(formData);
+  const eventType = metadata.game_context
+    ? getGameContextEventType(metadata.game_context)
+    : optionalText(formData.get("event_type"));
 
   if (!deckVersionId) {
     throw new Error("Deck version is required.");
@@ -41,7 +47,7 @@ export async function logMatch(formData: FormData) {
   }
 
   if (!results.has(result)) {
-    throw new Error("Result must be win or loss.");
+    throw new Error("Result must be win, loss, or tie.");
   }
 
   if (eventType && !eventTypes.has(eventType)) {
@@ -71,6 +77,7 @@ export async function logMatch(formData: FormData) {
       event_type: eventType,
       format: LATEST_FORMAT,
       notes: optionalText(formData.get("notes")),
+      metadata,
     })
     .select("id")
     .single();
@@ -79,7 +86,10 @@ export async function logMatch(formData: FormData) {
     throw new Error(matchError?.message ?? "Could not log match.");
   }
 
-  const tags = parseSelectedTags(formData.getAll("tags"));
+  const tags = flattenStructuredMatchTags({
+    issueTags: metadata.issue_tags ?? [],
+    positiveTags: metadata.positive_tags ?? [],
+  });
 
   if (tags.length) {
     const { error: tagsError } = await supabase.from("match_tags").insert(

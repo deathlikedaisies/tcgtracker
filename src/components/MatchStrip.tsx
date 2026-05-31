@@ -1,8 +1,13 @@
+import {
+  getMatchResultLabel,
+  type MatchResult,
+} from "@/lib/match-types";
+
 type MatchStripMatch = {
   id?: string;
   opponent?: string;
   playedAt?: string;
-  result: "win" | "loss";
+  result: MatchResult;
 };
 
 type MatchStripProps = {
@@ -50,7 +55,11 @@ export function MatchStrip({ matches, max = 10 }: MatchStripProps) {
               match.opponent ? ` vs ${match.opponent}` : ""
             }${match.playedAt ? `, ${formatDate(match.playedAt)}` : ""}`}
             className={`size-2.5 rounded-full shadow-[0_0_10px_rgba(0,0,0,0.12)] ${
-              match.result === "win" ? "bg-[#22C55E]" : "bg-[#F43F5E]"
+              match.result === "win"
+                ? "bg-[#22C55E]"
+                : match.result === "loss"
+                  ? "bg-[#F43F5E]"
+                  : "bg-[#94A3B8]"
             }`}
           />
         ))}
@@ -58,7 +67,7 @@ export function MatchStrip({ matches, max = 10 }: MatchStripProps) {
       <div className="mt-2 rounded-md bg-[#0B1020]/72 p-2 text-xs text-[#94A3B8] shadow-[inset_0_0_0_1px_rgba(248,250,252,0.05)]">
         {visibleMatches.map((match, index) => (
           <p key={match.id ?? `${match.result}-detail-${index}`}>
-            {match.result === "win" ? "🟢" : "🔴"} {match.result}
+            {getMatchResultLabel(match.result)}
             {match.opponent ? ` vs ${match.opponent}` : ""}
             {match.playedAt ? ` · ${formatDate(match.playedAt)}` : ""}
           </p>
