@@ -97,29 +97,25 @@ function getWinRate(matches: CoachMatch[]) {
 
 function getMissionConfidence(primaryCount: number, contextCount: number) {
   if (primaryCount >= 10 && contextCount >= 3) {
-    return "Strong read";
+    return "Strong signal";
   }
 
   if (primaryCount >= 5) {
-    return contextCount >= 2 ? "Building read" : "General read";
+    return "Building signal";
   }
 
-  if (primaryCount >= 3) {
-    return "Early read";
-  }
-
-  return "Needs games";
+  return "Needs more games";
 }
 
 function getProgressFeedback(completed: number, goal: number) {
   const remaining = Math.max(goal - completed, 0);
 
   if (remaining === 0) {
-    return "Mission complete. Review the read before changing plans.";
+    return "Mission complete. Review the pattern before changing plans.";
   }
 
   if (remaining === 1) {
-    return "One more game to strengthen this read.";
+    return "One more game to strengthen this signal.";
   }
 
   if (completed >= 3) {
@@ -234,6 +230,10 @@ function toMissionResults(matches: CoachMatch[]) {
 function getSkillLabel(tag: string) {
   const normalized = tag.toLowerCase();
 
+  if (normalized.includes("prize")) {
+    return "Improve your prize plan";
+  }
+
   if (normalized.includes("sequenc")) {
     return "Improve sequencing";
   }
@@ -255,6 +255,58 @@ function getSkillLabel(tag: string) {
   }
 
   return `Improve ${tag}`;
+}
+
+function formatIssueLabel(tag: string) {
+  const normalized = tag.toLowerCase();
+
+  if (normalized.includes("prize")) {
+    return "prize plan";
+  }
+
+  return tag;
+}
+
+function capitalizeLabel(value: string) {
+  if (!value) {
+    return value;
+  }
+
+  return value[0].toUpperCase() + value.slice(1);
+}
+
+function formatFocusEvidence(contextCount: number, reviewedCount: number) {
+  if (reviewedCount === 0) {
+    return "Focus matchup has not appeared in reviewed games yet.";
+  }
+
+  return `Focus matchup appeared in ${contextCount} of ${reviewedCount} reviewed game${
+    reviewedCount === 1 ? "" : "s"
+  }.`;
+}
+
+function formatMissionEvidence(
+  relevantCount: number,
+  contextCount: number,
+  missionConfidence: string
+) {
+  const focusEvidence = formatFocusEvidence(contextCount, relevantCount);
+
+  if (missionConfidence === "Strong signal") {
+    return `Pattern detected across ${relevantCount} relevant game${
+      relevantCount === 1 ? "" : "s"
+    }. ${focusEvidence}`;
+  }
+
+  if (missionConfidence === "Building signal") {
+    return `Pattern detected across ${relevantCount} relevant game${
+      relevantCount === 1 ? "" : "s"
+    }. ${focusEvidence} This is a building signal, so review the pattern before making major deck changes.`;
+  }
+
+  return `Reviewed ${relevantCount} relevant game${
+    relevantCount === 1 ? "" : "s"
+  } so far. ${focusEvidence} This needs more games before it becomes a clear signal.`;
 }
 
 function getMissionMatches(
@@ -297,13 +349,14 @@ function getLossPatternTrend(matches: CoachMatch[]) {
 
   const recentCount = recentLossTags.filter((tag) => tag === recentMainTag).length;
   const previousCount = previousLossTags.filter((tag) => tag === recentMainTag).length;
+  const label = capitalizeLabel(formatIssueLabel(recentMainTag));
 
   if (previousLossTags.length >= 2 && recentCount < previousCount) {
-    return `${recentMainTag} is appearing less often in recent losses.`;
+    return `${label} is appearing less often in recent losses.`;
   }
 
   if (recentCount >= 2) {
-    return `${recentMainTag} is still common in recent losses.`;
+    return `${label} is still common in recent losses.`;
   }
 
   return null;
@@ -507,7 +560,7 @@ export function buildSessionCoachInsight(
         completed >= 5
           ? contextSeen >= 3
             ? "Mission complete. Focus area had enough evidence to review."
-            : "Mission complete. The read is general because the focus area was rare."
+            : "Mission complete. The signal is still broad because the focus area was rare."
           : `Log ${5 - completed} more game${5 - completed === 1 ? "" : "s"}.`,
       previousRecord: completion.previousRecord,
       weakMatchup: strongestPositiveSignal.archetype,
@@ -619,14 +672,11 @@ export function buildSessionCoachInsight(
     sortedPrimaryMatches.length,
     contextMatches.length
   );
-  const contextEvidence =
-    contextSeen >= 3
-      ? "Focus area has enough evidence."
-      : contextSeen > 0
-        ? `Focus area seen ${contextSeen}/3.`
-        : "Focus area not seen yet.";
+  const displayTag = repeatedTag ? formatIssueLabel(repeatedTag.tag) : null;
   const missionReason = repeatedTag
-    ? `${repeatedTag.tag} appears in ${repeatedTag.count} recent loss${
+    ? `${capitalizeLabel(displayTag ?? repeatedTag.tag)} appears in ${
+        repeatedTag.count
+      } recent loss${
         repeatedTag.count === 1 ? "" : "es"
       }.`
     : turnContext
@@ -639,16 +689,26 @@ export function buildSessionCoachInsight(
     ctaLabel: getMissionCta(missionSkill, completed, 5),
     completionStatus: completion.completionStatus,
     completionSummary: completion.completionSummary
-      ? `${completion.completionSummary} ${contextEvidence}`
+      ? `${completion.completionSummary} ${formatFocusEvidence(
+          contextMatches.length,
+          sortedPrimaryMatches.length
+        )}`
       : null,
-    commonIssue: repeatedTag,
+    commonIssue: repeatedTag
+      ? {
+          ...repeatedTag,
+          tag: displayTag ?? repeatedTag.tag,
+        }
+      : null,
     criteria: turnContext
       ? `Counts games when ${turnContext}. ${missionContextLabel} adds context.`
       : `Counts logged games for this skill. ${missionContextLabel} adds context.`,
     duringRecord: formatComparisonRecord(duringMatches),
-    evidence: `${missionConfidence} from ${sortedPrimaryMatches.length} qualifying game${
-      sortedPrimaryMatches.length === 1 ? "" : "s"
-    }. ${contextEvidence}`,
+    evidence: formatMissionEvidence(
+      sortedPrimaryMatches.length,
+      contextMatches.length,
+      missionConfidence
+    ),
     headline: missionSkill,
     improvementDelta: completion.improvementDelta,
     issueTrend: getLossPatternTrend(biggestLeak.matches),
@@ -669,7 +729,7 @@ export function buildSessionCoachInsight(
       completed >= 5
         ? contextSeen >= 3
           ? "Mission complete. Strongest evidence came from focus-area games."
-          : "Mission complete. The read is general because focus evidence was limited."
+          : "Mission complete. This remains a broad signal because focus evidence was limited."
         : `Log ${remaining} more game${remaining === 1 ? "" : "s"}.`,
     previousRecord: completion.previousRecord,
     weakMatchup: biggestLeak.archetype,

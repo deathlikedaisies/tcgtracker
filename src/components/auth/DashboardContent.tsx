@@ -181,11 +181,15 @@ function getMissionStatus(confidence: string) {
     return "Strong signal";
   }
 
-  if (normalized.includes("building") || normalized.includes("read")) {
+  if (
+    normalized.includes("building") ||
+    normalized.includes("read") ||
+    normalized.includes("signal")
+  ) {
     return "Building signal";
   }
 
-  return "Needs games";
+  return "Needs more games";
 }
 
 function RecentFormDots({ matches }: { matches: RecentMatch[] }) {

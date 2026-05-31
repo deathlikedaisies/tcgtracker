@@ -222,7 +222,7 @@ export default async function Home() {
               {[
                 [ClipboardList, "Fast logging"],
                 [BarChart3, "Matchup intelligence"],
-                [Target, "Actionable coaching"],
+                [Target, "Testing insights"],
               ].map(([Icon, label]) => (
                 <div key={label as string} className="inline-flex items-center gap-2 rounded-md bg-[#0B1020]/42 px-3 py-2 text-sm font-medium text-[#F8FAFC]/88 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.09)]">
                   <Icon className="size-4 text-[#4F8CFF]" aria-hidden="true" />

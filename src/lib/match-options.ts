@@ -6,7 +6,7 @@ export const MATCH_TAGS = [
   "dead draw",
   "misplay",
   "setup issue",
-  "prize issue",
+  "prize plan",
   "sequencing",
   "bad matchup",
 ] as const;
