@@ -34,7 +34,6 @@ import {
 } from "@/components/brand-styles";
 import { SixPrizerLogo } from "@/components/SixPrizerLogo";
 import { getArchetypeOptions } from "@/lib/archetypes";
-import { enrichDeckAnalysis } from "@/lib/card-data/deck-enrichment";
 import { analyzeDeckList } from "@/lib/decklist";
 import { LATEST_FORMAT } from "@/lib/formats";
 import { type MatchResult } from "@/lib/match-types";
@@ -185,8 +184,7 @@ export default async function DecksPage() {
     userDecks.map((deck) => deck.archetype)
   );
 
-  const deckSummaries = await Promise.all(
-    userDecks.map(async (deck, index) => {
+  const deckSummaries = userDecks.map((deck, index) => {
       const versions = deck.deck_versions ?? [];
       const activeVersion =
         versions.find((version) => version.is_active) ?? versions[0] ?? null;
@@ -201,7 +199,6 @@ export default async function DecksPage() {
       const analysis = activeVersion?.decklist
         ? analyzeDeckList(activeVersion.decklist)
         : null;
-      const enrichment = analysis ? await enrichDeckAnalysis(analysis) : null;
       const activeMission =
         index === 0 && sessionCoach
           ? sessionCoach.missionTitle
@@ -215,11 +212,9 @@ export default async function DecksPage() {
         performance,
         trend,
         analysis,
-        enrichment,
         activeMission,
       };
-    })
-  );
+    });
 
   const totalVersions = deckSummaries.reduce(
     (count, deck) => count + deck.totalVersions,
@@ -356,18 +351,16 @@ export default async function DecksPage() {
                   const removeDeck = deleteDeck.bind(null, summary.deck.id);
                   const activeVersionName =
                     summary.activeVersion?.name ?? "No active version set";
-                  const legalSummary = summary.enrichment
-                    ? `${summary.enrichment.resolvedCount} resolved · ${summary.enrichment.unresolvedCount} unresolved`
-                    : summary.analysis
-                      ? `${summary.analysis.totalCards} cards parsed`
-                      : "Add a deck list to unlock checks";
-                  const legalDetail = summary.enrichment?.legalityWarnings.length
-                    ? summary.enrichment.legalityWarnings[0]
-                    : summary.enrichment
-                      ? "Legality check ready for this active version"
-                      : summary.activeVersion
-                        ? "Card legality appears once a list is pasted"
-                        : "Add a first version to start legality checks";
+                  const localListSummary = summary.analysis
+                    ? `${summary.analysis.totalCards} cards · ${summary.analysis.pokemonCount} Pokémon · ${summary.analysis.trainerCount} Trainer · ${summary.analysis.energyCount} Energy`
+                    : "Add a deck list to unlock local parsing";
+                  const localListDetail = summary.analysis
+                    ? summary.analysis.unresolved.length
+                      ? `${summary.analysis.unresolved.length} unresolved name${summary.analysis.unresolved.length === 1 ? "" : "s"}. Open deck for legality details.`
+                      : "Local list parsed. Open deck for legality details."
+                    : summary.activeVersion
+                      ? "List parsing begins once a deck list is pasted."
+                      : "Add a first version to start list checks.";
                   const versionPrompt = !summary.totalVersions
                     ? "Add first version"
                     : !summary.performance.total
@@ -453,10 +446,10 @@ export default async function DecksPage() {
                           </div>
                           <div className="rounded-2xl bg-[#07111F]/42 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
                             <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
-                              Legal check
+                              List parse
                             </p>
                             <p className="mt-2 text-sm font-semibold text-[#F8FAFC]">
-                              {legalSummary}
+                              {localListSummary}
                             </p>
                           </div>
                           <div className="rounded-2xl bg-[#07111F]/42 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)] sm:col-span-2">
@@ -480,7 +473,7 @@ export default async function DecksPage() {
                               {summary.activeMission ?? summary.trend.detail}
                             </p>
                             <p className="mt-1 text-xs leading-5 text-[#94A3B8]/62">
-                              {legalDetail}
+                              {localListDetail}
                             </p>
                           </div>
                         </div>

@@ -30,7 +30,6 @@ import {
 import { SixPrizerLogo } from "@/components/SixPrizerLogo";
 import { SessionCoachPanel } from "@/components/SessionCoachPanel";
 import { getArchetypeOptions } from "@/lib/archetypes";
-import { enrichDeckAnalysis } from "@/lib/card-data/deck-enrichment";
 import {
   analyzeDeckList,
   isClearArchetypeSuggestion,
@@ -170,12 +169,8 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
   }[];
 
   const sessionCoach = buildSessionCoachInsight(matchRows);
-  const versionInsights = await Promise.all(
-    deckVersions.map(async (version) => {
+  const versionInsights = deckVersions.map((version) => {
       const analysis = analyzeDeckList(version.decklist);
-      const enrichment = version.decklist
-        ? await enrichDeckAnalysis(analysis)
-        : null;
       const versionMatches = matchRows.filter(
         (match) => match.deck_version_id === version.id
       );
@@ -184,12 +179,10 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
       return {
         versionId: version.id,
         analysis,
-        enrichment,
         versionMatches,
         performance,
       };
-    })
-  );
+    });
 
   const versionInsightById = new Map(
     versionInsights.map((insight) => [insight.versionId, insight])
@@ -349,7 +342,6 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                   );
                   const insight = versionInsightById.get(version.id);
                   const analysis = insight?.analysis;
-                  const enrichment = insight?.enrichment;
                   const versionMatches = insight?.versionMatches ?? [];
                   const testStatus = getVersionTestStatus(versionMatches);
                   const wins = insight?.performance.wins ?? 0;
@@ -514,7 +506,7 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                             </div>
                           ) : (
                             <p className="mt-4 text-sm leading-6 text-[#94A3B8]/72">
-                              Paste a list to unlock composition and legality checks.
+                              Paste a list to unlock composition and local parsing details.
                             </p>
                           )}
                         </div>
@@ -523,18 +515,18 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                           <div className="flex items-center gap-2">
                             <ShieldCheck className="size-4 text-[#F5C84C]" aria-hidden="true" />
                             <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#F5C84C]">
-                              Legal status
+                              List status
                             </p>
                           </div>
-                          {enrichment ? (
+                          {analysis?.cards.length ? (
                             <div className="mt-4 grid gap-3">
                               <div className="grid gap-3 sm:grid-cols-2">
                                 <div className="rounded-2xl bg-[#0B1020]/66 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
                                   <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
-                                    Resolved
+                                    Parsed cards
                                   </p>
                                   <p className="mt-2 text-lg font-semibold text-[#F8FAFC]">
-                                    {enrichment.resolvedCount}
+                                    {analysis.cards.length}
                                   </p>
                                 </div>
                                 <div className="rounded-2xl bg-[#0B1020]/66 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
@@ -542,22 +534,22 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                                     Unresolved
                                   </p>
                                   <p className="mt-2 text-lg font-semibold text-[#F8FAFC]">
-                                    {enrichment.unresolvedCount}
+                                    {analysis.unresolved.length}
                                   </p>
                                 </div>
                               </div>
                               <p className="text-sm leading-6 text-[#94A3B8]/72">
-                                {enrichment.legalityWarnings.length
-                                  ? enrichment.legalityWarnings[0]
-                                  : "No flagged Standard legality issue found in the current lookup."}
+                                {analysis.unresolved.length
+                                  ? "Some card names still need review. Open the raw list and clean up unresolved entries before checking legality in detail."
+                                  : "Local list parsed cleanly. Full legality lookup is not loaded on first view."}
                               </p>
-                              {enrichment.error ? (
-                                <p className="text-xs text-[#94A3B8]/68">{enrichment.error}</p>
-                              ) : null}
+                              <p className="text-xs text-[#94A3B8]/68">
+                                Open deck details to review card resolution before any deeper legality check.
+                              </p>
                             </div>
                           ) : (
                             <p className="mt-4 text-sm leading-6 text-[#94A3B8]/72">
-                              Add a parsed list to unlock legality checks.
+                              Add a parsed list to unlock local card-resolution checks.
                             </p>
                           )}
                         </div>
