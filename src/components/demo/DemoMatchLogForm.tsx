@@ -61,8 +61,24 @@ const QUICK_ISSUE_TAG_OPTIONS = [
   "bench pressure",
 ] as const satisfies readonly string[];
 
+const QUICK_POSITIVE_TAG_OPTIONS = [
+  "strong setup",
+  "good prize plan",
+  "clean sequencing",
+  "key tech mattered",
+  "strong recovery",
+  "favorable matchup",
+] as const satisfies readonly string[];
+
 const EXTRA_ISSUE_TAG_OPTIONS: string[] = MATCH_ISSUE_TAG_OPTIONS.filter(
   (tag) => !QUICK_ISSUE_TAG_OPTIONS.includes(tag as (typeof QUICK_ISSUE_TAG_OPTIONS)[number])
+);
+
+const EXTRA_POSITIVE_TAG_OPTIONS: string[] = MATCH_POSITIVE_TAG_OPTIONS.filter(
+  (tag) =>
+    !QUICK_POSITIVE_TAG_OPTIONS.includes(
+      tag as (typeof QUICK_POSITIVE_TAG_OPTIONS)[number]
+    )
 );
 
 function getVersionLabel(versionId: string) {
@@ -270,7 +286,6 @@ export function DemoMatchLogForm() {
   const [learnings, setLearnings] = useState("");
   const [saved, setSaved] = useState(false);
   const [advancedOpen, setAdvancedOpen] = useState(false);
-  const [notesOpen, setNotesOpen] = useState(false);
   const [moreIssueTagsOpen, setMoreIssueTagsOpen] = useState(false);
   const opponentOptions = useMemo(
     () => getArchetypeOptions(null, [focusMatchup, opponent]),
@@ -281,16 +296,69 @@ export function DemoMatchLogForm() {
     const parts = [
       `${getVersionLabel(versionId)} vs ${opponent}`,
       getMatchResultLabel(result),
-      wentFirst ? "First" : "Second",
+      wentFirst ? "Went first" : "Went second",
     ];
     const highlightTags = [...issueTags, ...positiveTags].slice(0, 3);
 
     if (highlightTags.length) {
       parts.push(highlightTags.join(", "));
+    } else {
+      const qualityHighlights = [
+        sequencingQuality
+          ? `${getQualityLabel(sequencingQuality)} sequencing`
+          : null,
+        openingHandQuality
+          ? `${getQualityLabel(openingHandQuality)} opening hand`
+          : null,
+        startQuality ? `${getQualityLabel(startQuality)} start` : null,
+      ].filter(Boolean);
+
+      if (qualityHighlights.length) {
+        parts.push(qualityHighlights.slice(0, 2).join(", "));
+      }
     }
 
     return parts.join(" | ");
-  }, [issueTags, opponent, positiveTags, result, versionId, wentFirst]);
+  }, [
+    issueTags,
+    openingHandQuality,
+    opponent,
+    positiveTags,
+    result,
+    sequencingQuality,
+    startQuality,
+    versionId,
+    wentFirst,
+  ]);
+
+  const primaryTagTitle =
+    result === "win"
+      ? "What won you the game?"
+      : result === "tie"
+        ? "What defined the game?"
+        : "What cost you the game?";
+  const primaryTagHint =
+    result === "win"
+      ? "Lock the clearest edge first."
+      : result === "tie"
+        ? "Mark the biggest swings before you add detail."
+        : "Mark the clearest leak before you queue again.";
+  const secondaryTagHint =
+    result === "win"
+      ? "Add any leak that still shaped the game."
+      : result === "tie"
+        ? "If something still stood out, tag it here."
+        : "Add any upside that still mattered.";
+  const primaryTags = result === "win" ? positiveTags : issueTags;
+  const setPrimaryTags = result === "win" ? setPositiveTags : setIssueTags;
+  const primaryTagOptions =
+    result === "win" ? QUICK_POSITIVE_TAG_OPTIONS : QUICK_ISSUE_TAG_OPTIONS;
+  const primaryExtraTagOptions =
+    result === "win" ? EXTRA_POSITIVE_TAG_OPTIONS : EXTRA_ISSUE_TAG_OPTIONS;
+  const secondaryTags = result === "win" ? issueTags : positiveTags;
+  const setSecondaryTags = result === "win" ? setIssueTags : setPositiveTags;
+  const secondaryTagOptions =
+    result === "win" ? MATCH_ISSUE_TAG_OPTIONS : MATCH_POSITIVE_TAG_OPTIONS;
 
   const insightUpdate = getInsightUpdate({
     gameContext,
@@ -332,7 +400,6 @@ export function DemoMatchLogForm() {
     setCardsFailed([]);
     setLearnings("");
     setAdvancedOpen(false);
-    setNotesOpen(false);
     setMoreIssueTagsOpen(false);
   }
 
@@ -349,7 +416,7 @@ export function DemoMatchLogForm() {
                 />
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#22C55E]">
-                    Demo game logged
+                    Game logged
                   </p>
                   <h2 className="text-2xl font-bold text-[#F8FAFC] sm:text-3xl">
                     Structured signal preview
@@ -371,10 +438,10 @@ export function DemoMatchLogForm() {
 
           <div className="mt-5 rounded-md bg-[#07111F]/58 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
             <p className="text-lg font-bold text-[#F8FAFC]">
-              {insightUpdate.title}
+              {readySummary}
             </p>
             <p className="mt-2 text-sm leading-6 text-[#94A3B8]/80">
-              {readySummary}
+              {insightUpdate.title}
             </p>
             <div className="mt-4 grid gap-2">
               {insightUpdate.bullets.map((bullet) => (
@@ -386,6 +453,11 @@ export function DemoMatchLogForm() {
                 </div>
               ))}
             </div>
+            <p className="mt-4 rounded-md bg-[#4F8CFF]/10 px-3 py-2 text-sm font-medium leading-6 text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.16)]">
+              {gameContext === "competitive"
+                ? `${opponent}: 4/5 focused games toward a stronger signal.`
+                : `${opponent}: 4/5 focused games toward a building signal.`}
+            </p>
             <p className="mt-4 rounded-md bg-[#F5C84C]/10 px-3 py-2 text-sm font-semibold leading-6 text-[#FFE28A] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
               {insightUpdate.recommendation}
             </p>
@@ -404,7 +476,10 @@ export function DemoMatchLogForm() {
               Log another game
             </button>
             <Link href="/demo/matchups" className={`${secondaryButton} h-12`}>
-              View matchup report
+              Review matchup
+            </Link>
+            <Link href="/demo" className={`${secondaryButton} h-12`}>
+              Dashboard
             </Link>
           </div>
         </div>
@@ -427,106 +502,196 @@ export function DemoMatchLogForm() {
               Quick log
             </p>
             <h2 className="text-xl font-semibold text-[#F8FAFC]">
-              Log a game fast
+              Fast post-game debrief
             </h2>
             <p className="text-sm leading-6 text-[#94A3B8]/76">
-              Pick matchup, result, turn order, and the main leak before you queue again.
+              Log the key signal first, then add context only if the game earned it.
             </p>
           </div>
 
           <div className="mt-4 grid gap-4">
             <div className={subCardClass}>
-              <label className={label}>Your deck</label>
-              <div className="mt-2 grid gap-2">
-                {versionOptions.map((version) => (
-                  <button
-                    key={version.id}
-                    type="button"
-                    onClick={() => setVersionId(version.id)}
-                    className={`${tagToggleClass} ${
-                      versionId === version.id ? selectedToggleClass : ""
-                    }`}
-                  >
-                    <span className="block">
-                      <span className="block text-sm font-semibold">
-                        {version.label}
-                      </span>
-                      <span className="block text-xs opacity-75">
-                        {version.archetype}
-                        {version.active ? " | active" : ""}
-                      </span>
-                    </span>
-                  </button>
-                ))}
+              <p className="text-sm font-semibold text-[#F8FAFC]">Match</p>
+              <p className="mt-1 text-xs leading-5 text-[#94A3B8]/72">
+                Pick your deck and the matchup you just played.
+              </p>
+              <div className="mt-3 grid gap-3">
+                <div className="rounded-lg bg-[#07111F]/42 p-3">
+                  <label className={label}>Your deck</label>
+                  <div className="mt-2 grid gap-2">
+                    {versionOptions.map((version) => (
+                      <button
+                        key={version.id}
+                        type="button"
+                        onClick={() => setVersionId(version.id)}
+                        className={`${tagToggleClass} ${
+                          versionId === version.id ? selectedToggleClass : ""
+                        }`}
+                      >
+                        <span className="block">
+                          <span className="block text-sm font-semibold">
+                            {version.label}
+                          </span>
+                          <span className="block text-xs opacity-75">
+                            {version.archetype}
+                            {version.active ? " | active" : ""}
+                          </span>
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="rounded-lg bg-[#07111F]/42 p-3">
+                  <ArchetypePicker
+                    id="demo_opponent_archetype"
+                    name="demo_opponent_archetype"
+                    label="Opponent deck"
+                    options={opponentOptions}
+                    value={opponent}
+                    placeholder="Search all known archetypes or type your own"
+                    maxOptions={7}
+                    listMaxHeightClassName="max-h-48"
+                    onValueChange={setOpponent}
+                  />
+                  {opponent ? (
+                    <p className="mt-2 text-xs font-medium text-[#B8D1FF]">
+                      Selected matchup: {opponent}
+                    </p>
+                  ) : null}
+                </div>
               </div>
             </div>
 
             <div className={subCardClass}>
-              <ArchetypePicker
-                id="demo_opponent_archetype"
-                name="demo_opponent_archetype"
-                label="Opponent deck"
-                options={opponentOptions}
-                value={opponent}
-                placeholder="Search all known archetypes or type your own"
-                maxOptions={7}
-                listMaxHeightClassName="max-h-48"
-                onValueChange={setOpponent}
-              />
-              {opponent ? (
-                <p className="mt-2 text-xs font-medium text-[#B8D1FF]">
-                  Selected matchup: {opponent}
-                </p>
-              ) : null}
+              <p className="text-sm font-semibold text-[#F8FAFC]">Result</p>
+              <p className="mt-1 text-xs leading-5 text-[#94A3B8]/72">
+                Record the outcome first, then add turn order.
+              </p>
+              <div className="mt-3 grid gap-3 md:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+                <fieldset className="rounded-lg bg-[#07111F]/42 p-3">
+                  <legend className={label}>Outcome</legend>
+                  <div className="mt-2 grid grid-cols-3 gap-2">
+                    {(["win", "loss", "tie"] as const).map((value) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => setResult(value)}
+                        className={`${largeToggleClass} ${
+                          result === value ? selectedToggleClass : ""
+                        }`}
+                      >
+                        {getMatchResultLabel(value)}
+                      </button>
+                    ))}
+                  </div>
+                </fieldset>
+
+                <fieldset className="rounded-lg bg-[#07111F]/42 p-3">
+                  <legend className={label}>Turn order</legend>
+                  <div className="mt-2 grid grid-cols-2 gap-2">
+                    {[true, false].map((value) => (
+                      <button
+                        key={String(value)}
+                        type="button"
+                        onClick={() => setWentFirst(value)}
+                        className={`${mediumToggleClass} ${
+                          wentFirst === value ? selectedToggleClass : ""
+                        }`}
+                      >
+                        {value ? "First" : "Second"}
+                      </button>
+                    ))}
+                  </div>
+                </fieldset>
+              </div>
             </div>
 
-            <div className="grid gap-3 md:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
-              <fieldset className={subCardClass}>
-                <legend className={label}>Result</legend>
-                <div className="mt-2 grid grid-cols-3 gap-2">
-                  {(["win", "loss", "tie"] as const).map((value) => (
-                    <button
-                      key={value}
-                      type="button"
-                      onClick={() => setResult(value)}
-                      className={`${largeToggleClass} ${
-                        result === value ? selectedToggleClass : ""
-                      }`}
-                    >
-                      {getMatchResultLabel(value)}
-                    </button>
-                  ))}
-                </div>
-              </fieldset>
-
-              <fieldset className={subCardClass}>
-                <legend className={label}>Turn order</legend>
-                <div className="mt-2 grid grid-cols-2 gap-2">
-                  {[true, false].map((value) => (
-                    <button
-                      key={String(value)}
-                      type="button"
-                      onClick={() => setWentFirst(value)}
-                      className={`${mediumToggleClass} ${
-                        wentFirst === value ? selectedToggleClass : ""
-                      }`}
-                    >
-                      {value ? "First" : "Second"}
-                    </button>
-                  ))}
-                </div>
-              </fieldset>
+            <div className={subCardClass}>
+              <p className="text-sm font-semibold text-[#F8FAFC]">Game quality</p>
+              <p className="mt-1 text-xs leading-5 text-[#94A3B8]/72">
+                Capture the fast quality read while the game is still fresh.
+              </p>
+              <div className="mt-3 grid gap-3 lg:grid-cols-3">
+                <fieldset className="rounded-lg bg-[#07111F]/42 p-3">
+                  <legend className={label}>Start</legend>
+                  <div className="mt-2 grid grid-cols-3 gap-2">
+                    {MATCH_START_QUALITY_OPTIONS.map((value) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() =>
+                          setStartQuality(startQuality === value ? undefined : value)
+                        }
+                        className={`${mediumToggleClass} ${
+                          startQuality === value ? selectedToggleClass : ""
+                        }`}
+                      >
+                        {getQualityLabel(value)}
+                      </button>
+                    ))}
+                  </div>
+                </fieldset>
+                <fieldset className="rounded-lg bg-[#07111F]/42 p-3">
+                  <legend className={label}>Opening hand</legend>
+                  <div className="mt-2 grid grid-cols-2 gap-2">
+                    {MATCH_OPENING_HAND_OPTIONS.map((value) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() =>
+                          setOpeningHandQuality(
+                            openingHandQuality === value ? undefined : value
+                          )
+                        }
+                        className={`${mediumToggleClass} ${
+                          openingHandQuality === value
+                            ? selectedToggleClass
+                            : ""
+                        }`}
+                      >
+                        {getQualityLabel(value)}
+                      </button>
+                    ))}
+                  </div>
+                </fieldset>
+                <fieldset className="rounded-lg bg-[#07111F]/42 p-3">
+                  <legend className={label}>Sequencing</legend>
+                  <div className="mt-2 grid grid-cols-2 gap-2">
+                    {MATCH_SEQUENCING_OPTIONS.map((value) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() =>
+                          setSequencingQuality(
+                            sequencingQuality === value ? undefined : value
+                          )
+                        }
+                        className={`${mediumToggleClass} ${
+                          sequencingQuality === value
+                            ? selectedToggleClass
+                            : ""
+                        }`}
+                      >
+                        {getQualityLabel(value)}
+                      </button>
+                    ))}
+                  </div>
+                </fieldset>
+              </div>
             </div>
 
-            <fieldset className={subCardClass}>
+            <div className={subCardClass}>
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <legend className={label}>Quick tags</legend>
+                  <p className="text-sm font-semibold text-[#F8FAFC]">
+                    What mattered?
+                  </p>
                   <p className="mt-1 text-xs leading-5 text-[#94A3B8]/72">
-                    Mark the main leak first. Add more detail only if it matters.
+                    {primaryTagHint}
                   </p>
                 </div>
-                {EXTRA_ISSUE_TAG_OPTIONS.length ? (
+                {primaryExtraTagOptions.length ? (
                   <button
                     type="button"
                     onClick={() => setMoreIssueTagsOpen((current) => !current)}
@@ -536,37 +701,64 @@ export function DemoMatchLogForm() {
                   </button>
                 ) : null}
               </div>
-              <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-                {QUICK_ISSUE_TAG_OPTIONS.map((tag) => (
-                  <button
-                    key={tag}
-                    type="button"
-                    onClick={() => setIssueTags(toggleSelection(issueTags, tag))}
-                    className={`${tagToggleClass} ${
-                      issueTags.includes(tag) ? selectedToggleClass : ""
-                    }`}
-                  >
-                    {tag}
-                  </button>
-                ))}
-              </div>
-              {moreIssueTagsOpen ? (
+
+              <fieldset className="mt-3 rounded-lg bg-[#07111F]/42 p-3">
+                <legend className={label}>{primaryTagTitle}</legend>
                 <div className="mt-2 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-                  {EXTRA_ISSUE_TAG_OPTIONS.map((tag) => (
+                  {primaryTagOptions.map((tag) => (
                     <button
                       key={tag}
                       type="button"
-                      onClick={() => setIssueTags(toggleSelection(issueTags, tag))}
+                      onClick={() => setPrimaryTags(toggleSelection(primaryTags, tag))}
                       className={`${tagToggleClass} ${
-                        issueTags.includes(tag) ? selectedToggleClass : ""
+                        primaryTags.includes(tag) ? selectedToggleClass : ""
                       }`}
                     >
                       {tag}
                     </button>
                   ))}
                 </div>
-              ) : null}
-            </fieldset>
+                {moreIssueTagsOpen && primaryExtraTagOptions.length ? (
+                  <div className="mt-2 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                    {primaryExtraTagOptions.map((tag) => (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() => setPrimaryTags(toggleSelection(primaryTags, tag))}
+                        className={`${tagToggleClass} ${
+                          primaryTags.includes(tag) ? selectedToggleClass : ""
+                        }`}
+                      >
+                        {tag}
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+              </fieldset>
+
+              <fieldset className="mt-3 rounded-lg bg-[#07111F]/28 p-3">
+                <legend className={label}>Anything else matter?</legend>
+                <p className="mt-1 text-xs leading-5 text-[#94A3B8]/68">
+                  {secondaryTagHint}
+                </p>
+                <div className="mt-2 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                  {secondaryTagOptions.map((tag) => (
+                    <button
+                      key={tag}
+                      type="button"
+                      onClick={() =>
+                        setSecondaryTags(toggleSelection(secondaryTags, tag))
+                      }
+                      className={`${tagToggleClass} ${
+                        secondaryTags.includes(tag) ? selectedToggleClass : ""
+                      }`}
+                    >
+                      {tag}
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+            </div>
 
             <div className="grid gap-2">
               <button
@@ -576,14 +768,14 @@ export function DemoMatchLogForm() {
               >
                 <span>
                   <span className="block text-sm font-semibold text-[#F8FAFC]">
-                    Advanced game details
+                    Add more context
                   </span>
                   <span className="block text-xs text-[#94A3B8]/72">
-                    Context, matchup detail, and game quality.
+                    Testing context, event detail, cards, and one learning.
                   </span>
                 </span>
                 <span className="text-xs font-semibold text-[#B8D1FF]">
-                  {advancedOpen ? "Hide" : "Add game quality"}
+                  {advancedOpen ? "Hide" : "Open"}
                 </span>
               </button>
 
@@ -662,129 +854,6 @@ export function DemoMatchLogForm() {
 
                   <div className={subCardClass}>
                     <p className="text-sm font-semibold text-[#F8FAFC]">
-                      Game quality
-                    </p>
-                    <div className="mt-3 grid gap-3 lg:grid-cols-3">
-                      <fieldset className="flex flex-col gap-2">
-                        <legend className={label}>Start</legend>
-                        <div className="grid grid-cols-3 gap-2">
-                          {MATCH_START_QUALITY_OPTIONS.map((value) => (
-                            <button
-                              key={value}
-                              type="button"
-                              onClick={() =>
-                                setStartQuality(
-                                  startQuality === value ? undefined : value
-                                )
-                              }
-                              className={`${mediumToggleClass} ${
-                                startQuality === value
-                                  ? selectedToggleClass
-                                  : ""
-                              }`}
-                            >
-                              {getQualityLabel(value)}
-                            </button>
-                          ))}
-                        </div>
-                      </fieldset>
-                      <fieldset className="flex flex-col gap-2">
-                        <legend className={label}>Opening hand</legend>
-                        <div className="grid grid-cols-2 gap-2">
-                          {MATCH_OPENING_HAND_OPTIONS.map((value) => (
-                            <button
-                              key={value}
-                              type="button"
-                              onClick={() =>
-                                setOpeningHandQuality(
-                                  openingHandQuality === value ? undefined : value
-                                )
-                              }
-                              className={`${mediumToggleClass} ${
-                                openingHandQuality === value
-                                  ? selectedToggleClass
-                                  : ""
-                              }`}
-                            >
-                              {getQualityLabel(value)}
-                            </button>
-                          ))}
-                        </div>
-                      </fieldset>
-                      <fieldset className="flex flex-col gap-2">
-                        <legend className={label}>Sequencing</legend>
-                        <div className="grid grid-cols-2 gap-2">
-                          {MATCH_SEQUENCING_OPTIONS.map((value) => (
-                            <button
-                              key={value}
-                              type="button"
-                              onClick={() =>
-                                setSequencingQuality(
-                                  sequencingQuality === value
-                                    ? undefined
-                                    : value
-                                )
-                              }
-                              className={`${mediumToggleClass} ${
-                                sequencingQuality === value
-                                  ? selectedToggleClass
-                                  : ""
-                              }`}
-                            >
-                              {getQualityLabel(value)}
-                            </button>
-                          ))}
-                        </div>
-                      </fieldset>
-                    </div>
-                  </div>
-                </div>
-              ) : null}
-
-              <button
-                type="button"
-                onClick={() => setNotesOpen((current) => !current)}
-                className={sectionToggleClass}
-              >
-                <span>
-                  <span className="block text-sm font-semibold text-[#F8FAFC]">
-                    Add notes and learnings
-                  </span>
-                  <span className="block text-xs text-[#94A3B8]/72">
-                    Positive tags, cards to remember, and optional notes.
-                  </span>
-                </span>
-                <span className="text-xs font-semibold text-[#B8D1FF]">
-                  {notesOpen ? "Hide" : "Open"}
-                </span>
-              </button>
-
-              {notesOpen ? (
-                <div className="grid gap-3 rounded-xl bg-[#07111F]/28 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
-                  <fieldset className={subCardClass}>
-                    <legend className={label}>What went well?</legend>
-                    <div className="mt-2 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-                      {MATCH_POSITIVE_TAG_OPTIONS.map((tag) => (
-                        <button
-                          key={tag}
-                          type="button"
-                          onClick={() =>
-                            setPositiveTags(toggleSelection(positiveTags, tag))
-                          }
-                          className={`${tagToggleClass} ${
-                            positiveTags.includes(tag)
-                              ? selectedToggleClass
-                              : ""
-                          }`}
-                        >
-                          {tag}
-                        </button>
-                      ))}
-                    </div>
-                  </fieldset>
-
-                  <div className={subCardClass}>
-                    <p className="text-sm font-semibold text-[#F8FAFC]">
                       Cards to remember
                     </p>
                     <div className="mt-3 grid gap-3 xl:grid-cols-2">
@@ -804,12 +873,12 @@ export function DemoMatchLogForm() {
                   </div>
 
                   <div className={subCardClass}>
-                    <label className={label}>Learnings</label>
+                    <label className={label}>One learning</label>
                     <textarea
                       className={`${textarea} mt-2 min-h-24 text-sm`}
                       value={learnings}
                       onChange={(event) => setLearnings(event.target.value)}
-                      placeholder="What did this game teach you? Example: Lost because I missed second attacker and fell behind on prizes."
+                      placeholder="Example: I lost because I missed second attacker and fell behind on prizes."
                     />
                   </div>
                 </div>
@@ -825,7 +894,7 @@ export function DemoMatchLogForm() {
               {readySummary}
             </p>
             <p className="mt-2 text-sm text-[#94A3B8]/76">
-              One more data point for your testing loop.
+              This will update your matchup trends.
             </p>
           </div>
 

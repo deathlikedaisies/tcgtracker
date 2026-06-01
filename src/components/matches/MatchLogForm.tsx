@@ -110,8 +110,24 @@ const QUICK_ISSUE_TAG_OPTIONS = [
   "bench pressure",
 ] as const satisfies readonly string[];
 
+const QUICK_POSITIVE_TAG_OPTIONS = [
+  "strong setup",
+  "good prize plan",
+  "clean sequencing",
+  "key tech mattered",
+  "strong recovery",
+  "favorable matchup",
+] as const satisfies readonly string[];
+
 const EXTRA_ISSUE_TAG_OPTIONS: string[] = MATCH_ISSUE_TAG_OPTIONS.filter(
   (tag) => !QUICK_ISSUE_TAG_OPTIONS.includes(tag as (typeof QUICK_ISSUE_TAG_OPTIONS)[number])
+);
+
+const EXTRA_POSITIVE_TAG_OPTIONS: string[] = MATCH_POSITIVE_TAG_OPTIONS.filter(
+  (tag) =>
+    !QUICK_POSITIVE_TAG_OPTIONS.includes(
+      tag as (typeof QUICK_POSITIVE_TAG_OPTIONS)[number]
+    )
 );
 
 function SubmitButton({ label }: { label: string }) {
@@ -494,12 +510,7 @@ export function MatchLogForm({
         metadata.focus_matchup ||
         metadata.start_quality ||
         metadata.opening_hand_quality ||
-        metadata.sequencing_quality
-    )
-  );
-  const [notesOpen, setNotesOpen] = useState(() =>
-    Boolean(
-      metadata.positive_tags?.length ||
+        metadata.sequencing_quality ||
         metadata.cards_shined?.length ||
         metadata.cards_failed?.length ||
         (initialNotes ?? "").trim()
@@ -508,6 +519,9 @@ export function MatchLogForm({
   const [moreIssueTagsOpen, setMoreIssueTagsOpen] = useState(() =>
     (metadata.issue_tags ?? mapLegacyTagsToIssueTags(initialTags)).some((tag) =>
       EXTRA_ISSUE_TAG_OPTIONS.includes(tag)
+    ) ||
+    (metadata.positive_tags ?? []).some((tag) =>
+      EXTRA_POSITIVE_TAG_OPTIONS.includes(tag)
     )
   );
   const selectedDeck = deckOptions.find((option) => option.id === deckVersionId);
@@ -596,7 +610,8 @@ export function MatchLogForm({
 
   const readySummary = useMemo(() => {
     const parts: string[] = [];
-    const deckLabel = selectedDeck?.label ?? selectedDeckSuggestion ?? selectedDeckArchetype;
+    const deckLabel =
+      selectedDeck?.label ?? selectedDeckSuggestion ?? selectedDeckArchetype;
 
     if (deckLabel && opponentArchetype) {
       parts.push(`${deckLabel} vs ${opponentArchetype}`);
@@ -607,24 +622,92 @@ export function MatchLogForm({
     }
 
     parts.push(getMatchResultLabel(result));
-    parts.push(wentFirst === "true" ? "First" : "Second");
+    parts.push(wentFirst === "true" ? "Went first" : "Went second");
 
     const highlightTags = [...issueTags, ...positiveTags].slice(0, 3);
     if (highlightTags.length) {
       parts.push(highlightTags.join(", "));
+    } else {
+      const qualityHighlights = [
+        sequencingQuality
+          ? `${getQualityLabel(sequencingQuality)} sequencing`
+          : null,
+        openingHandQuality
+          ? `${getQualityLabel(openingHandQuality)} opening hand`
+          : null,
+        startQuality ? `${getQualityLabel(startQuality)} start` : null,
+      ].filter(Boolean);
+
+      if (qualityHighlights.length) {
+        parts.push(qualityHighlights.slice(0, 2).join(", "));
+      }
     }
 
     return parts.filter(Boolean).join(" | ");
   }, [
     issueTags,
+    openingHandQuality,
     opponentArchetype,
     positiveTags,
     result,
     selectedDeck,
     selectedDeckArchetype,
     selectedDeckSuggestion,
+    sequencingQuality,
+    startQuality,
     wentFirst,
   ]);
+
+  const primaryTagTitle =
+    result === "win"
+      ? "What won you the game?"
+      : result === "tie"
+        ? "What defined the game?"
+        : "What cost you the game?";
+  const primaryTagHint =
+    result === "win"
+      ? "Lock the clearest edge first."
+      : result === "tie"
+        ? "Mark the biggest swings before you add detail."
+        : "Mark the clearest leak before you queue again.";
+  const secondaryTagTitle = "Anything else matter?";
+  const secondaryTagHint =
+    result === "win"
+      ? "Add any leak that still shaped the game."
+      : result === "tie"
+        ? "If something still stood out, tag it here."
+        : "Add any upside that still mattered.";
+  const primaryTags = result === "win" ? positiveTags : issueTags;
+  const setPrimaryTags = result === "win" ? setPositiveTags : setIssueTags;
+  const primaryTagOptions =
+    result === "win" ? QUICK_POSITIVE_TAG_OPTIONS : QUICK_ISSUE_TAG_OPTIONS;
+  const primaryExtraTagOptions =
+    result === "win" ? EXTRA_POSITIVE_TAG_OPTIONS : EXTRA_ISSUE_TAG_OPTIONS;
+  const secondaryTags = result === "win" ? issueTags : positiveTags;
+  const setSecondaryTags = result === "win" ? setIssueTags : setPositiveTags;
+  const secondaryTagOptions =
+    result === "win" ? MATCH_ISSUE_TAG_OPTIONS : MATCH_POSITIVE_TAG_OPTIONS;
+  const postSaveSummary = readySummary || "Your match log is ready for review.";
+  const postSaveMissionProgress = sessionCoach
+    ? Math.min(
+        sessionCoach.progressCompleted + (countedTowardMission ? 1 : 0),
+        sessionCoach.progressGoal
+      )
+    : null;
+  const postSaveFocusProgress = sessionCoach
+    ? Math.min(
+        sessionCoach.missionContextSeenCount + (countedTowardContext ? 1 : 0),
+        sessionCoach.missionContextTargetCount
+      )
+    : null;
+  const postSaveSignalLine =
+    sessionCoach && postSaveMissionProgress !== null
+      ? `${sessionCoach.missionTitle}: ${postSaveMissionProgress}/${sessionCoach.progressGoal} games logged.${
+          countedTowardContext && postSaveFocusProgress !== null
+            ? ` ${sessionCoach.missionContextLabel}: ${postSaveFocusProgress}/${sessionCoach.missionContextTargetCount}.`
+            : ""
+        }`
+      : null;
 
   function importTcgLiveLog() {
     const log = tcgLiveLog.trim();
@@ -663,9 +746,9 @@ export function MatchLogForm({
     }
 
     setTcgLiveLog("");
-    setNotesOpen(true);
+    setAdvancedOpen(true);
     setImportStatus(
-      `Imported to learnings.${
+      `Imported to one learning.${
         detectedResult || inferredOpponent
           ? ` Detected: ${[detectedResult, inferredOpponent]
               .filter(Boolean)
@@ -724,38 +807,45 @@ export function MatchLogForm({
 
         <div className="grid gap-4">
           {wasSuccessful ? (
-            <div className="rounded-md bg-[#07111F]/46 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]">
-              <div
-                className={`rounded-md px-3 py-2 text-sm font-medium ${
+            <div className="rounded-xl bg-[#07111F]/46 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]">
+              <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#22C55E]">
+                Game logged
+              </p>
+              <p className="mt-2 text-base font-semibold text-[#F8FAFC]">
+                {postSaveSummary}
+              </p>
+              <p className="mt-2 text-sm leading-6 text-[#B9C4D6]">
+                This log will update your matchup, turn-order, opening-hand, and sequencing patterns.
+              </p>
+              {postSaveSignalLine ? (
+                <p className="mt-3 rounded-lg bg-[#4F8CFF]/10 px-3 py-2 text-sm font-medium text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.16)]">
+                  {postSaveSignalLine}
+                </p>
+              ) : null}
+              <p
+                className={`mt-3 rounded-lg px-3 py-2 text-sm font-medium ${
                   countedTowardMission
                     ? "bg-emerald-500/10 text-emerald-200"
-                    : "bg-[#F5C84C]/10 text-[#F5C84C]"
+                    : "bg-[#F5C84C]/10 text-[#FFE28A]"
                 }`}
               >
-                {sessionCoach ? (
-                  <>
-                    {countedTowardMission
-                      ? countedTowardContext
-                        ? "Counts toward mission and focus evidence."
-                        : "Counts toward your current mission."
-                      : "Logged outside the current mission focus."}{" "}
-                    <span className="text-emerald-100">
-                      This game will contribute to matchup, turn-order, opening-hand, and sequencing patterns.
-                    </span>
-                  </>
-                ) : (
-                  "This game will contribute to matchup, turn-order, opening-hand, and sequencing patterns."
-                )}
-              </div>
-              <div className="mt-3 grid gap-2 sm:grid-cols-3">
-                <Link href="/dashboard" className={secondaryButton}>
-                  Dashboard
+                {sessionCoach
+                  ? countedTowardMission
+                    ? countedTowardContext
+                      ? "This one strengthens both your current mission and the focus sample."
+                      : "This one strengthens your current testing mission."
+                    : "This game still helps your broader testing record."
+                  : "One more data point for your testing loop."}
+              </p>
+              <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                <Link href="/matches/new" className={secondaryButton}>
+                  Log another game
                 </Link>
                 <Link href="/matchups" className={secondaryButton}>
-                  Matchups
+                  Review matchup
                 </Link>
-                <Link href="/matches" className={secondaryButton}>
-                  Matches
+                <Link href="/dashboard" className={secondaryButton}>
+                  Dashboard
                 </Link>
               </div>
             </div>
@@ -767,137 +857,231 @@ export function MatchLogForm({
                 Quick log
               </p>
               <h2 className="text-xl font-semibold text-[#F8FAFC]">
-                Log a game fast
+                Fast post-game debrief
               </h2>
               <p className="text-sm leading-6 text-[#94A3B8]/76">
-                Pick matchup, result, turn order, and the main leak before you queue again.
+                Log the key signal first, then add context only if the game earned it.
               </p>
             </div>
 
             <div className="mt-4 grid gap-4">
               <div className={subCardClass}>
-                <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-medium uppercase tracking-[0.08em] text-[#94A3B8]/72">
-                      Your deck
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold text-[#F8FAFC]">Match</p>
+                    <p className="mt-1 text-xs leading-5 text-[#94A3B8]/72">
+                      Pick your deck and the matchup you just played.
                     </p>
-                    <div className="mt-2 flex min-w-0 items-center gap-2">
-                      <ArchetypeSprites
-                        archetype={selectedDeckSuggestion ?? selectedDeckArchetype}
-                        className="shrink-0"
-                      />
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold text-[#F8FAFC]">
-                          {selectedDeck?.label ?? "Choose a deck version"}
-                        </p>
-                        {selectedDeckSuggestion ? (
-                          <p className="truncate text-xs text-[#B8D1FF]">
-                            Reads as {selectedDeckSuggestion}
-                          </p>
-                        ) : null}
-                      </div>
-                    </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setIsChangingDeck((current) => !current)}
-                    className="rounded-md bg-[#4F8CFF]/10 px-3 py-2 text-xs font-semibold text-[#F8FAFC] transition hover:bg-[#4F8CFF]/16 active:scale-[0.98]"
-                  >
-                    {isChangingDeck ? "Done" : "Change deck"}
-                  </button>
                 </div>
-                {isChangingDeck ? (
-                  <div className="mt-3 flex flex-col gap-2">
-                    <label htmlFor="deck_version_id_select" className={label}>
-                      Session deck
-                    </label>
-                    <select
-                      id="deck_version_id_select"
-                      value={deckVersionId}
-                      onChange={(event) => setDeckVersionId(event.target.value)}
-                      className={inputH11}
-                    >
-                      {deckOptions.map((option) => (
-                        <option key={option.id} value={option.id}>
-                          {option.label}
-                          {option.isActive ? " (active)" : ""} - {option.detail}
-                        </option>
-                      ))}
-                    </select>
+                <div className="mt-3 grid gap-3">
+                  <div className="rounded-lg bg-[#07111F]/42 p-3">
+                    <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-medium uppercase tracking-[0.08em] text-[#94A3B8]/72">
+                          Your deck
+                        </p>
+                        <div className="mt-2 flex min-w-0 items-center gap-2">
+                          <ArchetypeSprites
+                            archetype={selectedDeckSuggestion ?? selectedDeckArchetype}
+                            className="shrink-0"
+                          />
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-semibold text-[#F8FAFC]">
+                              {selectedDeck?.label ?? "Choose a deck version"}
+                            </p>
+                            {selectedDeckSuggestion ? (
+                              <p className="truncate text-xs text-[#B8D1FF]">
+                                Reads as {selectedDeckSuggestion}
+                              </p>
+                            ) : null}
+                          </div>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setIsChangingDeck((current) => !current)}
+                        className="rounded-md bg-[#4F8CFF]/10 px-3 py-2 text-xs font-semibold text-[#F8FAFC] transition hover:bg-[#4F8CFF]/16 active:scale-[0.98]"
+                      >
+                        {isChangingDeck ? "Done" : "Change deck"}
+                      </button>
+                    </div>
+                    {isChangingDeck ? (
+                      <div className="mt-3 flex flex-col gap-2">
+                        <label htmlFor="deck_version_id_select" className={label}>
+                          Session deck
+                        </label>
+                        <select
+                          id="deck_version_id_select"
+                          value={deckVersionId}
+                          onChange={(event) => setDeckVersionId(event.target.value)}
+                          className={inputH11}
+                        >
+                          {deckOptions.map((option) => (
+                            <option key={option.id} value={option.id}>
+                              {option.label}
+                              {option.isActive ? " (active)" : ""} - {option.detail}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    ) : null}
                   </div>
-                ) : null}
+
+                  <div className="rounded-lg bg-[#07111F]/42 p-3">
+                    <ArchetypePicker
+                      id="opponent_archetype"
+                      name="opponent_archetype"
+                      label="Opponent deck"
+                      options={opponentArchetypeOptions}
+                      value={opponentArchetype}
+                      required
+                      autoFocus
+                      maxOptions={7}
+                      listMaxHeightClassName="max-h-48"
+                      onValueChange={setOpponentArchetype}
+                    />
+                    {opponentArchetype ? (
+                      <p className="mt-2 text-xs font-medium text-[#B8D1FF]">
+                        Selected matchup: {opponentArchetype}
+                      </p>
+                    ) : null}
+                  </div>
+                </div>
               </div>
 
               <div className={subCardClass}>
-                <ArchetypePicker
-                  id="opponent_archetype"
-                  name="opponent_archetype"
-                  label="Opponent deck"
-                  options={opponentArchetypeOptions}
-                  value={opponentArchetype}
-                  required
-                  autoFocus
-                  maxOptions={7}
-                  listMaxHeightClassName="max-h-48"
-                  onValueChange={setOpponentArchetype}
-                />
-                {opponentArchetype ? (
-                  <p className="mt-2 text-xs font-medium text-[#B8D1FF]">
-                    Selected matchup: {opponentArchetype}
-                  </p>
-                ) : null}
+                <p className="text-sm font-semibold text-[#F8FAFC]">Result</p>
+                <p className="mt-1 text-xs leading-5 text-[#94A3B8]/72">
+                  Record the outcome first, then add turn order.
+                </p>
+                <div className="mt-3 grid gap-3 md:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+                  <fieldset className="rounded-lg bg-[#07111F]/42 p-3">
+                    <legend className={label}>Outcome</legend>
+                    <div className="mt-2 grid grid-cols-3 gap-2">
+                      {(["win", "loss", "tie"] as const).map((resultOption) => (
+                        <button
+                          key={resultOption}
+                          type="button"
+                          onClick={() => setResult(resultOption)}
+                          className={`${largeToggleClass} ${
+                            result === resultOption ? selectedToggleClass : ""
+                          }`}
+                        >
+                          {getMatchResultLabel(resultOption)}
+                        </button>
+                      ))}
+                    </div>
+                  </fieldset>
+
+                  <fieldset className="rounded-lg bg-[#07111F]/42 p-3">
+                    <legend className={label}>Turn order</legend>
+                    <div className="mt-2 grid grid-cols-2 gap-2">
+                      {[
+                        ["true", "First"],
+                        ["false", "Second"],
+                      ].map(([value, turnLabel]) => (
+                        <button
+                          key={value}
+                          type="button"
+                          onClick={() => setWentFirst(value as "true" | "false")}
+                          className={`${mediumToggleClass} ${
+                            wentFirst === value ? selectedToggleClass : ""
+                          }`}
+                        >
+                          {turnLabel}
+                        </button>
+                      ))}
+                    </div>
+                  </fieldset>
+                </div>
               </div>
 
-              <div className="grid gap-3 md:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
-                <fieldset className={subCardClass}>
-                  <legend className={label}>Result</legend>
-                  <div className="mt-2 grid grid-cols-3 gap-2">
-                    {(["win", "loss", "tie"] as const).map((resultOption) => (
-                      <button
-                        key={resultOption}
-                        type="button"
-                        onClick={() => setResult(resultOption)}
-                        className={`${largeToggleClass} ${
-                          result === resultOption ? selectedToggleClass : ""
-                        }`}
-                      >
-                        {getMatchResultLabel(resultOption)}
-                      </button>
-                    ))}
-                  </div>
-                </fieldset>
-
-                <fieldset className={subCardClass}>
-                  <legend className={label}>Turn order</legend>
-                  <div className="mt-2 grid grid-cols-2 gap-2">
-                    {[
-                      ["true", "First"],
-                      ["false", "Second"],
-                    ].map(([value, turnLabel]) => (
-                      <button
-                        key={value}
-                        type="button"
-                        onClick={() => setWentFirst(value as "true" | "false")}
-                        className={`${mediumToggleClass} ${
-                          wentFirst === value ? selectedToggleClass : ""
-                        }`}
-                      >
-                        {turnLabel}
-                      </button>
-                    ))}
-                  </div>
-                </fieldset>
+              <div className={subCardClass}>
+                <p className="text-sm font-semibold text-[#F8FAFC]">Game quality</p>
+                <p className="mt-1 text-xs leading-5 text-[#94A3B8]/72">
+                  Capture the fast quality read while the game is still fresh.
+                </p>
+                <div className="mt-3 grid gap-3 lg:grid-cols-3">
+                  <fieldset className="rounded-lg bg-[#07111F]/42 p-3">
+                    <legend className={label}>Start</legend>
+                    <div className="mt-2 grid grid-cols-3 gap-2">
+                      {MATCH_START_QUALITY_OPTIONS.map((value) => (
+                        <button
+                          key={value}
+                          type="button"
+                          onClick={() =>
+                            setStartQuality(startQuality === value ? undefined : value)
+                          }
+                          className={`${mediumToggleClass} ${
+                            startQuality === value ? selectedToggleClass : ""
+                          }`}
+                        >
+                          {getQualityLabel(value)}
+                        </button>
+                      ))}
+                    </div>
+                  </fieldset>
+                  <fieldset className="rounded-lg bg-[#07111F]/42 p-3">
+                    <legend className={label}>Opening hand</legend>
+                    <div className="mt-2 grid grid-cols-2 gap-2">
+                      {MATCH_OPENING_HAND_OPTIONS.map((value) => (
+                        <button
+                          key={value}
+                          type="button"
+                          onClick={() =>
+                            setOpeningHandQuality(
+                              openingHandQuality === value ? undefined : value
+                            )
+                          }
+                          className={`${mediumToggleClass} ${
+                            openingHandQuality === value
+                              ? selectedToggleClass
+                              : ""
+                          }`}
+                        >
+                          {getQualityLabel(value)}
+                        </button>
+                      ))}
+                    </div>
+                  </fieldset>
+                  <fieldset className="rounded-lg bg-[#07111F]/42 p-3">
+                    <legend className={label}>Sequencing</legend>
+                    <div className="mt-2 grid grid-cols-2 gap-2">
+                      {MATCH_SEQUENCING_OPTIONS.map((value) => (
+                        <button
+                          key={value}
+                          type="button"
+                          onClick={() =>
+                            setSequencingQuality(
+                              sequencingQuality === value ? undefined : value
+                            )
+                          }
+                          className={`${mediumToggleClass} ${
+                            sequencingQuality === value
+                              ? selectedToggleClass
+                              : ""
+                          }`}
+                        >
+                          {getQualityLabel(value)}
+                        </button>
+                      ))}
+                    </div>
+                  </fieldset>
+                </div>
               </div>
 
-              <fieldset className={subCardClass}>
+              <div className={subCardClass}>
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <legend className={label}>Quick tags</legend>
+                    <p className="text-sm font-semibold text-[#F8FAFC]">
+                      What mattered?
+                    </p>
                     <p className="mt-1 text-xs leading-5 text-[#94A3B8]/72">
-                      Mark the main leak first. Add more detail only if it matters.
+                      {primaryTagHint}
                     </p>
                   </div>
-                  {EXTRA_ISSUE_TAG_OPTIONS.length ? (
+                  {primaryExtraTagOptions.length ? (
                     <button
                       type="button"
                       onClick={() => setMoreIssueTagsOpen((current) => !current)}
@@ -907,37 +1091,66 @@ export function MatchLogForm({
                     </button>
                   ) : null}
                 </div>
-                <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-                  {QUICK_ISSUE_TAG_OPTIONS.map((tag) => (
-                    <button
-                      key={tag}
-                      type="button"
-                      onClick={() => setIssueTags(toggleSelection(issueTags, tag))}
-                      className={`${tagToggleClass} ${
-                        issueTags.includes(tag) ? selectedToggleClass : ""
-                      }`}
-                    >
-                      {tag}
-                    </button>
-                  ))}
-                </div>
-                {moreIssueTagsOpen ? (
+
+                <fieldset className="mt-3 rounded-lg bg-[#07111F]/42 p-3">
+                  <legend className={label}>{primaryTagTitle}</legend>
                   <div className="mt-2 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-                    {EXTRA_ISSUE_TAG_OPTIONS.map((tag) => (
+                    {primaryTagOptions.map((tag) => (
                       <button
                         key={tag}
                         type="button"
-                        onClick={() => setIssueTags(toggleSelection(issueTags, tag))}
+                        onClick={() => setPrimaryTags(toggleSelection(primaryTags, tag))}
                         className={`${tagToggleClass} ${
-                          issueTags.includes(tag) ? selectedToggleClass : ""
+                          primaryTags.includes(tag) ? selectedToggleClass : ""
                         }`}
                       >
                         {tag}
                       </button>
                     ))}
                   </div>
-                ) : null}
-              </fieldset>
+                  {moreIssueTagsOpen && primaryExtraTagOptions.length ? (
+                    <div className="mt-2 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                      {primaryExtraTagOptions.map((tag) => (
+                        <button
+                          key={tag}
+                          type="button"
+                          onClick={() =>
+                            setPrimaryTags(toggleSelection(primaryTags, tag))
+                          }
+                          className={`${tagToggleClass} ${
+                            primaryTags.includes(tag) ? selectedToggleClass : ""
+                          }`}
+                        >
+                          {tag}
+                        </button>
+                      ))}
+                    </div>
+                  ) : null}
+                </fieldset>
+
+                <fieldset className="mt-3 rounded-lg bg-[#07111F]/28 p-3">
+                  <legend className={label}>{secondaryTagTitle}</legend>
+                  <p className="mt-1 text-xs leading-5 text-[#94A3B8]/68">
+                    {secondaryTagHint}
+                  </p>
+                  <div className="mt-2 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                    {secondaryTagOptions.map((tag) => (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() =>
+                          setSecondaryTags(toggleSelection(secondaryTags, tag))
+                        }
+                        className={`${tagToggleClass} ${
+                          secondaryTags.includes(tag) ? selectedToggleClass : ""
+                        }`}
+                      >
+                        {tag}
+                      </button>
+                    ))}
+                  </div>
+                </fieldset>
+              </div>
 
               <div className="grid gap-2">
                 <button
@@ -947,14 +1160,14 @@ export function MatchLogForm({
                 >
                   <span>
                     <span className="block text-sm font-semibold text-[#F8FAFC]">
-                      Advanced game details
+                      Add more context
                     </span>
                     <span className="block text-xs text-[#94A3B8]/72">
-                      Context, matchup detail, and game quality.
+                      Testing context, event detail, cards, and one learning.
                     </span>
                   </span>
                   <span className="text-xs font-semibold text-[#B8D1FF]">
-                    {advancedOpen ? "Hide" : "Add game quality"}
+                    {advancedOpen ? "Hide" : "Open"}
                   </span>
                 </button>
 
@@ -1053,131 +1266,6 @@ export function MatchLogForm({
 
                     <div className={subCardClass}>
                       <p className="text-sm font-semibold text-[#F8FAFC]">
-                        Game quality
-                      </p>
-                      <div className="mt-3 grid gap-3 lg:grid-cols-3">
-                        <fieldset className="flex flex-col gap-2">
-                          <legend className={label}>Start</legend>
-                          <div className="grid grid-cols-3 gap-2">
-                            {MATCH_START_QUALITY_OPTIONS.map((value) => (
-                              <button
-                                key={value}
-                                type="button"
-                                onClick={() =>
-                                  setStartQuality(
-                                    startQuality === value ? undefined : value
-                                  )
-                                }
-                                className={`${mediumToggleClass} ${
-                                  startQuality === value
-                                    ? selectedToggleClass
-                                    : ""
-                                }`}
-                              >
-                                {getQualityLabel(value)}
-                              </button>
-                            ))}
-                          </div>
-                        </fieldset>
-                        <fieldset className="flex flex-col gap-2">
-                          <legend className={label}>Opening hand</legend>
-                          <div className="grid grid-cols-2 gap-2">
-                            {MATCH_OPENING_HAND_OPTIONS.map((value) => (
-                              <button
-                                key={value}
-                                type="button"
-                                onClick={() =>
-                                  setOpeningHandQuality(
-                                    openingHandQuality === value
-                                      ? undefined
-                                      : value
-                                  )
-                                }
-                                className={`${mediumToggleClass} ${
-                                  openingHandQuality === value
-                                    ? selectedToggleClass
-                                    : ""
-                                }`}
-                              >
-                                {getQualityLabel(value)}
-                              </button>
-                            ))}
-                          </div>
-                        </fieldset>
-                        <fieldset className="flex flex-col gap-2">
-                          <legend className={label}>Sequencing</legend>
-                          <div className="grid grid-cols-2 gap-2">
-                            {MATCH_SEQUENCING_OPTIONS.map((value) => (
-                              <button
-                                key={value}
-                                type="button"
-                                onClick={() =>
-                                  setSequencingQuality(
-                                    sequencingQuality === value
-                                      ? undefined
-                                      : value
-                                  )
-                                }
-                                className={`${mediumToggleClass} ${
-                                  sequencingQuality === value
-                                    ? selectedToggleClass
-                                    : ""
-                                }`}
-                              >
-                                {getQualityLabel(value)}
-                              </button>
-                            ))}
-                          </div>
-                        </fieldset>
-                      </div>
-                    </div>
-                  </div>
-                ) : null}
-
-                <button
-                  type="button"
-                  onClick={() => setNotesOpen((current) => !current)}
-                  className={sectionToggleClass}
-                >
-                  <span>
-                    <span className="block text-sm font-semibold text-[#F8FAFC]">
-                      Add notes and learnings
-                    </span>
-                    <span className="block text-xs text-[#94A3B8]/72">
-                      Positive tags, cards to remember, and optional notes.
-                    </span>
-                  </span>
-                  <span className="text-xs font-semibold text-[#B8D1FF]">
-                    {notesOpen ? "Hide" : "Open"}
-                  </span>
-                </button>
-
-                {notesOpen ? (
-                  <div className="grid gap-3 rounded-xl bg-[#07111F]/28 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
-                    <fieldset className={subCardClass}>
-                      <legend className={label}>What went well?</legend>
-                      <div className="mt-2 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-                        {MATCH_POSITIVE_TAG_OPTIONS.map((tag) => (
-                          <button
-                            key={tag}
-                            type="button"
-                            onClick={() =>
-                              setPositiveTags(toggleSelection(positiveTags, tag))
-                            }
-                            className={`${tagToggleClass} ${
-                              positiveTags.includes(tag)
-                                ? selectedToggleClass
-                                : ""
-                            }`}
-                          >
-                            {tag}
-                          </button>
-                        ))}
-                      </div>
-                    </fieldset>
-
-                    <div className={subCardClass}>
-                      <p className="text-sm font-semibold text-[#F8FAFC]">
                         Cards to remember
                       </p>
                       <div className="mt-3 grid gap-3 xl:grid-cols-2">
@@ -1200,7 +1288,7 @@ export function MatchLogForm({
 
                     <div className={subCardClass}>
                       <label htmlFor="notes" className={label}>
-                        Learnings
+                        One learning
                       </label>
                       <textarea
                         id="notes"
@@ -1208,7 +1296,7 @@ export function MatchLogForm({
                         value={notes}
                         onChange={(event) => setNotes(event.target.value)}
                         rows={3}
-                        placeholder="What did this game teach you? Example: Lost because I missed second attacker and fell behind on prizes."
+                        placeholder="Example: I lost because I missed second attacker and fell behind on prizes."
                         className={`${textarea} mt-2 min-h-24 transition-all focus:min-h-28`}
                       />
                     </div>
@@ -1257,7 +1345,7 @@ export function MatchLogForm({
                   "Choose a matchup, result, and turn order to finish the quick log."}
               </p>
               <p className="mt-2 text-sm text-[#94A3B8]/76">
-                One more data point for your testing loop.
+                This will update your matchup trends.
               </p>
             </div>
 
