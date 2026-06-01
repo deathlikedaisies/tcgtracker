@@ -31,6 +31,8 @@ import {
   type MatchStartQuality,
 } from "@/lib/match-types";
 
+type StepResultValue = MatchResult | "";
+
 type SignalTone = "blue" | "gold" | "green" | "rose";
 type GameContext = "testing" | "competitive";
 
@@ -49,8 +51,17 @@ const tagToggleClass =
 const selectedToggleClass =
   "bg-[#4F8CFF]/22 text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.38),0_10px_24px_rgba(79,140,255,0.08)]";
 
-const sectionToggleClass =
-  "flex w-full items-center justify-between rounded-xl bg-[#07111F]/48 px-3 py-3 text-left transition hover:bg-[#07111F]/66";
+const progressStepClass =
+  "flex items-center gap-3 rounded-xl px-3 py-3 text-left transition";
+
+const stepOrder = [
+  { label: "Match", shortLabel: "1" },
+  { label: "Turn order", shortLabel: "2" },
+  { label: "Result", shortLabel: "3" },
+  { label: "Game quality", shortLabel: "4" },
+  { label: "What mattered?", shortLabel: "5" },
+  { label: "More context", shortLabel: "6" },
+] as const;
 
 const QUICK_ISSUE_TAG_OPTIONS = [
   "missed setup",
@@ -265,8 +276,8 @@ export function DemoMatchLogForm() {
   const [focusMatchup, setFocusMatchup] = useState("Mega Greninja");
   const [opponent, setOpponent] = useState("Mega Greninja");
   const [opponentVariant, setOpponentVariant] = useState("");
-  const [result, setResult] = useState<MatchResult>("loss");
-  const [wentFirst, setWentFirst] = useState(false);
+  const [result, setResult] = useState<StepResultValue>("");
+  const [wentFirst, setWentFirst] = useState<boolean | null>(null);
   const [startQuality, setStartQuality] = useState<
     MatchStartQuality | undefined
   >("okay");
@@ -285,8 +296,9 @@ export function DemoMatchLogForm() {
   const [cardsFailed, setCardsFailed] = useState<string[]>([]);
   const [learnings, setLearnings] = useState("");
   const [saved, setSaved] = useState(false);
-  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
   const [moreIssueTagsOpen, setMoreIssueTagsOpen] = useState(false);
+  const [showSecondaryTags, setShowSecondaryTags] = useState(false);
   const opponentOptions = useMemo(
     () => getArchetypeOptions(null, [focusMatchup, opponent]),
     [focusMatchup, opponent]
@@ -295,8 +307,8 @@ export function DemoMatchLogForm() {
   const readySummary = useMemo(() => {
     const parts = [
       `${getVersionLabel(versionId)} vs ${opponent}`,
-      getMatchResultLabel(result),
-      wentFirst ? "Went first" : "Went second",
+      result ? getMatchResultLabel(result) : "Result not set",
+      wentFirst === null ? "Turn order not set" : wentFirst ? "Went first" : "Went second",
     ];
     const highlightTags = [...issueTags, ...positiveTags].slice(0, 3);
 
@@ -359,13 +371,60 @@ export function DemoMatchLogForm() {
   const setSecondaryTags = result === "win" ? setIssueTags : setPositiveTags;
   const secondaryTagOptions =
     result === "win" ? MATCH_ISSUE_TAG_OPTIONS : MATCH_POSITIVE_TAG_OPTIONS;
+  const progressPercent = ((currentStep + 1) / stepOrder.length) * 100;
+  const secondaryToggleLabel =
+    result === "win"
+      ? "Add issues too"
+      : result === "tie"
+        ? "Show both sides"
+        : "Add positives too";
+  const canAdvanceFromMatch = Boolean(opponent.trim());
+  const canAdvanceFromTurnOrder = wentFirst !== null;
+  const canAdvanceFromResult = result === "win" || result === "loss" || result === "tie";
+  const blockedNextMessage =
+    currentStep === 0 && !canAdvanceFromMatch
+      ? "Choose an opponent deck to continue."
+      : currentStep === 1 && !canAdvanceFromTurnOrder
+        ? "Choose whether you went first or second."
+        : currentStep === 2 && !canAdvanceFromResult
+          ? "Choose win, loss, or tie."
+          : null;
+  const finalizedResult: MatchResult =
+    result === "win" || result === "loss" || result === "tie" ? result : "loss";
 
   const insightUpdate = getInsightUpdate({
     gameContext,
-    result,
+    result: finalizedResult,
     issueTags,
     positiveTags,
   });
+
+  const desktopSummary = (
+    <div className="rounded-xl bg-[#0B1020]/52 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+      <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#F5C84C]">
+        Live summary
+      </p>
+      <p className="mt-3 text-sm font-medium leading-6 text-[#F8FAFC]">
+        {readySummary}
+      </p>
+      <div className="mt-4 grid gap-2 text-xs text-[#94A3B8]">
+        <p>Result: {result ? getMatchResultLabel(result) : "Not set"}</p>
+        <p>Turn order: {wentFirst === null ? "Not set" : wentFirst ? "First" : "Second"}</p>
+        <p>
+          Tags:{" "}
+          {[...issueTags, ...positiveTags].length
+            ? [...issueTags, ...positiveTags].slice(0, 4).join(", ")
+            : "No tags yet"}
+        </p>
+      </div>
+      <p className="mt-4 text-sm text-[#94A3B8]/76">
+        This will update your matchup trends.
+      </p>
+      <Link href="/demo/matches" className={`mt-4 block w-full ${secondaryButton}`}>
+        Demo matches
+      </Link>
+    </div>
+  );
 
   const versionOptions = useMemo(
     () =>
@@ -389,8 +448,8 @@ export function DemoMatchLogForm() {
     setFocusMatchup("Mega Greninja");
     setOpponent("Mega Greninja");
     setOpponentVariant("");
-    setResult("loss");
-    setWentFirst(false);
+    setResult("");
+    setWentFirst(null);
     setStartQuality("okay");
     setOpeningHandQuality("good");
     setSequencingQuality("okay");
@@ -399,8 +458,9 @@ export function DemoMatchLogForm() {
     setCardsShined([]);
     setCardsFailed([]);
     setLearnings("");
-    setAdvancedOpen(false);
+    setCurrentStep(0);
     setMoreIssueTagsOpen(false);
+    setShowSecondaryTags(false);
   }
 
   if (saved) {
@@ -496,82 +556,175 @@ export function DemoMatchLogForm() {
           setSaved(true);
         }}
       >
-        <section className="rounded-xl bg-[#07111F]/36 p-4 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.12)] sm:p-5">
-          <div className="flex flex-col gap-1">
-            <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
-              Quick log
-            </p>
-            <h2 className="text-xl font-semibold text-[#F8FAFC]">
-              Fast post-game debrief
-            </h2>
-            <p className="text-sm leading-6 text-[#94A3B8]/76">
-              Log the key signal first, then add context only if the game earned it.
-            </p>
-          </div>
-
-          <div className="mt-4 grid gap-4">
-            <div className={subCardClass}>
-              <p className="text-sm font-semibold text-[#F8FAFC]">Match</p>
-              <p className="mt-1 text-xs leading-5 text-[#94A3B8]/72">
-                Pick your deck and the matchup you just played.
+        <div className="grid gap-4 xl:grid-cols-[220px_minmax(0,1fr)_280px]">
+          <aside className="hidden xl:block">
+            <div className="rounded-xl bg-[#07111F]/36 p-4 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.12)]">
+              <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
+                Quick log
               </p>
-              <div className="mt-3 grid gap-3">
-                <div className="rounded-lg bg-[#07111F]/42 p-3">
-                  <label className={label}>Your deck</label>
-                  <div className="mt-2 grid gap-2">
-                    {versionOptions.map((version) => (
-                      <button
-                        key={version.id}
-                        type="button"
-                        onClick={() => setVersionId(version.id)}
-                        className={`${tagToggleClass} ${
-                          versionId === version.id ? selectedToggleClass : ""
+              <div className="mt-4 grid gap-2">
+                {stepOrder.map((step, index) => {
+                  const isCurrent = index === currentStep;
+                  const isDone = index < currentStep;
+
+                  return (
+                    <button
+                      key={step.label}
+                      type="button"
+                      onClick={() => {
+                        if (index <= currentStep || index === 0) {
+                          setCurrentStep(index);
+                        }
+                      }}
+                      className={`${progressStepClass} ${
+                        isCurrent
+                          ? "bg-[#4F8CFF]/16 text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.22)]"
+                          : isDone
+                            ? "bg-[#07111F]/48 text-[#DCE8FF]"
+                            : "bg-[#07111F]/18 text-[#94A3B8]"
+                      }`}
+                    >
+                      <span
+                        className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold ${
+                          isCurrent
+                            ? "bg-[#4F8CFF]/24 text-[#F8FAFC]"
+                            : isDone
+                              ? "bg-[#22C55E]/20 text-[#DCFCE7]"
+                              : "bg-[#1A2238] text-[#94A3B8]"
                         }`}
                       >
-                        <span className="block">
-                          <span className="block text-sm font-semibold">
-                            {version.label}
+                        {step.shortLabel}
+                      </span>
+                      <span className="text-sm font-semibold">{step.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </aside>
+
+          <section className="rounded-xl bg-[#07111F]/36 p-4 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.12)] sm:p-5">
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
+                  Step {currentStep + 1} of {stepOrder.length}
+                </p>
+                <p className="text-xs text-[#94A3B8]">
+                  {stepOrder[currentStep]?.label}
+                </p>
+              </div>
+              <div className="h-2 rounded-full bg-[#07111F]/70">
+                <div
+                  className="h-2 rounded-full bg-[#4F8CFF] transition-all"
+                  style={{ width: `${progressPercent}%` }}
+                />
+              </div>
+            </div>
+
+            <div className="mt-4 rounded-xl bg-[#0B1020]/52 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+              {currentStep === 0 ? (
+                <div className="grid gap-4">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
+                      Match
+                    </p>
+                    <h2 className="mt-2 text-2xl font-semibold text-[#F8FAFC]">
+                      Who did you play against?
+                    </h2>
+                    <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
+                      Pick the matchup first. Everything else follows from that.
+                    </p>
+                  </div>
+                  <div className={subCardClass}>
+                    <label className={label}>Your deck</label>
+                    <div className="mt-2 grid gap-2">
+                      {versionOptions.map((version) => (
+                        <button
+                          key={version.id}
+                          type="button"
+                          onClick={() => setVersionId(version.id)}
+                          className={`${tagToggleClass} ${
+                            versionId === version.id ? selectedToggleClass : ""
+                          }`}
+                        >
+                          <span className="block">
+                            <span className="block text-sm font-semibold">
+                              {version.label}
+                            </span>
+                            <span className="block text-xs opacity-75">
+                              {version.archetype}
+                              {version.active ? " | active" : ""}
+                            </span>
                           </span>
-                          <span className="block text-xs opacity-75">
-                            {version.archetype}
-                            {version.active ? " | active" : ""}
-                          </span>
-                        </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className={subCardClass}>
+                    <ArchetypePicker
+                      id="demo_opponent_archetype"
+                      name="demo_opponent_archetype"
+                      label="Opponent deck"
+                      options={opponentOptions}
+                      value={opponent}
+                      placeholder="Search all known archetypes or type your own"
+                      maxOptions={7}
+                      listMaxHeightClassName="max-h-48"
+                      onValueChange={setOpponent}
+                    />
+                    {opponent ? (
+                      <p className="mt-2 text-xs font-medium text-[#B8D1FF]">
+                        Selected matchup: {opponent}
+                      </p>
+                    ) : null}
+                  </div>
+                </div>
+              ) : null}
+
+              {currentStep === 1 ? (
+                <div className="grid gap-4">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
+                      Turn order
+                    </p>
+                    <h2 className="mt-2 text-2xl font-semibold text-[#F8FAFC]">
+                      Did you go first or second?
+                    </h2>
+                    <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
+                      This helps SixPrizer separate matchup issues from turn-order issues.
+                    </p>
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {[true, false].map((value) => (
+                      <button
+                        key={String(value)}
+                        type="button"
+                        onClick={() => setWentFirst(value)}
+                        className={`${largeToggleClass} ${
+                          wentFirst === value ? selectedToggleClass : ""
+                        }`}
+                      >
+                        {value ? "First" : "Second"}
                       </button>
                     ))}
                   </div>
                 </div>
+              ) : null}
 
-                <div className="rounded-lg bg-[#07111F]/42 p-3">
-                  <ArchetypePicker
-                    id="demo_opponent_archetype"
-                    name="demo_opponent_archetype"
-                    label="Opponent deck"
-                    options={opponentOptions}
-                    value={opponent}
-                    placeholder="Search all known archetypes or type your own"
-                    maxOptions={7}
-                    listMaxHeightClassName="max-h-48"
-                    onValueChange={setOpponent}
-                  />
-                  {opponent ? (
-                    <p className="mt-2 text-xs font-medium text-[#B8D1FF]">
-                      Selected matchup: {opponent}
+              {currentStep === 2 ? (
+                <div className="grid gap-4">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
+                      Result
                     </p>
-                  ) : null}
-                </div>
-              </div>
-            </div>
-
-            <div className={subCardClass}>
-              <p className="text-sm font-semibold text-[#F8FAFC]">Result</p>
-              <p className="mt-1 text-xs leading-5 text-[#94A3B8]/72">
-                Record the outcome first, then add turn order.
-              </p>
-              <div className="mt-3 grid gap-3 md:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
-                <fieldset className="rounded-lg bg-[#07111F]/42 p-3">
-                  <legend className={label}>Outcome</legend>
-                  <div className="mt-2 grid grid-cols-3 gap-2">
+                    <h2 className="mt-2 text-2xl font-semibold text-[#F8FAFC]">
+                      What was the result?
+                    </h2>
+                    <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
+                      Log the outcome before you think about why it happened.
+                    </p>
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-3">
                     {(["win", "loss", "tie"] as const).map((value) => (
                       <button
                         key={value}
@@ -585,241 +738,246 @@ export function DemoMatchLogForm() {
                       </button>
                     ))}
                   </div>
-                </fieldset>
-
-                <fieldset className="rounded-lg bg-[#07111F]/42 p-3">
-                  <legend className={label}>Turn order</legend>
-                  <div className="mt-2 grid grid-cols-2 gap-2">
-                    {[true, false].map((value) => (
-                      <button
-                        key={String(value)}
-                        type="button"
-                        onClick={() => setWentFirst(value)}
-                        className={`${mediumToggleClass} ${
-                          wentFirst === value ? selectedToggleClass : ""
-                        }`}
-                      >
-                        {value ? "First" : "Second"}
-                      </button>
-                    ))}
-                  </div>
-                </fieldset>
-              </div>
-            </div>
-
-            <div className={subCardClass}>
-              <p className="text-sm font-semibold text-[#F8FAFC]">Game quality</p>
-              <p className="mt-1 text-xs leading-5 text-[#94A3B8]/72">
-                Capture the fast quality read while the game is still fresh.
-              </p>
-              <div className="mt-3 grid gap-3 lg:grid-cols-3">
-                <fieldset className="rounded-lg bg-[#07111F]/42 p-3">
-                  <legend className={label}>Start</legend>
-                  <div className="mt-2 grid grid-cols-3 gap-2">
-                    {MATCH_START_QUALITY_OPTIONS.map((value) => (
-                      <button
-                        key={value}
-                        type="button"
-                        onClick={() =>
-                          setStartQuality(startQuality === value ? undefined : value)
-                        }
-                        className={`${mediumToggleClass} ${
-                          startQuality === value ? selectedToggleClass : ""
-                        }`}
-                      >
-                        {getQualityLabel(value)}
-                      </button>
-                    ))}
-                  </div>
-                </fieldset>
-                <fieldset className="rounded-lg bg-[#07111F]/42 p-3">
-                  <legend className={label}>Opening hand</legend>
-                  <div className="mt-2 grid grid-cols-2 gap-2">
-                    {MATCH_OPENING_HAND_OPTIONS.map((value) => (
-                      <button
-                        key={value}
-                        type="button"
-                        onClick={() =>
-                          setOpeningHandQuality(
-                            openingHandQuality === value ? undefined : value
-                          )
-                        }
-                        className={`${mediumToggleClass} ${
-                          openingHandQuality === value
-                            ? selectedToggleClass
-                            : ""
-                        }`}
-                      >
-                        {getQualityLabel(value)}
-                      </button>
-                    ))}
-                  </div>
-                </fieldset>
-                <fieldset className="rounded-lg bg-[#07111F]/42 p-3">
-                  <legend className={label}>Sequencing</legend>
-                  <div className="mt-2 grid grid-cols-2 gap-2">
-                    {MATCH_SEQUENCING_OPTIONS.map((value) => (
-                      <button
-                        key={value}
-                        type="button"
-                        onClick={() =>
-                          setSequencingQuality(
-                            sequencingQuality === value ? undefined : value
-                          )
-                        }
-                        className={`${mediumToggleClass} ${
-                          sequencingQuality === value
-                            ? selectedToggleClass
-                            : ""
-                        }`}
-                      >
-                        {getQualityLabel(value)}
-                      </button>
-                    ))}
-                  </div>
-                </fieldset>
-              </div>
-            </div>
-
-            <div className={subCardClass}>
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-sm font-semibold text-[#F8FAFC]">
-                    What mattered?
-                  </p>
-                  <p className="mt-1 text-xs leading-5 text-[#94A3B8]/72">
-                    {primaryTagHint}
-                  </p>
                 </div>
-                {primaryExtraTagOptions.length ? (
-                  <button
-                    type="button"
-                    onClick={() => setMoreIssueTagsOpen((current) => !current)}
-                    className="rounded-md bg-[#4F8CFF]/10 px-3 py-2 text-xs font-semibold text-[#F8FAFC] transition hover:bg-[#4F8CFF]/16"
-                  >
-                    {moreIssueTagsOpen ? "Fewer tags" : "More tags"}
-                  </button>
-                ) : null}
-              </div>
+              ) : null}
 
-              <fieldset className="mt-3 rounded-lg bg-[#07111F]/42 p-3">
-                <legend className={label}>{primaryTagTitle}</legend>
-                <div className="mt-2 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-                  {primaryTagOptions.map((tag) => (
+              {currentStep === 3 ? (
+                <div className="grid gap-4">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
+                      Game quality
+                    </p>
+                    <h2 className="mt-2 text-2xl font-semibold text-[#F8FAFC]">
+                      How did the game feel?
+                    </h2>
+                    <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
+                      Capture the quick quality read while the game is still fresh.
+                    </p>
+                  </div>
+                  <div className="grid gap-3">
+                    <fieldset className={subCardClass}>
+                      <legend className={label}>Start</legend>
+                      <div className="mt-2 grid grid-cols-3 gap-2">
+                        {MATCH_START_QUALITY_OPTIONS.map((value) => (
+                          <button
+                            key={value}
+                            type="button"
+                            onClick={() =>
+                              setStartQuality(
+                                startQuality === value ? undefined : value
+                              )
+                            }
+                            className={`${mediumToggleClass} ${
+                              startQuality === value ? selectedToggleClass : ""
+                            }`}
+                          >
+                            {getQualityLabel(value)}
+                          </button>
+                        ))}
+                      </div>
+                    </fieldset>
+                    <fieldset className={subCardClass}>
+                      <legend className={label}>Opening hand</legend>
+                      <div className="mt-2 grid grid-cols-2 gap-2">
+                        {MATCH_OPENING_HAND_OPTIONS.map((value) => (
+                          <button
+                            key={value}
+                            type="button"
+                            onClick={() =>
+                              setOpeningHandQuality(
+                                openingHandQuality === value ? undefined : value
+                              )
+                            }
+                            className={`${mediumToggleClass} ${
+                              openingHandQuality === value
+                                ? selectedToggleClass
+                                : ""
+                            }`}
+                          >
+                            {getQualityLabel(value)}
+                          </button>
+                        ))}
+                      </div>
+                    </fieldset>
+                    <fieldset className={subCardClass}>
+                      <legend className={label}>Sequencing</legend>
+                      <div className="mt-2 grid grid-cols-2 gap-2">
+                        {MATCH_SEQUENCING_OPTIONS.map((value) => (
+                          <button
+                            key={value}
+                            type="button"
+                            onClick={() =>
+                              setSequencingQuality(
+                                sequencingQuality === value ? undefined : value
+                              )
+                            }
+                            className={`${mediumToggleClass} ${
+                              sequencingQuality === value
+                                ? selectedToggleClass
+                                : ""
+                            }`}
+                          >
+                            {getQualityLabel(value)}
+                          </button>
+                        ))}
+                      </div>
+                    </fieldset>
+                  </div>
+                </div>
+              ) : null}
+
+              {currentStep === 4 ? (
+                <div className="grid gap-4">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
+                      What mattered?
+                    </p>
+                    <h2 className="mt-2 text-2xl font-semibold text-[#F8FAFC]">
+                      {primaryTagTitle}
+                    </h2>
+                    <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
+                      {primaryTagHint}
+                    </p>
+                  </div>
+                  <fieldset className={subCardClass}>
+                    <legend className={label}>{primaryTagTitle}</legend>
+                    <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                      {primaryTagOptions.map((tag) => (
+                        <button
+                          key={tag}
+                          type="button"
+                          onClick={() => setPrimaryTags(toggleSelection(primaryTags, tag))}
+                          className={`${tagToggleClass} ${
+                            primaryTags.includes(tag) ? selectedToggleClass : ""
+                          }`}
+                        >
+                          {tag}
+                        </button>
+                      ))}
+                    </div>
+                    {primaryExtraTagOptions.length ? (
+                      <button
+                        type="button"
+                        onClick={() => setMoreIssueTagsOpen((current) => !current)}
+                        className="mt-3 rounded-md bg-[#4F8CFF]/10 px-3 py-2 text-xs font-semibold text-[#F8FAFC] transition hover:bg-[#4F8CFF]/16"
+                      >
+                        {moreIssueTagsOpen ? "Show fewer tags" : "More tags"}
+                      </button>
+                    ) : null}
+                    {moreIssueTagsOpen && primaryExtraTagOptions.length ? (
+                      <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                        {primaryExtraTagOptions.map((tag) => (
+                          <button
+                            key={tag}
+                            type="button"
+                            onClick={() => setPrimaryTags(toggleSelection(primaryTags, tag))}
+                            className={`${tagToggleClass} ${
+                              primaryTags.includes(tag) ? selectedToggleClass : ""
+                            }`}
+                          >
+                            {tag}
+                          </button>
+                        ))}
+                      </div>
+                    ) : null}
+                  </fieldset>
+                  <div className={subCardClass}>
                     <button
-                      key={tag}
                       type="button"
-                      onClick={() => setPrimaryTags(toggleSelection(primaryTags, tag))}
-                      className={`${tagToggleClass} ${
-                        primaryTags.includes(tag) ? selectedToggleClass : ""
-                      }`}
+                      onClick={() => setShowSecondaryTags((current) => !current)}
+                      className="rounded-md bg-[#07111F]/56 px-3 py-2 text-sm font-semibold text-[#F8FAFC] transition hover:bg-[#1A2238]/60"
                     >
-                      {tag}
+                      {secondaryToggleLabel}
                     </button>
-                  ))}
-                </div>
-                {moreIssueTagsOpen && primaryExtraTagOptions.length ? (
-                  <div className="mt-2 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-                    {primaryExtraTagOptions.map((tag) => (
-                      <button
-                        key={tag}
-                        type="button"
-                        onClick={() => setPrimaryTags(toggleSelection(primaryTags, tag))}
-                        className={`${tagToggleClass} ${
-                          primaryTags.includes(tag) ? selectedToggleClass : ""
-                        }`}
-                      >
-                        {tag}
-                      </button>
-                    ))}
+                    {showSecondaryTags ? (
+                      <div className="mt-3">
+                        <p className="text-sm font-semibold text-[#F8FAFC]">
+                          Anything else matter?
+                        </p>
+                        <p className="mt-1 text-xs leading-5 text-[#94A3B8]/68">
+                          {secondaryTagHint}
+                        </p>
+                        <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                          {secondaryTagOptions.map((tag) => (
+                            <button
+                              key={tag}
+                              type="button"
+                              onClick={() =>
+                                setSecondaryTags(toggleSelection(secondaryTags, tag))
+                              }
+                              className={`${tagToggleClass} ${
+                                secondaryTags.includes(tag)
+                                  ? selectedToggleClass
+                                  : ""
+                              }`}
+                            >
+                              {tag}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
                   </div>
-                ) : null}
-              </fieldset>
-
-              <fieldset className="mt-3 rounded-lg bg-[#07111F]/28 p-3">
-                <legend className={label}>Anything else matter?</legend>
-                <p className="mt-1 text-xs leading-5 text-[#94A3B8]/68">
-                  {secondaryTagHint}
-                </p>
-                <div className="mt-2 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-                  {secondaryTagOptions.map((tag) => (
-                    <button
-                      key={tag}
-                      type="button"
-                      onClick={() =>
-                        setSecondaryTags(toggleSelection(secondaryTags, tag))
-                      }
-                      className={`${tagToggleClass} ${
-                        secondaryTags.includes(tag) ? selectedToggleClass : ""
-                      }`}
-                    >
-                      {tag}
-                    </button>
-                  ))}
                 </div>
-              </fieldset>
-            </div>
+              ) : null}
 
-            <div className="grid gap-2">
-              <button
-                type="button"
-                onClick={() => setAdvancedOpen((current) => !current)}
-                className={sectionToggleClass}
-              >
-                <span>
-                  <span className="block text-sm font-semibold text-[#F8FAFC]">
-                    Add more context
-                  </span>
-                  <span className="block text-xs text-[#94A3B8]/72">
-                    Testing context, event detail, cards, and one learning.
-                  </span>
-                </span>
-                <span className="text-xs font-semibold text-[#B8D1FF]">
-                  {advancedOpen ? "Hide" : "Open"}
-                </span>
-              </button>
-
-              {advancedOpen ? (
-                <div className="grid gap-3 rounded-xl bg-[#07111F]/28 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
-                  <div className="grid grid-cols-2 gap-2">
-                    {MATCH_GAME_CONTEXT_OPTIONS.map((value) => (
-                      <button
-                        key={value}
-                        type="button"
-                        onClick={() => setGameContext(value)}
-                        className={`${mediumToggleClass} ${
-                          gameContext === value ? selectedToggleClass : ""
-                        }`}
-                      >
-                        {getGameContextLabel(value)}
-                      </button>
-                    ))}
+              {currentStep === 5 ? (
+                <div className="grid gap-4">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
+                      More context
+                    </p>
+                    <h2 className="mt-2 text-2xl font-semibold text-[#F8FAFC]">
+                      Anything worth remembering?
+                    </h2>
+                    <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
+                      Add context only if it helps future review. You can skip and save.
+                    </p>
+                  </div>
+                  <div className={subCardClass}>
+                    <p className="text-sm font-semibold text-[#F8FAFC]">
+                      Game context
+                    </p>
+                    <div className="mt-3 grid grid-cols-2 gap-2">
+                      {MATCH_GAME_CONTEXT_OPTIONS.map((value) => (
+                        <button
+                          key={value}
+                          type="button"
+                          onClick={() => setGameContext(value)}
+                          className={`${mediumToggleClass} ${
+                            gameContext === value ? selectedToggleClass : ""
+                          }`}
+                        >
+                          {getGameContextLabel(value)}
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
                   {gameContext === "competitive" ? (
                     <div className="grid gap-3 sm:grid-cols-2">
-                      <div className="flex flex-col gap-2">
+                      <div className={subCardClass}>
                         <label className={label}>Event name</label>
                         <input
                           value={eventName}
                           onChange={(event) => setEventName(event.target.value)}
                           placeholder="Optional"
-                          className={inputH11}
+                          className={`${inputH11} mt-2`}
                         />
                       </div>
-                      <div className="flex flex-col gap-2">
+                      <div className={subCardClass}>
                         <label className={label}>Round number</label>
                         <input
                           value={roundNumber}
                           onChange={(event) => setRoundNumber(event.target.value)}
                           placeholder="Optional"
-                          className={inputH11}
+                          className={`${inputH11} mt-2`}
                         />
                       </div>
                     </div>
                   ) : (
                     <div className="grid gap-3 sm:grid-cols-2">
-                      <div className="flex flex-col gap-2">
+                      <div className={subCardClass}>
                         <label className={label}>Testing session name</label>
                         <input
                           value={testingSessionName}
@@ -827,34 +985,34 @@ export function DemoMatchLogForm() {
                             setTestingSessionName(event.target.value)
                           }
                           placeholder="Optional"
-                          className={inputH11}
+                          className={`${inputH11} mt-2`}
                         />
                       </div>
-                      <div className="flex flex-col gap-2">
+                      <div className={subCardClass}>
                         <label className={label}>Focus matchup</label>
                         <input
                           value={focusMatchup}
                           onChange={(event) => setFocusMatchup(event.target.value)}
                           placeholder="Optional"
-                          className={inputH11}
+                          className={`${inputH11} mt-2`}
                         />
                       </div>
                     </div>
                   )}
 
-                  <div className="flex flex-col gap-2">
+                  <div className={subCardClass}>
                     <label className={label}>Opponent variant</label>
                     <input
                       value={opponentVariant}
                       onChange={(event) => setOpponentVariant(event.target.value)}
                       placeholder="Optional detail"
-                      className={inputH11}
+                      className={`${inputH11} mt-2`}
                     />
                   </div>
 
                   <div className={subCardClass}>
                     <p className="text-sm font-semibold text-[#F8FAFC]">
-                      Cards to remember
+                      Cards that stood out
                     </p>
                     <div className="mt-3 grid gap-3 xl:grid-cols-2">
                       <ChipInput
@@ -884,24 +1042,76 @@ export function DemoMatchLogForm() {
                 </div>
               ) : null}
             </div>
-          </div>
 
-          <div className="mt-4 rounded-xl bg-[#0B1020]/52 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
-            <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#F5C84C]">
-              Ready to save
-            </p>
-            <p className="mt-2 text-sm font-medium leading-6 text-[#F8FAFC]">
-              {readySummary}
-            </p>
-            <p className="mt-2 text-sm text-[#94A3B8]/76">
-              This will update your matchup trends.
-            </p>
-          </div>
+            <div className="mt-4 rounded-xl bg-[#0B1020]/52 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)] xl:hidden">
+              <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#F5C84C]">
+                Ready to save
+              </p>
+              <p className="mt-2 text-sm font-medium leading-6 text-[#F8FAFC]">
+                {readySummary}
+              </p>
+              <p className="mt-2 text-sm text-[#94A3B8]/76">
+                This will update your matchup trends.
+              </p>
+            </div>
 
-          <button type="submit" className={`${primaryButton} h-12 w-full text-base`}>
-            Save demo game
-          </button>
-        </section>
+            <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex min-h-10 items-center gap-2">
+                {currentStep > 0 ? (
+                  <button
+                    type="button"
+                    onClick={() => setCurrentStep((step) => Math.max(step - 1, 0))}
+                    className={secondaryButton}
+                  >
+                    Back
+                  </button>
+                ) : null}
+                {blockedNextMessage ? (
+                  <p className="text-sm text-[#F5C84C]">
+                    {blockedNextMessage}
+                  </p>
+                ) : null}
+              </div>
+
+              {currentStep < stepOrder.length - 1 ? (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCurrentStep((step) => Math.min(step + 1, stepOrder.length - 1))
+                  }
+                  disabled={
+                    (currentStep === 0 && !canAdvanceFromMatch) ||
+                    (currentStep === 1 && !canAdvanceFromTurnOrder) ||
+                    (currentStep === 2 && !canAdvanceFromResult)
+                  }
+                  className={`${primaryButton} h-12 w-full sm:w-auto ${
+                    ((currentStep === 0 && !canAdvanceFromMatch) ||
+                      (currentStep === 1 && !canAdvanceFromTurnOrder) ||
+                      (currentStep === 2 && !canAdvanceFromResult))
+                      ? "cursor-not-allowed opacity-60"
+                      : ""
+                  }`}
+                >
+                  Next
+                </button>
+              ) : (
+                <div className="grid w-full gap-2 sm:w-auto sm:grid-cols-2">
+                  <button type="submit" className={secondaryButton}>
+                    Skip and save
+                  </button>
+                  <button
+                    type="submit"
+                    className={`${primaryButton} h-12 w-full text-base`}
+                  >
+                    Save game
+                  </button>
+                </div>
+              )}
+            </div>
+          </section>
+
+          <aside className="hidden xl:block">{desktopSummary}</aside>
+        </div>
       </form>
     </section>
   );

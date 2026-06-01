@@ -612,7 +612,9 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                             ))}
                           </div>
                         ) : null}
-                        {tags.length ? (
+                        {tags.length &&
+                        !metadata.issue_tags?.length &&
+                        !metadata.positive_tags?.length ? (
                           <div className="mt-3 flex flex-wrap gap-2">
                             {tags.map((tag) => (
                               <span

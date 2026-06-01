@@ -1,0 +1,1542 @@
+[1mdiff --git a/src/components/matches/MatchLogForm.tsx b/src/components/matches/MatchLogForm.tsx[m
+[1mindex d63033f..40da6ab 100644[m
+[1m--- a/src/components/matches/MatchLogForm.tsx[m
+[1m+++ b/src/components/matches/MatchLogForm.tsx[m
+[36m@@ -1,7 +1,7 @@[m
+ "use client";[m
+ [m
+ import Link from "next/link";[m
+[31m-import { useEffect, useState } from "react";[m
+[32m+[m[32mimport { useEffect, useMemo, useState } from "react";[m
+ import { useFormStatus } from "react-dom";[m
+ import { Bolt, CheckCircle2, ClipboardList, Target } from "lucide-react";[m
+ import { ArchetypePicker } from "@/components/ArchetypePicker";[m
+[36m@@ -16,7 +16,26 @@[m [mimport {[m
+   secondaryButton,[m
+   textarea,[m
+ } from "@/components/brand-styles";[m
+[31m-import { MATCH_TAGS } from "@/lib/match-options";[m
+[32m+[m[32mimport {[m
+[32m+[m[32m  MATCH_ISSUE_TAG_OPTIONS,[m
+[32m+[m[32m  MATCH_POSITIVE_TAG_OPTIONS,[m
+[32m+[m[32m} from "@/lib/match-options";[m
+[32m+[m[32mimport {[m
+[32m+[m[32m  deriveInitialGameContext,[m
+[32m+[m[32m  getGameContextLabel,[m
+[32m+[m[32m  getMatchResultLabel,[m
+[32m+[m[32m  getQualityLabel,[m
+[32m+[m[32m  MATCH_GAME_CONTEXT_OPTIONS,[m
+[32m+[m[32m  MATCH_OPENING_HAND_OPTIONS,[m
+[32m+[m[32m  type MatchGameContext,[m
+[32m+[m[32m  type MatchMetadata,[m
+[32m+[m[32m  type MatchOpeningHandQuality,[m
+[32m+[m[32m  type MatchResult,[m
+[32m+[m[32m  MATCH_SEQUENCING_OPTIONS,[m
+[32m+[m[32m  type MatchSequencingQuality,[m
+[32m+[m[32m  MATCH_START_QUALITY_OPTIONS,[m
+[32m+[m[32m  type MatchStartQuality,[m
+[32m+[m[32m} from "@/lib/match-types";[m
+ import {[m
+   matchCountsTowardMission,[m
+   matchCountsTowardMissionContext,[m
+[36m@@ -35,12 +54,19 @@[m [mtype MatchLogFormProps = {[m
+   action: (formData: FormData) => void;[m
+   deckOptions: DeckOption[];[m
+   opponentArchetypeOptions: string[];[m
+[31m-  recentOpponentArchetypes: string[];[m
+[32m+[m[32m  initialDeckVersionId?: string;[m
+   initialEventType?: string;[m
+   initialOpponentArchetype?: string;[m
+[32m+[m[32m  initialOpponentVariant?: string;[m
+   initialResult?: string;[m
+   initialWentFirst?: string;[m
+[32m+[m[32m  initialNotes?: string;[m
+[32m+[m[32m  initialTags?: string[];[m
+[32m+[m[32m  initialMetadata?: MatchMetadata | null;[m
+   sessionCoach?: SessionCoachInsight | null;[m
+[32m+[m[32m  secondaryHref?: string;[m
+[32m+[m[32m  secondaryLabel?: string;[m
+[32m+[m[32m  submitLabel?: string;[m
+   wasSuccessful: boolean;[m
+ };[m
+ [m
+[36m@@ -49,13 +75,32 @@[m [mconst sessionKeys = {[m
+   opponentArchetype: "tcgtracker.matchLog.opponentArchetype",[m
+   result: "tcgtracker.matchLog.result",[m
+   wentFirst: "tcgtracker.matchLog.wentFirst",[m
+[31m-  eventType: "tcgtracker.matchLog.eventType",[m
+[32m+[m[32m  gameContext: "tcgtracker.matchLog.gameContext",[m
+[32m+[m[32m  eventName: "tcgtracker.matchLog.eventName",[m
+[32m+[m[32m  roundNumber: "tcgtracker.matchLog.roundNumber",[m
+[32m+[m[32m  testingSessionName: "tcgtracker.matchLog.testingSessionName",[m
+[32m+[m[32m  focusMatchup: "tcgtracker.matchLog.focusMatchup",[m
+[32m+[m[32m  startQuality: "tcgtracker.matchLog.startQuality",[m
+[32m+[m[32m  openingHandQuality: "tcgtracker.matchLog.openingHandQuality",[m
+[32m+[m[32m  sequencingQuality: "tcgtracker.matchLog.sequencingQuality",[m
+ };[m
+ [m
+ const toggleClass =[m
+[31m-  "flex h-12 w-full max-w-full min-w-0 cursor-pointer items-center justify-center rounded-md bg-[#07111F]/52 px-3 text-center text-sm font-semibold text-[#94A3B8] transition hover:bg-[#4F8CFF]/12 hover:text-[#F8FAFC] active:scale-[0.98] has-[:checked]:bg-[#4F8CFF]/22 has-[:checked]:shadow-[inset_0_0_0_1px_rgba(79,140,255,0.30),0_8px_22px_rgba(79,140,255,0.10)] has-[:checked]:text-[#F8FAFC]";[m
+[32m+[m[32m  "flex min-h-12 w-full min-w-0 items-center justify-center rounded-md bg-[#07111F]/52 px-3 text-center text-sm font-semibold text-[#94A3B8] transition hover:bg-[#4F8CFF]/12 hover:text-[#F8FAFC] active:scale-[0.98]";[m
+[32m+[m
+[32m+[m[32mconst selectedToggleClass =[m
+[32m+[m[32m  "bg-[#4F8CFF]/22 text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.30),0_8px_22px_rgba(79,140,255,0.10)]";[m
+[32m+[m
+[32m+[m[32mconst subCardClass =[m
+[32m+[m[32m  "rounded-lg bg-[#0B1020]/42 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]";[m
+[32m+[m
+[32m+[m[32mconst detailToggleClass =[m
+[32m+[m[32m  "flex min-h-11 w-full min-w-0 items-center justify-center rounded-md bg-[#07111F]/58 px-3 text-center text-sm font-semibold text-[#B9C4D6] transition hover:bg-[#4F8CFF]/12 hover:text-[#F8FAFC] active:scale-[0.98]";[m
+ [m
+[31m-function SubmitButton() {[m
+[32m+[m[32mconst tagToggleClass =[m
+[32m+[m[32m  "inline-flex min-h-10 w-full min-w-0 items-center justify-start rounded-md bg-[#07111F]/52 px-3 py-2 text-left text-xs font-semibold text-[#A8B5C8] transition hover:bg-[#4F8CFF]/10 hover:text-[#F8FAFC] active:scale-[0.98]";[m
+[32m+[m
+[32m+[m[32mfunction SubmitButton({ label }: { label: string }) {[m
+   const { pending } = useFormStatus();[m
+ [m
+   return ([m
+[36m@@ -64,7 +109,7 @@[m [mfunction SubmitButton() {[m
+       disabled={pending}[m
+       className={`${primaryButton} h-11 w-full`}[m
+     >[m
+[31m-      {pending ? "Saving..." : "Save and log another"}[m
+[32m+[m[32m      {pending ? "Saving..." : label}[m
+     </button>[m
+   );[m
+ }[m
+[36m@@ -94,24 +139,162 @@[m [mfunction StepLabel({[m
+ function normalize(value: string) {[m
+   return value[m
+     .trim()[m
+[31m-    .replace(/[’‘`]/g, "'")[m
+[32m+[m[32m    .replace(/[â€™â€˜`]/g, "'")[m
+     .replace(/\s+/g, " ")[m
+     .toLowerCase();[m
+ }[m
+ [m
+[32m+[m[32mfunction cleanChipValue(value: string) {[m
+[32m+[m[32m  return value[m
+[32m+[m[32m    .trim()[m
+[32m+[m[32m    .replace(/\s+/g, " ");[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mfunction toggleSelection(values: string[], value: string) {[m
+[32m+[m[32m  return values.includes(value)[m
+[32m+[m[32m    ? values.filter((candidate) => candidate !== value)[m
+[32m+[m[32m    : [...values, value];[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mfunction mapLegacyTagsToIssueTags(tags: string[]) {[m
+[32m+[m[32m  return Array.from([m
+[32m+[m[32m    new Set([m
+[32m+[m[32m      tags.flatMap((tag) => {[m
+[32m+[m[32m        if (tag === "setup issue") {[m
+[32m+[m[32m          return ["missed setup"];[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        if (tag === "prize plan") {[m
+[32m+[m[32m          return ["poor prize trade"];[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        if (tag === "sequencing") {[m
+[32m+[m[32m          return ["bad sequencing"];[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        if (tag === "dead draw") {[m
+[32m+[m[32m          return ["supporter drought"];[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        if (tag === "bad matchup") {[m
+[32m+[m[32m          return ["matchup knowledge"];[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        if (tag === "misplay") {[m
+[32m+[m[32m          return ["misplay"];[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        return [];[m
+[32m+[m[32m      })[m
+[32m+[m[32m    )[m
+[32m+[m[32m  );[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mfunction ChipInput({[m
+[32m+[m[32m  labelText,[m
+[32m+[m[32m  values,[m
+[32m+[m[32m  onChange,[m
+[32m+[m[32m  placeholder,[m
+[32m+[m[32m  fieldName,[m
+[32m+[m[32m}: {[m
+[32m+[m[32m  labelText: string;[m
+[32m+[m[32m  values: string[];[m
+[32m+[m[32m  onChange: (values: string[]) => void;[m
+[32m+[m[32m  placeholder: string;[m
+[32m+[m[32m  fieldName: string;[m
+[32m+[m[32m}) {[m
+[32m+[m[32m  const [draft, setDraft] = useState("");[m
+[32m+[m
+[32m+[m[32m  function addDraftValue() {[m
+[32m+[m[32m    const nextValue = cleanChipValue(draft);[m
+[32m+[m
+[32m+[m[32m    if (!nextValue || values.includes(nextValue)) {[m
+[32m+[m[32m      setDraft("");[m
+[32m+[m[32m      return;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    onChange([...values, nextValue]);[m
+[32m+[m[32m    setDraft("");[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  return ([m
+[32m+[m[32m    <div className="flex flex-col gap-2">[m
+[32m+[m[32m      <label className={label}>{labelText}</label>[m
+[32m+[m[32m      <div className="rounded-md bg-[#11182C]/58 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">[m
+[32m+[m[32m        <div className="flex flex-wrap gap-2">[m
+[32m+[m[32m          {values.map((value) => ([m
+[32m+[m[32m            <button[m
+[32m+[m[32m              key={value}[m
+[32m+[m[32m              type="button"[m
+[32m+[m[32m              onClick={() =>[m
+[32m+[m[32m                onChange(values.filter((candidate) => candidate !== value))[m
+[32m+[m[32m              }[m
+[32m+[m[32m              className="inline-flex items-center gap-2 rounded-md bg-[#4F8CFF]/18 px-2.5 py-1.5 text-xs font-semibold text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.28)]"[m
+[32m+[m[32m            >[m
+[32m+[m[32m              {value}[m
+[32m+[m[32m              <span aria-hidden="true">×</span>[m
+[32m+[m[32m            </button>[m
+[32m+[m[32m          ))}[m
+[32m+[m[32m        </div>[m
+[32m+[m[32m        <div className="mt-3 flex gap-2">[m
+[32m+[m[32m          <input[m
+[32m+[m[32m            value={draft}[m
+[32m+[m[32m            onChange={(event) => setDraft(event.target.value)}[m
+[32m+[m[32m            onKeyDown={(event) => {[m
+[32m+[m[32m              if (event.key === "Enter" || event.key === ",") {[m
+[32m+[m[32m                event.preventDefault();[m
+[32m+[m[32m                addDraftValue();[m
+[32m+[m[32m              }[m
+[32m+[m[32m            }}[m
+[32m+[m[32m            onBlur={() => {[m
+[32m+[m[32m              if (draft.trim()) {[m
+[32m+[m[32m                addDraftValue();[m
+[32m+[m[32m              }[m
+[32m+[m[32m            }}[m
+[32m+[m[32m            placeholder={placeholder}[m
+[32m+[m[32m            className={inputH11}[m
+[32m+[m[32m          />[m
+[32m+[m[32m          <button[m
+[32m+[m[32m            type="button"[m
+[32m+[m[32m            onClick={addDraftValue}[m
+[32m+[m[32m            className="rounded-md bg-[#4F8CFF]/12 px-3 text-sm font-semibold text-[#F8FAFC] transition hover:bg-[#4F8CFF]/18 active:scale-[0.98]"[m
+[32m+[m[32m          >[m
+[32m+[m[32m            Add[m
+[32m+[m[32m          </button>[m
+[32m+[m[32m        </div>[m
+[32m+[m[32m        {values.map((value) => ([m
+[32m+[m[32m          <input key={value} type="hidden" name={fieldName} value={value} />[m
+[32m+[m[32m        ))}[m
+[32m+[m[32m      </div>[m
+[32m+[m[32m    </div>[m
+[32m+[m[32m  );[m
+[32m+[m[32m}[m
+[32m+[m
+ export function MatchLogForm({[m
+   action,[m
+   deckOptions,[m
+   opponentArchetypeOptions,[m
+[32m+[m[32m  initialDeckVersionId,[m
+   initialEventType,[m
+   initialOpponentArchetype,[m
+[32m+[m[32m  initialOpponentVariant,[m
+   initialResult,[m
+   initialWentFirst,[m
+[31m-  recentOpponentArchetypes,[m
+[32m+[m[32m  initialNotes,[m
+[32m+[m[32m  initialTags = [],[m
+[32m+[m[32m  initialMetadata,[m
+   sessionCoach,[m
+[32m+[m[32m  secondaryHref = "/matches",[m
+[32m+[m[32m  secondaryLabel = "Match history",[m
+[32m+[m[32m  submitLabel = "Save and log another",[m
+   wasSuccessful,[m
+ }: MatchLogFormProps) {[m
+[32m+[m[32m  const metadata = initialMetadata ?? {};[m
+   const [deckVersionId, setDeckVersionId] = useState(() => {[m
+[32m+[m[32m    if (initialDeckVersionId?.trim()) {[m
+[32m+[m[32m      return initialDeckVersionId;[m
+[32m+[m[32m    }[m
+[32m+[m
+     if (typeof window === "undefined") {[m
+       return deckOptions[0]?.id ?? "";[m
+     }[m
+[36m@@ -121,6 +304,73 @@[m [mexport function MatchLogForm({[m
+       ? stored[m
+       : deckOptions[0]?.id ?? "";[m
+   });[m
+[32m+[m[32m  const [gameContext, setGameContext] = useState<MatchGameContext>(() => {[m
+[32m+[m[32m    const initialContext = deriveInitialGameContext([m
+[32m+[m[32m      metadata,[m
+[32m+[m[32m      initialEventType ?? null[m
+[32m+[m[32m    );[m
+[32m+[m
+[32m+[m[32m    if (metadata.game_context || initialEventType || initialDeckVersionId) {[m
+[32m+[m[32m      return initialContext;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    if (typeof window !== "undefined") {[m
+[32m+[m[32m      const stored = sessionStorage.getItem(sessionKeys.gameContext);[m
+[32m+[m
+[32m+[m[32m      if ([m
+[32m+[m[32m        stored === MATCH_GAME_CONTEXT_OPTIONS[0] ||[m
+[32m+[m[32m        stored === MATCH_GAME_CONTEXT_OPTIONS[1][m
+[32m+[m[32m      ) {[m
+[32m+[m[32m        return stored;[m
+[32m+[m[32m      }[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    return initialContext;[m
+[32m+[m[32m  });[m
+[32m+[m[32m  const [eventName, setEventName] = useState(() => {[m
+[32m+[m[32m    if (metadata.event_name) {[m
+[32m+[m[32m      return metadata.event_name;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    if (typeof window === "undefined") {[m
+[32m+[m[32m      return "";[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    return sessionStorage.getItem(sessionKeys.eventName) ?? "";[m
+[32m+[m[32m  });[m
+[32m+[m[32m  const [roundNumber, setRoundNumber] = useState(() => {[m
+[32m+[m[32m    if (metadata.round_number) {[m
+[32m+[m[32m      return metadata.round_number;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    if (typeof window === "undefined") {[m
+[32m+[m[32m      return "";[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    return sessionStorage.getItem(sessionKeys.roundNumber) ?? "";[m
+[32m+[m[32m  });[m
+[32m+[m[32m  const [testingSessionName, setTestingSessionName] = useState(() => {[m
+[32m+[m[32m    if (metadata.testing_session_name) {[m
+[32m+[m[32m      return metadata.testing_session_name;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    if (typeof window === "undefined") {[m
+[32m+[m[32m      return "";[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    return sessionStorage.getItem(sessionKeys.testingSessionName) ?? "";[m
+[32m+[m[32m  });[m
+[32m+[m[32m  const [focusMatchup, setFocusMatchup] = useState(() => {[m
+[32m+[m[32m    if (metadata.focus_matchup) {[m
+[32m+[m[32m      return metadata.focus_matchup;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    if (typeof window === "undefined") {[m
+[32m+[m[32m      return "";[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    return sessionStorage.getItem(sessionKeys.focusMatchup) ?? "";[m
+[32m+[m[32m  });[m
+   const [opponentArchetype, setOpponentArchetype] = useState(() => {[m
+     if (initialOpponentArchetype?.trim()) {[m
+       return initialOpponentArchetype.trim();[m
+[36m@@ -132,8 +382,15 @@[m [mexport function MatchLogForm({[m
+ [m
+     return sessionStorage.getItem(sessionKeys.opponentArchetype) ?? "";[m
+   });[m
+[31m-  const [result, setResult] = useState<"win" | "loss">(() => {[m
+[31m-    if (initialResult === "win" || initialResult === "loss") {[m
+[32m+[m[32m  const [opponentVariant, setOpponentVariant] = useState([m
+[32m+[m[32m    initialOpponentVariant ?? ""[m
+[32m+[m[32m  );[m
+[32m+[m[32m  const [result, setResult] = useState<MatchResult>(() => {[m
+[32m+[m[32m    if ([m
+[32m+[m[32m      initialResult === "win" ||[m
+[32m+[m[32m      initialResult === "loss" ||[m
+[32m+[m[32m      initialResult === "tie"[m
+[32m+[m[32m    ) {[m
+       return initialResult;[m
+     }[m
+ [m
+[36m@@ -142,7 +399,7 @@[m [mexport function MatchLogForm({[m
+     }[m
+ [m
+     const stored = sessionStorage.getItem(sessionKeys.result);[m
+[31m-    return stored === "loss" ? "loss" : "win";[m
+[32m+[m[32m    return stored === "loss" || stored === "tie" ? stored : "win";[m
+   });[m
+   const [wentFirst, setWentFirst] = useState<"true" | "false">(() => {[m
+     if (initialWentFirst === "true" || initialWentFirst === "false") {[m
+[36m@@ -167,28 +424,71 @@[m [mexport function MatchLogForm({[m
+     const stored = sessionStorage.getItem(sessionKeys.wentFirst);[m
+     return stored === "false" ? "false" : "true";[m
+   });[m
+[31m-  const [eventType, setEventType] = useState<[m
+[31m-    "casual" | "testing" | "tournament"[m
+[32m+[m[32m  const [startQuality, setStartQuality] = useState<[m
+[32m+[m[32m    MatchStartQuality | undefined[m
+   >(() => {[m
+[31m-    if ([m
+[31m-      initialEventType === "casual" ||[m
+[31m-      initialEventType === "testing" ||[m
+[31m-      initialEventType === "tournament"[m
+[31m-    ) {[m
+[31m-      return initialEventType;[m
+[32m+[m[32m    if (metadata.start_quality) {[m
+[32m+[m[32m      return metadata.start_quality;[m
+     }[m
+ [m
+     if (typeof window === "undefined") {[m
+[31m-      return "testing";[m
+[32m+[m[32m      return undefined;[m
+     }[m
+ [m
+[31m-    const stored = sessionStorage.getItem(sessionKeys.eventType);[m
+[31m-    return stored === "casual" || stored === "tournament"[m
+[31m-      ? stored[m
+[31m-      : "testing";[m
+[32m+[m[32m    const stored = sessionStorage.getItem(sessionKeys.startQuality);[m
+[32m+[m[32m    return MATCH_START_QUALITY_OPTIONS.includes(stored as MatchStartQuality)[m
+[32m+[m[32m      ? (stored as MatchStartQuality)[m
+[32m+[m[32m      : undefined;[m
+[32m+[m[32m  });[m
+[32m+[m[32m  const [openingHandQuality, setOpeningHandQuality] = useState<[m
+[32m+[m[32m    MatchOpeningHandQuality | undefined[m
+[32m+[m[32m  >(() => {[m
+[32m+[m[32m    if (metadata.opening_hand_quality) {[m
+[32m+[m[32m      return metadata.opening_hand_quality;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    if (typeof window === "undefined") {[m
+[32m+[m[32m      return undefined;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    const stored = sessionStorage.getItem(sessionKeys.openingHandQuality);[m
+[32m+[m[32m    return MATCH_OPENING_HAND_OPTIONS.includes([m
+[32m+[m[32m      stored as MatchOpeningHandQuality[m
+[32m+[m[32m    )[m
+[32m+[m[32m      ? (stored as MatchOpeningHandQuality)[m
+[32m+[m[32m      : undefined;[m
+[32m+[m[32m  });[m
+[32m+[m[32m  const [sequencingQuality, setSequencingQuality] = useState<[m
+[32m+[m[32m    MatchSequencingQuality | undefined[m
+[32m+[m[32m  >(() => {[m
+[32m+[m[32m    if (metadata.sequencing_quality) {[m
+[32m+[m[32m      return metadata.sequencing_quality;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    if (typeof window === "undefined") {[m
+[32m+[m[32m      return undefined;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    const stored = sessionStorage.getItem(sessionKeys.sequencingQuality);[m
+[32m+[m[32m    return MATCH_SEQUENCING_OPTIONS.includes([m
+[32m+[m[32m      stored as MatchSequencingQuality[m
+[32m+[m[32m    )[m
+[32m+[m[32m      ? (stored as MatchSequencingQuality)[m
+[32m+[m[32m      : undefined;[m
+   });[m
+[31m-  const [detailsOpen, setDetailsOpen] = useState(false);[m
+[31m-  const [notes, setNotes] = useState("");[m
+[32m+[m[32m  const [issueTags, setIssueTags] = useState<string[]>([m
+[32m+[m[32m    metadata.issue_tags ?? mapLegacyTagsToIssueTags(initialTags)[m
+[32m+[m[32m  );[m
+[32m+[m[32m  const [positiveTags, setPositiveTags] = useState<string[]>([m
+[32m+[m[32m    metadata.positive_tags ?? [][m
+[32m+[m[32m  );[m
+[32m+[m[32m  const [cardsShined, setCardsShined] = useState<string[]>([m
+[32m+[m[32m    metadata.cards_shined ?? [][m
+[32m+[m[32m  );[m
+[32m+[m[32m  const [cardsFailed, setCardsFailed] = useState<string[]>([m
+[32m+[m[32m    metadata.cards_failed ?? [][m
+[32m+[m[32m  );[m
+[32m+[m[32m  const [notes, setNotes] = useState(initialNotes ?? "");[m
+   const [tcgLiveLog, setTcgLiveLog] = useState("");[m
+   const [importStatus, setImportStatus] = useState("");[m
+   const [isChangingDeck, setIsChangingDeck] = useState(false);[m
+[36m@@ -196,7 +496,8 @@[m [mexport function MatchLogForm({[m
+   const selectedDeckArchetype = selectedDeck?.detail ?? "";[m
+   const selectedDeckSuggestion = selectedDeck?.suggestedArchetype ?? null;[m
+   const loggedOpponent = initialOpponentArchetype?.trim() ?? "";[m
+[31m-  const loggedResult: "win" | "loss" = initialResult === "loss" ? "loss" : "win";[m
+[32m+[m[32m  const loggedResult: MatchResult =[m
+[32m+[m[32m    initialResult === "loss" || initialResult === "tie" ? initialResult : "win";[m
+   const loggedMatch =[m
+     sessionCoach && loggedOpponent[m
+       ? {[m
+[36m@@ -222,29 +523,129 @@[m [mexport function MatchLogForm({[m
+       : false;[m
+ [m
+   useEffect(() => {[m
+[31m-    if (initialOpponentArchetype?.trim()) {[m
+[31m-      sessionStorage.setItem([m
+[31m-        sessionKeys.opponentArchetype,[m
+[31m-        initialOpponentArchetype.trim()[m
+[32m+[m[32m    sessionStorage.setItem(sessionKeys.deckVersionId, deckVersionId);[m
+[32m+[m[32m  }, [deckVersionId]);[m
+[32m+[m
+[32m+[m[32m  useEffect(() => {[m
+[32m+[m[32m    sessionStorage.setItem(sessionKeys.opponentArchetype, opponentArchetype);[m
+[32m+[m[32m  }, [opponentArchetype]);[m
+[32m+[m
+[32m+[m[32m  useEffect(() => {[m
+[32m+[m[32m    sessionStorage.setItem(sessionKeys.result, result);[m
+[32m+[m[32m  }, [result]);[m
+[32m+[m
+[32m+[m[32m  useEffect(() => {[m
+[32m+[m[32m    sessionStorage.setItem(sessionKeys.wentFirst, wentFirst);[m
+[32m+[m[32m  }, [wentFirst]);[m
+[32m+[m
+[32m+[m[32m  useEffect(() => {[m
+[32m+[m[32m    sessionStorage.setItem(sessionKeys.gameContext, gameContext);[m
+[32m+[m[32m  }, [gameContext]);[m
+[32m+[m
+[32m+[m[32m  useEffect(() => {[m
+[32m+[m[32m    sessionStorage.setItem(sessionKeys.eventName, eventName);[m
+[32m+[m[32m  }, [eventName]);[m
+[32m+[m
+[32m+[m[32m  useEffect(() => {[m
+[32m+[m[32m    sessionStorage.setItem(sessionKeys.roundNumber, roundNumber);[m
+[32m+[m[32m  }, [roundNumber]);[m
+[32m+[m
+[32m+[m[32m  useEffect(() => {[m
+[32m+[m[32m    sessionStorage.setItem(sessionKeys.testingSessionName, testingSessionName);[m
+[32m+[m[32m  }, [testingSessionName]);[m
+[32m+[m
+[32m+[m[32m  useEffect(() => {[m
+[32m+[m[32m    sessionStorage.setItem(sessionKeys.focusMatchup, focusMatchup);[m
+[32m+[m[32m  }, [focusMatchup]);[m
+[32m+[m
+[32m+[m[32m  useEffect(() => {[m
+[32m+[m[32m    sessionStorage.setItem(sessionKeys.startQuality, startQuality ?? "");[m
+[32m+[m[32m  }, [startQuality]);[m
+[32m+[m
+[32m+[m[32m  useEffect(() => {[m
+[32m+[m[32m    sessionStorage.setItem([m
+[32m+[m[32m      sessionKeys.openingHandQuality,[m
+[32m+[m[32m      openingHandQuality ?? ""[m
+[32m+[m[32m    );[m
+[32m+[m[32m  }, [openingHandQuality]);[m
+[32m+[m
+[32m+[m[32m  useEffect(() => {[m
+[32m+[m[32m    sessionStorage.setItem([m
+[32m+[m[32m      sessionKeys.sequencingQuality,[m
+[32m+[m[32m      sequencingQuality ?? ""[m
+[32m+[m[32m    );[m
+[32m+[m[32m  }, [sequencingQuality]);[m
+[32m+[m
+[32m+[m[32m  const summaryItems = useMemo(() => {[m
+[32m+[m[32m    const items: string[] = [getGameContextLabel(gameContext)];[m
+[32m+[m
+[32m+[m[32m    if (gameContext === "competitive") {[m
+[32m+[m[32m      if (roundNumber.trim()) {[m
+[32m+[m[32m        items.push(`Round ${roundNumber.trim()}`);[m
+[32m+[m[32m      }[m
+[32m+[m
+[32m+[m[32m      if (eventName.trim()) {[m
+[32m+[m[32m        items.push(eventName.trim());[m
+[32m+[m[32m      }[m
+[32m+[m[32m    } else {[m
+[32m+[m[32m      if (testingSessionName.trim()) {[m
+[32m+[m[32m        items.push(testingSessionName.trim());[m
+[32m+[m[32m      }[m
+[32m+[m
+[32m+[m[32m      if (focusMatchup.trim()) {[m
+[32m+[m[32m        items.push(`Focus: ${focusMatchup.trim()}`);[m
+[32m+[m[32m      }[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    if (selectedDeckSuggestion ?? selectedDeckArchetype) {[m
+[32m+[m[32m      items.push([m
+[32m+[m[32m        `${selectedDeckSuggestion ?? selectedDeckArchetype} vs ${[m
+[32m+[m[32m          opponentArchetype || "opponent"[m
+[32m+[m[32m        }`[m
+       );[m
+[32m+[m[32m    } else if (opponentArchetype) {[m
+[32m+[m[32m      items.push(opponentArchetype);[m
+     }[m
+ [m
+[31m-    if ([m
+[31m-      initialEventType === "casual" ||[m
+[31m-      initialEventType === "testing" ||[m
+[31m-      initialEventType === "tournament"[m
+[31m-    ) {[m
+[31m-      sessionStorage.setItem(sessionKeys.eventType, initialEventType);[m
+[32m+[m[32m    items.push(getMatchResultLabel(result));[m
+[32m+[m[32m    items.push(wentFirst === "true" ? "First" : "Second");[m
+[32m+[m
+[32m+[m[32m    if (startQuality) {[m
+[32m+[m[32m      items.push(`Start: ${getQualityLabel(startQuality)}`);[m
+     }[m
+ [m
+[31m-    if (initialResult === "win" || initialResult === "loss") {[m
+[31m-      sessionStorage.setItem(sessionKeys.result, initialResult);[m
+[32m+[m[32m    if (openingHandQuality) {[m
+[32m+[m[32m      items.push(`Opening hand: ${getQualityLabel(openingHandQuality)}`);[m
+     }[m
+[31m-  }, [initialEventType, initialOpponentArchetype, initialResult]);[m
+ [m
+[31m-  function remember(key: string, value: string) {[m
+[31m-    sessionStorage.setItem(key, value);[m
+[31m-  }[m
+[32m+[m[32m    if (sequencingQuality) {[m
+[32m+[m[32m      items.push(`Sequencing: ${getQualityLabel(sequencingQuality)}`);[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    const highlightTags = [...issueTags, ...positiveTags].slice(0, 3);[m
+[32m+[m
+[32m+[m[32m    if (highlightTags.length) {[m
+[32m+[m[32m      items.push(highlightTags.join(", "));[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    return items;[m
+[32m+[m[32m  }, [[m
+[32m+[m[32m    eventName,[m
+[32m+[m[32m    focusMatchup,[m
+[32m+[m[32m    gameContext,[m
+[32m+[m[32m    issueTags,[m
+[32m+[m[32m    openingHandQuality,[m
+[32m+[m[32m    opponentArchetype,[m
+[32m+[m[32m    positiveTags,[m
+[32m+[m[32m    result,[m
+[32m+[m[32m    roundNumber,[m
+[32m+[m[32m    selectedDeckArchetype,[m
+[32m+[m[32m    selectedDeckSuggestion,[m
+[32m+[m[32m    sequencingQuality,[m
+[32m+[m[32m    startQuality,[m
+[32m+[m[32m    testingSessionName,[m
+[32m+[m[32m    wentFirst,[m
+[32m+[m[32m  ]);[m
+ [m
+   function importTcgLiveLog() {[m
+     const log = tcgLiveLog.trim();[m
+[36m@@ -264,11 +665,11 @@[m [mexport function MatchLogForm({[m
+       !/\b(opponent won|opponent wins|you lost|defeat)\b/.test(normalizedLog)[m
+     ) {[m
+       setResult("win");[m
+[31m-      remember(sessionKeys.result, "win");[m
+       detectedResult = "Win";[m
+[31m-    } else if (/\b(you lost|defeat|opponent won|opponent wins)\b/.test(normalizedLog)) {[m
+[32m+[m[32m    } else if ([m
+[32m+[m[32m      /\b(you lost|defeat|opponent won|opponent wins)\b/.test(normalizedLog)[m
+[32m+[m[32m    ) {[m
+       setResult("loss");[m
+[31m-      remember(sessionKeys.result, "loss");[m
+       detectedResult = "Loss";[m
+     }[m
+ [m
+[36m@@ -280,14 +681,15 @@[m [mexport function MatchLogForm({[m
+ [m
+     if (inferredOpponent) {[m
+       setOpponentArchetype(inferredOpponent);[m
+[31m-      remember(sessionKeys.opponentArchetype, inferredOpponent);[m
+     }[m
+ [m
+     setTcgLiveLog("");[m
+     setImportStatus([m
+[31m-      `Imported to notes.${[m
+[32m+[m[32m      `Imported to learnings.${[m
+         detectedResult || inferredOpponent[m
+[31m-          ? ` Detected: ${[detectedResult, inferredOpponent].filter(Boolean).join(" · ")}.`[m
+[32m+[m[32m          ? ` Detected: ${[detectedResult, inferredOpponent][m
+[32m+[m[32m              .filter(Boolean)[m
+[32m+[m[32m              .join(" · ")}.`[m
+           : " Opponent/result not detected."[m
+       }`[m
+     );[m
+[36m@@ -295,363 +697,531 @@[m [mexport function MatchLogForm({[m
+ [m
+   return ([m
+     <div className="mt-5 grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-start">[m
+[31m-    <form[m
+[31m-      action={action}[m
+[31m-      className={`w-full max-w-full min-w-0 overflow-x-hidden p-3 pb-28 sm:p-5 md:pb-5 ${glassPanelStrong}`}[m
+[31m-    >[m
+[31m-      <input type="hidden" name="deck_version_id" value={deckVersionId} />[m
+[31m-      <div className="grid w-full max-w-full min-w-0 gap-4 overflow-x-hidden">[m
+[31m-        {wasSuccessful ? ([m
+[31m-          <div className="rounded-md bg-[#07111F]/46 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]">[m
+[31m-            <div[m
+[31m-              className={`rounded-md px-3 py-2 text-sm font-medium ${[m
+[31m-                countedTowardMission[m
+[31m-                  ? "bg-emerald-500/10 text-emerald-200"[m
+[31m-                  : "bg-[#F5C84C]/10 text-[#F5C84C]"[m
+[31m-              }`}[m
+[31m-            >[m
+[31m-              {sessionCoach ? ([m
+[31m-                <>[m
+[31m-                  {countedTowardMission[m
+[31m-                    ? countedTowardContext[m
+[31m-                      ? "Counts toward mission and focus evidence."[m
+[31m-                      : "Counts toward your current mission."[m
+[31m-                    : "Logged outside the current mission focus."}{" "}[m
+[31m-                  <span className="text-emerald-100">[m
+[31m-                    {sessionCoach.missionProgress} / {sessionCoach.missionTargetCount} done.[m
+[31m-                    {" "}[m
+[32m+[m[32m      <form[m
+[32m+[m[32m        action={action}[m
+[32m+[m[32m        className={`w-full max-w-full min-w-0 overflow-x-hidden p-3 pb-28 sm:p-5 md:pb-5 ${glassPanelStrong}`}[m
+[32m+[m[32m      >[m
+[32m+[m[32m        <input type="hidden" name="deck_version_id" value={deckVersionId} />[m
+[32m+[m[32m        <input type="hidden" name="game_context" value={gameContext} />[m
+[32m+[m[32m        <input type="hidden" name="result" value={result} />[m
+[32m+[m[32m        <input type="hidden" name="went_first" value={wentFirst} />[m
+[32m+[m[32m        {startQuality ? ([m
+[32m+[m[32m          <input type="hidden" name="start_quality" value={startQuality} />[m
+[32m+[m[32m        ) : null}[m
+[32m+[m[32m        {openingHandQuality ? ([m
+[32m+[m[32m          <input[m
+[32m+[m[32m            type="hidden"[m
+[32m+[m[32m            name="opening_hand_quality"[m
+[32m+[m[32m            value={openingHandQuality}[m
+[32m+[m[32m          />[m
+[32m+[m[32m        ) : null}[m
+[32m+[m[32m        {sequencingQuality ? ([m
+[32m+[m[32m          <input[m
+[32m+[m[32m            type="hidden"[m
+[32m+[m[32m            name="sequencing_quality"[m
+[32m+[m[32m            value={sequencingQuality}[m
+[32m+[m[32m          />[m
+[32m+[m[32m        ) : null}[m
+[32m+[m[32m        {issueTags.map((tag) => ([m
+[32m+[m[32m          <input key={`issue-${tag}`} type="hidden" name="issue_tags" value={tag} />[m
+[32m+[m[32m        ))}[m
+[32m+[m[32m        {positiveTags.map((tag) => ([m
+[32m+[m[32m          <input[m
+[32m+[m[32m            key={`positive-${tag}`}[m
+[32m+[m[32m            type="hidden"[m
+[32m+[m[32m            name="positive_tags"[m
+[32m+[m[32m            value={tag}[m
+[32m+[m[32m          />[m
+[32m+[m[32m        ))}[m
+[32m+[m
+[32m+[m[32m        <div className="grid w-full max-w-full min-w-0 gap-4 overflow-x-hidden">[m
+[32m+[m[32m          {wasSuccessful ? ([m
+[32m+[m[32m            <div className="rounded-md bg-[#07111F]/46 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]">[m
+[32m+[m[32m              <div[m
+[32m+[m[32m                className={`rounded-md px-3 py-2 text-sm font-medium ${[m
+[32m+[m[32m                  countedTowardMission[m
+[32m+[m[32m                    ? "bg-emerald-500/10 text-emerald-200"[m
+[32m+[m[32m                    : "bg-[#F5C84C]/10 text-[#F5C84C]"[m
+[32m+[m[32m                }`}[m
+[32m+[m[32m              >[m
+[32m+[m[32m                {sessionCoach ? ([m
+[32m+[m[32m                  <>[m
+                     {countedTowardMission[m
+[31m-                      ? sessionCoach.progressFeedback[m
+[31m-                      : sessionCoach.missionContextSeenCount > 0[m
+[31m-                        ? "Focus evidence is still separate."[m
+[31m-                        : "Focus area not seen yet."}[m
+[31m-                  </span>[m
+[31m-                </>[m
+[32m+[m[32m                      ? countedTowardContext[m
+[32m+[m[32m                        ? "Counts toward mission and focus evidence."[m
+[32m+[m[32m                        : "Counts toward your current mission."[m
+[32m+[m[32m                      : "Logged outside the current mission focus."}{" "}[m
+[32m+[m[32m                    <span className="text-emerald-100">[m
+[32m+[m[32m                      This game will contribute to matchup, turn-order, opening-hand, and sequencing patterns.[m
+[32m+[m[32m                    </span>[m
+[32m+[m[32m                  </>[m
+[32m+[m[32m                ) : ([m
+[32m+[m[32m                  "This game will contribute to matchup, turn-order, opening-hand, and sequencing patterns."[m
+[32m+[m[32m                )}[m
+[32m+[m[32m              </div>[m
+[32m+[m[32m              <div className="mt-3 grid gap-2 sm:grid-cols-3">[m
+[32m+[m[32m                <Link href="/dashboard" className={secondaryButton}>[m
+[32m+[m[32m                  Dashboard[m
+[32m+[m[32m                </Link>[m
+[32m+[m[32m                <Link href="/matchups" className={secondaryButton}>[m
+[32m+[m[32m                  Matchups[m
+[32m+[m[32m                </Link>[m
+[32m+[m[32m                <Link href="/matches" className={secondaryButton}>[m
+[32m+[m[32m                  Matches[m
+[32m+[m[32m                </Link>[m
+[32m+[m[32m              </div>[m
+[32m+[m[32m            </div>[m
+[32m+[m[32m          ) : null}[m
+[32m+[m
+[32m+[m[32m          <section className="grid gap-3 border-b border-white/6 pb-4 lg:grid-cols-[180px_minmax(0,1fr)]">[m
+[32m+[m[32m            <StepLabel[m
+[32m+[m[32m              index={1}[m
+[32m+[m[32m              title="Game context"[m
+[32m+[m[32m              helper="Start with testing or competitive play."[m
+[32m+[m[32m            />[m
+[32m+[m[32m            <div className="grid gap-3 rounded-md bg-[#07111F]/38 p-3 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.12)] sm:p-4">[m
+[32m+[m[32m              <div className="grid grid-cols-2 gap-2">[m
+[32m+[m[32m                {MATCH_GAME_CONTEXT_OPTIONS.map((contextOption) => ([m
+[32m+[m[32m                  <button[m
+[32m+[m[32m                    key={contextOption}[m
+[32m+[m[32m                    type="button"[m
+[32m+[m[32m                    onClick={() => setGameContext(contextOption)}[m
+[32m+[m[32m                    className={`${toggleClass} ${[m
+[32m+[m[32m                      gameContext === contextOption ? selectedToggleClass : ""[m
+[32m+[m[32m                    }`}[m
+[32m+[m[32m                  >[m
+[32m+[m[32m                    {getGameContextLabel(contextOption)}[m
+[32m+[m[32m                  </button>[m
+[32m+[m[32m                ))}[m
+[32m+[m[32m              </div>[m
+[32m+[m[32m              {gameContext === "competitive" ? ([m
+[32m+[m[32m                <div className="grid gap-3 sm:grid-cols-2">[m
+[32m+[m[32m                  <div className="flex flex-col gap-2">[m
+[32m+[m[32m                    <label htmlFor="event_name" className={label}>[m
+[32m+[m[32m                      Event name[m
+[32m+[m[32m                    </label>[m
+[32m+[m[32m                    <input[m
+[32m+[m[32m                      id="event_name"[m
+[32m+[m[32m                      name="event_name"[m
+[32m+[m[32m                      value={eventName}[m
+[32m+[m[32m                      onChange={(event) => setEventName(event.target.value)}[m
+[32m+[m[32m                      placeholder="Optional"[m
+[32m+[m[32m                      className={inputH11}[m
+[32m+[m[32m                    />[m
+[32m+[m[32m                  </div>[m
+[32m+[m[32m                  <div className="flex flex-col gap-2">[m
+[32m+[m[32m                    <label htmlFor="round_number" className={label}>[m
+[32m+[m[32m                      Round number[m
+[32m+[m[32m                    </label>[m
+[32m+[m[32m                    <input[m
+[32m+[m[32m                      id="round_number"[m
+[32m+[m[32m                      name="round_number"[m
+[32m+[m[32m                      value={roundNumber}[m
+[32m+[m[32m                      onChange={(event) => setRoundNumber(event.target.value)}[m
+[32m+[m[32m                      placeholder="Optional"[m
+[32m+[m[32m                      className={inputH11}[m
+[32m+[m[32m                    />[m
+[32m+[m[32m                  </div>[m
+[32m+[m[32m                </div>[m
+               ) : ([m
+[31m-                "Match logged. Ready for the next one."[m
+[32m+[m[32m                <div className="grid gap-3 sm:grid-cols-2">[m
+[32m+[m[32m                  <div className="flex flex-col gap-2">[m
+[32m+[m[32m                    <label htmlFor="testing_session_name" className={label}>[m
+[32m+[m[32m                      Testing session name[m
+[32m+[m[32m                    </label>[m
+[32m+[m[32m                    <input[m
+[32m+[m[32m                      id="testing_session_name"[m
+[32m+[m[32m                      name="testing_session_name"[m
+[32m+[m[32m                      value={testingSessionName}[m
+[32m+[m[32m                      onChange={(event) =>[m
+[32m+[m[32m                        setTestingSessionName(event.target.value)[m
+[32m+[m[32m                      }[m
+[32m+[m[32m                      placeholder="Optional"[m
+[32m+[m[32m                      className={inputH11}[m
+[32m+[m[32m                    />[m
+[32m+[m[32m                  </div>[m
+[32m+[m[32m                  <ArchetypePicker[m
+[32m+[m[32m                    id="focus_matchup"[m
+[32m+[m[32m                    name="focus_matchup"[m
+[32m+[m[32m                    label="Focus matchup"[m
+[32m+[m[32m                    options={opponentArchetypeOptions}[m
+[32m+[m[32m                    value={focusMatchup}[m
+[32m+[m[32m                    placeholder="Optional"[m
+[32m+[m[32m                    maxOptions={5}[m
+[32m+[m[32m                    listMaxHeightClassName="max-h-40"[m
+[32m+[m[32m                    onValueChange={setFocusMatchup}[m
+[32m+[m[32m                  />[m
+[32m+[m[32m                </div>[m
+               )}[m
+             </div>[m
+[31m-            <div className="mt-3 grid gap-2 sm:grid-cols-3">[m
+[31m-              <Link href="/dashboard" className={secondaryButton}>[m
+[31m-                Dashboard[m
+[31m-              </Link>[m
+[31m-              <Link href="/matchups" className={secondaryButton}>[m
+[31m-                Matchups[m
+[31m-              </Link>[m
+[31m-              <Link href="/matches" className={secondaryButton}>[m
+[31m-                Matches[m
+[31m-              </Link>[m
+[31m-            </div>[m
+[31m-          </div>[m
+[31m-        ) : null}[m
+[32m+[m[32m          </section>[m
+ [m
+[31m-        <div className="grid gap-3 border-b border-white/6 pb-4 lg:grid-cols-[180px_minmax(0,1fr)]">[m
+[31m-          <StepLabel index={1} title="Your deck" helper="Select the tested version." />[m
+[31m-          <div className="max-w-full overflow-x-hidden rounded-md bg-[#07111F]/44 px-3 py-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]">[m
+[31m-            <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">[m
+[31m-            <div className="min-w-0 flex-1">[m
+[31m-              <p className="text-xs font-medium uppercase text-[#94A3B8]/72">[m
+[31m-                Current deck[m
+[31m-              </p>[m
+[31m-              <div className="mt-1 flex min-w-0 items-center gap-2">[m
+[31m-                <ArchetypeSprites[m
+[31m-                  archetype={selectedDeckSuggestion ?? selectedDeckArchetype}[m
+[31m-                  className="shrink-0"[m
+[31m-                />[m
+[31m-                <p className="truncate text-sm font-semibold text-[#F8FAFC]">[m
+[31m-                  {selectedDeck?.label ?? "Choose a deck version"}[m
+[31m-                </p>[m
+[32m+[m[32m          <section className="grid gap-3 border-b border-white/6 pb-4 lg:grid-cols-[180px_minmax(0,1fr)]">[m
+[32m+[m[32m            <StepLabel[m
+[32m+[m[32m              index={2}[m
+[32m+[m[32m              title="Your deck"[m
+[32m+[m[32m              helper="Select the tested version."[m
+[32m+[m[32m            />[m
+[32m+[m[32m            <div className="max-w-full overflow-x-hidden rounded-md bg-[#07111F]/44 px-3 py-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]">[m
+[32m+[m[32m              <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">[m
+[32m+[m[32m                <div className="min-w-0 flex-1">[m
+[32m+[m[32m                  <p className="text-xs font-medium uppercase text-[#94A3B8]/72">[m
+[32m+[m[32m                    Current deck[m
+[32m+[m[32m                  </p>[m
+[32m+[m[32m                  <div className="mt-1 flex min-w-0 items-center gap-2">[m
+[32m+[m[32m                    <ArchetypeSprites[m
+[32m+[m[32m                      archetype={selectedDeckSuggestion ?? selectedDeckArchetype}[m
+[32m+[m[32m                      className="shrink-0"[m
+[32m+[m[32m                    />[m
+[32m+[m[32m                    <p className="truncate text-sm font-semibold text-[#F8FAFC]">[m
+[32m+[m[32m                      {selectedDeck?.label ?? "Choose a deck version"}[m
+[32m+[m[32m                    </p>[m
+[32m+[m[32m                  </div>[m
+[32m+[m[32m                  {selectedDeckSuggestion ? ([m
+[32m+[m[32m                    <p className="mt-1 truncate text-xs font-medium text-[#B8D1FF]">[m
+[32m+[m[32m                      List reads as {selectedDeckSuggestion}[m
+[32m+[m[32m                    </p>[m
+[32m+[m[32m                  ) : null}[m
+[32m+[m[32m                </div>[m
+[32m+[m[32m                <button[m
+[32m+[m[32m                  type="button"[m
+[32m+[m[32m                  onClick={() => setIsChangingDeck((current) => !current)}[m
+[32m+[m[32m                  className="shrink-0 rounded-md bg-[#4F8CFF]/10 px-3 py-2 text-xs font-semibold text-[#F8FAFC] transition hover:bg-[#4F8CFF]/16 active:scale-[0.98]"[m
+[32m+[m[32m                >[m
+[32m+[m[32m                  {isChangingDeck ? "Done" : "Change deck"}[m
+[32m+[m[32m                </button>[m
+               </div>[m
+[31m-              {selectedDeckSuggestion ? ([m
+[31m-                <p className="mt-1 truncate text-xs font-medium text-[#B8D1FF]">[m
+[31m-                  List reads as {selectedDeckSuggestion}[m
+[31m-                </p>[m
+[32m+[m[32m              {isChangingDeck ? ([m
+[32m+[m[32m                <div className="mt-3 flex flex-col gap-2">[m
+[32m+[m[32m                  <label htmlFor="deck_version_id_select" className={label}>[m
+[32m+[m[32m                    Session deck[m
+[32m+[m[32m                  </label>[m
+[32m+[m[32m                  <select[m
+[32m+[m[32m                    id="deck_version_id_select"[m
+[32m+[m[32m                    value={deckVersionId}[m
+[32m+[m[32m                    onChange={(event) => setDeckVersionId(event.target.value)}[m
+[32m+[m[32m                    className={inputH11}[m
+[32m+[m[32m                  >[m
+[32m+[m[32m                    {deckOptions.map((option) => ([m
+[32m+[m[32m                      <option key={option.id} value={option.id}>[m
+[32m+[m[32m                        {option.label}[m
+[32m+[m[32m                        {option.isActive ? " (active)" : ""} - {option.detail}[m
+[32m+[m[32m                      </option>[m
+[32m+[m[32m                    ))}[m
+[32m+[m[32m                  </select>[m
+[32m+[m[32m                </div>[m
+               ) : null}[m
+             </div>[m
+[31m-            <button[m
+[31m-              type="button"[m
+[31m-              onClick={() => setIsChangingDeck((current) => !current)}[m
+[31m-              className="shrink-0 rounded-md bg-[#4F8CFF]/10 px-3 py-2 text-xs font-semibold text-[#F8FAFC] transition hover:bg-[#4F8CFF]/16 active:scale-[0.98]"[m
+[31m-            >[m
+[31m-              {isChangingDeck ? "Done" : "Change deck"}[m
+[31m-            </button>[m
+[32m+[m[32m          </section>[m
+[32m+[m
+[32m+[m[32m          <section className="grid gap-3 border-b border-white/6 pb-4 lg:grid-cols-[180px_minmax(0,1fr)]">[m
+[32m+[m[32m            <StepLabel[m
+[32m+[m[32m              index={3}[m
+[32m+[m[32m              title="Opponent matchup"[m
+[32m+[m[32m              helper="Who did you play against?"[m
+[32m+[m[32m            />[m
+[32m+[m[32m            <div className="grid gap-3 rounded-md bg-[#07111F]/38 p-3 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.12)] sm:p-4">[m
+[32m+[m[32m              <div className="grid gap-3 sm:grid-cols-2">[m
+[32m+[m[32m                <ArchetypePicker[m
+[32m+[m[32m                  id="opponent_archetype"[m
+[32m+[m[32m                  name="opponent_archetype"[m
+[32m+[m[32m                  label="Who did you play?"[m
+[32m+[m[32m                  options={opponentArchetypeOptions}[m
+[32m+[m[32m                  value={opponentArchetype}[m
+[32m+[m[32m                  required[m
+[32m+[m[32m                  autoFocus[m
+[32m+[m[32m                  maxOptions={7}[m
+[32m+[m[32m                  listMaxHeightClassName="max-h-48"[m
+[32m+[m[32m                  onValueChange={setOpponentArchetype}[m
+[32m+[m[32m                />[m
+[32m+[m[32m                <div className="flex flex-col gap-2">[m
+[32m+[m[32m                  <label htmlFor="opponent_variant" className={label}>[m
+[32m+[m[32m                    Opponent variant[m
+[32m+[m[32m                  </label>[m
+[32m+[m[32m                  <input[m
+[32m+[m[32m                    id="opponent_variant"[m
+[32m+[m[32m                    name="opponent_variant"[m
+[32m+[m[32m                    value={opponentVariant}[m
+[32m+[m[32m                    onChange={(event) =>[m
+[32m+[m[32m                      setOpponentVariant(event.target.value)[m
+[32m+[m[32m                    }[m
+[32m+[m[32m                    placeholder="Optional detail"[m
+[32m+[m[32m                    className={inputH11}[m
+[32m+[m[32m                  />[m
+[32m+[m[32m                </div>[m
+[32m+[m[32m              </div>[m
+             </div>[m
+[31m-            {isChangingDeck ? ([m
+[31m-              <div className="mt-3 flex flex-col gap-2">[m
+[31m-                <label htmlFor="deck_version_id_select" className={label}>[m
+[31m-                  Session deck[m
+[31m-                </label>[m
+[31m-                <select[m
+[31m-                  id="deck_version_id_select"[m
+[31m-                  value={deckVersionId}[m
+[31m-                  onChange={(event) => {[m
+[31m-                    setDeckVersionId(event.target.value);[m
+[31m-                    remember(sessionKeys.deckVersionId, event.target.value);[m
+[31m-                  }}[m
+[31m-                  className={inputH11}[m
+[31m-                >[m
+[31m-                  {deckOptions.map((option) => ([m
+[31m-                    <option key={option.id} value={option.id}>[m
+[31m-                      {option.label}[m
+[31m-                      {option.isActive ? " (active)" : ""} - {option.detail}[m
+[31m-                    </option>[m
+[31m-                  ))}[m
+[31m-                </select>[m
+[32m+[m[32m          </section>[m
+[32m+[m
+[32m+[m[32m          <section className="grid gap-3 border-b border-white/6 pb-4 lg:grid-cols-[180px_minmax(0,1fr)]">[m
+[32m+[m[32m            <StepLabel[m
+[32m+[m[32m              index={4}[m
+[32m+[m[32m              title="Game details"[m
+[32m+[m[32m              helper="Record the key outcome and quality signals."[m
+[32m+[m[32m            />[m
+[32m+[m[32m            <div className="grid gap-3 rounded-xl bg-[#07111F]/38 p-3 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.12)] sm:p-4">[m
+[32m+[m[32m              <div className="grid gap-3 md:grid-cols-2">[m
+[32m+[m[32m                <fieldset className={`flex flex-col gap-2 ${subCardClass}`}>[m
+[32m+[m[32m                  <legend className={label}>Outcome</legend>[m
+[32m+[m[32m                  <div className="grid grid-cols-3 gap-2">[m
+[32m+[m[32m                    {(["win", "loss", "tie"] as const).map((resultOption) => ([m
+[32m+[m[32m                      <button[m
+[32m+[m[32m                        key={resultOption}[m
+[32m+[m[32m                        type="button"[m
+[32m+[m[32m                        onClick={() => setResult(resultOption)}[m
+[32m+[m[32m                        className={`${detailToggleClass} ${[m
+[32m+[m[32m                          result === resultOption ? selectedToggleClass : ""[m
+[32m+[m[32m                        }`}[m
+[32m+[m[32m                      >[m
+[32m+[m[32m                        {getMatchResultLabel(resultOption)}[m
+[32m+[m[32m                      </button>[m
+[32m+[m[32m                    ))}[m
+[32m+[m[32m                  </div>[m
+[32m+[m[32m                </fieldset>[m
+[32m+[m[32m                <fieldset className={`flex flex-col gap-2 ${subCardClass}`}>[m
+[32m+[m[32m                  <legend className={label}>Turn order</legend>[m
+[32m+[m[32m                  <div className="grid grid-cols-2 gap-2">[m
+[32m+[m[32m                    {[[m
+[32m+[m[32m                      ["true", "First"],[m
+[32m+[m[32m                      ["false", "Second"],[m
+[32m+[m[32m                    ].map(([value, turnLabel]) => ([m
+[32m+[m[32m                      <button[m
+[32m+[m[32m                        key={value}[m
+[32m+[m[32m                        type="button"[m
+[32m+[m[32m                        onClick={() => setWentFirst(value as "true" | "false")}[m
+[32m+[m[32m                        className={`${detailToggleClass} ${[m
+[32m+[m[32m                          wentFirst === value ? selectedToggleClass : ""[m
+[32m+[m[32m                        }`}[m
+[32m+[m[32m                      >[m
+[32m+[m[32m                        {turnLabel}[m
+[32m+[m[32m                      </button>[m
+[32m+[m[32m                    ))}[m
+[32m+[m[32m                  </div>[m
+[32m+[m[32m                </fieldset>[m
+               </div>[m
+[31m-            ) : null}[m
+[31m-          </div>[m
+[31m-        </div>[m
+[32m+[m[32m              <div className={subCardClass}>[m
+[32m+[m[32m                <div className="mb-3">[m
+[32m+[m[32m                  <p className="text-sm font-semibold text-[#F8FAFC]">[m
+[32m+[m[32m                    Game quality[m
+[32m+[m[32m                  </p>[m
+[32m+[m[32m                  <p className="mt-1 text-xs leading-5 text-[#94A3B8]/76">[m
+[32m+[m[32m                    Capture how the game started and whether execution held up.[m
+[32m+[m[32m                  </p>[m
+[32m+[m[32m                </div>[m
+[32m+[m[32m                <div className="grid gap-3 lg:grid-cols-3">[m
+[32m+[m[32m                  <fieldset className="flex flex-col gap-2">[m
+[32m+[m[32m                    <legend className={label}>Start</legend>[m
+[32m+[m[32m                    <div className="grid grid-cols-3 gap-2">[m
+[32m+[m[32m                      {MATCH_START_QUALITY_OPTIONS.map((value) => ([m
+[32m+[m[32m                        <button[m
+[32m+[m[32m                          key={value}[m
+[32m+[m[32m                          type="button"[m
+[32m+[m[32m                          onClick={() =>[m
+[32m+[m[32m                            setStartQuality([m
+[32m+[m[32m                              startQuality === value ? undefined : value[m
+[32m+[m[32m                            )[m
+[32m+[m[32m                          }[m
+[32m+[m[32m                          className={`${detailToggleClass} ${[m
+[32m+[m[32m                            startQuality === value ? selectedToggleClass : ""[m
+[32m+[m[32m                          }`}[m
+[32m+[m[32m                        >[m
+[32m+[m[32m                          {getQualityLabel(value)}[m
+[32m+[m[32m                        </button>[m
+[32m+[m[32m                      ))}[m
+[32m+[m[32m                    </div>[m
+[32m+[m[32m                  </fieldset>[m
+[32m+[m[32m                  <fieldset className="flex flex-col gap-2">[m
+[32m+[m[32m                    <legend className={label}>Opening hand</legend>[m
+[32m+[m[32m                    <div className="grid grid-cols-2 gap-2">[m
+[32m+[m[32m                      {MATCH_OPENING_HAND_OPTIONS.map((value) => ([m
+[32m+[m[32m                        <button[m
+[32m+[m[32m                          key={value}[m
+[32m+[m[32m                          type="button"[m
+[32m+[m[32m                          onClick={() =>[m
+[32m+[m[32m                            setOpeningHandQuality([m
+[32m+[m[32m                              openingHandQuality === value ? undefined : value[m
+[32m+[m[32m                            )[m
+[32m+[m[32m                          }[m
+[32m+[m[32m                          className={`${detailToggleClass} ${[m
+[32m+[m[32m                            openingHandQuality === value[m
+[32m+[m[32m                              ? selectedToggleClass[m
+[32m+[m[32m                              : ""[m
+[32m+[m[32m                          }`}[m
+[32m+[m[32m                        >[m
+[32m+[m[32m                          {getQualityLabel(value)}[m
+[32m+[m[32m                        </button>[m
+[32m+[m[32m                      ))}[m
+[32m+[m[32m                    </div>[m
+[32m+[m[32m                  </fieldset>[m
+[32m+[m[32m                  <fieldset className="flex flex-col gap-2">[m
+[32m+[m[32m                    <legend className={label}>Sequencing</legend>[m
+[32m+[m[32m                    <div className="grid grid-cols-2 gap-2">[m
+[32m+[m[32m                      {MATCH_SEQUENCING_OPTIONS.map((value) => ([m
+[32m+[m[32m                        <button[m
+[32m+[m[32m                          key={value}[m
+[32m+[m[32m                          type="button"[m
+[32m+[m[32m                          onClick={() =>[m
+[32m+[m[32m                            setSequencingQuality([m
+[32m+[m[32m                              sequencingQuality === value ? undefined : value[m
+[32m+[m[32m                            )[m
+[32m+[m[32m                          }[m
+[32m+[m[32m                          className={`${detailToggleClass} ${[m
+[32m+[m[32m                            sequencingQuality === value[m
+[32m+[m[32m                              ? selectedToggleClass[m
+[32m+[m[32m                              : ""[m
+[32m+[m[32m                          }`}[m
+[32m+[m[32m                        >[m
+[32m+[m[32m                          {getQualityLabel(value)}[m
+[32m+[m[32m                        </button>[m
+[32m+[m[32m                      ))}[m
+[32m+[m[32m                    </div>[m
+[32m+[m[32m                  </fieldset>[m
+[32m+[m[32m                </div>[m
+[32m+[m[32m              </div>[m
+[32m+[m[32m            </div>[m
+[32m+[m[32m          </section>[m
+ [m
+[31m-        <section className="grid gap-3 border-b border-white/6 pb-4 lg:grid-cols-[180px_minmax(0,1fr)]">[m
+[31m-          <StepLabel index={2} title="Opponent matchup" helper="Who did you play against?" />[m
+[31m-          <div className="max-w-full overflow-x-hidden rounded-md bg-[#07111F]/38 p-3 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.12)] sm:p-4">[m
+[31m-            <ArchetypePicker[m
+[31m-              id="opponent_archetype"[m
+[31m-              name="opponent_archetype"[m
+[31m-              label="Who did you play?"[m
+[31m-              options={opponentArchetypeOptions}[m
+[31m-              value={opponentArchetype}[m
+[31m-              required[m
+[31m-              autoFocus[m
+[31m-              maxOptions={7}[m
+[31m-              listMaxHeightClassName="max-h-48"[m
+[31m-              onValueChange={(nextValue) => {[m
+[31m-                setOpponentArchetype(nextValue);[m
+[31m-                remember(sessionKeys.opponentArchetype, nextValue);[m
+[31m-              }}[m
+[32m+[m[32m          <section className="grid gap-3 lg:grid-cols-[180px_minmax(0,1fr)]">[m
+[32m+[m[32m            <StepLabel[m
+[32m+[m[32m              index={5}[m
+[32m+[m[32m              title="Insights"[m
+[32m+[m[32m              helper="Tag what mattered, then add optional learnings."[m
+             />[m
+[31m-            {recentOpponentArchetypes.length ? ([m
+[31m-              <div className="mt-3">[m
+[31m-                <p className="mb-2 text-xs font-medium uppercase text-[#94A3B8]/70">[m
+[31m-                  Recent opponents[m
+[32m+[m[32m            <div className="grid gap-3 rounded-xl bg-[#07111F]/38 p-3 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.12)] sm:p-4">[m
+[32m+[m[32m              <fieldset className={`flex flex-col gap-2 ${subCardClass}`}>[m
+[32m+[m[32m                <legend className={label}>What went wrong?</legend>[m
+[32m+[m[32m                <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">[m
+[32m+[m[32m                  {MATCH_ISSUE_TAG_OPTIONS.map((tag) => ([m
+[32m+[m[32m                    <button[m
+[32m+[m[32m                      key={tag}[m
+[32m+[m[32m                      type="button"[m
+[32m+[m[32m                      onClick={() => setIssueTags(toggleSelection(issueTags, tag))}[m
+[32m+[m[32m                      className={`${tagToggleClass} ${[m
+[32m+[m[32m                        issueTags.includes(tag) ? selectedToggleClass : ""[m
+[32m+[m[32m                      }`}[m
+[32m+[m[32m                    >[m
+[32m+[m[32m                      {tag}[m
+[32m+[m[32m                    </button>[m
+[32m+[m[32m                  ))}[m
+[32m+[m[32m                </div>[m
+[32m+[m[32m              </fieldset>[m
+[32m+[m
+[32m+[m[32m              <fieldset className={`flex flex-col gap-2 ${subCardClass}`}>[m
+[32m+[m[32m                <legend className={label}>What went well?</legend>[m
+[32m+[m[32m                <p className="text-xs leading-5 text-[#94A3B8]/72">[m
+[32m+[m[32m                  Add positive context when the game is still a building signal.[m
+                 </p>[m
+[31m-                <div className="flex max-w-full flex-wrap gap-2 overflow-x-hidden pb-1">[m
+[31m-                  {recentOpponentArchetypes.map((archetype) => ([m
+[32m+[m[32m                <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">[m
+[32m+[m[32m                  {MATCH_POSITIVE_TAG_OPTIONS.map((tag) => ([m
+                     <button[m
+[31m-                      key={archetype}[m
+[32m+[m[32m                      key={tag}[m
+                       type="button"[m
+[31m-                      onClick={() => {[m
+[31m-                        setOpponentArchetype(archetype);[m
+[31m-                        remember(sessionKeys.opponentArchetype, archetype);[m
+[31m-                      }}[m
+[31m-                      className="inline-flex max-w-full items-center gap-2 rounded-md bg-[#11182C]/78 px-3 py-2 text-xs font-semibold text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(248,250,252,0.045)] transition hover:bg-[#4F8CFF]/14 active:scale-[0.98]"[m
+[32m+[m[32m                      onClick={() =>[m
+[32m+[m[32m                        setPositiveTags(toggleSelection(positiveTags, tag))[m
+[32m+[m[32m                      }[m
+[32m+[m[32m                      className={`${tagToggleClass} ${[m
+[32m+[m[32m                        positiveTags.includes(tag) ? selectedToggleClass : ""[m
+[32m+[m[32m                      }`}[m
+                     >[m
+[31m-                      <ArchetypeSprites archetype={archetype} className="shrink-0" />[m
+[31m-                      <span className="min-w-0 truncate">{archetype}</span>[m
+[32m+[m[32m                      {tag}[m
+                     </button>[m
+                   ))}[m
+                 </div>[m
+[31m-              </div>[m
+[31m-            ) : null}[m
+[31m-          </div>[m
+[31m-        </section>[m
+[31m-[m
+[31m-        <div className="grid min-w-0 gap-3 border-b border-white/6 pb-4 lg:grid-cols-[180px_minmax(0,1fr)]">[m
+[31m-          <StepLabel index={3} title="Result and play order" helper="Record the key outcome." />[m
+[31m-          <div className="grid min-w-0 gap-3 sm:grid-cols-2">[m
+[31m-          <fieldset className="flex flex-col gap-2">[m
+[31m-            <legend className={label}>[m
+[31m-              Did you win?[m
+[31m-            </legend>[m
+[31m-            <div className="grid grid-cols-2 gap-2">[m
+[31m-              {(["win", "loss"] as const).map((resultOption) => ([m
+[31m-                <label[m
+[31m-                  key={resultOption}[m
+[31m-                  className={`${toggleClass} capitalize`}[m
+[31m-                >[m
+[31m-                  <input[m
+[31m-                    type="radio"[m
+[31m-                    name="result"[m
+[31m-                    value={resultOption}[m
+[31m-                    checked={result === resultOption}[m
+[31m-                    onChange={() => {[m
+[31m-                      setResult(resultOption);[m
+[31m-                      remember(sessionKeys.result, resultOption);[m
+[31m-                    }}[m
+[31m-                    className="sr-only"[m
+[32m+[m[32m              </fieldset>[m
+[32m+[m
+[32m+[m[32m              <div className={subCardClass}>[m
+[32m+[m[32m                <div className="mb-3">[m
+[32m+[m[32m                  <p className="text-sm font-semibold text-[#F8FAFC]">[m
+[32m+[m[32m                    Cards to remember[m
+[32m+[m[32m                  </p>[m
+[32m+[m[32m                  <p className="mt-1 text-xs leading-5 text-[#94A3B8]/72">[m
+[32m+[m[32m                    Track cards that overperformed or let you down.[m
+[32m+[m[32m                  </p>[m
+[32m+[m[32m                </div>[m
+[32m+[m[32m                <div className="grid gap-3 xl:grid-cols-2">[m
+[32m+[m[32m                  <ChipInput[m
+[32m+[m[32m                    labelText="Cards that shined"[m
+[32m+[m[32m                    values={cardsShined}[m
+[32m+[m[32m                    onChange={setCardsShined}[m
+[32m+[m[32m                    placeholder="Type a card name and press Enter"[m
+[32m+[m[32m                    fieldName="cards_shined"[m
+                   />[m
+[31m-                  {resultOption}[m
+[31m-                </label>[m
+[31m-              ))}[m
+[31m-            </div>[m
+[31m-          </fieldset>[m
+[31m-          <fieldset className="flex flex-col gap-2">[m
+[31m-            <legend className={label}>[m
+[31m-              Did you go first?[m
+[31m-            </legend>[m
+[31m-            <div className="grid grid-cols-2 gap-2">[m
+[31m-              {[[m
+[31m-                ["true", "First"],[m
+[31m-                ["false", "Second"],[m
+[31m-              ].map(([value, label]) => ([m
+[31m-                <label[m
+[31m-                  key={value}[m
+[31m-                  className={toggleClass}[m
+[31m-                >[m
+[31m-                  <input[m
+[31m-                    type="radio"[m
+[31m-                    name="went_first"[m
+[31m-                    value={value}[m
+[31m-                    checked={wentFirst === value}[m
+[31m-                    onChange={() => {[m
+[31m-                      setWentFirst(value as "true" | "false");[m
+[31m-                      remember(sessionKeys.wentFirst, value);[m
+[31m-                    }}[m
+[31m-                    className="sr-only"[m
+[32m+[m[32m                  <ChipInput[m
+[32m+[m[32m                    labelText="Cards that failed"[m
+[32m+[m[32m                    values={cardsFailed}[m
+[32m+[m[32m                    onChange={setCardsFailed}[m
+[32m+[m[32m                    placeholder="Type a card name and press Enter"[m
+[32m+[m[32m                    fieldName="cards_failed"[m
+                   />[m
+[31m-                  {label}[m
+[31m-                </label>[m
+[31m-              ))}[m
+[31m-            </div>[m
+[31m-          </fieldset>[m
+[31m-[m
+[31m-          </div>[m
+[31m-        </div>[m
+[31m-[m
+[31m-        <div className="grid gap-3 lg:grid-cols-[180px_minmax(0,1fr)]">[m
+[31m-          <StepLabel index={4} title="Session context" helper="Add only what helps review." />[m
+[31m-          <fieldset className="max-w-full overflow-x-hidden rounded-md bg-[#07111F]/38 px-3 py-2.5 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">[m
+[31m-            <legend className="mb-2 text-xs font-medium uppercase text-[#94A3B8]/72">[m
+[31m-              Game type[m
+[31m-            </legend>[m
+[31m-            <div className="grid min-w-0 grid-cols-3 gap-1.5 sm:gap-2">[m
+[31m-              {(["casual", "testing", "tournament"] as const).map([m
+[31m-                (eventTypeOption) => ([m
+[31m-                  <label[m
+[31m-                    key={eventTypeOption}[m
+[31m-                    className={`${toggleClass} h-10 text-xs capitalize sm:text-sm`}[m
+[31m-                  >[m
+[31m-                    <input[m
+[31m-                      type="radio"[m
+[31m-                      name="event_type"[m
+[31m-                      value={eventTypeOption}[m
+[31m-                      checked={eventType === eventTypeOption}[m
+[31m-                      onChange={() => {[m
+[31m-                        setEventType(eventTypeOption);[m
+[31m-                        remember(sessionKeys.eventType, eventTypeOption);[m
+[31m-                      }}[m
+[31m-                      className="sr-only"[m
+[31m-                    />[m
+[31m-                    {eventTypeOption}[m
+[31m-                  </label>[m
+[31m-                )[m
+[31m-              )}[m
+[31m-            </div>[m
+[31m-          </fieldset>[m
+[31m-        </div>[m
+[32m+[m[32m                </div>[m
+[32m+[m[32m              </div>[m
+ [m
+[31m-        <details[m
+[31m-          open={detailsOpen}[m
+[31m-          onToggle={(event) => {[m
+[31m-            setDetailsOpen(event.currentTarget.open);[m
+[31m-          }}[m
+[31m-          className="group max-w-full overflow-x-hidden rounded-md bg-[#07111F]/34 p-3 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.035)]"[m
+[31m-        >[m
+[31m-          <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3 text-sm font-semibold text-[#F8FAFC] marker:hidden">[m
+[31m-            <span>More details</span>[m
+[31m-            <span className="text-xs font-medium text-[#94A3B8] group-open:hidden">[m
+[31m-              Variant, tags, notes, import[m
+[31m-            </span>[m
+[31m-            <span className="hidden text-xs font-medium text-[#94A3B8] group-open:inline">[m
+[31m-              Hide[m
+[31m-            </span>[m
+[31m-          </summary>[m
+[31m-          <div className="mt-4 grid gap-4">[m
+[31m-            <div className="max-w-full overflow-x-hidden rounded-md bg-[#11182C]/58 p-3">[m
+[31m-              <div className="flex flex-col gap-2">[m
+[31m-                <label htmlFor="tcg_live_log" className={label}>[m
+[31m-                  Import TCG Live log[m
+[32m+[m[32m              <div className={subCardClass}>[m
+[32m+[m[32m                <label htmlFor="notes" className={label}>[m
+[32m+[m[32m                  Learnings[m
+                 </label>[m
+                 <textarea[m
+[31m-                  id="tcg_live_log"[m
+[31m-                  value={tcgLiveLog}[m
+[31m-                  onChange={(event) => setTcgLiveLog(event.target.value)}[m
+[32m+[m[32m                  id="notes"[m
+[32m+[m[32m                  name="notes"[m
+[32m+[m[32m                  value={notes}[m
+[32m+[m[32m                  onChange={(event) => setNotes(event.target.value)}[m
+                   rows={3}[m
+[31m-                  placeholder="Paste a TCG Live battle log"[m
+[31m-                  className={`${textarea} min-h-24`}[m
+[32m+[m[32m                  placeholder="What did this game teach you? Example: Lost because I missed second attacker and fell behind on prizes."[m
+[32m+[m[32m                  className={`${textarea} mt-2 min-h-24 transition-all focus:min-h-28`}[m
+                 />[m
+               </div>[m
+[31m-              <button[m
+[31m-                type="button"[m
+[31m-                onClick={importTcgLiveLog}[m
+[31m-                className="mt-3 max-w-full rounded-md bg-[#4F8CFF]/12 px-3 py-2 text-sm font-semibold text-[#F8FAFC] transition hover:bg-[#4F8CFF]/20 active:scale-[0.98]"[m
+[31m-              >[m
+[31m-                Use log[m
+[31m-              </button>[m
+[31m-              {importStatus ? ([m
+[31m-                <p className="mt-2 text-xs font-medium text-[#94A3B8]">[m
+[31m-                  {importStatus}[m
+[31m-                </p>[m
+[31m-              ) : null}[m
+[31m-            </div>[m
+[31m-[m
+[31m-            <div className="flex flex-col gap-2">[m
+[31m-              <label[m
+[31m-                htmlFor="opponent_variant"[m
+[31m-                className={label}[m
+[31m-              >[m
+[31m-                Opponent variant[m
+[31m-              </label>[m
+[31m-              <input[m
+[31m-                id="opponent_variant"[m
+[31m-                name="opponent_variant"[m
+[31m-                placeholder="Optional detail"[m
+[31m-                className={inputH11}[m
+[31m-              />[m
+[31m-            </div>[m
+ [m
+[31m-            <fieldset className="flex flex-col gap-2">[m
+[31m-              <legend className={label}>Tags</legend>[m
+[31m-              <div className="flex flex-wrap gap-1.5 sm:gap-2">[m
+[31m-                {MATCH_TAGS.map((tag) => ([m
+[31m-                  <label[m
+[31m-                    key={tag}[m
+[31m-                    className="cursor-pointer rounded-md bg-[#11182C]/76 px-2.5 py-2 text-xs font-medium text-[#F8FAFC] transition hover:bg-[#4F8CFF]/12 has-[:checked]:bg-[#4F8CFF]/24 has-[:checked]:text-[#F8FAFC] sm:text-sm"[m
+[32m+[m[32m              <details className={`group ${subCardClass}`}>[m
+[32m+[m[32m                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold text-[#F8FAFC] marker:hidden">[m
+[32m+[m[32m                  <span>Import TCG Live log</span>[m
+[32m+[m[32m                  <span className="text-xs text-[#94A3B8] group-open:hidden">[m
+[32m+[m[32m                    Optional helper[m
+[32m+[m[32m                  </span>[m
+[32m+[m[32m                  <span className="hidden text-xs text-[#94A3B8] group-open:inline">[m
+[32m+[m[32m                    Hide[m
+[32m+[m[32m                  </span>[m
+[32m+[m[32m                </summary>[m
+[32m+[m[32m                <div className="mt-3 flex flex-col gap-2">[m
+[32m+[m[32m                  <textarea[m
+[32m+[m[32m                    id="tcg_live_log"[m
+[32m+[m[32m                    value={tcgLiveLog}[m
+[32m+[m[32m                    onChange={(event) => setTcgLiveLog(event.target.value)}[m
+[32m+[m[32m                    rows={3}[m
+[32m+[m[32m                    placeholder="Paste a TCG Live battle log"[m
+[32m+[m[32m                    className={`${textarea} min-h-24`}[m
+[32m+[m[32m                  />[m
+[32m+[m[32m                  <button[m
+[32m+[m[32m                    type="button"[m
+[32m+[m[32m                    onClick={importTcgLiveLog}[m
+[32m+[m[32m                    className="w-fit rounded-md bg-[#4F8CFF]/12 px-3 py-2 text-sm font-semibold text-[#F8FAFC] transition hover:bg-[#4F8CFF]/20 active:scale-[0.98]"[m
+                   >[m
+[31m-                    <input[m
+[31m-                      type="checkbox"[m
+[31m-                      name="tags"[m
+[31m-                      value={tag}[m
+[31m-                      className="sr-only"[m
+[31m-                    />[m
+[31m-                    {tag}[m
+[31m-                  </label>[m
+[31m-                ))}[m
+[31m-              </div>[m
+[31m-            </fieldset>[m
+[31m-[m
+[31m-            <div className="flex flex-col gap-2">[m
+[31m-              <label htmlFor="notes" className={label}>[m
+[31m-                Notes[m
+[31m-              </label>[m
+[31m-              <textarea[m
+[31m-                id="notes"[m
+[31m-                name="notes"[m
+[31m-                value={notes}[m
+[31m-                onChange={(event) => setNotes(event.target.value)}[m
+[31m-                rows={2}[m
+[31m-                placeholder="Optional"[m
+[31m-                className={`${textarea} min-h-16 transition-all focus:min-h-28`}[m
+[31m-              />[m
+[32m+[m[32m                    Use log[m
+[32m+[m[32m                  </button>[m
+[32m+[m[32m                  {importStatus ? ([m
+[32m+[m[32m                    <p className="text-xs font-medium text-[#94A3B8]">[m
+[32m+[m[32m                      {importStatus}[m
+[32m+[m[32m                    </p>[m
+[32m+[m[32m                  ) : null}[m
+[32m+[m[32m                </div>[m
+[32m+[m[32m              </details>[m
+             </div>[m
+[31m-          </div>[m
+[31m-        </details>[m
+[32m+[m[32m          </section>[m
+ [m
+[31m-        <div className="grid gap-2 pt-1 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">[m
+[31m-          <div className="hidden md:block">[m
+[31m-            <SubmitButton />[m
+[32m+[m[32m          <div className="grid gap-2 pt-1 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">[m
+[32m+[m[32m            <div className="hidden md:block">[m
+[32m+[m[32m              <SubmitButton label={submitLabel} />[m
+[32m+[m[32m            </div>[m
+[32m+[m[32m            <Link href={secondaryHref} className={`w-full ${secondaryButton}`}>[m
+[32m+[m[32m              {secondaryLabel}[m
+[32m+[m[32m            </Link>[m
+           </div>[m
+[31m-          <a href="/matches" className={`w-full ${secondaryButton}`}>[m
+[31m-            Match history[m
+[31m-          </a>[m
+         </div>[m
+[31m-      </div>[m
+[31m-      <div className="fixed inset-x-0 bottom-0 z-40 max-w-full overflow-x-hidden bg-[#0B1020]/92 px-4 py-3 shadow-[0_-18px_44px_rgba(0,0,0,0.36),inset_0_1px_0_rgba(248,250,252,0.055)] backdrop-blur md:hidden">[m
+[31m-        <div className="mx-auto w-full max-w-2xl">[m
+[31m-          <SubmitButton />[m
+[32m+[m[32m        <div className="fixed inset-x-0 bottom-0 z-40 max-w-full overflow-x-hidden bg-[#0B1020]/92 px-4 py-3 shadow-[0_-18px_44px_rgba(0,0,0,0.36),inset_0_1px_0_rgba(248,250,252,0.055)] backdrop-blur md:hidden">[m
+[32m+[m[32m          <div className="mx-auto w-full max-w-2xl">[m
+[32m+[m[32m            <SubmitButton label={submitLabel} />[m
+[32m+[m[32m          </div>[m
+         </div>[m
+[31m-      </div>[m
+[31m-    </form>[m
+[32m+[m[32m      </form>[m
+       <aside className="grid gap-3 xl:sticky xl:top-6">[m
+         {sessionCoach ? ([m
+           <SessionCoachPanel[m
+[36m@@ -666,7 +1236,7 @@[m [mexport function MatchLogForm({[m
+               Active testing session[m
+             </h2>[m
+             <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">[m
+[31m-              Log a few games and SixPrizer will build a focused mission.[m
+[32m+[m[32m              Structured logging keeps matchup, opening-hand, and sequencing signals clean.[m
+             </p>[m
+           </div>[m
+         )}[m
+[36m@@ -674,17 +1244,23 @@[m [mexport function MatchLogForm({[m
+           <div className="flex items-center gap-2 text-[#F5C84C]">[m
+             <Bolt className="size-4" aria-hidden="true" />[m
+             <p className="text-xs font-semibold uppercase tracking-[0.1em]">[m
+[31m-              Fast log flow[m
+[32m+[m[32m              Live summary[m
+             </p>[m
+           </div>[m
+           <div className="mt-4 grid gap-3">[m
+             {[[m
+               [ClipboardList, selectedDeck?.label ?? "Choose deck"],[m
+               [Target, opponentArchetype || "Pick opponent"],[m
+[31m-              [CheckCircle2, `${result === "win" ? "Win" : "Loss"} · ${wentFirst === "true" ? "First" : "Second"}`],[m
+[32m+[m[32m              [CheckCircle2, summaryItems.join(" · ")],[m
+             ].map(([Icon, value]) => ([m
+[31m-              <div key={value as string} className="flex min-w-0 items-center gap-3 rounded-md bg-[#07111F]/44 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">[m
+[31m-                <Icon className="size-4 shrink-0 text-[#4F8CFF]" aria-hidden="true" />[m
+[32m+[m[32m              <div[m
+[32m+[m[32m                key={value as string}[m
+[32m+[m[32m                className="flex min-w-0 items-center gap-3 rounded-md bg-[#07111F]/44 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]"[m
+[32m+[m[32m              >[m
+[32m+[m[32m                <Icon[m
+[32m+[m[32m                  className="size-4 shrink-0 text-[#4F8CFF]"[m
+[32m+[m[32m                  aria-hidden="true"[m
+[32m+[m[32m                />[m
+                 <span className="truncate text-sm font-medium text-[#F8FAFC]">[m
+                   {value as string}[m
+                 </span>[m
