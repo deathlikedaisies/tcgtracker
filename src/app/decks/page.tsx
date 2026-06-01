@@ -34,7 +34,10 @@ import {
 } from "@/components/brand-styles";
 import { SixPrizerLogo } from "@/components/SixPrizerLogo";
 import { getArchetypeOptions } from "@/lib/archetypes";
-import { analyzeDeckList } from "@/lib/decklist";
+import {
+  analyzeDeckList,
+  type DecklistAnalysis,
+} from "@/lib/decklist";
 import { LATEST_FORMAT } from "@/lib/formats";
 import { type MatchResult } from "@/lib/match-types";
 import { buildSessionCoachInsight } from "@/lib/session-coach";
@@ -53,7 +56,7 @@ type DeckVersion = {
 type Deck = {
   id: string;
   name: string;
-  archetype: string;
+  archetype: string | null;
   notes: string | null;
   created_at: string;
   deck_versions: DeckVersion[] | null;
@@ -70,11 +73,35 @@ type MatchRow = {
 };
 
 function formatDate(value: string) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Unknown date";
+  }
+
   return new Intl.DateTimeFormat("en", {
     month: "short",
     day: "numeric",
     year: "numeric",
-  }).format(new Date(value));
+  }).format(date);
+}
+
+function safeAnalyzeDeckList(decklist: string | null | undefined): {
+  analysis: DecklistAnalysis | null;
+  parseError: string | null;
+} {
+  if (!decklist?.trim()) {
+    return { analysis: null, parseError: null };
+  }
+
+  try {
+    return { analysis: analyzeDeckList(decklist), parseError: null };
+  } catch {
+    return {
+      analysis: null,
+      parseError: "List could not be parsed. Open deck details to review the raw list.",
+    };
+  }
 }
 
 function getRecord(matches: { result: MatchResult }[]) {
@@ -181,10 +208,11 @@ export default async function DecksPage() {
   const sessionCoach = buildSessionCoachInsight(userMatches);
   const archetypeOptions = getArchetypeOptions(
     LATEST_FORMAT,
-    userDecks.map((deck) => deck.archetype)
+    userDecks.map((deck) => deck.archetype).filter(Boolean) as string[]
   );
 
   const deckSummaries = userDecks.map((deck, index) => {
+    try {
       const versions = deck.deck_versions ?? [];
       const activeVersion =
         versions.find((version) => version.is_active) ?? versions[0] ?? null;
@@ -196,9 +224,7 @@ export default async function DecksPage() {
       const performance = formatRecord(activeVersionMatches);
       const totalDeckGames = deckMatches.length;
       const trend = getTrendTone(performance.total, performance.winRate);
-      const analysis = activeVersion?.decklist
-        ? analyzeDeckList(activeVersion.decklist)
-        : null;
+      const { analysis, parseError } = safeAnalyzeDeckList(activeVersion?.decklist);
       const activeMission =
         index === 0 && sessionCoach
           ? sessionCoach.missionTitle
@@ -212,8 +238,22 @@ export default async function DecksPage() {
         performance,
         trend,
         analysis,
+        parseError,
         activeMission,
       };
+    } catch {
+      return {
+        deck,
+        activeVersion: null,
+        totalVersions: Array.isArray(deck.deck_versions) ? deck.deck_versions.length : 0,
+        totalDeckGames: 0,
+        performance: { wins: 0, losses: 0, ties: 0, total: 0, winRate: 0 },
+        trend: getTrendTone(0, 0),
+        analysis: null,
+        parseError: "This deck has invalid data. Open it to review the saved versions.",
+        activeMission: null,
+      };
+    }
     });
 
   const totalVersions = deckSummaries.reduce(
@@ -351,10 +391,15 @@ export default async function DecksPage() {
                   const removeDeck = deleteDeck.bind(null, summary.deck.id);
                   const activeVersionName =
                     summary.activeVersion?.name ?? "No active version set";
+                  const deckArchetype = summary.deck.archetype?.trim() || "Unknown archetype";
                   const localListSummary = summary.analysis
                     ? `${summary.analysis.totalCards} cards · ${summary.analysis.pokemonCount} Pokémon · ${summary.analysis.trainerCount} Trainer · ${summary.analysis.energyCount} Energy`
-                    : "Add a deck list to unlock local parsing";
-                  const localListDetail = summary.analysis
+                    : summary.parseError
+                      ? "List could not be parsed"
+                      : "Add a deck list to unlock local parsing";
+                  const localListDetail = summary.parseError
+                    ? summary.parseError
+                    : summary.analysis
                     ? summary.analysis.unresolved.length
                       ? `${summary.analysis.unresolved.length} unresolved name${summary.analysis.unresolved.length === 1 ? "" : "s"}. Open deck for legality details.`
                       : "Local list parsed. Open deck for legality details."
@@ -376,7 +421,7 @@ export default async function DecksPage() {
                         <div className="min-w-0">
                           <div className="flex items-start gap-3">
                             <ArchetypeSprites
-                              archetype={summary.deck.archetype}
+                              archetype={deckArchetype}
                               size="md"
                               className="shrink-0"
                             />
@@ -395,7 +440,7 @@ export default async function DecksPage() {
                                 ) : null}
                               </div>
                               <p className="mt-1 text-sm text-[#94A3B8]/76">
-                                {summary.deck.archetype}
+                                {deckArchetype}
                               </p>
                               <p className="mt-1 text-xs text-[#94A3B8]/62">
                                 Created {formatDate(summary.deck.created_at)}

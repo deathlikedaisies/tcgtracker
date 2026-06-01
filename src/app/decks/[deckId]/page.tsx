@@ -32,6 +32,7 @@ import { SessionCoachPanel } from "@/components/SessionCoachPanel";
 import { getArchetypeOptions } from "@/lib/archetypes";
 import {
   analyzeDeckList,
+  type DecklistAnalysis,
   isClearArchetypeSuggestion,
 } from "@/lib/decklist";
 import { LATEST_FORMAT } from "@/lib/formats";
@@ -55,7 +56,7 @@ type DeckDetailPageProps = {
 
 type DeckVersion = {
   id: string;
-  name: string;
+  name: string | null;
   decklist: string | null;
   notes: string | null;
   is_active: boolean;
@@ -63,11 +64,35 @@ type DeckVersion = {
 };
 
 function formatDate(value: string) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Unknown date";
+  }
+
   return new Intl.DateTimeFormat("en", {
     month: "short",
     day: "numeric",
     year: "numeric",
-  }).format(new Date(value));
+  }).format(date);
+}
+
+function safeAnalyzeDeckList(decklist: string | null | undefined): {
+  analysis: DecklistAnalysis | null;
+  parseError: string | null;
+} {
+  if (!decklist?.trim()) {
+    return { analysis: null, parseError: null };
+  }
+
+  try {
+    return { analysis: analyzeDeckList(decklist), parseError: null };
+  } catch {
+    return {
+      analysis: null,
+      parseError: "This version list could not be parsed. Review the raw list before trusting the analysis.",
+    };
+  }
 }
 
 function getVersionTestStatus(matches: { result: MatchResult }[]) {
@@ -170,7 +195,7 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
 
   const sessionCoach = buildSessionCoachInsight(matchRows);
   const versionInsights = deckVersions.map((version) => {
-      const analysis = analyzeDeckList(version.decklist);
+      const { analysis, parseError } = safeAnalyzeDeckList(version.decklist);
       const versionMatches = matchRows.filter(
         (match) => match.deck_version_id === version.id
       );
@@ -179,6 +204,7 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
       return {
         versionId: version.id,
         analysis,
+        parseError,
         versionMatches,
         performance,
       };
@@ -188,11 +214,12 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
     versionInsights.map((insight) => [insight.versionId, insight])
   );
   const clearSuggestedArchetypes = versionInsights
-    .map((insight) => insight.analysis.suggestion)
+    .map((insight) => insight.analysis?.suggestion ?? null)
+    .filter((suggestion): suggestion is NonNullable<typeof suggestion> => Boolean(suggestion))
     .filter((suggestion) => isClearArchetypeSuggestion(suggestion))
     .map((suggestion) => suggestion.archetype);
   const archetypeOptions = getArchetypeOptions(LATEST_FORMAT, [
-    deck.archetype,
+    ...(deck.archetype ? [deck.archetype] : []),
     ...clearSuggestedArchetypes,
   ]);
   const setDeckArchetype = updateDeckArchetype.bind(null, deck.id);
@@ -203,6 +230,7 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
   const totalWinRate = totalRecord.total
     ? Math.round((totalRecord.wins / totalRecord.total) * 100)
     : 0;
+  const deckArchetype = deck.archetype?.trim() || "Unknown archetype";
   const activeVersion =
     deckVersions.find((version) => version.is_active) ?? deckVersions[0] ?? null;
   const bestVersion = versionInsights
@@ -249,7 +277,7 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                 <div className="min-w-0">
                   <div className="flex gap-4">
                     <ArchetypeSprites
-                      archetype={deck.archetype}
+                      archetype={deckArchetype}
                       size="md"
                       className="mt-1 shrink-0"
                     />
@@ -259,7 +287,7 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                           Manual archetype
                         </span>
                         <p className="text-sm font-medium text-[#F5C84C]">
-                          {deck.archetype}
+                          {deckArchetype}
                         </p>
                       </div>
                       <h1 className={pageTitle}>{deck.name}</h1>
@@ -342,8 +370,10 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                   );
                   const insight = versionInsightById.get(version.id);
                   const analysis = insight?.analysis;
+                  const parseError = insight?.parseError ?? null;
                   const versionMatches = insight?.versionMatches ?? [];
                   const testStatus = getVersionTestStatus(versionMatches);
+                  const versionName = version.name?.trim() || "Untitled version";
                   const wins = insight?.performance.wins ?? 0;
                   const losses = insight?.performance.losses ?? 0;
                   const ties = insight?.performance.ties ?? 0;
@@ -359,7 +389,7 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                         <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
                             <h3 className="text-xl font-semibold text-[#F8FAFC]">
-                              {version.name}
+                              {versionName}
                             </h3>
                             {version.is_active ? (
                               <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-emerald-200 shadow-[inset_0_0_0_1px_rgba(34,197,94,0.16)]">
@@ -464,6 +494,15 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                                 Matched core cards: {analysis.suggestion.matchedCoreCards.join(", ")}
                               </p>
                             </div>
+                          ) : parseError ? (
+                            <div className="mt-4">
+                              <p className="text-base font-semibold text-[#F8FAFC]">
+                                List could not be parsed
+                              </p>
+                              <p className="mt-2 text-sm leading-6 text-[#94A3B8]/72">
+                                {parseError}
+                              </p>
+                            </div>
                           ) : (
                             <div className="mt-4">
                               <p className="text-base font-semibold text-[#F8FAFC]">
@@ -504,6 +543,10 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                                 </div>
                               ))}
                             </div>
+                          ) : parseError ? (
+                            <p className="mt-4 text-sm leading-6 text-[#94A3B8]/72">
+                              {parseError}
+                            </p>
                           ) : (
                             <p className="mt-4 text-sm leading-6 text-[#94A3B8]/72">
                               Paste a list to unlock composition and local parsing details.
@@ -547,6 +590,10 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                                 Open deck details to review card resolution before any deeper legality check.
                               </p>
                             </div>
+                          ) : parseError ? (
+                            <p className="mt-4 text-sm leading-6 text-[#94A3B8]/72">
+                              {parseError}
+                            </p>
                           ) : (
                             <p className="mt-4 text-sm leading-6 text-[#94A3B8]/72">
                               Add a parsed list to unlock local card-resolution checks.
@@ -626,7 +673,7 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                       name="archetype"
                       label="Manual archetype"
                       options={archetypeOptions}
-                      defaultValue={deck.archetype}
+                      defaultValue={deckArchetype}
                       customOptionLabel={(value) => `Use custom deck archetype: ${value}`}
                       required
                     />
