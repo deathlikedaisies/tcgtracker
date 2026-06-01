@@ -8,7 +8,6 @@ import {
   ArrowRight,
   BarChart3,
   ChevronDown,
-  ClipboardList,
   LogOut,
   ShieldAlert,
   Sparkles,
@@ -35,17 +34,15 @@ import {
   appFrame,
   appMain,
   appShell,
-  card,
-  cardLarge,
-  divider,
   emptyCard,
   logoOnDark,
+  pageCopy,
   primaryButton,
-  sectionCopy,
   sectionTitle,
+  secondaryButton,
 } from "@/components/brand-styles";
-import { SixPrizerLogo } from "@/components/SixPrizerLogo";
 import { ShareReportButton, type ShareReport } from "@/components/ShareReportButton";
+import { SixPrizerLogo } from "@/components/SixPrizerLogo";
 import {
   formatMatchRecord,
   getMatchResultLabel,
@@ -62,6 +59,11 @@ type DeckSummary = {
   name: string;
   archetype: string;
   created_at: string;
+  deck_versions?: {
+    id: string;
+    name?: string | null;
+    is_active?: boolean | null;
+  }[] | null;
 };
 
 type DashboardStats = {
@@ -130,6 +132,8 @@ type DashboardContentProps = {
   trainingProgress: TrainingProgressSummary;
 };
 
+type Tone = "blue" | "gold" | "green" | "rose";
+
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en", {
     month: "short",
@@ -138,26 +142,52 @@ function formatDate(value: string) {
   }).format(new Date(value));
 }
 
-function StatCard({
-  label,
-  value,
-}: {
-  label: string;
-  value: string | number;
-}) {
-  return (
-    <div className={`${card} min-h-20 p-3 sm:p-3.5`}>
-      <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-[#94A3B8]/62">{label}</p>
-      <p className="mt-1 text-2xl font-bold tracking-tight text-[#F8FAFC] sm:text-3xl">
-        {value}
-      </p>
-    </div>
-  );
+function parseRate(value: string) {
+  return Number.parseInt(value.replace("%", ""), 10) || 0;
+}
+
+function toneClass(tone: Tone) {
+  return {
+    blue: "bg-[#4F8CFF]/10 text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.18)]",
+    gold: "bg-[#F5C84C]/12 text-[#FFE28A] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.18)]",
+    green: "bg-emerald-500/10 text-emerald-200 shadow-[inset_0_0_0_1px_rgba(34,197,94,0.18)]",
+    rose: "bg-[#F43F5E]/10 text-rose-200 shadow-[inset_0_0_0_1px_rgba(244,63,94,0.18)]",
+  }[tone];
+}
+
+function getLowDataLabel(matches: number, threshold: number, label: string) {
+  const remaining = Math.max(threshold - matches, 0);
+
+  if (remaining <= 0) {
+    return label;
+  }
+
+  return `Log ${remaining} more game${remaining === 1 ? "" : "s"} to unlock this`;
+}
+
+function getMissionBadge(insight: SessionCoachInsight) {
+  if (insight.completionStatus?.toLowerCase().includes("improvement detected")) {
+    return { label: "Signal improved", tone: "green" as const };
+  }
+
+  if (insight.missionState === "complete") {
+    return { label: "Mission complete", tone: "gold" as const };
+  }
+
+  if (insight.missionConfidence.toLowerCase().includes("building")) {
+    return { label: "Building signal", tone: "blue" as const };
+  }
+
+  if (insight.missionConfidence.toLowerCase().includes("strong")) {
+    return { label: "Strong signal", tone: "green" as const };
+  }
+
+  return { label: "Needs more games", tone: "gold" as const };
 }
 
 function ChartPlaceholder({ children }: { children: ReactNode }) {
   return (
-    <div className="mt-3 flex min-h-[220px] items-center justify-center rounded-md bg-[#07111F]/38 px-4 py-6 text-center text-sm leading-6 text-[#94A3B8]/76 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+    <div className="mt-3 flex min-h-[220px] items-center justify-center rounded-2xl bg-[#07111F]/40 px-4 py-6 text-center text-sm leading-6 text-[#94A3B8]/76 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
       {children}
     </div>
   );
@@ -166,47 +196,25 @@ function ChartPlaceholder({ children }: { children: ReactNode }) {
 function RecordPill({ result }: { result: MatchResult }) {
   const className =
     result === "win"
-      ? "bg-emerald-500/12 text-emerald-300"
+      ? "bg-emerald-500/14 text-emerald-200"
       : result === "loss"
-        ? "bg-[#F43F5E]/12 text-rose-200"
-        : "bg-slate-400/12 text-slate-200";
+        ? "bg-[#F43F5E]/14 text-rose-200"
+        : "bg-[#F5C84C]/12 text-[#FFE28A]";
 
   return (
     <span
-      className={`inline-flex rounded-md px-2 py-0.5 text-[11px] font-semibold uppercase ${className}`}
+      className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${className}`}
     >
       {getMatchResultLabel(result)}
     </span>
   );
 }
 
-function parseRate(value: string) {
-  return Number.parseInt(value.replace("%", ""), 10) || 0;
-}
-
-function getMissionStatus(confidence: string) {
-  const normalized = confidence.toLowerCase();
-
-  if (normalized.includes("strong")) {
-    return "Strong signal";
-  }
-
-  if (
-    normalized.includes("building") ||
-    normalized.includes("read") ||
-    normalized.includes("signal")
-  ) {
-    return "Building signal";
-  }
-
-  return "Needs more games";
-}
-
 function RecentFormDots({ matches }: { matches: RecentMatch[] }) {
-  const recent = matches.slice(0, 5);
+  const recent = matches.slice(0, 6);
   const dots = recent.length
     ? recent
-    : Array.from({ length: 5 }).map((_, index) => ({
+    : Array.from({ length: 6 }).map((_, index) => ({
         id: `empty-${index}`,
         result: null,
       }));
@@ -221,7 +229,9 @@ function RecentFormDots({ matches }: { matches: RecentMatch[] }) {
               ? "bg-[#22C55E]"
               : match.result === "loss"
                 ? "bg-[#F43F5E]"
-                : "bg-[#1A2238]"
+                : match.result === "tie"
+                  ? "bg-[#F5C84C]"
+                  : "bg-[#1A2238]"
           }`}
         />
       ))}
@@ -229,50 +239,266 @@ function RecentFormDots({ matches }: { matches: RecentMatch[] }) {
   );
 }
 
-function SignalCard({
+function SectionCard({
+  eyebrow,
+  title,
+  copy,
+  action,
+  children,
+  className = "",
+}: {
+  eyebrow?: string;
+  title: string;
+  copy?: string;
+  action?: ReactNode;
+  children?: ReactNode;
+  className?: string;
+}) {
+  return (
+    <section
+      className={`rounded-[26px] bg-[linear-gradient(180deg,rgba(15,26,45,0.92),rgba(7,17,31,0.88))] p-4 shadow-[0_18px_50px_rgba(0,0,0,0.24),inset_0_0_0_1px_rgba(148,163,184,0.09)] backdrop-blur sm:p-5 ${className}`}
+    >
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          {eyebrow ? (
+            <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]/86">
+              {eyebrow}
+            </p>
+          ) : null}
+          <h2 className="mt-1 text-xl font-bold tracking-tight text-[#F8FAFC] sm:text-2xl">
+            {title}
+          </h2>
+          {copy ? (
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-[#94A3B8]/76">
+              {copy}
+            </p>
+          ) : null}
+        </div>
+        {action ? <div className="shrink-0">{action}</div> : null}
+      </div>
+      {children ? <div className="mt-4">{children}</div> : null}
+    </section>
+  );
+}
+
+function StatusChip({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: string;
+  tone: Tone;
+}) {
+  return (
+    <div className="rounded-2xl bg-[#07111F]/46 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+        {label}
+      </p>
+      <p className={`mt-2 text-sm font-semibold ${toneClass(tone)}`}>
+        <span className="inline-flex rounded-full px-2.5 py-1">{value}</span>
+      </p>
+    </div>
+  );
+}
+
+function KpiCard({
   icon: Icon,
   label,
   value,
   helper,
-  tone = "blue",
+  tone,
   children,
 }: {
   icon: LucideIcon;
   label: string;
   value: string;
-  helper?: string;
-  tone?: "blue" | "gold" | "green" | "rose";
+  helper: string;
+  tone: Tone;
   children?: ReactNode;
 }) {
-  const toneClass = {
-    blue: "bg-[#4F8CFF]/10 text-[#B8D1FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.14)]",
-    gold: "bg-[#F5C84C]/12 text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]",
-    green: "bg-[#22C55E]/10 text-emerald-300 shadow-[inset_0_0_0_1px_rgba(34,197,94,0.14)]",
-    rose: "bg-[#F43F5E]/10 text-rose-200 shadow-[inset_0_0_0_1px_rgba(244,63,94,0.16)]",
-  }[tone];
-
   return (
-    <div className="min-w-0 rounded-md bg-[#11182C]/62 p-3 shadow-[0_12px_34px_rgba(0,0,0,0.16),inset_0_0_0_1px_rgba(248,250,252,0.035)] sm:p-3.5">
-      <div className="flex items-center gap-2">
-        <span className={`inline-flex size-8 shrink-0 items-center justify-center rounded-md ${toneClass}`}>
-          <Icon className="size-4" aria-hidden="true" />
-        </span>
-        <p className="min-w-0 truncate text-[11px] font-semibold uppercase tracking-[0.09em] text-[#94A3B8]/76">
-          {label}
-        </p>
+    <div className="rounded-[22px] bg-[linear-gradient(180deg,rgba(11,16,32,0.92),rgba(7,17,31,0.82))] p-4 shadow-[0_16px_40px_rgba(0,0,0,0.22),inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <span
+              className={`inline-flex size-9 shrink-0 items-center justify-center rounded-xl ${toneClass(tone)}`}
+            >
+              <Icon className="size-4" aria-hidden="true" />
+            </span>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.09em] text-[#94A3B8]/76">
+              {label}
+            </p>
+          </div>
+          <p className="mt-3 text-xl font-bold tracking-tight text-[#F8FAFC] sm:text-2xl">
+            {value}
+          </p>
+          <p className="mt-1 text-xs leading-5 text-[#94A3B8]/72 sm:text-sm">
+            {helper}
+          </p>
+        </div>
       </div>
-      <p className="mt-2 truncate text-base font-bold leading-6 text-[#F8FAFC]">
-        {value}
-      </p>
-      {children ? <div className="mt-2">{children}</div> : null}
-      {helper ? (
-        <p className="mt-1 text-xs leading-5 text-[#94A3B8]/66">{helper}</p>
-      ) : null}
+      {children ? <div className="mt-3">{children}</div> : null}
     </div>
   );
 }
 
-function MissionCoachCard({ insight }: { insight: SessionCoachInsight }) {
+function ChangeCard({
+  label,
+  title,
+  detail,
+  tone,
+}: {
+  label: string;
+  title: string;
+  detail: string;
+  tone: Tone;
+}) {
+  return (
+    <div className="rounded-[22px] bg-[#07111F]/42 p-4 shadow-[0_14px_36px_rgba(0,0,0,0.16),inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+      <span
+        className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${toneClass(
+          tone
+        )}`}
+      >
+        {label}
+      </span>
+      <p className="mt-3 text-base font-semibold text-[#F8FAFC]">{title}</p>
+      <p className="mt-1 text-sm leading-6 text-[#94A3B8]/72">{detail}</p>
+    </div>
+  );
+}
+
+function MetricBar({
+  label,
+  value,
+  detail,
+  tone,
+}: {
+  label: string;
+  value: number;
+  detail: string;
+  tone: Tone;
+}) {
+  return (
+    <div className="rounded-2xl bg-[#07111F]/42 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+      <div className="flex items-center justify-between gap-3">
+        <p className="truncate text-sm font-semibold text-[#F8FAFC]">{label}</p>
+        <p className="shrink-0 text-sm font-bold text-[#F8FAFC]">{value}%</p>
+      </div>
+      <div className="mt-2 h-2 rounded-full bg-[#10192B]">
+        <div
+          className={`h-2 rounded-full ${
+            tone === "green"
+              ? "bg-emerald-400"
+              : tone === "rose"
+                ? "bg-[#F43F5E]"
+                : tone === "gold"
+                  ? "bg-[#F5C84C]"
+                  : "bg-[#4F8CFF]"
+          }`}
+          style={{ width: `${Math.max(value, value > 0 ? 6 : 0)}%` }}
+        />
+      </div>
+      <p className="mt-2 text-xs leading-5 text-[#94A3B8]/72">{detail}</p>
+    </div>
+  );
+}
+
+function RecentFormPanel({ matches }: { matches: RecentMatch[] }) {
+  const preview = matches.slice(0, 4);
+
+  if (!preview.length) {
+    return (
+      <div className="rounded-2xl bg-[#07111F]/42 p-4 text-sm text-[#94A3B8]/72 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+        First test in progress. Log 3 more games to unlock a real trend.
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid gap-3">
+      <div className="flex items-center justify-between gap-3">
+        <RecentFormDots matches={matches} />
+        <p className="text-xs font-medium text-[#94A3B8]/72">
+          Last {Math.min(matches.length, 6)} logged
+        </p>
+      </div>
+      {preview.map((match) => (
+        <div
+          key={match.id}
+          className="rounded-2xl bg-[#07111F]/42 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]"
+        >
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-[#F8FAFC]">
+                vs {match.opponentArchetype}
+              </p>
+              <p className="mt-1 truncate text-xs text-[#94A3B8]/72">
+                {match.deckVersionName} / {formatDate(match.playedAt)}
+              </p>
+            </div>
+            <RecordPill result={match.result} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function TurnOrderPanel({
+  firstRate,
+  secondRate,
+}: {
+  firstRate: string;
+  secondRate: string;
+}) {
+  const rows = [
+    {
+      label: "First",
+      value: firstRate,
+      width: parseRate(firstRate),
+      tone: "bg-[#4F8CFF]",
+    },
+    {
+      label: "Second",
+      value: secondRate,
+      width: parseRate(secondRate),
+      tone: "bg-[#F5C84C]",
+    },
+  ];
+
+  return (
+    <div className="grid gap-3">
+      {rows.map((row) => (
+        <div key={row.label} className="rounded-2xl bg-[#07111F]/42 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm font-semibold text-[#F8FAFC]">{row.label}</p>
+            <p className="text-sm font-bold text-[#F8FAFC]">{row.value}</p>
+          </div>
+          <div className="mt-2 h-2 rounded-full bg-[#10192B]">
+            <div
+              className={`h-2 rounded-full ${row.tone}`}
+              style={{ width: `${Math.max(row.width, row.width > 0 ? 8 : 0)}%` }}
+            />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function MissionHeroCard({
+  insight,
+  nextActionTitle,
+  nextActionCopy,
+}: {
+  insight: SessionCoachInsight;
+  nextActionTitle: string;
+  nextActionCopy: string;
+}) {
+  const badge = getMissionBadge(insight);
   const progressPercent = Math.min(
     100,
     Math.round((insight.missionProgress / insight.missionTargetCount) * 100)
@@ -280,91 +506,133 @@ function MissionCoachCard({ insight }: { insight: SessionCoachInsight }) {
   const progressDots = Array.from({ length: insight.missionTargetCount }).map(
     (_, index) => index < insight.missionProgress
   );
-  const status = getMissionStatus(insight.missionConfidence);
-  const evidenceLabel =
-    insight.missionContextSeenCount > 0
-      ? `${insight.missionContextSeenCount} focus game${
-          insight.missionContextSeenCount === 1 ? "" : "s"
-        }`
-      : "No focus evidence";
+  const primaryHref =
+    insight.missionState === "complete" ? "/matchups" : insight.continueHref;
+  const primaryLabel =
+    insight.missionState === "complete" ? "Review matchup" : "Log next game";
 
   return (
-    <section className="grid gap-4 rounded-md bg-[#11182C]/82 p-4 shadow-[0_22px_58px_rgba(0,0,0,0.25),0_0_34px_rgba(245,200,76,0.045),inset_0_0_0_1px_rgba(245,200,76,0.12)] sm:p-5 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-center">
+    <section className="grid gap-4 rounded-[30px] bg-[radial-gradient(circle_at_top_left,rgba(79,140,255,0.24),transparent_32%),radial-gradient(circle_at_top_right,rgba(245,200,76,0.16),transparent_24%),linear-gradient(180deg,rgba(15,26,45,0.98),rgba(7,17,31,0.92))] p-5 shadow-[0_28px_72px_rgba(0,0,0,0.34),0_0_44px_rgba(79,140,255,0.08),inset_0_0_0_1px_rgba(148,163,184,0.14)] sm:p-6 xl:grid-cols-[minmax(0,1.5fr)_360px]">
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex size-9 items-center justify-center rounded-md bg-[#F5C84C]/12 text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
-            <Target className="size-4" aria-hidden="true" />
+          <span className="inline-flex size-10 items-center justify-center rounded-2xl bg-[#F5C84C]/12 text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.18)]">
+            <Target className="size-5" aria-hidden="true" />
           </span>
-          <ArchetypeSprites archetype={insight.archetype} className="shrink-0" />
-          <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#94A3B8]/72">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#94A3B8]/76">
             Current mission
           </span>
-          <span className="rounded-md bg-[#4F8CFF]/10 px-2 py-1 text-xs font-semibold text-[#B8D1FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.14)]">
-            {status}
+          <span
+            className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${toneClass(
+              badge.tone
+            )}`}
+          >
+            {badge.label}
           </span>
         </div>
 
-        <h2 className="mt-3 text-2xl font-bold leading-tight tracking-tight text-[#F8FAFC] sm:text-3xl">
-          {insight.missionTitle}
-        </h2>
-        <p className="mt-2 max-w-2xl truncate text-sm leading-6 text-[#94A3B8]/78">
-          {insight.missionNextAction}
-        </p>
-        <div className="mt-3 flex flex-wrap gap-2">
-          <span className="inline-flex max-w-full items-center gap-2 rounded-md bg-[#0B1020]/44 px-2.5 py-1.5 text-xs font-medium text-[#F8FAFC]/86 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.04)]">
-            <Sparkles className="size-3.5 shrink-0 text-[#F5C84C]" aria-hidden="true" />
-            <span className="truncate">{evidenceLabel}</span>
-          </span>
-          <span className="inline-flex max-w-full items-center gap-2 rounded-md bg-[#0B1020]/44 px-2.5 py-1.5 text-xs font-medium text-[#94A3B8]/78 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.04)]">
-            <span className="truncate">{insight.missionContextLabel}</span>
-          </span>
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <ArchetypeSprites archetype={insight.archetype} size="md" className="shrink-0" />
+          <div className="min-w-0">
+            <h1 className="text-3xl font-bold tracking-tight text-[#F8FAFC] sm:text-4xl">
+              {insight.missionTitle}
+            </h1>
+            <p className="mt-2 text-sm leading-6 text-[#D6E0F0]/82 sm:text-base">
+              {insight.missionState === "complete"
+                ? insight.progressFeedback
+                : insight.missionContextSeenCount > 0
+                  ? `You are building signal against ${insight.archetype}.`
+                  : insight.missionReason}
+            </p>
+          </div>
         </div>
 
-        <details className="mt-3">
-          <summary className="inline-flex cursor-pointer list-none items-center gap-1.5 rounded-md px-1.5 py-1 text-xs font-medium text-[#94A3B8]/70 transition hover:bg-[#0B1020]/38 hover:text-[#F8FAFC] marker:hidden">
+        <div className="mt-5 grid gap-3 sm:grid-cols-3">
+          <StatusChip
+            label="Focus"
+            value={insight.missionContextLabel}
+            tone="blue"
+          />
+          <StatusChip
+            label="Evidence"
+            value={`${insight.missionContextSeenCount}/${insight.missionContextTargetCount} focus games`}
+            tone="gold"
+          />
+          <StatusChip
+            label="Next best action"
+            value={nextActionTitle}
+            tone="green"
+          />
+        </div>
+
+        <details className="mt-4">
+          <summary className="inline-flex cursor-pointer list-none items-center gap-1.5 rounded-xl bg-[#07111F]/42 px-3 py-2 text-sm font-semibold text-[#DCE8FF] transition hover:bg-[#07111F]/58 marker:hidden">
             Why this mission
-            <ChevronDown className="size-3.5" aria-hidden="true" />
+            <ChevronDown className="size-4" aria-hidden="true" />
           </summary>
-          <div className="mt-2 grid gap-2 rounded-md bg-[#0B1020]/42 p-3 text-sm leading-6 text-[#94A3B8]/78 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.04)] sm:grid-cols-2">
+          <div className="mt-3 grid gap-2 rounded-2xl bg-[#07111F]/40 p-4 text-sm leading-6 text-[#94A3B8]/76 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)] lg:grid-cols-2">
             <p>{insight.missionReason}</p>
             <p>{insight.evidence}</p>
           </div>
         </details>
       </div>
 
-      <div className="rounded-md bg-[#0B1020]/38 p-3 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.045)]">
-        <Link
-          href={insight.continueHref}
-          className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-md bg-[#F5C84C] px-5 text-sm font-bold text-[#0B1020] shadow-[0_14px_34px_rgba(245,200,76,0.22)] transition hover:-translate-y-0.5 hover:bg-[#ffd85f] active:translate-y-0 active:scale-[0.98]"
-        >
-          Log next game
-          <ArrowRight className="size-4" aria-hidden="true" />
-        </Link>
-        <div className="mt-4">
-          <div
-            className="flex items-center justify-between gap-2"
-            aria-label={`${insight.missionProgress} of ${insight.missionTargetCount} games completed`}
-          >
-            <div className="flex items-center gap-1.5">
-              {progressDots.map((complete, index) => (
-                <span
-                  key={index}
-                  className={`size-2.5 rounded-full transition-colors ${
-                    complete ? "bg-[#F5C84C]" : "bg-[#1A2238]"
-                  }`}
-                />
-              ))}
-            </div>
-            <span className="text-xs font-semibold text-[#F8FAFC]">
+      <div className="flex flex-col rounded-[24px] bg-[#07111F]/48 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+              Progress
+            </p>
+            <p className="mt-1 text-lg font-semibold text-[#F8FAFC]">
               {insight.missionProgress}/{insight.missionTargetCount} games
-            </span>
+            </p>
           </div>
-          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#1A2238]/70">
-            <div
-              className="h-full rounded-full bg-[#F5C84C] shadow-[0_0_18px_rgba(245,200,76,0.22)] transition-all"
-              style={{ width: `${progressPercent}%` }}
+          <span className="rounded-full bg-[#0B1020]/72 px-3 py-1 text-xs font-semibold text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]">
+            {insight.missionConfidence}
+          </span>
+        </div>
+
+        <div className="mt-4 flex items-center gap-2" aria-label="Mission progress">
+          {progressDots.map((complete, index) => (
+            <span
+              key={index}
+              className={`h-2.5 flex-1 rounded-full ${
+                complete ? "bg-[#F5C84C]" : "bg-[#1A2238]"
+              }`}
             />
-          </div>
+          ))}
+        </div>
+
+        <div className="mt-3 h-2 rounded-full bg-[#11182C]">
+          <div
+            className="h-2 rounded-full bg-[#F5C84C] shadow-[0_0_18px_rgba(245,200,76,0.22)]"
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
+
+        <p className="mt-3 text-sm font-medium text-[#D6E0F0]">
+          {insight.progressFeedback}
+        </p>
+
+        <div className="mt-5 rounded-2xl bg-[#0B1020]/66 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+            Next move
+          </p>
+          <p className="mt-2 text-base font-semibold text-[#F8FAFC]">
+            {nextActionTitle}
+          </p>
+          <p className="mt-1 text-sm leading-6 text-[#94A3B8]/72">
+            {nextActionCopy}
+          </p>
+        </div>
+
+        <div className="mt-5 grid gap-2">
+          <Link href={primaryHref} className={`${primaryButton} h-12`}>
+            {primaryLabel}
+            <ArrowRight className="ml-2 size-4" aria-hidden="true" />
+          </Link>
+          <Link href="/matchups" className={`${secondaryButton} h-11`}>
+            Review matchup data
+          </Link>
         </div>
       </div>
     </section>
@@ -384,20 +652,25 @@ function SetupChecklist({
     {
       label: "Create your first deck",
       complete: hasDecks,
+      helper: "Name the list you want to test first.",
     },
     {
       label: "Add a test version",
       complete: hasAnyDeckVersions,
+      helper: "Paste a version so matchup signal can start.",
     },
     {
       label: "Log your first game",
       complete: false,
+      helper: "One logged game unlocks the coaching loop.",
     },
     {
-      label: "Unlock matchup insights",
+      label: "Build first signal",
       complete: false,
+      helper: "Three to five games is enough to start seeing direction.",
     },
   ];
+
   const cta = !hasDecks
     ? {
         label: "Create your first deck",
@@ -423,38 +696,41 @@ function SetupChecklist({
       />
       <p className="text-sm font-semibold text-[#4F8CFF]">First setup</p>
       <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[#F8FAFC]">
-        Set up your testing workspace.
+        Build your coaching home.
       </h2>
-      <p className={`mt-3 max-w-xl ${sectionCopy}`}>
-        SixPrizer needs one deck version before you can log games. After a few games,
-        matchup signals and testing recommendations will start to appear.
+      <p className="mt-2 max-w-2xl text-sm leading-6 text-[#94A3B8]/72">
+        Start with one deck, one version, and a few logged games. The dashboard gets useful quickly once signal starts forming.
       </p>
-      <div className="mt-5 grid gap-2 sm:grid-cols-2">
-        {steps.map((step, index) => (
+
+      <div className="mt-6 grid gap-3 sm:grid-cols-2">
+        {steps.map((step) => (
           <div
             key={step.label}
-            className={`rounded-md p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.09)] ${
-              step.complete ? "bg-[#22C55E]/10" : "bg-[#07111F]/46"
-            }`}
+            className="rounded-[20px] bg-[#07111F]/42 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]"
           >
             <div className="flex items-center gap-2">
               <span
-                className={`inline-flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+                className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${
                   step.complete
-                    ? "bg-[#22C55E] text-[#07111F]"
-                    : "bg-[#1A2238] text-[#94A3B8]"
+                    ? "bg-emerald-500/10 text-emerald-200"
+                    : "bg-[#4F8CFF]/10 text-[#DCE8FF]"
                 }`}
               >
-                {index + 1}
+                {step.complete ? "Done" : "Next"}
               </span>
-              <p className="text-sm font-semibold text-[#F8FAFC]">{step.label}</p>
             </div>
+            <p className="mt-3 text-base font-semibold text-[#F8FAFC]">{step.label}</p>
+            <p className="mt-1 text-sm leading-6 text-[#94A3B8]/72">{step.helper}</p>
           </div>
         ))}
       </div>
-      <Link href={cta.href} className={`mt-6 ${primaryButton}`}>
-        {cta.label}
-      </Link>
+
+      <div className="mt-6">
+        <Link href={cta.href} className={`${primaryButton} h-12 w-full sm:w-auto`}>
+          {cta.label}
+          <ArrowRight className="ml-2 size-4" aria-hidden="true" />
+        </Link>
+      </div>
     </section>
   );
 }
@@ -476,8 +752,8 @@ export function DashboardContent({
 }: DashboardContentProps) {
   const router = useRouter();
   const supabase = createClient();
-  const [chartsExpanded, setChartsExpanded] = useState(false);
-  const hasMatches = stats.totalMatches > 0;
+  const [recordsExpanded, setRecordsExpanded] = useState(false);
+
   const sampledMatchups = matchupSummary.filter((matchup) => matchup.matches >= 3);
   const worstMatchup = sampledMatchups.reduce<MatchupSummary | null>(
     (currentWorst, matchup) => {
@@ -500,6 +776,7 @@ export function DashboardContent({
     },
     null
   );
+
   const bestMatchup = sampledMatchups.reduce<MatchupSummary | null>(
     (currentBest, matchup) => {
       if (!currentBest) {
@@ -521,6 +798,7 @@ export function DashboardContent({
     },
     null
   );
+
   const bestDeckVersion = deckPerformance.reduce<DeckPerformance | null>(
     (currentBest, deckVersion) => {
       if (!currentBest) {
@@ -542,6 +820,7 @@ export function DashboardContent({
     },
     null
   );
+
   const recentRecord = recentMatches.slice(0, 5).reduce(
     (record, match) => {
       if (match.result === "win") {
@@ -556,36 +835,110 @@ export function DashboardContent({
     },
     { wins: 0, losses: 0, ties: 0 }
   );
-  const insights = [
+
+  const recentFormValue = recentMatches.length
+    ? formatMatchRecord(recentRecord.wins, recentRecord.losses, recentRecord.ties)
+    : "No games yet";
+  const lossPatternValue =
+    trainingProgress.lossPatternTrend ?? "No repeated issue yet";
+  const turnOrderDelta =
+    stats.wentFirstWinRate === "N/A" || stats.wentSecondWinRate === "N/A"
+      ? null
+      : parseRate(stats.wentFirstWinRate) - parseRate(stats.wentSecondWinRate);
+  const activeDeck =
+    decks.find((deck) => deck.deck_versions?.some((version) => version.is_active)) ??
+    decks[0] ??
+    null;
+  const activeVersion =
+    activeDeck?.deck_versions?.find((version) => version.is_active) ??
+    activeDeck?.deck_versions?.[0] ??
+    null;
+  const matchupPreview = matchupSummary.slice(0, 5);
+  const deckPreview = deckPerformance.slice(0, 4);
+  const issueChips = [
+    sessionCoach?.commonIssue?.tag,
+    trainingProgress.lossPatternTrend,
+  ].filter((value, index, values): value is string => Boolean(value) && values.indexOf(value) === index);
+
+  const whatChangedCards = [
     {
-      label: "Overall win rate",
-      value: stats.overallWinRate,
-      detail: `${stats.totalMatches} match${stats.totalMatches === 1 ? "" : "es"} tracked`,
+      label: sessionCoach?.completionStatus ? "Signal" : "Mission",
+      title:
+        sessionCoach?.completionStatus ??
+        sessionCoach?.progressFeedback ??
+        "First test in progress",
+      detail:
+        sessionCoach?.completionSummary ??
+        sessionCoach?.evidence ??
+        "Log a few more games before this becomes actionable.",
+      tone: sessionCoach?.completionStatus?.toLowerCase().includes("improvement")
+        ? ("green" as const)
+        : sessionCoach?.missionState === "complete"
+          ? ("gold" as const)
+          : ("blue" as const),
     },
     {
-      label: "Worst matchup",
-      value: worstMatchup?.opponentArchetype ?? "No 3-game sample",
-      detail: worstMatchup
-        ? `${worstMatchup.winRate} across ${worstMatchup.matches} games`
-        : "Log more games to trust the signal",
+      label: "Matchup change",
+      title: trainingProgress.currentWeakestImproved
+        ? `${trainingProgress.currentWeakestImproved} improved`
+        : bestMatchup
+          ? `Best sample: ${bestMatchup.opponentArchetype}`
+          : "No matchup lift yet",
+      detail: trainingProgress.currentWeakestImproved
+        ? "The weakest recurring matchup is trending better in recent logs."
+        : bestMatchup
+          ? `${bestMatchup.winRate} across ${bestMatchup.matches} games.`
+          : "Log 3 more games into one matchup to surface movement.",
+      tone: trainingProgress.currentWeakestImproved ? ("green" as const) : ("blue" as const),
     },
     {
-      label: "Best deck version",
-      value: bestDeckVersion?.deckVersionName ?? "No deck record yet",
+      label: "Pattern",
+      title: lossPatternValue,
+      detail: trainingProgress.lossPatternTrend
+        ? "This is the clearest repeated loss note in recent games."
+        : "No repeated issue yet. Structured tags will sharpen this first.",
+      tone: trainingProgress.lossPatternTrend ? ("rose" as const) : ("gold" as const),
+    },
+    {
+      label: "Version trend",
+      title: bestDeckVersion
+        ? `${bestDeckVersion.deckVersionName} leads`
+        : "Needs another version",
       detail: bestDeckVersion
-        ? `${bestDeckVersion.winRate} across ${bestDeckVersion.matches} games`
-        : "Deck performance appears after logging",
-    },
-    {
-      label: "Recent trend",
-      value: formatMatchRecord(
-        recentRecord.wins,
-        recentRecord.losses,
-        recentRecord.ties
-      ),
-      detail: `Last ${Math.min(recentMatches.length, 5)} logged matches`,
+        ? `${bestDeckVersion.winRate} across ${bestDeckVersion.matches} logged games.`
+        : "Add another version to compare list changes.",
+      tone: bestDeckVersion ? ("green" as const) : ("gold" as const),
     },
   ];
+
+  const nextAction = sessionCoach
+    ? sessionCoach.missionState === "complete"
+      ? {
+          title: "Review this matchup",
+          copy: "You have enough focused games to review before changing your list.",
+          href: "/matchups",
+        }
+      : sessionCoach.missionContextSeenCount < sessionCoach.missionContextTargetCount
+        ? {
+            title: `Log ${sessionCoach.missionContextTargetCount - sessionCoach.missionContextSeenCount} more focus game${
+              sessionCoach.missionContextTargetCount - sessionCoach.missionContextSeenCount === 1
+                ? ""
+                : "s"
+            }`,
+            copy: "One more focused sample will make the coaching signal firmer.",
+            href: sessionCoach.continueHref,
+          }
+        : {
+            title: sessionCoach.missionNextAction,
+            copy: sessionCoach.progressFeedback,
+            href: sessionCoach.continueHref,
+          }
+    : {
+        title: "Log your next game",
+        copy: "A few more games will unlock a real coaching loop.",
+        href: "/matches/new",
+      };
+
   const shareReport: ShareReport = {
     title: "Matchup Report",
     deckName: bestDeckVersion?.deckVersionName ?? "All decks",
@@ -595,24 +948,6 @@ export function DashboardContent({
     totalMatches: stats.totalMatches,
     context: "Your testing",
   };
-  const recentFormValue = recentMatches.length
-    ? formatMatchRecord(
-        recentRecord.wins,
-        recentRecord.losses,
-        recentRecord.ties
-      )
-    : "No games yet";
-  const lossPatternValue =
-    trainingProgress.lossPatternTrend ?? "No pattern yet";
-  const lossPatternTone = trainingProgress.lossPatternTrend ? "rose" : "blue";
-  const improvedValue = trainingProgress.improvedMatchups
-    ? `${trainingProgress.improvedMatchups} improved`
-    : "Awaiting comparison";
-  const testsValue = trainingProgress.completedTestBlocks
-    ? `${trainingProgress.completedTestBlocks} block${
-        trainingProgress.completedTestBlocks === 1 ? "" : "s"
-      }`
-    : "First test";
 
   async function handleSignOut() {
     await supabase.auth.signOut();
@@ -633,486 +968,663 @@ export function DashboardContent({
               : "Start with a five-game sample",
           }}
         />
-        <div className={`${appMain} mx-auto w-full max-w-6xl`}>
-        <header className="rounded-md bg-[#0B1020]/26 p-3 shadow-[0_14px_46px_rgba(0,0,0,0.16),inset_0_0_0_1px_rgba(248,250,252,0.04)] sm:p-4">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <div className="min-w-0">
-              <SixPrizerLogo {...logoOnDark} />
-              <h1 className="mt-2 text-2xl font-bold tracking-tight text-[#F8FAFC] sm:text-3xl">
-                Coach home
-              </h1>
-              <p className="mt-1 truncate text-sm leading-6 text-[#94A3B8]/72">
-                {email}
-              </p>
+
+        <div className={`${appMain} mx-auto w-full max-w-7xl`}>
+          <header className="rounded-[24px] bg-[linear-gradient(180deg,rgba(11,16,32,0.92),rgba(7,17,31,0.84))] p-4 shadow-[0_18px_46px_rgba(0,0,0,0.22),inset_0_0_0_1px_rgba(148,163,184,0.10)] sm:p-5">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div className="min-w-0">
+                <SixPrizerLogo {...logoOnDark} />
+                <h1 className="mt-3 text-3xl font-bold tracking-tight text-[#F8FAFC] sm:text-4xl">
+                  Overview
+                </h1>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-[#94A3B8]/72">
+                  See what improved, what is hurting you, and what to test next.
+                </p>
+                <p className="mt-1 truncate text-xs text-[#94A3B8]/62">{email}</p>
+              </div>
+
+              <div className="flex min-w-0 flex-col gap-2 lg:items-end">
+                <div className="lg:hidden">
+                  <AppNav current="dashboard" />
+                </div>
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  className="inline-flex h-9 items-center justify-center gap-1.5 rounded-xl px-3 text-xs font-medium text-[#94A3B8]/72 transition hover:bg-white/5 hover:text-[#F8FAFC] lg:w-fit"
+                >
+                  <LogOut className="size-3.5" aria-hidden="true" />
+                  Sign out
+                </button>
+              </div>
             </div>
-            <div className="flex min-w-0 flex-col gap-2 lg:items-end">
-              <div className="lg:hidden">
-                <AppNav current="dashboard" />
-              </div>
-              <button
-                type="button"
-                onClick={handleSignOut}
-                className="inline-flex h-8 items-center justify-center gap-1.5 rounded-md px-2.5 text-xs font-medium text-[#94A3B8]/72 transition hover:bg-white/5 hover:text-[#F8FAFC] lg:w-fit"
-              >
-                <LogOut className="size-3.5" aria-hidden="true" />
-                Sign out
-              </button>
-            </div>
-          </div>
-        </header>
+          </header>
 
-        {hasMatches && sessionCoach ? (
-          <MissionCoachCard insight={sessionCoach} />
-        ) : null}
-
-        {hasMatches ? (
-          <section className="grid gap-2.5 sm:grid-cols-2 xl:grid-cols-4">
-            <SignalCard
-              icon={Activity}
-              label="Recent form"
-              value={recentFormValue}
-              helper={`Last ${Math.min(recentMatches.length, 5)} games`}
-              tone="green"
-            >
-              <RecentFormDots matches={recentMatches} />
-            </SignalCard>
-            <SignalCard
-              icon={ClipboardList}
-              label="Tests completed"
-              value={testsValue}
-              helper={
-                trainingProgress.completedTestBlocks
-                  ? "Stable samples banked"
-                  : "Start with five games"
-              }
-              tone="gold"
+          {!hasAnyMatches ? (
+            <SetupChecklist
+              hasDecks={decks.length > 0}
+              hasAnyDeckVersions={hasAnyDeckVersions}
+              firstDeckId={firstDeckId}
             />
-            <SignalCard
-              icon={TrendingUp}
-              label="Improved matchups"
-              value={improvedValue}
-              helper={
-                trainingProgress.improvedMatchups
-                  ? "Progress detected"
-                  : "Finish a mission first"
-              }
-              tone={trainingProgress.improvedMatchups ? "green" : "blue"}
-            />
-            <SignalCard
-              icon={ShieldAlert}
-              label="Loss pattern"
-              value={lossPatternValue}
-              helper={
-                trainingProgress.lossPatternTrend
-                  ? "Review tagged losses"
-                  : "No repeated issue"
-              }
-              tone={lossPatternTone}
-            />
-          </section>
-        ) : null}
+          ) : (
+            <div className="grid gap-6">
+              {sessionCoach ? (
+                <MissionHeroCard
+                  insight={sessionCoach}
+                  nextActionTitle={nextAction.title}
+                  nextActionCopy={nextAction.copy}
+                />
+              ) : null}
 
-        {hasMatches ? (
-          <details className="rounded-md bg-[#11182C]/46 p-3 shadow-[0_14px_40px_rgba(0,0,0,0.14),inset_0_0_0_1px_rgba(248,250,252,0.032)] sm:p-4">
-            <summary className="cursor-pointer list-none marker:hidden">
-              <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex min-w-0 items-center gap-2">
-                  <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-md bg-[#4F8CFF]/10 text-[#B8D1FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.14)]">
-                    <BarChart3 className="size-4" aria-hidden="true" />
-                  </span>
-                  <div className="min-w-0">
-                    <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]/86">
-                      Detailed stats
-                    </p>
-                    <h2 className="mt-0.5 truncate text-lg font-bold tracking-tight text-[#F8FAFC]">
-                      Charts and totals
-                    </h2>
-                  </div>
-                </div>
-                <span className="inline-flex items-center gap-1 text-xs font-medium text-[#94A3B8]/58">
-                  Open
-                  <ChevronDown className="size-3.5" aria-hidden="true" />
-                </span>
-              </div>
-            </summary>
-            <section className="mt-4 rounded-md bg-[#11182C]/64 p-3 shadow-[0_20px_58px_rgba(0,0,0,0.16),0_0_42px_rgba(79,140,255,0.035),inset_0_0_0_1px_rgba(248,250,252,0.035)] sm:p-4">
-              <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]/88">
-                    Testing snapshot
-                  </p>
-                  <h2 className="mt-0.5 text-xl font-bold tracking-tight text-[#F8FAFC]">
-                    Logged games, condensed.
-                  </h2>
-                </div>
-                <div className="flex flex-col gap-2 sm:flex-row">
-                  <Link
-                    href="/matches/new"
-                    className={primaryButton}
-                  >
-                    <SixPrizerLogo
-                      variant="favicon"
-                      showText={false}
-                      className="mr-2"
-                      markClassName="size-5 bg-[#0B1020]/12 shadow-none"
-                    />
-                    Log next game
-                  </Link>
-                  <ShareReportButton report={shareReport} />
-                </div>
-              </div>
-              <div className="mt-4 grid gap-2.5 sm:grid-cols-2 xl:grid-cols-4">
-                {insights.map((insight) => (
-                  <div
-                    key={insight.label}
-                    className="rounded-md bg-[#0B1020]/42 p-3 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.035)]"
-                  >
-                    <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-[#94A3B8]/64">
-                      {insight.label}
-                    </p>
-                    <p className="mt-1 truncate text-lg font-bold text-[#F8FAFC] sm:text-xl">
-                      {insight.value}
-                    </p>
-                    <p className="mt-1.5 text-xs leading-5 text-[#94A3B8]/68 sm:text-sm">
-                      {insight.detail}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </section>
-          </details>
-        ) : null}
-
-        {hasMatches ? (
-          <details
-            className="rounded-md bg-[#11182C]/46 p-3 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.035)] sm:p-4"
-            onToggle={(event) => setChartsExpanded(event.currentTarget.open)}
-          >
-            <summary className="cursor-pointer list-none text-sm font-semibold text-[#F8FAFC]/92 transition hover:text-[#F5C84C] marker:hidden">
-              More records and charts
-            </summary>
-            <div className="mt-4 grid gap-4">
-              <section className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-6">
-                <StatCard label="Matches" value={stats.totalMatches} />
-                <StatCard label="Wins" value={stats.totalWins} />
-                <StatCard label="Losses" value={stats.totalLosses} />
-                <StatCard label="Ties" value={stats.totalTies} />
-                <StatCard label="Win rate" value={stats.overallWinRate} />
-                <StatCard label="Went first" value={stats.wentFirstWinRate} />
-                <StatCard label="Went second" value={stats.wentSecondWinRate} />
+              <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <KpiCard
+                  icon={Activity}
+                  label="Recent form"
+                  value={recentFormValue}
+                  helper={`Last ${Math.min(recentMatches.length, 5)} logged matches`}
+                  tone="green"
+                >
+                  <RecentFormDots matches={recentMatches} />
+                </KpiCard>
+                <KpiCard
+                  icon={ShieldAlert}
+                  label="Biggest concern"
+                  value={
+                    sessionCoach?.commonIssue?.tag ??
+                    worstMatchup?.opponentArchetype ??
+                    "No pattern yet"
+                  }
+                  helper={
+                    sessionCoach?.commonIssue
+                      ? `${sessionCoach.commonIssue.count} recent losses tagged`
+                      : worstMatchup
+                        ? `${worstMatchup.winRate} across ${worstMatchup.matches} games`
+                        : getLowDataLabel(stats.totalMatches, 3, "Pattern detected")
+                  }
+                  tone="rose"
+                />
+                <KpiCard
+                  icon={Sparkles}
+                  label="Best matchup"
+                  value={bestMatchup?.opponentArchetype ?? "Needs more signal"}
+                  helper={
+                    bestMatchup
+                      ? `${bestMatchup.winRate} across ${bestMatchup.matches} games`
+                      : getLowDataLabel(stats.totalMatches, 3, "Matchup signal ready")
+                  }
+                  tone="green"
+                />
+                <KpiCard
+                  icon={TrendingUp}
+                  label="Turn-order edge"
+                  value={
+                    turnOrderDelta === null
+                      ? "No split yet"
+                      : turnOrderDelta >= 0
+                        ? `First +${turnOrderDelta}%`
+                        : `Second +${Math.abs(turnOrderDelta)}%`
+                  }
+                  helper={
+                    turnOrderDelta === null
+                      ? "Needs more separated samples"
+                      : turnOrderDelta >= 0
+                        ? "You are currently stronger going first."
+                        : "Going second is currently holding up better."
+                  }
+                  tone="blue"
+                />
               </section>
 
-            <section className="grid gap-4 lg:grid-cols-2">
-              <div className={`${cardLarge} p-3 sm:p-4`}>
-                <div className="flex flex-col gap-1">
-                  <h2 className={sectionTitle}>
-                    Result Trend
-                  </h2>
-                  <p className={sectionCopy}>
-                    Daily wins, losses, and ties from your logged matches.
-                  </p>
-                </div>
-                {chartsExpanded && trendData.length ? (
-                  <div className="mt-3 h-64 min-h-[256px] min-w-0">
-                    <ResponsiveContainer width="100%" height="100%" minHeight={220}>
-                      <LineChart data={trendData}>
-                        <CartesianGrid stroke="rgba(148,163,184,0.22)" vertical={false} />
-                        <XAxis
-                          dataKey="label"
-                          tick={{ fill: "#94A3B8", fontSize: 12 }}
-                          tickLine={false}
-                          axisLine={false}
-                        />
-                        <YAxis
-                          allowDecimals={false}
-                          tick={{ fill: "#94A3B8", fontSize: 12 }}
-                          tickLine={false}
-                          axisLine={false}
-                        />
-                        <Tooltip
-                          contentStyle={{
-                            background: "#0B1020",
-                            border: "1px solid rgba(148,163,184,0.18)",
-                            borderRadius: 8,
-                            color: "#F8FAFC",
-                          }}
-                          formatter={(value, name) => [
-                            value,
-                            name === "wins"
-                              ? "Wins"
-                              : name === "losses"
-                                ? "Losses"
-                                : name === "ties"
-                                  ? "Ties"
-                                : name,
-                           ]}
-                        />
-                        <Legend />
-                        <Line
-                          type="monotone"
-                          dataKey="wins"
-                          stroke="#22C55E"
-                          strokeWidth={2}
-                          dot={false}
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="losses"
-                          stroke="#F43F5E"
-                          strokeWidth={2}
-                          dot={false}
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="ties"
-                          stroke="#94A3B8"
-                          strokeWidth={2}
-                          dot={false}
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
-                ) : (
-                  <ChartPlaceholder>
-                    {chartsExpanded
-                      ? "Log more games to build a result trend."
-                      : "Open this section to view charts."}
-                  </ChartPlaceholder>
-                )}
-              </div>
-
-              <div className={`${cardLarge} p-3 sm:p-4`}>
-                <div className="flex flex-col gap-1">
-                  <h2 className={sectionTitle}>
-                    Deck Comparison
-                  </h2>
-                  <p className={sectionCopy}>
-                    Win rate by deck version, sorted by matches played.
-                  </p>
-                </div>
-                {chartsExpanded && deckPerformanceChart.length ? (
-                  <div className="mt-3 h-64 min-h-[256px] min-w-0">
-                    <ResponsiveContainer width="100%" height="100%" minHeight={220}>
-                      <BarChart data={deckPerformanceChart} layout="vertical">
-                        <CartesianGrid stroke="rgba(148,163,184,0.22)" horizontal={false} />
-                        <XAxis
-                          type="number"
-                          domain={[0, 100]}
-                          tickFormatter={(value) => `${value}%`}
-                          tick={{ fill: "#94A3B8", fontSize: 12 }}
-                          tickLine={false}
-                          axisLine={false}
-                        />
-                        <YAxis
-                          type="category"
-                          dataKey="name"
-                          width={120}
-                          tick={{ fill: "#94A3B8", fontSize: 12 }}
-                          tickLine={false}
-                          axisLine={false}
-                        />
-                        <Tooltip
-                          contentStyle={{
-                            background: "#0B1020",
-                            border: "1px solid rgba(148,163,184,0.18)",
-                            borderRadius: 8,
-                            color: "#F8FAFC",
-                          }}
-                          formatter={(value, name) => [
-                            `${value}%`,
-                            name === "winRate" ? "Win rate" : name,
-                          ]}
-                        />
-                        <Bar dataKey="winRate" fill="#4F8CFF" radius={[0, 4, 4, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                ) : (
-                  <ChartPlaceholder>
-                    {chartsExpanded
-                      ? "Add another deck version to compare testing results."
-                      : "Open this section to view charts."}
-                  </ChartPlaceholder>
-                )}
-              </div>
-            </section>
-            </div>
-
-            <section className={`${cardLarge} p-3 sm:p-4`}>
-              <div className="flex flex-col gap-1">
-                <h2 className={sectionTitle}>
-                  Recent Matches
-                </h2>
-                <p className={sectionCopy}>
-                  Latest games from your testing.
-                </p>
-              </div>
-              <div className={`mt-3 ${divider}`}>
-                {recentMatches.map((match) => (
-                  <div
-                    key={match.id}
-                    className="grid gap-1.5 py-3 sm:grid-cols-[104px_minmax(0,1fr)_minmax(0,1.1fr)_64px_96px] sm:items-center"
-                  >
-                    <p className="text-sm text-[#94A3B8]/70">
-                      {formatDate(match.playedAt)}
-                    </p>
-                    <p className="truncate font-medium text-[#F8FAFC]">
-                      {match.deckVersionName}
-                    </p>
-                    <div className="flex min-w-0 items-center gap-2 text-sm text-[#94A3B8]/78">
-                      <ArchetypeSprites archetype={match.opponentArchetype} />
-                      <span className="truncate">vs {match.opponentArchetype}</span>
-                    </div>
-                    <RecordPill result={match.result} />
-                    <p className="text-sm capitalize text-[#94A3B8]/70">
-                      {match.eventType ?? "No event"}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            <section className="grid gap-4 lg:grid-cols-2">
-              <div className={`${cardLarge} p-3 sm:p-4`}>
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <h2 className={sectionTitle}>
-                    Matchups
-                  </h2>
-                  <Link href="/matchups" className="text-sm font-medium text-[#4F8CFF]">
-                    Analyze matchups
-                  </Link>
-                </div>
-                <div className={`mt-3 ${divider}`}>
-                  {matchupSummary.map((matchup) => (
-                    <div
-                      key={matchup.opponentArchetype}
-                    className="grid gap-1.5 py-3 sm:grid-cols-[minmax(0,1fr)_64px_52px_52px_52px_64px] sm:items-center"
-                  >
-                      <div className="flex items-center gap-2">
-                        <ArchetypeSprites archetype={matchup.opponentArchetype} />
-                        <p className="truncate font-semibold text-[#F8FAFC]">
-                          {matchup.opponentArchetype}
-                        </p>
-                      </div>
-                      <p className="text-right text-xs text-[#94A3B8]/62 sm:text-sm">
-                        {matchup.matches}g
-                      </p>
-                      <p className="text-right text-xs text-[#94A3B8]/62 sm:text-sm">
-                        {matchup.wins}W
-                      </p>
-                      <p className="text-right text-xs text-[#94A3B8]/62 sm:text-sm">
-                        {matchup.losses}L
-                      </p>
-                      <p className="text-right text-xs text-[#94A3B8]/62 sm:text-sm">
-                        {matchup.ties}T
-                      </p>
-                      <p className="text-right text-sm font-bold text-[#F8FAFC]">
-                        {matchup.winRate}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className={`${cardLarge} p-3 sm:p-4`}>
-                <h2 className={sectionTitle}>
-                  Deck Performance
-                </h2>
-                <div className={`mt-3 ${divider}`}>
-                  {deckPerformance.map((deckVersion) => (
-                    <div
-                      key={deckVersion.deckVersionId}
-                    className="grid gap-1.5 py-3 sm:grid-cols-[minmax(0,1fr)_64px_52px_52px_52px_64px] sm:items-center"
-                  >
-                      <p className="truncate font-semibold text-[#F8FAFC]">
-                        {deckVersion.deckVersionName}
-                      </p>
-                      <p className="text-right text-xs text-[#94A3B8]/62 sm:text-sm">
-                        {deckVersion.matches}g
-                      </p>
-                      <p className="text-right text-xs text-[#94A3B8]/62 sm:text-sm">
-                        {deckVersion.wins}W
-                      </p>
-                      <p className="text-right text-xs text-[#94A3B8]/62 sm:text-sm">
-                        {deckVersion.losses}L
-                      </p>
-                      <p className="text-right text-xs text-[#94A3B8]/62 sm:text-sm">
-                        {deckVersion.ties}T
-                      </p>
-                      <p className="text-right text-sm font-bold text-[#F8FAFC]">
-                        {deckVersion.winRate}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-          </details>
-        ) : !hasAnyMatches ? (
-          <SetupChecklist
-            hasDecks={decks.length > 0}
-            hasAnyDeckVersions={hasAnyDeckVersions}
-            firstDeckId={firstDeckId}
-          />
-        ) : null}
-
-        <section className={`${cardLarge} p-3 sm:p-4`}>
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className={sectionTitle}>Decks</h2>
-              <p className={sectionCopy}>Saved lists and versions.</p>
-            </div>
-            <Link href="/decks" className="inline-flex h-9 w-full items-center justify-center rounded-md bg-[#4F8CFF]/8 px-3 text-sm font-medium text-[#F8FAFC]/88 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.14)] transition hover:bg-[#4F8CFF]/14 sm:w-fit">
-              Manage all
-            </Link>
-          </div>
-          {decks.length ? (
-            <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-              {decks.slice(0, 6).map((deck) => (
-                <Link
-                  key={deck.id}
-                  href={`/decks/${deck.id}`}
-                  className="block min-w-0 rounded-md bg-[#0B1020]/34 p-3 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.035)] transition hover:bg-[#0B1020]/52"
-                >
-                  <div className="flex min-w-0 items-center justify-between gap-3">
-                    <div className="flex min-w-0 items-center gap-3">
-                      <ArchetypeSprites archetype={deck.archetype} />
-                      <div className="min-w-0">
-                        <h3 className="truncate text-sm font-semibold text-[#F8FAFC]">
-                          {deck.name}
-                        </h3>
-                        <p className="truncate text-xs text-[#94A3B8]/72">
-                          {deck.archetype}
-                        </p>
-                      </div>
-                    </div>
-                    <span className="shrink-0 text-xs font-semibold text-[#4F8CFF]">
-                      Manage
-                    </span>
-                  </div>
-                </Link>
-              ))}
-              {decks.length > 6 ? (
-                <Link
-                  href="/decks"
-                  className="flex min-h-16 items-center justify-center rounded-md bg-[#0B1020]/24 p-3 text-sm font-medium text-[#94A3B8]/74 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.03)] transition hover:bg-[#0B1020]/42 hover:text-[#F8FAFC]"
-                >
-                  View {decks.length - 6} more
-                </Link>
-              ) : null}
-            </div>
-          ) : (
-            <div className="mt-5 rounded-md bg-[#0B1020]/38 p-4 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.12)]">
-              <p className={sectionCopy}>No decks found yet.</p>
-              <Link
-                href="/decks"
-                className={`mt-3 h-9 px-3 ${primaryButton}`}
+              <SectionCard
+                eyebrow="What changed"
+                title="Recent movement"
+                copy="Surface the patterns that shifted since your last focused block."
               >
-                Create a deck
-              </Link>
+                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                  {whatChangedCards.map((card) => (
+                    <ChangeCard
+                      key={card.label}
+                      label={card.label}
+                      title={card.title}
+                      detail={card.detail}
+                      tone={card.tone}
+                    />
+                  ))}
+                </div>
+              </SectionCard>
+
+              <SectionCard
+                eyebrow="Analytics overview"
+                title="Visible coaching signal"
+                copy="Useful analytics stay on the page. Deep charts stay below."
+                action={
+                  <Link href={nextAction.href} className={`${primaryButton} h-11`}>
+                    {nextAction.title}
+                    <ArrowRight className="ml-2 size-4" aria-hidden="true" />
+                  </Link>
+                }
+              >
+                <div className="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+                  <div className="grid gap-4">
+                    <div className="grid gap-4 lg:grid-cols-2">
+                      <div className="rounded-[22px] bg-[#07111F]/42 p-4 shadow-[0_14px_36px_rgba(0,0,0,0.16),inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                        <div className="flex items-center justify-between gap-3">
+                          <div>
+                            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
+                              Matchup pressure
+                            </p>
+                            <h3 className="mt-1 text-lg font-semibold text-[#F8FAFC]">
+                              Top matchup samples
+                            </h3>
+                          </div>
+                          <Link href="/matchups" className="text-sm font-semibold text-[#B8D1FF]">
+                            Review
+                          </Link>
+                        </div>
+                        <div className="mt-4 grid gap-3">
+                          {matchupPreview.length ? (
+                            matchupPreview.map((matchup) => (
+                              <MetricBar
+                                key={matchup.opponentArchetype}
+                                label={matchup.opponentArchetype}
+                                value={parseRate(matchup.winRate)}
+                                detail={`${matchup.matches} games / ${matchup.wins}W ${matchup.losses}L ${matchup.ties}T`}
+                                tone={
+                                  parseRate(matchup.winRate) >= 55
+                                    ? "green"
+                                    : parseRate(matchup.winRate) <= 45
+                                      ? "rose"
+                                      : "blue"
+                                }
+                              />
+                            ))
+                          ) : (
+                            <div className="rounded-2xl bg-[#07111F]/42 p-4 text-sm text-[#94A3B8]/72 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                              {getLowDataLabel(stats.totalMatches, 3, "Matchup signal ready")}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="rounded-[22px] bg-[#07111F]/42 p-4 shadow-[0_14px_36px_rgba(0,0,0,0.16),inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                        <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#F5C84C]">
+                          Turn-order split
+                        </p>
+                        <h3 className="mt-1 text-lg font-semibold text-[#F8FAFC]">
+                          First vs second
+                        </h3>
+                        <p className="mt-2 text-sm leading-6 text-[#94A3B8]/72">
+                          {turnOrderDelta === null
+                            ? "No meaningful split yet. Keep logging clean first and second samples."
+                            : turnOrderDelta >= 0
+                              ? "You are currently performing better going first."
+                              : "Going second is currently holding up better."}
+                        </p>
+                        <div className="mt-4">
+                          <TurnOrderPanel
+                            firstRate={stats.wentFirstWinRate}
+                            secondRate={stats.wentSecondWinRate}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="rounded-[22px] bg-[#07111F]/42 p-4 shadow-[0_14px_36px_rgba(0,0,0,0.16),inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
+                            Deck version trend
+                          </p>
+                          <h3 className="mt-1 text-lg font-semibold text-[#F8FAFC]">
+                            Current experiment read
+                          </h3>
+                        </div>
+                        <Link href="/decks" className="text-sm font-semibold text-[#B8D1FF]">
+                          Manage
+                        </Link>
+                      </div>
+                      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                        {deckPreview.length ? (
+                          deckPreview.map((deckVersion) => (
+                            <MetricBar
+                              key={deckVersion.deckVersionId}
+                              label={deckVersion.deckVersionName}
+                              value={parseRate(deckVersion.winRate)}
+                              detail={`${deckVersion.matches} games / ${deckVersion.wins}W ${deckVersion.losses}L ${deckVersion.ties}T`}
+                              tone={
+                                parseRate(deckVersion.winRate) >= 55
+                                  ? "green"
+                                  : parseRate(deckVersion.winRate) <= 45
+                                    ? "rose"
+                                    : "blue"
+                              }
+                            />
+                          ))
+                        ) : (
+                          <div className="rounded-2xl bg-[#07111F]/42 p-4 text-sm text-[#94A3B8]/72 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)] sm:col-span-2">
+                            Needs another version to compare.
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-4">
+                    <div className="rounded-[22px] bg-[#07111F]/42 p-4 shadow-[0_14px_36px_rgba(0,0,0,0.16),inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#F5C84C]">
+                        Current signal
+                      </p>
+                      <h3 className="mt-1 text-lg font-semibold text-[#F8FAFC]">
+                        What is hurting you
+                      </h3>
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        {issueChips.length ? (
+                          issueChips.map((chip) => (
+                            <span
+                              key={chip}
+                              className="rounded-full bg-[#F43F5E]/10 px-3 py-1.5 text-xs font-semibold text-rose-200 shadow-[inset_0_0_0_1px_rgba(244,63,94,0.14)]"
+                            >
+                              {chip}
+                            </span>
+                          ))
+                        ) : (
+                          <span className="rounded-full bg-[#4F8CFF]/10 px-3 py-1.5 text-xs font-semibold text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.14)]">
+                            No repeated issue yet
+                          </span>
+                        )}
+                      </div>
+                      <p className="mt-3 text-sm leading-6 text-[#94A3B8]/72">
+                        {sessionCoach?.commonIssue
+                          ? `${sessionCoach.commonIssue.count} recent losses point to the clearest repeatable leak.`
+                          : "Keep using tags after matches to sharpen recurring issue detection."}
+                      </p>
+                    </div>
+
+                    <div className="rounded-[22px] bg-[#07111F]/42 p-4 shadow-[0_14px_36px_rgba(0,0,0,0.16),inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
+                        Recent form
+                      </p>
+                      <h3 className="mt-1 text-lg font-semibold text-[#F8FAFC]">
+                        Last logged games
+                      </h3>
+                      <div className="mt-4">
+                        <RecentFormPanel matches={recentMatches} />
+                      </div>
+                    </div>
+
+                    <div className="rounded-[22px] bg-[#07111F]/42 p-4 shadow-[0_14px_36px_rgba(0,0,0,0.16),inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#F5C84C]">
+                        Next best action
+                      </p>
+                      <h3 className="mt-1 text-lg font-semibold text-[#F8FAFC]">
+                        {nextAction.title}
+                      </h3>
+                      <p className="mt-2 text-sm leading-6 text-[#94A3B8]/72">
+                        {nextAction.copy}
+                      </p>
+                      <Link href={nextAction.href} className={`${secondaryButton} mt-4 h-11`}>
+                        Open next step
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </SectionCard>
+
+              <SectionCard
+                eyebrow="Active experiment"
+                title="Decks and versions"
+                copy="Keep the current list visible, then manage deeper deck records below."
+                action={
+                  <Link href="/decks" className={`${secondaryButton} h-11`}>
+                    Manage decks
+                  </Link>
+                }
+              >
+                <div className="grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+                  <div className="rounded-[24px] bg-[radial-gradient(circle_at_top_left,rgba(79,140,255,0.14),transparent_34%),linear-gradient(180deg,rgba(11,16,32,0.86),rgba(7,17,31,0.82))] p-4 shadow-[0_16px_44px_rgba(0,0,0,0.18),inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                    {activeDeck ? (
+                      <div className="grid gap-4">
+                        <div className="flex items-start gap-3">
+                          <ArchetypeSprites archetype={activeDeck.archetype} size="md" className="shrink-0" />
+                          <div className="min-w-0">
+                            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
+                              Active deck
+                            </p>
+                            <h3 className="mt-1 truncate text-xl font-semibold text-[#F8FAFC]">
+                              {activeDeck.name}
+                            </h3>
+                            <p className="mt-1 text-sm text-[#94A3B8]/72">
+                              {activeDeck.archetype}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          <div className="rounded-2xl bg-[#07111F]/42 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                              Current version
+                            </p>
+                            <p className="mt-2 text-sm font-semibold text-[#F8FAFC]">
+                              {activeVersion?.name ?? "No active version set"}
+                            </p>
+                          </div>
+                          <div className="rounded-2xl bg-[#07111F]/42 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                              Current read
+                            </p>
+                            <p className="mt-2 text-sm font-semibold text-[#F8FAFC]">
+                              {bestDeckVersion?.deckVersionName === activeVersion?.name
+                                ? "Leading version"
+                                : activeVersion
+                                  ? "Under active test"
+                                  : "Needs version setup"}
+                            </p>
+                          </div>
+                        </div>
+
+                        <Link href={`/decks/${activeDeck.id}`} className={`${primaryButton} h-11 w-full sm:w-auto`}>
+                          Manage active deck
+                        </Link>
+                      </div>
+                    ) : (
+                      <div className="text-sm text-[#94A3B8]/72">
+                        No decks yet. Create one to start version testing.
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {decks.slice(0, 6).map((deck) => {
+                      const deckActiveVersion =
+                        deck.deck_versions?.find((version) => version.is_active) ??
+                        deck.deck_versions?.[0] ??
+                        null;
+
+                      return (
+                        <Link
+                          key={deck.id}
+                          href={`/decks/${deck.id}`}
+                          className="rounded-[22px] bg-[#07111F]/42 p-4 shadow-[0_14px_36px_rgba(0,0,0,0.16),inset_0_0_0_1px_rgba(148,163,184,0.08)] transition hover:-translate-y-0.5 hover:bg-[#0B1020]/58"
+                        >
+                          <div className="flex items-center gap-3">
+                            <ArchetypeSprites archetype={deck.archetype} />
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-semibold text-[#F8FAFC]">
+                                {deck.name}
+                              </p>
+                              <p className="truncate text-xs text-[#94A3B8]/72">
+                                {deck.archetype}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="mt-3 rounded-2xl bg-[#0B1020]/66 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                              Active version
+                            </p>
+                            <p className="mt-1 truncate text-sm font-semibold text-[#F8FAFC]">
+                              {deckActiveVersion?.name ?? "No active version set"}
+                            </p>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                    {!decks.length ? (
+                      <div className="rounded-[22px] bg-[#07111F]/42 p-4 text-sm text-[#94A3B8]/72 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                        Create your first deck to unlock experiment tracking.
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+              </SectionCard>
+
+              <details
+                className="rounded-[26px] bg-[linear-gradient(180deg,rgba(15,26,45,0.92),rgba(7,17,31,0.88))] p-4 shadow-[0_18px_50px_rgba(0,0,0,0.18),inset_0_0_0_1px_rgba(148,163,184,0.08)]"
+                onToggle={(event) => setRecordsExpanded(event.currentTarget.open)}
+              >
+                <summary className="cursor-pointer list-none marker:hidden">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-2xl bg-[#4F8CFF]/10 text-[#B8D1FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.14)]">
+                        <BarChart3 className="size-5" aria-hidden="true" />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]/86">
+                          Deep records
+                        </p>
+                        <h2 className="truncate text-lg font-bold tracking-tight text-[#F8FAFC]">
+                          Full charts and tables
+                        </h2>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <ShareReportButton report={shareReport} />
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-[#94A3B8]/68">
+                        {recordsExpanded ? "Hide" : "Open"}
+                        <ChevronDown className="size-3.5" aria-hidden="true" />
+                      </span>
+                    </div>
+                  </div>
+                </summary>
+
+                <div className="mt-5 grid gap-4">
+                  <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-7">
+                    {[
+                      { label: "Matches", value: stats.totalMatches },
+                      { label: "Wins", value: stats.totalWins },
+                      { label: "Losses", value: stats.totalLosses },
+                      { label: "Ties", value: stats.totalTies },
+                      { label: "Win rate", value: stats.overallWinRate },
+                      { label: "Went first", value: stats.wentFirstWinRate },
+                      { label: "Went second", value: stats.wentSecondWinRate },
+                    ].map((stat) => (
+                      <div
+                        key={stat.label}
+                        className="rounded-2xl bg-[#07111F]/42 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]"
+                      >
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]/72">
+                          {stat.label}
+                        </p>
+                        <p className="mt-2 text-2xl font-bold tracking-tight text-[#F8FAFC]">
+                          {stat.value}
+                        </p>
+                      </div>
+                    ))}
+                  </section>
+
+                  <section className="grid gap-4 lg:grid-cols-2">
+                    <div className="rounded-[22px] bg-[#07111F]/42 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                      <h2 className={sectionTitle}>Result trend</h2>
+                      <p className={pageCopy}>Daily wins, losses, and ties from your logged matches.</p>
+                      {recordsExpanded && trendData.length ? (
+                        <div className="mt-4 h-64 min-h-[256px] min-w-0">
+                          <ResponsiveContainer width="100%" height="100%" minHeight={220}>
+                            <LineChart data={trendData}>
+                              <CartesianGrid stroke="rgba(148,163,184,0.22)" vertical={false} />
+                              <XAxis
+                                dataKey="label"
+                                tick={{ fill: "#94A3B8", fontSize: 12 }}
+                                tickLine={false}
+                                axisLine={false}
+                              />
+                              <YAxis
+                                allowDecimals={false}
+                                tick={{ fill: "#94A3B8", fontSize: 12 }}
+                                tickLine={false}
+                                axisLine={false}
+                              />
+                              <Tooltip
+                                contentStyle={{
+                                  background: "#0B1020",
+                                  border: "1px solid rgba(148,163,184,0.18)",
+                                  borderRadius: 12,
+                                  color: "#F8FAFC",
+                                }}
+                              />
+                              <Legend />
+                              <Line type="monotone" dataKey="wins" stroke="#22C55E" strokeWidth={2} dot={false} />
+                              <Line type="monotone" dataKey="losses" stroke="#F43F5E" strokeWidth={2} dot={false} />
+                              <Line type="monotone" dataKey="ties" stroke="#F5C84C" strokeWidth={2} dot={false} />
+                            </LineChart>
+                          </ResponsiveContainer>
+                        </div>
+                      ) : (
+                        <ChartPlaceholder>
+                          {recordsExpanded
+                            ? "Log more games to build a result trend."
+                            : "Open this section to view charts."}
+                        </ChartPlaceholder>
+                      )}
+                    </div>
+
+                    <div className="rounded-[22px] bg-[#07111F]/42 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                      <h2 className={sectionTitle}>Deck comparison</h2>
+                      <p className={pageCopy}>Win rate by deck version, sorted by matches played.</p>
+                      {recordsExpanded && deckPerformanceChart.length ? (
+                        <div className="mt-4 h-64 min-h-[256px] min-w-0">
+                          <ResponsiveContainer width="100%" height="100%" minHeight={220}>
+                            <BarChart data={deckPerformanceChart} layout="vertical">
+                              <CartesianGrid stroke="rgba(148,163,184,0.22)" horizontal={false} />
+                              <XAxis
+                                type="number"
+                                domain={[0, 100]}
+                                tickFormatter={(value) => `${value}%`}
+                                tick={{ fill: "#94A3B8", fontSize: 12 }}
+                                tickLine={false}
+                                axisLine={false}
+                              />
+                              <YAxis
+                                type="category"
+                                dataKey="name"
+                                width={120}
+                                tick={{ fill: "#94A3B8", fontSize: 12 }}
+                                tickLine={false}
+                                axisLine={false}
+                              />
+                              <Tooltip
+                                contentStyle={{
+                                  background: "#0B1020",
+                                  border: "1px solid rgba(148,163,184,0.18)",
+                                  borderRadius: 12,
+                                  color: "#F8FAFC",
+                                }}
+                              />
+                              <Bar dataKey="winRate" fill="#4F8CFF" radius={[0, 10, 10, 0]} />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
+                      ) : (
+                        <ChartPlaceholder>
+                          {recordsExpanded
+                            ? "Add another deck version to compare testing results."
+                            : "Open this section to view charts."}
+                        </ChartPlaceholder>
+                      )}
+                    </div>
+                  </section>
+
+                  <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+                    <div className="rounded-[22px] bg-[#07111F]/42 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                      <div className="flex items-center justify-between gap-3">
+                        <h2 className={sectionTitle}>Recent matches</h2>
+                        <Link href="/matches" className="text-sm font-semibold text-[#B8D1FF]">
+                          All matches
+                        </Link>
+                      </div>
+                      <div className="mt-4 grid gap-3">
+                        {recentMatches.length ? (
+                          recentMatches.map((match) => (
+                            <div
+                              key={match.id}
+                              className="rounded-2xl bg-[#0B1020]/66 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]"
+                            >
+                              <div className="flex items-center justify-between gap-3">
+                                <div className="min-w-0">
+                                  <p className="truncate text-sm font-semibold text-[#F8FAFC]">
+                                    {match.deckVersionName}
+                                  </p>
+                                  <p className="mt-1 truncate text-xs text-[#94A3B8]/72">
+                                    vs {match.opponentArchetype} / {formatDate(match.playedAt)}
+                                  </p>
+                                </div>
+                                <RecordPill result={match.result} />
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="rounded-2xl bg-[#0B1020]/66 p-3 text-sm text-[#94A3B8]/72 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                            No logged matches yet.
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="grid gap-4">
+                      <div className="rounded-[22px] bg-[#07111F]/42 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                        <div className="flex items-center justify-between gap-3">
+                          <h2 className={sectionTitle}>Matchups</h2>
+                          <Link href="/matchups" className="text-sm font-semibold text-[#B8D1FF]">
+                            Analyze
+                          </Link>
+                        </div>
+                        <div className="mt-4 grid gap-3">
+                          {matchupSummary.slice(0, 6).length ? (
+                            matchupSummary.slice(0, 6).map((matchup) => (
+                              <MetricBar
+                                key={matchup.opponentArchetype}
+                                label={matchup.opponentArchetype}
+                                value={parseRate(matchup.winRate)}
+                                detail={`${matchup.matches} games / ${matchup.wins}W ${matchup.losses}L ${matchup.ties}T`}
+                                tone={
+                                  parseRate(matchup.winRate) >= 55
+                                    ? "green"
+                                    : parseRate(matchup.winRate) <= 45
+                                      ? "rose"
+                                      : "blue"
+                                }
+                              />
+                            ))
+                          ) : (
+                            <div className="rounded-2xl bg-[#0B1020]/66 p-3 text-sm text-[#94A3B8]/72 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                              {getLowDataLabel(stats.totalMatches, 3, "Matchup summary ready")}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="rounded-[22px] bg-[#07111F]/42 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                        <h2 className={sectionTitle}>Deck performance</h2>
+                        <div className="mt-4 grid gap-3">
+                          {deckPerformance.slice(0, 6).length ? (
+                            deckPerformance.slice(0, 6).map((deckVersion) => (
+                              <div
+                                key={deckVersion.deckVersionId}
+                                className="rounded-2xl bg-[#0B1020]/66 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]"
+                              >
+                                <div className="flex items-center justify-between gap-3">
+                                  <p className="truncate text-sm font-semibold text-[#F8FAFC]">
+                                    {deckVersion.deckVersionName}
+                                  </p>
+                                  <p className="text-sm font-bold text-[#F8FAFC]">
+                                    {deckVersion.winRate}
+                                  </p>
+                                </div>
+                                <p className="mt-1 text-xs text-[#94A3B8]/72">
+                                  {deckVersion.matches} games / {deckVersion.wins}W {deckVersion.losses}L {deckVersion.ties}T
+                                </p>
+                              </div>
+                            ))
+                          ) : (
+                            <div className="rounded-2xl bg-[#0B1020]/66 p-3 text-sm text-[#94A3B8]/72 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                              Needs another version to compare.
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+                </div>
+              </details>
             </div>
           )}
-        </section>
         </div>
       </section>
     </main>

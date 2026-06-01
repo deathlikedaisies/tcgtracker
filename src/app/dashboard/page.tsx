@@ -36,6 +36,8 @@ type DeckRow = {
   deck_versions:
     | {
         id: string;
+        name: string | null;
+        is_active: boolean | null;
       }[]
     | null;
 };
@@ -87,7 +89,7 @@ export default async function DashboardPage() {
 
   const { data: decks, error: decksError } = await supabase
     .from("decks")
-    .select("id, name, archetype, created_at, deck_versions(id)")
+    .select("id, name, archetype, created_at, deck_versions(id, name, is_active)")
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 
