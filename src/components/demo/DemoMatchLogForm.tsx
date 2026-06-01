@@ -54,6 +54,12 @@ const selectedToggleClass =
 const progressStepClass =
   "flex items-center gap-3 rounded-xl px-3 py-3 text-left transition";
 
+const rewardStatCardClass =
+  "rounded-2xl bg-[#07111F]/62 px-3 py-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]";
+
+const rewardDetailChipClass =
+  "rounded-2xl bg-[#0B1020]/72 px-3 py-2.5 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]";
+
 const stepOrder = [
   { label: "Match", shortLabel: "1" },
   { label: "Turn order", shortLabel: "2" },
@@ -448,20 +454,34 @@ export function DemoMatchLogForm() {
         ? `${getQualityLabel(sequencingQuality)} sequencing`
         : startQuality
           ? `${getQualityLabel(startQuality)} start`
-          : "No quality tags",
+          : "No quality signal",
     },
   ];
   const demoAddedItems = [
-    opponent ? `Matchup: ${opponent}` : null,
-    wentFirst === null ? null : `Turn order: ${wentFirst ? "First" : "Second"}`,
+    opponent ? { label: "Matchup", value: opponent } : null,
+    wentFirst === null
+      ? null
+      : { label: "Turn order", value: wentFirst ? "First" : "Second" },
     openingHandQuality
-      ? `Opening hand: ${getQualityLabel(openingHandQuality)}`
+      ? { label: "Opening hand", value: getQualityLabel(openingHandQuality) }
       : null,
-    sequencingQuality ? `Sequencing: ${getQualityLabel(sequencingQuality)}` : null,
+    sequencingQuality
+      ? { label: "Sequencing", value: getQualityLabel(sequencingQuality) }
+      : null,
     [...issueTags, ...positiveTags].length
-      ? `Tags: ${[...issueTags, ...positiveTags].slice(0, 3).join(", ")}`
+      ? {
+          label: "Tags",
+          value: [...issueTags, ...positiveTags].slice(0, 3).join(", "),
+        }
       : null,
-  ].filter(Boolean);
+  ].filter(
+    (
+      item
+    ): item is {
+      label: string;
+      value: string;
+    } => Boolean(item)
+  );
   const demoNextActionTitle =
     result === "win"
       ? "Review this matchup"
@@ -474,6 +494,10 @@ export function DemoMatchLogForm() {
       : result === "tie"
         ? "One more focused game will help this become a clearer signal."
         : "Keep the sample moving until the issue pattern is easier to trust.";
+  const rewardPrimaryButtonClass =
+    `${primaryButton} h-12 shadow-[0_14px_30px_rgba(79,140,255,0.16)]`;
+  const rewardSecondaryButtonClass =
+    `${secondaryButton} h-12 bg-[#07111F]/62 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]`;
 
   const versionOptions = useMemo(
     () =>
@@ -516,12 +540,12 @@ export function DemoMatchLogForm() {
     return (
       <section className="grid gap-4">
         <div className="grid gap-4">
-          <div className="rounded-xl bg-[#0F1A2D]/74 p-5 shadow-[0_20px_56px_rgba(0,0,0,0.26),inset_0_0_0_1px_rgba(34,197,94,0.18)] backdrop-blur sm:p-6">
+          <div className="rounded-[28px] bg-[radial-gradient(circle_at_top_left,rgba(34,197,94,0.18),transparent_34%),linear-gradient(180deg,rgba(15,26,45,0.96),rgba(7,17,31,0.88))] p-5 shadow-[0_24px_64px_rgba(0,0,0,0.28),inset_0_0_0_1px_rgba(34,197,94,0.18)] backdrop-blur sm:p-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-500/14 text-emerald-300 shadow-[inset_0_0_0_1px_rgba(34,197,94,0.20)]">
-                    <CheckCircle2 className="size-6" aria-hidden="true" />
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[20px] bg-emerald-500/14 text-emerald-300 shadow-[0_14px_28px_rgba(34,197,94,0.12),inset_0_0_0_1px_rgba(34,197,94,0.20)]">
+                    <CheckCircle2 className="size-7" aria-hidden="true" />
                   </div>
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#22C55E]">
@@ -547,7 +571,7 @@ export function DemoMatchLogForm() {
               {demoStatChips.map((chip) => (
                 <div
                   key={chip.label}
-                  className="rounded-xl bg-[#07111F]/58 px-3 py-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]"
+                  className={rewardStatCardClass}
                 >
                   <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
                     {chip.label}
@@ -560,7 +584,7 @@ export function DemoMatchLogForm() {
             </div>
           </div>
 
-          <div className="rounded-xl bg-[#07111F]/38 p-4 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.12)]">
+          <div className="rounded-[24px] bg-[#07111F]/38 p-4 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.12)]">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
@@ -592,7 +616,7 @@ export function DemoMatchLogForm() {
             <div className="mt-3 h-2 rounded-full bg-[#0B1020]/72">
               <div className="h-2 w-[80%] rounded-full bg-[#4F8CFF]" />
             </div>
-            <p className="mt-3 text-sm text-[#94A3B8]">
+            <p className="mt-3 text-sm font-medium text-[#D7E0EF]">
               {gameContext === "competitive"
                 ? "Signal improved. One more focused round strengthens the read."
                 : "Building signal. One more game makes this pattern easier to trust."}
@@ -600,27 +624,34 @@ export function DemoMatchLogForm() {
           </div>
 
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
-            <div className="rounded-xl bg-[#07111F]/34 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+            <div className="rounded-[24px] bg-[#07111F]/34 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
               <div className="flex items-center gap-2">
                 <Sparkles className="size-4 text-[#F5C84C]" aria-hidden="true" />
                 <p className="text-sm font-semibold text-[#F8FAFC]">
                   What this added
                 </p>
               </div>
-              <div className="mt-3 flex flex-wrap gap-2">
+              <div className="mt-3 grid gap-2 sm:grid-cols-2">
                 {demoAddedItems.length ? (
                   demoAddedItems.map((item) => (
-                    <span
-                      key={item}
-                      className="rounded-full bg-[#0B1020]/68 px-3 py-2 text-xs font-medium text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]"
-                    >
-                      {item}
-                    </span>
+                    <div key={`${item.label}-${item.value}`} className={rewardDetailChipClass}>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                        {item.label}
+                      </p>
+                      <p className="mt-1 text-sm font-semibold text-[#F8FAFC]">
+                        {item.value}
+                      </p>
+                    </div>
                   ))
                 ) : (
-                  <span className="rounded-full bg-[#0B1020]/68 px-3 py-2 text-xs font-medium text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
-                    Matchup history updated
-                  </span>
+                  <div className={rewardDetailChipClass}>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                      Added
+                    </p>
+                    <p className="mt-1 text-sm font-semibold text-[#F8FAFC]">
+                      Matchup history updated
+                    </p>
+                  </div>
                 )}
               </div>
               <details className="mt-4">
@@ -635,7 +666,7 @@ export function DemoMatchLogForm() {
               </details>
             </div>
 
-            <div className="rounded-xl bg-[#0B1020]/58 p-4 shadow-[inset_0_0_0_1px_rgba(245,200,76,0.14)]">
+            <div className="rounded-[24px] bg-[#0B1020]/58 p-4 shadow-[inset_0_0_0_1px_rgba(245,200,76,0.14)]">
               <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#F5C84C]">
                 Next best action
               </p>
@@ -645,7 +676,7 @@ export function DemoMatchLogForm() {
               <p className="mt-2 text-sm text-[#94A3B8]">
                 {demoNextActionCopy}
               </p>
-              <div className="mt-4 flex items-center gap-2 text-sm font-medium text-[#DCE8FF]">
+              <div className="mt-4 flex items-center gap-2 rounded-xl bg-[#07111F]/60 px-3 py-2 text-sm font-medium text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
                 <ArrowRight className="size-4 text-[#F5C84C]" aria-hidden="true" />
                 Demo mode only. No production data changed.
               </div>
@@ -655,16 +686,16 @@ export function DemoMatchLogForm() {
           <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto_auto]">
             <button
               type="button"
-              className={`${primaryButton} h-12`}
+              className={rewardPrimaryButtonClass}
               onClick={resetForAnotherGame}
             >
               <RotateCcw className="mr-2 size-4" aria-hidden="true" />
               Log another game
             </button>
-            <Link href="/demo/matchups" className={`${secondaryButton} h-12`}>
+            <Link href="/demo/matchups" className={rewardSecondaryButtonClass}>
               Review matchup
             </Link>
-            <Link href="/demo" className={`${secondaryButton} h-12`}>
+            <Link href="/demo" className={rewardSecondaryButtonClass}>
               Dashboard
             </Link>
           </div>

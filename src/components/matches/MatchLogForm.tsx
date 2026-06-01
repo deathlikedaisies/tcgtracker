@@ -108,6 +108,12 @@ const selectedToggleClass =
 const progressStepClass =
   "flex items-center gap-3 rounded-xl px-3 py-3 text-left transition";
 
+const rewardStatCardClass =
+  "rounded-2xl bg-[#07111F]/62 px-3 py-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]";
+
+const rewardDetailChipClass =
+  "rounded-2xl bg-[#0B1020]/72 px-3 py-2.5 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]";
+
 const stepOrder = [
   { label: "Match", shortLabel: "1" },
   { label: "Turn order", shortLabel: "2" },
@@ -178,6 +184,24 @@ function toggleSelection(values: string[], value: string) {
   return values.includes(value)
     ? values.filter((candidate) => candidate !== value)
     : [...values, value];
+}
+
+function getRewardStatusToneClass(status: string) {
+  const normalized = status.toLowerCase();
+
+  if (normalized.includes("complete")) {
+    return "bg-emerald-500/14 text-emerald-200 shadow-[inset_0_0_0_1px_rgba(34,197,94,0.20)]";
+  }
+
+  if (normalized.includes("improved")) {
+    return "bg-[#4F8CFF]/14 text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.18)]";
+  }
+
+  if (normalized.includes("building")) {
+    return "bg-[#F5C84C]/12 text-[#FFE28A] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]";
+  }
+
+  return "bg-[#0B1020]/72 text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]";
 }
 
 function mapLegacyTagsToIssueTags(tags: string[]) {
@@ -733,20 +757,42 @@ export function MatchLogForm({
         ? `${getQualityLabel(sequencingQuality)} sequencing`
         : startQuality
           ? `${getQualityLabel(startQuality)} start`
-          : "No quality tags",
+          : "No quality signal",
     },
   ];
   const postSaveAddedItems = [
-    opponentArchetype ? `Matchup: ${opponentArchetype}` : null,
-    wentFirst ? `Turn order: ${wentFirst === "true" ? "First" : "Second"}` : null,
+    opponentArchetype
+      ? { label: "Matchup", value: opponentArchetype }
+      : null,
+    wentFirst
+      ? {
+          label: "Turn order",
+          value: wentFirst === "true" ? "First" : "Second",
+        }
+      : null,
     openingHandQuality
-      ? `Opening hand: ${getQualityLabel(openingHandQuality)}`
+      ? {
+          label: "Opening hand",
+          value: getQualityLabel(openingHandQuality),
+        }
       : null,
-    sequencingQuality ? `Sequencing: ${getQualityLabel(sequencingQuality)}` : null,
+    sequencingQuality
+      ? { label: "Sequencing", value: getQualityLabel(sequencingQuality) }
+      : null,
     [...issueTags, ...positiveTags].length
-      ? `Tags: ${[...issueTags, ...positiveTags].slice(0, 3).join(", ")}`
+      ? {
+          label: "Tags",
+          value: [...issueTags, ...positiveTags].slice(0, 3).join(", "),
+        }
       : null,
-  ].filter(Boolean);
+  ].filter(
+    (
+      item
+    ): item is {
+      label: string;
+      value: string;
+    } => Boolean(item)
+  );
   const nextActionTitle = sessionCoach
     ? postSaveMissionProgress === sessionCoach.progressGoal
       ? "Review this matchup"
@@ -759,8 +805,13 @@ export function MatchLogForm({
       ? "Your mission is complete. Review the matchup before changing your list."
       : countedTowardContext
         ? "One more focused game will strengthen this signal."
-        : "Keep the sample moving before you make a deck decision."
+      : "Keep the sample moving before you make a deck decision."
     : "Keep your testing loop moving with one more data point.";
+  const postSaveStatusToneClass = getRewardStatusToneClass(postSaveStatusBadge);
+  const rewardPrimaryButtonClass =
+    `${primaryButton} h-12 shadow-[0_14px_30px_rgba(79,140,255,0.16)]`;
+  const rewardSecondaryButtonClass =
+    `${secondaryButton} h-12 bg-[#07111F]/62 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]`;
 
   function importTcgLiveLog() {
     const log = tcgLiveLog.trim();
@@ -923,12 +974,12 @@ export function MatchLogForm({
           ) : null}
           {wasSuccessful ? (
             <div className="grid gap-4">
-              <div className="rounded-xl bg-[#07111F]/46 p-5 shadow-[0_20px_56px_rgba(0,0,0,0.22),inset_0_0_0_1px_rgba(34,197,94,0.14)]">
+              <div className="rounded-[28px] bg-[radial-gradient(circle_at_top_left,rgba(34,197,94,0.18),transparent_34%),linear-gradient(180deg,rgba(15,26,45,0.96),rgba(7,17,31,0.88))] p-5 shadow-[0_24px_64px_rgba(0,0,0,0.28),inset_0_0_0_1px_rgba(34,197,94,0.14)] sm:p-6">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-500/14 text-emerald-300 shadow-[inset_0_0_0_1px_rgba(34,197,94,0.20)]">
-                        <CheckCircle2 className="size-6" aria-hidden="true" />
+                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[20px] bg-emerald-500/14 text-emerald-300 shadow-[0_14px_28px_rgba(34,197,94,0.12),inset_0_0_0_1px_rgba(34,197,94,0.20)]">
+                        <CheckCircle2 className="size-7" aria-hidden="true" />
                       </div>
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#22C55E]">
@@ -943,7 +994,9 @@ export function MatchLogForm({
                       {postSaveSummary}
                     </p>
                   </div>
-                  <span className="w-fit rounded-full bg-[#4F8CFF]/14 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.08em] text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.18)]">
+                  <span
+                    className={`w-fit rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-[0.08em] ${postSaveStatusToneClass}`}
+                  >
                     {postSaveStatusBadge}
                   </span>
                 </div>
@@ -952,7 +1005,7 @@ export function MatchLogForm({
                   {postSaveStatChips.map((chip) => (
                     <div
                       key={chip.label}
-                      className="rounded-xl bg-[#0B1020]/56 px-3 py-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]"
+                      className={rewardStatCardClass}
                     >
                       <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
                         {chip.label}
@@ -966,7 +1019,7 @@ export function MatchLogForm({
               </div>
 
               {sessionCoach ? (
-                <div className="rounded-xl bg-[#07111F]/38 p-4 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.12)]">
+                <div className="rounded-[24px] bg-[#07111F]/44 p-4 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.12)]">
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
@@ -976,7 +1029,7 @@ export function MatchLogForm({
                         {sessionCoach.missionTitle}
                       </p>
                     </div>
-                    <span className="rounded-full bg-[#F5C84C]/12 px-3 py-1 text-xs font-bold uppercase tracking-[0.08em] text-[#FFE28A] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
+                    <span className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.08em] ${postSaveStatusToneClass}`}>
                       {postSaveStatusBadge}
                     </span>
                   </div>
@@ -1003,34 +1056,41 @@ export function MatchLogForm({
                       style={{ width: `${postSaveProgressPercent}%` }}
                     />
                   </div>
-                  <p className="mt-3 text-sm text-[#94A3B8]">
+                  <p className="mt-3 text-sm font-medium text-[#D7E0EF]">
                     {postSaveMissionCopy}
                   </p>
                 </div>
               ) : null}
 
               <div className="grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
-                <div className="rounded-xl bg-[#07111F]/34 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                <div className="rounded-[24px] bg-[#07111F]/34 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
                   <div className="flex items-center gap-2">
                     <Sparkles className="size-4 text-[#F5C84C]" aria-hidden="true" />
                     <p className="text-sm font-semibold text-[#F8FAFC]">
                       What this added
                     </p>
                   </div>
-                  <div className="mt-3 flex flex-wrap gap-2">
+                  <div className="mt-3 grid gap-2 sm:grid-cols-2">
                     {postSaveAddedItems.length ? (
                       postSaveAddedItems.map((item) => (
-                        <span
-                          key={item}
-                          className="rounded-full bg-[#0B1020]/68 px-3 py-2 text-xs font-medium text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]"
-                        >
-                          {item}
-                        </span>
+                        <div key={`${item.label}-${item.value}`} className={rewardDetailChipClass}>
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                            {item.label}
+                          </p>
+                          <p className="mt-1 text-sm font-semibold text-[#F8FAFC]">
+                            {item.value}
+                          </p>
+                        </div>
                       ))
                     ) : (
-                      <span className="rounded-full bg-[#0B1020]/68 px-3 py-2 text-xs font-medium text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
-                        Matchup history updated
-                      </span>
+                      <div className={rewardDetailChipClass}>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                          Added
+                        </p>
+                        <p className="mt-1 text-sm font-semibold text-[#F8FAFC]">
+                          Matchup history updated
+                        </p>
+                      </div>
                     )}
                   </div>
                   {postSaveSignalLine ? (
@@ -1045,7 +1105,7 @@ export function MatchLogForm({
                   ) : null}
                 </div>
 
-                <div className="rounded-xl bg-[#0B1020]/58 p-4 shadow-[inset_0_0_0_1px_rgba(245,200,76,0.14)]">
+                <div className="rounded-[24px] bg-[#0B1020]/58 p-4 shadow-[inset_0_0_0_1px_rgba(245,200,76,0.14)]">
                   <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#F5C84C]">
                     Next best action
                   </p>
@@ -1055,7 +1115,7 @@ export function MatchLogForm({
                   <p className="mt-2 text-sm text-[#94A3B8]">
                     {nextActionCopy}
                   </p>
-                  <div className="mt-4 flex items-center gap-2 text-sm font-medium text-[#DCE8FF]">
+                  <div className="mt-4 flex items-center gap-2 rounded-xl bg-[#07111F]/60 px-3 py-2 text-sm font-medium text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
                     <ArrowRight className="size-4 text-[#F5C84C]" aria-hidden="true" />
                     Keep the testing loop moving.
                   </div>
@@ -1063,13 +1123,13 @@ export function MatchLogForm({
               </div>
 
               <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto_auto]">
-                <Link href="/matches/new" className={`${primaryButton} h-12`}>
+                <Link href="/matches/new" className={rewardPrimaryButtonClass}>
                   Log another game
                 </Link>
-                <Link href="/matchups" className={`${secondaryButton} h-12`}>
+                <Link href="/matchups" className={rewardSecondaryButtonClass}>
                   Review matchup
                 </Link>
-                <Link href="/dashboard" className={`${secondaryButton} h-12`}>
+                <Link href="/dashboard" className={rewardSecondaryButtonClass}>
                   Dashboard
                 </Link>
               </div>
