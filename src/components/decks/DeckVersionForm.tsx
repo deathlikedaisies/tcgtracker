@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
+import { ArrowRight, Beaker, Layers3, Sparkles } from "lucide-react";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
 import {
   inputH10,
@@ -35,15 +36,42 @@ export function DeckVersionForm({ action }: DeckVersionFormProps) {
   }
 
   return (
-    <form action={action} className="rounded-md bg-[#11182C]/70 p-3.5 shadow-[0_16px_42px_rgba(0,0,0,0.20),inset_0_0_0_1px_rgba(248,250,252,0.04)] sm:p-4">
-      <h2 className="text-lg font-semibold text-[#F8FAFC]">New test version</h2>
-      <p className={`mt-1 ${sectionCopy}`}>
-        Paste a TCG Live list and SixPrizer will read the build.
-      </p>
-      <div className="mt-5 flex flex-col gap-4">
+    <form
+      action={action}
+      className="rounded-[24px] bg-[linear-gradient(180deg,rgba(15,26,45,0.92),rgba(7,17,31,0.88))] p-4 shadow-[0_18px_50px_rgba(0,0,0,0.22),inset_0_0_0_1px_rgba(148,163,184,0.08)] sm:p-5"
+    >
+      <div className="flex items-start gap-3">
+        <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-2xl bg-[#F5C84C]/12 text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
+          <Beaker className="size-5" aria-hidden="true" />
+        </span>
+        <div>
+          <h2 className="text-lg font-semibold text-[#F8FAFC]">Add a test version</h2>
+          <p className={`mt-1 ${sectionCopy}`}>
+            Paste a list, give the build a clear name, and decide whether it should become the active test version.
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-5 grid gap-4">
+        <div className="rounded-[20px] bg-[#07111F]/42 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+          <div className="flex items-start gap-3">
+            <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-2xl bg-[#4F8CFF]/10 text-[#B8D1FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.18)]">
+              <Layers3 className="size-4" aria-hidden="true" />
+            </span>
+            <div>
+              <h3 className="text-sm font-semibold text-[#F8FAFC]">
+                Version setup
+              </h3>
+              <p className="mt-1 text-sm leading-6 text-[#94A3B8]/72">
+                Versions are what SixPrizer uses for match logging, version comparison, and archetype evidence.
+              </p>
+            </div>
+          </div>
+        </div>
+
         <div className="flex flex-col gap-2">
           <label htmlFor="name" className={label}>
-            Name
+            Version name
           </label>
           <input
             ref={nameInputRef}
@@ -52,9 +80,11 @@ export function DeckVersionForm({ action }: DeckVersionFormProps) {
             required
             value={name}
             onChange={(event) => setName(event.target.value)}
+            placeholder="v2 Stamina"
             className={inputH10}
           />
         </div>
+
         <div className="flex flex-col gap-2">
           <label htmlFor="decklist" className={label}>
             Paste deck list
@@ -71,61 +101,70 @@ export function DeckVersionForm({ action }: DeckVersionFormProps) {
         </div>
 
         {hasCards ? (
-          <div className="rounded-md bg-[#0B1020]/42 p-3 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.04)]">
-            <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-[#94A3B8]">
+          <div className="rounded-[22px] bg-[#07111F]/42 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+            <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.08em] text-[#94A3B8]/76">
               <span>{analysis.totalCards} cards</span>
               <span>{analysis.pokemonCount} Pokémon</span>
               <span>{analysis.trainerCount} Trainer</span>
               <span>{analysis.energyCount} Energy</span>
               {analysis.unresolved.length ? (
-                <span className="text-[#F5C84C]">
+                <span className="text-[#FFE28A]">
                   {analysis.unresolved.length} unresolved
                 </span>
               ) : null}
             </div>
+
             {hasSuggestion ? (
-              <div className="mt-3 flex flex-col gap-3 rounded-md bg-[#11182C]/70 p-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex min-w-0 items-center gap-2">
-                  <ArchetypeSprites
-                    archetype={analysis.suggestion.archetype}
-                    className="shrink-0"
-                  />
-                  <div className="min-w-0">
-                    <p className="text-xs font-medium uppercase text-[#94A3B8]/70">
-                      Suggested archetype
-                    </p>
-                    <div className="mt-1 flex flex-wrap items-center gap-2">
-                      <p className="truncate text-sm font-semibold text-[#F8FAFC]">
-                        {analysis.suggestion.archetype}
+              <div className="mt-4 rounded-[20px] bg-[#0B1020]/66 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <ArchetypeSprites
+                      archetype={analysis.suggestion.archetype}
+                      className="shrink-0"
+                    />
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="truncate text-sm font-semibold text-[#F8FAFC]">
+                          {analysis.suggestion.archetype}
+                        </p>
+                        <span
+                          className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${
+                            analysis.suggestion.confidence === "high"
+                              ? "bg-emerald-500/10 text-emerald-200 shadow-[inset_0_0_0_1px_rgba(34,197,94,0.16)]"
+                              : "bg-[#F5C84C]/12 text-[#FFE28A] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]"
+                          }`}
+                        >
+                          {analysis.suggestion.confidenceLabel}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-xs uppercase tracking-[0.08em] text-[#94A3B8]/70">
+                        Suggested archetype
                       </p>
-                      <span
-                        className={`rounded-md px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] ${
-                          analysis.suggestion.confidence === "high"
-                            ? "bg-emerald-500/14 text-emerald-200"
-                            : "bg-[#F5C84C]/14 text-[#F5C84C]"
-                        }`}
-                      >
-                        {analysis.suggestion.confidenceLabel}
-                      </span>
+                      <p className="mt-2 text-sm leading-6 text-[#94A3B8]/72">
+                        Matched core cards: {analysis.suggestion.matchedCoreCards.join(", ")}
+                      </p>
                     </div>
-                    <p className="mt-2 text-xs text-[#94A3B8]">
-                      Matched core cards:{" "}
-                      {analysis.suggestion.matchedCoreCards.join(", ")}
-                    </p>
                   </div>
+
+                  <button
+                    type="button"
+                    onClick={useSuggestion}
+                    className="inline-flex h-10 items-center justify-center rounded-xl bg-[#4F8CFF]/12 px-4 text-sm font-semibold text-[#F8FAFC] transition hover:bg-[#4F8CFF]/18 active:scale-[0.98]"
+                  >
+                    <Sparkles className="mr-2 size-4" aria-hidden="true" />
+                    Use suggestion
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={useSuggestion}
-                  className="h-9 rounded-md bg-[#4F8CFF]/12 px-3 text-xs font-semibold text-[#F8FAFC] transition hover:bg-[#4F8CFF]/18 active:scale-[0.98]"
-                >
-                  Use suggestion
-                </button>
               </div>
             ) : (
-              <p className="mt-3 text-xs text-[#94A3B8]/72">
-                No clear archetype detected. Choose the deck archetype manually if you already know the build family.
-              </p>
+              <div className="mt-4 rounded-[20px] bg-[#0B1020]/66 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                <p className="text-sm font-semibold text-[#F8FAFC]">
+                  No clear archetype detected
+                </p>
+                <p className="mt-2 text-sm leading-6 text-[#94A3B8]/72">
+                  That is fine for rogue or early builds. Use the manual deck archetype on the deck page if you already know the family.
+                </p>
+              </div>
             )}
           </div>
         ) : null}
@@ -134,18 +173,27 @@ export function DeckVersionForm({ action }: DeckVersionFormProps) {
           <label htmlFor="notes" className={label}>
             Notes
           </label>
-          <textarea id="notes" name="notes" rows={4} className={textarea} />
+          <textarea
+            id="notes"
+            name="notes"
+            rows={4}
+            placeholder="What changed in this build?"
+            className={textarea}
+          />
         </div>
-        <label className="flex items-center gap-2 text-sm text-[#94A3B8]">
+
+        <label className="flex items-center gap-3 rounded-[20px] bg-[#07111F]/42 p-3 text-sm text-[#D6E0F0] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
           <input
             type="checkbox"
             name="is_active"
             className="h-4 w-4 rounded border-white/20 accent-[#F5C84C]"
           />
-          Make this version active
+          Make this version active for future match logs
         </label>
+
         <button type="submit" className={primaryButton}>
           Create test version
+          <ArrowRight className="ml-2 size-4" aria-hidden="true" />
         </button>
       </div>
     </form>

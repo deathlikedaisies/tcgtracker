@@ -1,5 +1,13 @@
 import { notFound, redirect } from "next/navigation";
-import { Beaker } from "lucide-react";
+import {
+  ArrowRight,
+  Beaker,
+  Layers3,
+  ShieldCheck,
+  Sparkles,
+  Target,
+  TrendingUp,
+} from "lucide-react";
 import { AppNav } from "@/components/AppNav";
 import { AppSidebar } from "@/components/AppSidebar";
 import { ArchetypePicker } from "@/components/ArchetypePicker";
@@ -9,12 +17,10 @@ import {
   appFrame,
   appMain,
   appShell,
-  card,
   emptyCard,
   glassPanel,
   glassPanelStrong,
   logoOnDark,
-  pageCopy,
   pageTitle,
   primaryButton,
   secondaryButton,
@@ -24,13 +30,13 @@ import {
 import { SixPrizerLogo } from "@/components/SixPrizerLogo";
 import { SessionCoachPanel } from "@/components/SessionCoachPanel";
 import { getArchetypeOptions } from "@/lib/archetypes";
+import { enrichDeckAnalysis } from "@/lib/card-data/deck-enrichment";
 import {
   analyzeDeckList,
   isClearArchetypeSuggestion,
 } from "@/lib/decklist";
 import { LATEST_FORMAT } from "@/lib/formats";
 import { buildSessionCoachInsight } from "@/lib/session-coach";
-import { enrichDeckAnalysis } from "@/lib/card-data/deck-enrichment";
 import {
   countMatchResults,
   type MatchResult,
@@ -57,33 +63,45 @@ type DeckVersion = {
   created_at: string;
 };
 
+function formatDate(value: string) {
+  return new Intl.DateTimeFormat("en", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(new Date(value));
+}
+
 function getVersionTestStatus(matches: { result: MatchResult }[]) {
   const { wins, total } = countMatchResults(matches);
   const winRate = total ? Math.round((wins / total) * 100) : 0;
 
   if (total < 3) {
     return {
-      label: "Unproven",
-      detail: `${total} game${total === 1 ? "" : "s"} logged`,
-      className: "bg-[#4F8CFF]/14 text-[#B8D1FF]",
+      label: "Needs games",
+      detail: total
+        ? `Log ${Math.max(3 - total, 0)} more game${3 - total === 1 ? "" : "s"} to unlock a read`
+        : "No games logged yet",
+      className:
+        "bg-[#4F8CFF]/10 text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.14)]",
     };
   }
 
   if (total < 5) {
     return {
-      label: "Early signal",
+      label: "Building signal",
       detail: `${winRate}% over ${total} games`,
-      className: "bg-[#F5C84C]/14 text-[#F5C84C]",
+      className:
+        "bg-[#F5C84C]/12 text-[#FFE28A] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]",
     };
   }
 
-    return {
-      label: winRate >= 55 ? "Improving test" : "No clear improvement",
-      detail: `${winRate}% over ${total} games`,
-      className:
-        winRate >= 55
-          ? "bg-emerald-500/14 text-emerald-200"
-        : "bg-[#F43F5E]/14 text-rose-200",
+  return {
+    label: winRate >= 55 ? "Improving signal" : "No clear trend",
+    detail: `${winRate}% over ${total} games`,
+    className:
+      winRate >= 55
+        ? "bg-emerald-500/10 text-emerald-200 shadow-[inset_0_0_0_1px_rgba(34,197,94,0.16)]"
+        : "bg-[#F43F5E]/10 text-rose-200 shadow-[inset_0_0_0_1px_rgba(244,63,94,0.16)]",
   };
 }
 
@@ -128,9 +146,12 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
 
   const deckVersions = (versions ?? []) as DeckVersion[];
   const createVersion = createDeckVersion.bind(null, deck.id);
+
   const { data: matches, error: matchesError } = await supabase
     .from("matches")
-    .select("deck_version_id, opponent_archetype, result, went_first, event_type, played_at, match_tags(tag)")
+    .select(
+      "deck_version_id, opponent_archetype, result, went_first, event_type, played_at, match_tags(tag)"
+    )
     .eq("user_id", user.id)
     .order("played_at", { ascending: false });
 
@@ -138,30 +159,38 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
     throw new Error(matchesError.message);
   }
 
-  const sessionCoach = buildSessionCoachInsight(
-    (matches ?? []) as {
-      opponent_archetype: string;
-      result: MatchResult;
-      went_first: boolean | null;
-      event_type: string | null;
-      played_at: string;
-      match_tags: { tag: string }[] | null;
-    }[]
-  );
+  const matchRows = (matches ?? []) as {
+    deck_version_id: string;
+    opponent_archetype: string;
+    result: MatchResult;
+    went_first: boolean | null;
+    event_type: string | null;
+    played_at: string;
+    match_tags: { tag: string }[] | null;
+  }[];
+
+  const sessionCoach = buildSessionCoachInsight(matchRows);
   const versionInsights = await Promise.all(
     deckVersions.map(async (version) => {
       const analysis = analyzeDeckList(version.decklist);
       const enrichment = version.decklist
         ? await enrichDeckAnalysis(analysis)
         : null;
+      const versionMatches = matchRows.filter(
+        (match) => match.deck_version_id === version.id
+      );
+      const performance = countMatchResults(versionMatches);
 
       return {
+        versionId: version.id,
         analysis,
         enrichment,
-        versionId: version.id,
+        versionMatches,
+        performance,
       };
     })
   );
+
   const versionInsightById = new Map(
     versionInsights.map((insight) => [insight.versionId, insight])
   );
@@ -174,6 +203,31 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
     ...clearSuggestedArchetypes,
   ]);
   const setDeckArchetype = updateDeckArchetype.bind(null, deck.id);
+  const totalDeckMatches = matchRows.filter((match) =>
+    deckVersions.some((version) => version.id === match.deck_version_id)
+  );
+  const totalRecord = countMatchResults(totalDeckMatches);
+  const totalWinRate = totalRecord.total
+    ? Math.round((totalRecord.wins / totalRecord.total) * 100)
+    : 0;
+  const activeVersion =
+    deckVersions.find((version) => version.is_active) ?? deckVersions[0] ?? null;
+  const bestVersion = versionInsights
+    .filter((insight) => insight.performance.total >= 3)
+    .sort((left, right) => {
+      const leftRate = left.performance.total
+        ? Math.round((left.performance.wins / left.performance.total) * 100)
+        : 0;
+      const rightRate = right.performance.total
+        ? Math.round((right.performance.wins / right.performance.total) * 100)
+        : 0;
+
+      if (rightRate !== leftRate) {
+        return rightRate - leftRate;
+      }
+
+      return right.performance.total - left.performance.total;
+    })[0];
 
   return (
     <main className={appShell}>
@@ -187,296 +241,413 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
             helper: `${deckVersions.length} version${deckVersions.length === 1 ? "" : "s"}`,
           }}
         />
-        <div className={`${appMain} mx-auto w-full max-w-6xl gap-6`}>
-        <div>
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <SixPrizerLogo {...logoOnDark} />
-            <div className="lg:hidden">
-              <AppNav current="decks" />
+
+        <div className={`${appMain} mx-auto w-full max-w-7xl gap-6`}>
+          <div>
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <SixPrizerLogo {...logoOnDark} />
+              <div className="lg:hidden">
+                <AppNav current="decks" />
+              </div>
             </div>
+
+            <section className={`mt-5 p-5 sm:p-6 ${glassPanelStrong}`}>
+              <div className="grid gap-5 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+                <div className="min-w-0">
+                  <div className="flex gap-4">
+                    <ArchetypeSprites
+                      archetype={deck.archetype}
+                      size="md"
+                      className="mt-1 shrink-0"
+                    />
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="rounded-full bg-[#4F8CFF]/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.14)]">
+                          Manual archetype
+                        </span>
+                        <p className="text-sm font-medium text-[#F5C84C]">
+                          {deck.archetype}
+                        </p>
+                      </div>
+                      <h1 className={pageTitle}>{deck.name}</h1>
+                      <p className="max-w-2xl text-sm leading-6 text-[#94A3B8]/72">
+                        {deck.notes ??
+                          "Use the manual archetype as the deck-level identity. Auto-detected archetypes below stay version-specific."}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-2xl bg-[#07111F]/42 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                      Versions
+                    </p>
+                    <p className="mt-2 text-sm font-semibold text-[#F8FAFC]">
+                      {deckVersions.length} saved
+                    </p>
+                  </div>
+                  <div className="rounded-2xl bg-[#07111F]/42 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                      Games logged
+                    </p>
+                    <p className="mt-2 text-sm font-semibold text-[#F8FAFC]">
+                      {totalRecord.total ? `${totalRecord.total} games` : "No games yet"}
+                    </p>
+                  </div>
+                  <div className="rounded-2xl bg-[#07111F]/42 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                      Active version
+                    </p>
+                    <p className="mt-2 text-sm font-semibold text-[#F8FAFC]">
+                      {activeVersion?.name ?? "No active version set"}
+                    </p>
+                  </div>
+                  <div className="rounded-2xl bg-[#07111F]/42 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                      Best current read
+                    </p>
+                    <p className="mt-2 text-sm font-semibold text-[#F8FAFC]">
+                      {bestVersion
+                        ? `${deckVersions.find((version) => version.id === bestVersion.versionId)?.name ?? "Version"} ${Math.round(
+                            (bestVersion.performance.wins / bestVersion.performance.total) * 100
+                          )}%`
+                        : totalRecord.total
+                          ? `${totalWinRate}% overall`
+                          : "Needs more data"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </section>
           </div>
-          <div className={`mt-5 p-4 sm:p-5 ${glassPanelStrong}`}>
-            <div className="flex gap-4">
-              <ArchetypeSprites
-                archetype={deck.archetype}
-                size="md"
-                className="mt-1 shrink-0"
-              />
-              <div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <p className="text-sm font-medium text-[#F5C84C]">
-                    {deck.archetype}
-                  </p>
-                  <span className="rounded-md bg-[#4F8CFF]/12 px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#B8D1FF]">
-                    Manual archetype
+
+          {sessionCoach ? <SessionCoachPanel insight={sessionCoach} /> : null}
+
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
+            <section id="versions" className="grid gap-4 scroll-mt-8">
+              <div className={`p-4 ${glassPanel}`}>
+                <div className="flex items-start gap-3">
+                  <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-2xl bg-[#F5C84C]/12 text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
+                    <Beaker className="size-5" aria-hidden="true" />
                   </span>
-                </div>
-                <h1 className={pageTitle}>
-                  {deck.name}
-                </h1>
-                {deck.notes ? (
-                  <p className={pageCopy}>
-                    {deck.notes}
-                  </p>
-                ) : null}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {sessionCoach ? (
-          <SessionCoachPanel insight={sessionCoach} />
-        ) : null}
-
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
-          <section className="flex flex-col gap-4">
-            <div className={`p-4 ${glassPanel}`}>
-              <div className="flex items-start gap-3">
-                <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-md bg-[#F5C84C]/12 text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
-                  <Beaker className="size-5" aria-hidden="true" />
-                </span>
-                <div>
-                  <h2 className={sectionTitle}>
-                    Test versions
-                  </h2>
-                  <p className={`mt-1 ${sectionCopy}`}>
-                    Mark the build you want future games to test.
-                  </p>
+                  <div>
+                    <h2 className={sectionTitle}>Test versions</h2>
+                    <p className={`mt-1 ${sectionCopy}`}>
+                      Manual archetype sets deck identity. Auto-detection below shows version-specific parser evidence.
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {deckVersions.length ? (
-              <div className="flex flex-col gap-4">
-                {deckVersions.map((version) => {
+              {deckVersions.length ? (
+                deckVersions.map((version) => {
                   const markActive = markDeckVersionActive.bind(
                     null,
                     deck.id,
                     version.id
                   );
-                  const versionMatches = ((matches ?? []) as {
-                    deck_version_id: string;
-                    result: MatchResult;
-                  }[]).filter((match) => match.deck_version_id === version.id);
-                  const testStatus = getVersionTestStatus(versionMatches);
                   const insight = versionInsightById.get(version.id);
                   const analysis = insight?.analysis;
                   const enrichment = insight?.enrichment;
+                  const versionMatches = insight?.versionMatches ?? [];
+                  const testStatus = getVersionTestStatus(versionMatches);
+                  const wins = insight?.performance.wins ?? 0;
+                  const losses = insight?.performance.losses ?? 0;
+                  const ties = insight?.performance.ties ?? 0;
+                  const total = insight?.performance.total ?? 0;
+                  const winRate = total ? Math.round((wins / total) * 100) : 0;
 
                   return (
                     <article
                       key={version.id}
-                      className={`${card} transition hover:bg-[#11182C]/84 hover:shadow-[0_20px_54px_rgba(0,0,0,0.24),inset_0_0_0_1px_rgba(79,140,255,0.10)]`}
+                      className="rounded-[26px] bg-[radial-gradient(circle_at_top_left,rgba(79,140,255,0.12),transparent_34%),linear-gradient(180deg,rgba(15,26,45,0.94),rgba(7,17,31,0.88))] p-4 shadow-[0_20px_54px_rgba(0,0,0,0.24),inset_0_0_0_1px_rgba(148,163,184,0.08)] sm:p-5"
                     >
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                        <div>
+                      <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                        <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
-                            <h3 className="text-lg font-medium text-[#F8FAFC]">
+                            <h3 className="text-xl font-semibold text-[#F8FAFC]">
                               {version.name}
                             </h3>
                             {version.is_active ? (
-                              <span className="rounded-md bg-emerald-500/15 px-2 py-1 text-xs font-medium text-emerald-300">
+                              <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-emerald-200 shadow-[inset_0_0_0_1px_rgba(34,197,94,0.16)]">
                                 Active
                               </span>
                             ) : null}
                             <span
-                              className={`rounded-md px-2 py-1 text-xs font-medium ${testStatus.className}`}
+                              className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${testStatus.className}`}
                             >
                               {testStatus.label}
                             </span>
                           </div>
-                          <p className="mt-1 text-xs text-[#94A3B8]">
-                            Created{" "}
-                            {new Intl.DateTimeFormat("en", {
-                              dateStyle: "medium",
-                            }).format(new Date(version.created_at))}
-                          </p>
-                          <p className="mt-2 text-xs font-medium text-[#94A3B8]">
-                            {testStatus.detail}
+                          <p className="mt-1 text-xs text-[#94A3B8]/62">
+                            Created {formatDate(version.created_at)}
                           </p>
                         </div>
+
                         {!version.is_active ? (
                           <form action={markActive}>
                             <button
                               type="submit"
-                              className={`${secondaryButton} h-9 px-3`}
+                              className={`${secondaryButton} h-10 px-4`}
                             >
-                              Test version
+                              Make active
                             </button>
                           </form>
                         ) : null}
                       </div>
 
-                      {version.decklist ? (
-                        <div className="mt-4 rounded-md bg-[#0B1020]/46 p-3 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.035)]">
-                          <div className="flex flex-wrap gap-2 text-xs font-medium text-[#94A3B8]">
-                            <span>{analysis?.totalCards ?? 0} cards</span>
-                            <span>{analysis?.pokemonCount ?? 0} Pokémon</span>
-                            <span>{analysis?.trainerCount ?? 0} Trainer</span>
-                            <span>{analysis?.energyCount ?? 0} Energy</span>
-                            {enrichment ? (
-                              <span
-                                className={
-                                  enrichment.available
-                                    ? "text-emerald-200"
-                                    : "text-[#F5C84C]"
-                                }
-                              >
-                                {enrichment.available
-                                  ? `${enrichment.resolvedCount} resolved · ${enrichment.unresolvedCount} unresolved`
-                                  : "Card lookup unavailable"}
-                              </span>
-                            ) : null}
+                      <div className="mt-4 grid gap-4 xl:grid-cols-2">
+                        <div className="rounded-[22px] bg-[#07111F]/42 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                          <div className="flex items-center gap-2">
+                            <TrendingUp className="size-4 text-[#4F8CFF]" aria-hidden="true" />
+                            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
+                              Performance
+                            </p>
                           </div>
+                          <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                            <div className="rounded-2xl bg-[#0B1020]/66 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                                Games
+                              </p>
+                              <p className="mt-2 text-lg font-semibold text-[#F8FAFC]">
+                                {total}
+                              </p>
+                            </div>
+                            <div className="rounded-2xl bg-[#0B1020]/66 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                                Win rate
+                              </p>
+                              <p className="mt-2 text-lg font-semibold text-[#F8FAFC]">
+                                {total ? `${winRate}%` : "N/A"}
+                              </p>
+                            </div>
+                            <div className="rounded-2xl bg-[#0B1020]/66 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                                Record
+                              </p>
+                              <p className="mt-2 text-lg font-semibold text-[#F8FAFC]">
+                                {wins}W {losses}L {ties}T
+                              </p>
+                            </div>
+                          </div>
+                          <p className="mt-3 text-sm leading-6 text-[#94A3B8]/72">
+                            {testStatus.detail}
+                          </p>
+                        </div>
 
-                          <div className="mt-3 rounded-md bg-[#11182C]/70 p-3 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.04)]">
-                            {analysis?.suggestion.isClearSuggestion ? (
-                              <div className="flex flex-col gap-2">
-                                <div className="flex flex-wrap items-start justify-between gap-3">
-                                  <div className="flex min-w-0 items-center gap-2">
-                                    <ArchetypeSprites
-                                      archetype={analysis.suggestion.archetype}
-                                      className="shrink-0"
-                                    />
-                                    <div className="min-w-0">
-                                      <p className="text-xs font-medium uppercase text-[#94A3B8]/70">
-                                        Suggested archetype
-                                      </p>
-                                      <p className="truncate text-sm font-semibold text-[#F8FAFC]">
-                                        {analysis.suggestion.archetype}
-                                      </p>
-                                    </div>
+                        <div className="rounded-[22px] bg-[#07111F]/42 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                          <div className="flex items-center gap-2">
+                            <Target className="size-4 text-[#F5C84C]" aria-hidden="true" />
+                            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#F5C84C]">
+                              Auto-detected archetype
+                            </p>
+                          </div>
+                          {analysis?.suggestion.isClearSuggestion ? (
+                            <div className="mt-4 grid gap-3">
+                              <div className="flex flex-wrap items-start justify-between gap-3">
+                                <div className="flex min-w-0 items-center gap-3">
+                                  <ArchetypeSprites
+                                    archetype={analysis.suggestion.archetype}
+                                    className="shrink-0"
+                                  />
+                                  <div className="min-w-0">
+                                    <p className="truncate text-base font-semibold text-[#F8FAFC]">
+                                      {analysis.suggestion.archetype}
+                                    </p>
+                                    <p className="mt-1 text-xs text-[#94A3B8]/72">
+                                      Suggested archetype
+                                    </p>
                                   </div>
-                                  <span
-                                    className={`rounded-md px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] ${getSuggestionBadgeTone(
-                                      analysis.suggestion.confidence
-                                    )}`}
-                                  >
-                                    {analysis.suggestion.confidenceLabel}
-                                  </span>
                                 </div>
-                                <p className="text-xs text-[#94A3B8]">
-                                  Matched core cards:{" "}
-                                  {analysis.suggestion.matchedCoreCards.join(", ")}
-                                </p>
-                                <a
-                                  href="#manual-archetype"
-                                  className="text-xs font-semibold text-[#B8D1FF] underline-offset-2 transition hover:text-[#F8FAFC] hover:underline"
-                                >
-                                  Set archetype manually
-                                </a>
-                              </div>
-                            ) : (
-                              <div className="flex flex-col gap-1">
-                                <p className="text-xs font-medium uppercase text-[#94A3B8]/70">
-                                  Suggested archetype
-                                </p>
-                                <p className="text-sm font-semibold text-[#F8FAFC]">
-                                  No clear archetype detected
-                                </p>
-                                <p className="text-xs text-[#94A3B8]">
-                                  Evidence is too thin to trust a guess. Set the deck archetype manually if you already know the build family.
-                                </p>
-                                <a
-                                  href="#manual-archetype"
-                                  className="text-xs font-semibold text-[#B8D1FF] underline-offset-2 transition hover:text-[#F8FAFC] hover:underline"
-                                >
-                                  Set manually
-                                </a>
-                              </div>
-                            )}
-                          </div>
-
-                          {analysis?.keyPokemon.length ? (
-                            <div className="mt-3 flex flex-wrap gap-2">
-                              {analysis.keyPokemon.map((pokemon) => (
                                 <span
-                                  key={pokemon}
-                                  className="rounded-md bg-[#4F8CFF]/10 px-2 py-1 text-xs font-medium text-[#B8D1FF]"
+                                  className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${getSuggestionBadgeTone(
+                                    analysis.suggestion.confidence
+                                  )}`}
                                 >
-                                  {pokemon}
+                                  {analysis.suggestion.confidenceLabel}
                                 </span>
+                              </div>
+                              <p className="text-sm leading-6 text-[#94A3B8]/72">
+                                Matched core cards: {analysis.suggestion.matchedCoreCards.join(", ")}
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="mt-4">
+                              <p className="text-base font-semibold text-[#F8FAFC]">
+                                No clear archetype detected
+                              </p>
+                              <p className="mt-2 text-sm leading-6 text-[#94A3B8]/72">
+                                Evidence is too thin to trust a parser guess. Keep the manual deck archetype as the primary identity here.
+                              </p>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="rounded-[22px] bg-[#07111F]/42 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                          <div className="flex items-center gap-2">
+                            <Layers3 className="size-4 text-[#4F8CFF]" aria-hidden="true" />
+                            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
+                              Deck composition
+                            </p>
+                          </div>
+                          {analysis?.cards.length ? (
+                            <div className="mt-4 grid gap-3 sm:grid-cols-4">
+                              {[
+                                { label: "Total", value: analysis.totalCards },
+                                { label: "Pokémon", value: analysis.pokemonCount },
+                                { label: "Trainer", value: analysis.trainerCount },
+                                { label: "Energy", value: analysis.energyCount },
+                              ].map((stat) => (
+                                <div
+                                  key={stat.label}
+                                  className="rounded-2xl bg-[#0B1020]/66 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]"
+                                >
+                                  <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                                    {stat.label}
+                                  </p>
+                                  <p className="mt-2 text-lg font-semibold text-[#F8FAFC]">
+                                    {stat.value}
+                                  </p>
+                                </div>
                               ))}
                             </div>
-                          ) : null}
-
-                          {enrichment?.legalityWarnings.length ? (
-                            <div className="mt-3 rounded-md bg-[#F5C84C]/10 p-3 text-xs leading-5 text-[#F5C84C]">
-                              {enrichment.legalityWarnings[0]}
-                            </div>
-                          ) : null}
-
-                          {enrichment?.error ? (
-                            <p className="mt-3 text-xs font-medium text-[#94A3B8]">
-                              {enrichment.error}
+                          ) : (
+                            <p className="mt-4 text-sm leading-6 text-[#94A3B8]/72">
+                              Paste a list to unlock composition and legality checks.
                             </p>
-                          ) : null}
+                          )}
+                        </div>
 
-                          <details className="mt-3">
-                            <summary className="cursor-pointer text-xs font-medium text-[#94A3B8]">
-                              Deck list
-                            </summary>
-                            <pre className="mt-3 max-h-80 overflow-auto whitespace-pre-wrap rounded-md bg-[#0B1020]/58 p-4 text-sm leading-6 text-[#F8FAFC]">
-                              {version.decklist}
-                            </pre>
-                          </details>
+                        <div className="rounded-[22px] bg-[#07111F]/42 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                          <div className="flex items-center gap-2">
+                            <ShieldCheck className="size-4 text-[#F5C84C]" aria-hidden="true" />
+                            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#F5C84C]">
+                              Legal status
+                            </p>
+                          </div>
+                          {enrichment ? (
+                            <div className="mt-4 grid gap-3">
+                              <div className="grid gap-3 sm:grid-cols-2">
+                                <div className="rounded-2xl bg-[#0B1020]/66 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                                  <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                                    Resolved
+                                  </p>
+                                  <p className="mt-2 text-lg font-semibold text-[#F8FAFC]">
+                                    {enrichment.resolvedCount}
+                                  </p>
+                                </div>
+                                <div className="rounded-2xl bg-[#0B1020]/66 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                                  <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                                    Unresolved
+                                  </p>
+                                  <p className="mt-2 text-lg font-semibold text-[#F8FAFC]">
+                                    {enrichment.unresolvedCount}
+                                  </p>
+                                </div>
+                              </div>
+                              <p className="text-sm leading-6 text-[#94A3B8]/72">
+                                {enrichment.legalityWarnings.length
+                                  ? enrichment.legalityWarnings[0]
+                                  : "No flagged Standard legality issue found in the current lookup."}
+                              </p>
+                              {enrichment.error ? (
+                                <p className="text-xs text-[#94A3B8]/68">{enrichment.error}</p>
+                              ) : null}
+                            </div>
+                          ) : (
+                            <p className="mt-4 text-sm leading-6 text-[#94A3B8]/72">
+                              Add a parsed list to unlock legality checks.
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {version.notes ? (
+                        <div className="mt-4 rounded-[22px] bg-[#07111F]/42 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
+                            Version notes
+                          </p>
+                          <p className="mt-2 text-sm leading-6 text-[#94A3B8]/72">
+                            {version.notes}
+                          </p>
                         </div>
                       ) : null}
-                      {version.notes ? (
-                        <p className={`mt-4 ${sectionCopy}`}>
-                          {version.notes}
-                        </p>
+
+                      {version.decklist ? (
+                        <details className="mt-4 rounded-[22px] bg-[#07111F]/42 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                          <summary className="cursor-pointer list-none text-sm font-semibold text-[#DCE8FF] marker:hidden">
+                            View raw deck list
+                          </summary>
+                          <pre className="mt-3 max-h-96 overflow-auto whitespace-pre-wrap rounded-2xl bg-[#0B1020]/58 p-4 text-sm leading-6 text-[#F8FAFC]">
+                            {version.decklist}
+                          </pre>
+                        </details>
                       ) : null}
                     </article>
                   );
-                })}
-              </div>
-            ) : (
-              <div className={emptyCard}>
-                <h3 className="text-lg font-semibold text-[#F8FAFC]">
-                  Add the first test version.
-                </h3>
-                <p className={sectionCopy}>
-                  Add a version before logging matches with this deck. Versions
-                  are what SixPrizer uses to compare builds over time.
-                </p>
-                <a href="#add-version" className={`mt-5 ${primaryButton}`}>
-                  Add first version
-                </a>
-              </div>
-            )}
-          </section>
-
-          <aside id="add-version" className="scroll-mt-6 lg:sticky lg:top-6">
-            <div className="flex flex-col gap-4">
-              <form
-                id="manual-archetype"
-                action={setDeckArchetype}
-                className={`scroll-mt-6 p-4 ${glassPanel}`}
-              >
-                <h2 className={sectionTitle}>Set archetype manually</h2>
-                <p className={`mt-1 ${sectionCopy}`}>
-                  This is the deck family SixPrizer will use across deck pages, matchup summaries, and future logs.
-                </p>
-                <div className="mt-4 flex flex-col gap-4">
-                  <ArchetypePicker
-                    id="deck-archetype"
-                    name="archetype"
-                    label="Manual archetype"
-                    options={archetypeOptions}
-                    defaultValue={deck.archetype}
-                    customOptionLabel={(value) => `Use custom deck archetype: ${value}`}
-                    required
-                  />
-                  <button type="submit" className={secondaryButton}>
-                    Save manual archetype
-                  </button>
+                })
+              ) : (
+                <div className={emptyCard}>
+                  <h3 className="text-lg font-semibold text-[#F8FAFC]">
+                    Add the first test version.
+                  </h3>
+                  <p className={sectionCopy}>
+                    Versions are what SixPrizer uses for match logging, version comparison, and future archetype evidence.
+                  </p>
+                  <a href="#add-version" className={`mt-5 ${primaryButton}`}>
+                    Add first version
+                    <ArrowRight className="ml-2 size-4" aria-hidden="true" />
+                  </a>
                 </div>
-              </form>
-              <DeckVersionForm action={createVersion} />
-            </div>
-          </aside>
-        </div>
+              )}
+            </section>
+
+            <aside id="add-version" className="scroll-mt-6 lg:sticky lg:top-6">
+              <div className="flex flex-col gap-4">
+                <div className={`p-4 ${glassPanel}`}>
+                  <div className="flex items-start gap-3">
+                    <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-2xl bg-[#4F8CFF]/10 text-[#B8D1FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.18)]">
+                      <Sparkles className="size-5" aria-hidden="true" />
+                    </span>
+                    <div>
+                      <h2 className={sectionTitle}>Deck identity</h2>
+                      <p className={`mt-1 ${sectionCopy}`}>
+                        Manual archetype is the deck-level identity. Auto-detected version suggestions stay supportive, not final.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <form
+                  id="manual-archetype"
+                  action={setDeckArchetype}
+                  className={`scroll-mt-6 p-4 ${glassPanel}`}
+                >
+                  <h2 className={sectionTitle}>Set archetype manually</h2>
+                  <p className={`mt-1 ${sectionCopy}`}>
+                    Use a known archetype or type a custom deck family name.
+                  </p>
+                  <div className="mt-4 flex flex-col gap-4">
+                    <ArchetypePicker
+                      id="deck-archetype"
+                      name="archetype"
+                      label="Manual archetype"
+                      options={archetypeOptions}
+                      defaultValue={deck.archetype}
+                      customOptionLabel={(value) => `Use custom deck archetype: ${value}`}
+                      required
+                    />
+                    <button type="submit" className={secondaryButton}>
+                      Save manual archetype
+                    </button>
+                  </div>
+                </form>
+
+                <DeckVersionForm action={createVersion} />
+              </div>
+            </aside>
+          </div>
         </div>
       </section>
     </main>
