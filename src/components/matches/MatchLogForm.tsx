@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useActionState, useEffect, useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
+import { ArrowRight, CheckCircle2, Sparkles } from "lucide-react";
 import { ArchetypePicker } from "@/components/ArchetypePicker";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
 import { SessionCoachPanel } from "@/components/SessionCoachPanel";
@@ -699,6 +700,67 @@ export function MatchLogForm({
             : ""
         }`
       : null;
+  const postSaveStatusBadge = sessionCoach
+    ? postSaveMissionProgress === sessionCoach.progressGoal
+      ? "Mission complete"
+      : countedTowardMission && countedTowardContext
+        ? "Signal improved"
+        : sessionCoach.missionConfidence
+    : "Game logged";
+  const postSaveMissionCopy = sessionCoach
+    ? postSaveMissionProgress === sessionCoach.progressGoal
+      ? "Mission complete. Review the pattern before changing your list."
+      : countedTowardMission && countedTowardContext
+        ? "Progress improved and focus evidence moved forward."
+        : sessionCoach.progressFeedback
+    : "This result was added to your matchup history.";
+  const postSaveProgressPercent =
+    sessionCoach && sessionCoach.progressGoal > 0 && postSaveMissionProgress !== null
+      ? Math.min((postSaveMissionProgress / sessionCoach.progressGoal) * 100, 100)
+      : 0;
+  const postSaveStatChips = [
+    {
+      label: "Matchup sample",
+      value: "+1 matchup game",
+    },
+    {
+      label: "Turn-order sample",
+      value: wentFirst === "true" ? "+1 first-turn game" : "+1 second-turn game",
+    },
+    {
+      label: "Quality signal",
+      value: sequencingQuality
+        ? `${getQualityLabel(sequencingQuality)} sequencing`
+        : startQuality
+          ? `${getQualityLabel(startQuality)} start`
+          : "No quality tags",
+    },
+  ];
+  const postSaveAddedItems = [
+    opponentArchetype ? `Matchup: ${opponentArchetype}` : null,
+    wentFirst ? `Turn order: ${wentFirst === "true" ? "First" : "Second"}` : null,
+    openingHandQuality
+      ? `Opening hand: ${getQualityLabel(openingHandQuality)}`
+      : null,
+    sequencingQuality ? `Sequencing: ${getQualityLabel(sequencingQuality)}` : null,
+    [...issueTags, ...positiveTags].length
+      ? `Tags: ${[...issueTags, ...positiveTags].slice(0, 3).join(", ")}`
+      : null,
+  ].filter(Boolean);
+  const nextActionTitle = sessionCoach
+    ? postSaveMissionProgress === sessionCoach.progressGoal
+      ? "Review this matchup"
+      : countedTowardContext
+        ? "Log one more focus game"
+        : "Return to dashboard"
+    : "Log another game";
+  const nextActionCopy = sessionCoach
+    ? postSaveMissionProgress === sessionCoach.progressGoal
+      ? "Your mission is complete. Review the matchup before changing your list."
+      : countedTowardContext
+        ? "One more focused game will strengthen this signal."
+        : "Keep the sample moving before you make a deck decision."
+    : "Keep your testing loop moving with one more data point.";
 
   function importTcgLiveLog() {
     const log = tcgLiveLog.trim();
@@ -860,44 +922,154 @@ export function MatchLogForm({
             </div>
           ) : null}
           {wasSuccessful ? (
-            <div className="rounded-xl bg-[#07111F]/46 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]">
-              <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#22C55E]">
-                Game logged
-              </p>
-              <p className="mt-2 text-base font-semibold text-[#F8FAFC]">
-                {postSaveSummary}
-              </p>
-              <p className="mt-2 text-sm leading-6 text-[#B9C4D6]">
-                This added a structured game to your matchup, turn-order, opening-hand, and sequencing patterns.
-              </p>
-              {postSaveSignalLine ? (
-                <p className="mt-3 rounded-lg bg-[#4F8CFF]/10 px-3 py-2 text-sm font-medium text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.16)]">
-                  {postSaveSignalLine}
-                </p>
+            <div className="grid gap-4">
+              <div className="rounded-xl bg-[#07111F]/46 p-5 shadow-[0_20px_56px_rgba(0,0,0,0.22),inset_0_0_0_1px_rgba(34,197,94,0.14)]">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-500/14 text-emerald-300 shadow-[inset_0_0_0_1px_rgba(34,197,94,0.20)]">
+                        <CheckCircle2 className="size-6" aria-hidden="true" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#22C55E]">
+                          Game logged
+                        </p>
+                        <h2 className="mt-1 text-2xl font-bold text-[#F8FAFC] sm:text-3xl">
+                          Your testing signal moved.
+                        </h2>
+                      </div>
+                    </div>
+                    <p className="mt-4 text-base font-semibold leading-7 text-[#F8FAFC]">
+                      {postSaveSummary}
+                    </p>
+                  </div>
+                  <span className="w-fit rounded-full bg-[#4F8CFF]/14 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.08em] text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.18)]">
+                    {postSaveStatusBadge}
+                  </span>
+                </div>
+
+                <div className="mt-5 grid gap-2 sm:grid-cols-3">
+                  {postSaveStatChips.map((chip) => (
+                    <div
+                      key={chip.label}
+                      className="rounded-xl bg-[#0B1020]/56 px-3 py-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]"
+                    >
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                        {chip.label}
+                      </p>
+                      <p className="mt-1 text-sm font-semibold text-[#F8FAFC]">
+                        {chip.value}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {sessionCoach ? (
+                <div className="rounded-xl bg-[#07111F]/38 p-4 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.12)]">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
+                        Mission progress
+                      </p>
+                      <p className="mt-1 text-lg font-semibold text-[#F8FAFC]">
+                        {sessionCoach.missionTitle}
+                      </p>
+                    </div>
+                    <span className="rounded-full bg-[#F5C84C]/12 px-3 py-1 text-xs font-bold uppercase tracking-[0.08em] text-[#FFE28A] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
+                      {postSaveStatusBadge}
+                    </span>
+                  </div>
+                  <div className="mt-4 flex items-center justify-between gap-3">
+                    <p className="text-sm font-semibold text-[#F8FAFC]">
+                      {postSaveMissionProgress}/{sessionCoach.progressGoal} games
+                    </p>
+                    <div className="flex items-center gap-1.5">
+                      {Array.from({ length: sessionCoach.progressGoal }).map((_, index) => (
+                        <span
+                          key={index}
+                          className={`h-2.5 w-6 rounded-full ${
+                            index < (postSaveMissionProgress ?? 0)
+                              ? "bg-[#4F8CFF]"
+                              : "bg-[#1A2238]"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  <div className="mt-3 h-2 rounded-full bg-[#0B1020]/72">
+                    <div
+                      className="h-2 rounded-full bg-[#4F8CFF] transition-all"
+                      style={{ width: `${postSaveProgressPercent}%` }}
+                    />
+                  </div>
+                  <p className="mt-3 text-sm text-[#94A3B8]">
+                    {postSaveMissionCopy}
+                  </p>
+                </div>
               ) : null}
-              <p
-                className={`mt-3 rounded-lg px-3 py-2 text-sm font-medium ${
-                  countedTowardMission
-                    ? "bg-emerald-500/10 text-emerald-200"
-                    : "bg-[#F5C84C]/10 text-[#FFE28A]"
-                }`}
-              >
-                {sessionCoach
-                  ? countedTowardMission
-                    ? countedTowardContext
-                      ? "This one strengthens both your current mission and the focus sample."
-                      : "This one strengthens your current testing mission."
-                    : "This game still helps your broader testing record."
-                  : "One more data point for your testing loop."}
-              </p>
-              <div className="mt-4 grid gap-2 sm:grid-cols-3">
-                <Link href="/matches/new" className={secondaryButton}>
+
+              <div className="grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+                <div className="rounded-xl bg-[#07111F]/34 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="size-4 text-[#F5C84C]" aria-hidden="true" />
+                    <p className="text-sm font-semibold text-[#F8FAFC]">
+                      What this added
+                    </p>
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {postSaveAddedItems.length ? (
+                      postSaveAddedItems.map((item) => (
+                        <span
+                          key={item}
+                          className="rounded-full bg-[#0B1020]/68 px-3 py-2 text-xs font-medium text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]"
+                        >
+                          {item}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="rounded-full bg-[#0B1020]/68 px-3 py-2 text-xs font-medium text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                        Matchup history updated
+                      </span>
+                    )}
+                  </div>
+                  {postSaveSignalLine ? (
+                    <details className="mt-4">
+                      <summary className="cursor-pointer text-sm font-medium text-[#94A3B8]">
+                        Why this matters
+                      </summary>
+                      <p className="mt-2 text-sm text-[#B9C4D6]">
+                        {postSaveSignalLine}
+                      </p>
+                    </details>
+                  ) : null}
+                </div>
+
+                <div className="rounded-xl bg-[#0B1020]/58 p-4 shadow-[inset_0_0_0_1px_rgba(245,200,76,0.14)]">
+                  <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#F5C84C]">
+                    Next best action
+                  </p>
+                  <p className="mt-2 text-lg font-semibold text-[#F8FAFC]">
+                    {nextActionTitle}
+                  </p>
+                  <p className="mt-2 text-sm text-[#94A3B8]">
+                    {nextActionCopy}
+                  </p>
+                  <div className="mt-4 flex items-center gap-2 text-sm font-medium text-[#DCE8FF]">
+                    <ArrowRight className="size-4 text-[#F5C84C]" aria-hidden="true" />
+                    Keep the testing loop moving.
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto_auto]">
+                <Link href="/matches/new" className={`${primaryButton} h-12`}>
                   Log another game
                 </Link>
-                <Link href="/matchups" className={secondaryButton}>
+                <Link href="/matchups" className={`${secondaryButton} h-12`}>
                   Review matchup
                 </Link>
-                <Link href="/dashboard" className={secondaryButton}>
+                <Link href="/dashboard" className={`${secondaryButton} h-12`}>
                   Dashboard
                 </Link>
               </div>
@@ -993,7 +1165,7 @@ export function MatchLogForm({
                             </p>
                             <div className="mt-2 flex min-w-0 items-center gap-2">
                               <ArchetypeSprites
-                                archetype={selectedDeckSuggestion ?? selectedDeckArchetype}
+                                archetype={selectedDeckArchetype || selectedDeckSuggestion}
                                 className="shrink-0"
                               />
                               <div className="min-w-0">

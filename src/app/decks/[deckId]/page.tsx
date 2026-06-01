@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { Beaker } from "lucide-react";
 import { AppNav } from "@/components/AppNav";
 import { AppSidebar } from "@/components/AppSidebar";
+import { ArchetypePicker } from "@/components/ArchetypePicker";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
 import { DeckVersionForm } from "@/components/decks/DeckVersionForm";
 import {
@@ -22,7 +23,12 @@ import {
 } from "@/components/brand-styles";
 import { SixPrizerLogo } from "@/components/SixPrizerLogo";
 import { SessionCoachPanel } from "@/components/SessionCoachPanel";
-import { analyzeDeckList } from "@/lib/decklist";
+import { getArchetypeOptions } from "@/lib/archetypes";
+import {
+  analyzeDeckList,
+  isClearArchetypeSuggestion,
+} from "@/lib/decklist";
+import { LATEST_FORMAT } from "@/lib/formats";
 import { buildSessionCoachInsight } from "@/lib/session-coach";
 import { enrichDeckAnalysis } from "@/lib/card-data/deck-enrichment";
 import {
@@ -30,7 +36,11 @@ import {
   type MatchResult,
 } from "@/lib/match-types";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
-import { createDeckVersion, markDeckVersionActive } from "./actions";
+import {
+  createDeckVersion,
+  markDeckVersionActive,
+  updateDeckArchetype,
+} from "./actions";
 
 type DeckDetailPageProps = {
   params: Promise<{
@@ -75,6 +85,12 @@ function getVersionTestStatus(matches: { result: MatchResult }[]) {
           ? "bg-emerald-500/14 text-emerald-200"
         : "bg-[#F43F5E]/14 text-rose-200",
   };
+}
+
+function getSuggestionBadgeTone(confidence: "high" | "medium" | "low" | "none") {
+  return confidence === "high"
+    ? "bg-emerald-500/14 text-emerald-200"
+    : "bg-[#F5C84C]/14 text-[#F5C84C]";
 }
 
 export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
@@ -149,6 +165,15 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
   const versionInsightById = new Map(
     versionInsights.map((insight) => [insight.versionId, insight])
   );
+  const clearSuggestedArchetypes = versionInsights
+    .map((insight) => insight.analysis.suggestion)
+    .filter((suggestion) => isClearArchetypeSuggestion(suggestion))
+    .map((suggestion) => suggestion.archetype);
+  const archetypeOptions = getArchetypeOptions(LATEST_FORMAT, [
+    deck.archetype,
+    ...clearSuggestedArchetypes,
+  ]);
+  const setDeckArchetype = updateDeckArchetype.bind(null, deck.id);
 
   return (
     <main className={appShell}>
@@ -178,9 +203,14 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                 className="mt-1 shrink-0"
               />
               <div>
-                <p className="text-sm font-medium text-[#94A3B8]">
-                  {deck.archetype}
-                </p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="text-sm font-medium text-[#F5C84C]">
+                    {deck.archetype}
+                  </p>
+                  <span className="rounded-md bg-[#4F8CFF]/12 px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#B8D1FF]">
+                    Manual archetype
+                  </span>
+                </div>
                 <h1 className={pageTitle}>
                   {deck.name}
                 </h1>
@@ -299,22 +329,63 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                             ) : null}
                           </div>
 
-                          {analysis?.suggestion.confidence !== "unknown" ? (
-                            <div className="mt-3 flex items-center gap-2 rounded-md bg-[#11182C]/70 p-3">
-                              <ArchetypeSprites
-                                archetype={analysis?.suggestion.archetype}
-                                className="shrink-0"
-                              />
-                              <div className="min-w-0">
+                          <div className="mt-3 rounded-md bg-[#11182C]/70 p-3 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.04)]">
+                            {analysis?.suggestion.isClearSuggestion ? (
+                              <div className="flex flex-col gap-2">
+                                <div className="flex flex-wrap items-start justify-between gap-3">
+                                  <div className="flex min-w-0 items-center gap-2">
+                                    <ArchetypeSprites
+                                      archetype={analysis.suggestion.archetype}
+                                      className="shrink-0"
+                                    />
+                                    <div className="min-w-0">
+                                      <p className="text-xs font-medium uppercase text-[#94A3B8]/70">
+                                        Suggested archetype
+                                      </p>
+                                      <p className="truncate text-sm font-semibold text-[#F8FAFC]">
+                                        {analysis.suggestion.archetype}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <span
+                                    className={`rounded-md px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] ${getSuggestionBadgeTone(
+                                      analysis.suggestion.confidence
+                                    )}`}
+                                  >
+                                    {analysis.suggestion.confidenceLabel}
+                                  </span>
+                                </div>
+                                <p className="text-xs text-[#94A3B8]">
+                                  Matched core cards:{" "}
+                                  {analysis.suggestion.matchedCoreCards.join(", ")}
+                                </p>
+                                <a
+                                  href="#manual-archetype"
+                                  className="text-xs font-semibold text-[#B8D1FF] underline-offset-2 transition hover:text-[#F8FAFC] hover:underline"
+                                >
+                                  Set archetype manually
+                                </a>
+                              </div>
+                            ) : (
+                              <div className="flex flex-col gap-1">
                                 <p className="text-xs font-medium uppercase text-[#94A3B8]/70">
                                   Suggested archetype
                                 </p>
-                                <p className="truncate text-sm font-semibold text-[#F8FAFC]">
-                                  {analysis?.suggestion.archetype}
+                                <p className="text-sm font-semibold text-[#F8FAFC]">
+                                  No clear archetype detected
                                 </p>
+                                <p className="text-xs text-[#94A3B8]">
+                                  Evidence is too thin to trust a guess. Set the deck archetype manually if you already know the build family.
+                                </p>
+                                <a
+                                  href="#manual-archetype"
+                                  className="text-xs font-semibold text-[#B8D1FF] underline-offset-2 transition hover:text-[#F8FAFC] hover:underline"
+                                >
+                                  Set manually
+                                </a>
                               </div>
-                            </div>
-                          ) : null}
+                            )}
+                          </div>
 
                           {analysis?.keyPokemon.length ? (
                             <div className="mt-3 flex flex-wrap gap-2">
@@ -377,7 +448,33 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
           </section>
 
           <aside id="add-version" className="scroll-mt-6 lg:sticky lg:top-6">
-            <DeckVersionForm action={createVersion} />
+            <div className="flex flex-col gap-4">
+              <form
+                id="manual-archetype"
+                action={setDeckArchetype}
+                className={`scroll-mt-6 p-4 ${glassPanel}`}
+              >
+                <h2 className={sectionTitle}>Set archetype manually</h2>
+                <p className={`mt-1 ${sectionCopy}`}>
+                  This is the deck family SixPrizer will use across deck pages, matchup summaries, and future logs.
+                </p>
+                <div className="mt-4 flex flex-col gap-4">
+                  <ArchetypePicker
+                    id="deck-archetype"
+                    name="archetype"
+                    label="Manual archetype"
+                    options={archetypeOptions}
+                    defaultValue={deck.archetype}
+                    customOptionLabel={(value) => `Use custom deck archetype: ${value}`}
+                    required
+                  />
+                  <button type="submit" className={secondaryButton}>
+                    Save manual archetype
+                  </button>
+                </div>
+              </form>
+              <DeckVersionForm action={createVersion} />
+            </div>
           </aside>
         </div>
         </div>

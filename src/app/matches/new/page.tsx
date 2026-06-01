@@ -17,7 +17,10 @@ import {
 import { MatchLogForm } from "@/components/matches/MatchLogForm";
 import { SixPrizerLogo } from "@/components/SixPrizerLogo";
 import { getArchetypeOptions } from "@/lib/archetypes";
-import { analyzeDeckList } from "@/lib/decklist";
+import {
+  analyzeDeckList,
+  isClearArchetypeSuggestion,
+} from "@/lib/decklist";
 import { LATEST_FORMAT } from "@/lib/formats";
 import { type MatchResult } from "@/lib/match-types";
 import { buildSessionCoachInsight } from "@/lib/session-coach";
@@ -118,8 +121,9 @@ export default async function NewMatchPage({
         id: version.id,
         label: `${deck.name} - ${version.name}`,
         detail: deck.archetype,
-        suggestedArchetype:
-          suggestion.confidence === "unknown" ? null : suggestion.archetype,
+        suggestedArchetype: isClearArchetypeSuggestion(suggestion)
+          ? suggestion.archetype
+          : null,
         isActive: version.is_active,
       };
     })

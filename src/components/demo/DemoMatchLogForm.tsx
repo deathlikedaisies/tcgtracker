@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { CheckCircle2, RotateCcw } from "lucide-react";
+import { ArrowRight, CheckCircle2, RotateCcw, Sparkles } from "lucide-react";
 import { ArchetypePicker } from "@/components/ArchetypePicker";
 import {
   inputH11,
@@ -425,6 +425,55 @@ export function DemoMatchLogForm() {
       </Link>
     </div>
   );
+  const demoStatusBadge =
+    result === "win"
+      ? "Signal improved"
+      : result === "tie"
+        ? "Building signal"
+        : "Needs more games";
+  const demoStatChips = [
+    { label: "Matchup sample", value: "+1 matchup game" },
+    {
+      label: "Turn-order sample",
+      value:
+        wentFirst === null
+          ? "Turn order not set"
+          : wentFirst
+            ? "+1 first-turn game"
+            : "+1 second-turn game",
+    },
+    {
+      label: "Quality signal",
+      value: sequencingQuality
+        ? `${getQualityLabel(sequencingQuality)} sequencing`
+        : startQuality
+          ? `${getQualityLabel(startQuality)} start`
+          : "No quality tags",
+    },
+  ];
+  const demoAddedItems = [
+    opponent ? `Matchup: ${opponent}` : null,
+    wentFirst === null ? null : `Turn order: ${wentFirst ? "First" : "Second"}`,
+    openingHandQuality
+      ? `Opening hand: ${getQualityLabel(openingHandQuality)}`
+      : null,
+    sequencingQuality ? `Sequencing: ${getQualityLabel(sequencingQuality)}` : null,
+    [...issueTags, ...positiveTags].length
+      ? `Tags: ${[...issueTags, ...positiveTags].slice(0, 3).join(", ")}`
+      : null,
+  ].filter(Boolean);
+  const demoNextActionTitle =
+    result === "win"
+      ? "Review this matchup"
+      : result === "tie"
+        ? "Log one more focus game"
+        : "Log one more focus game";
+  const demoNextActionCopy =
+    result === "win"
+      ? "The sample improved. Review the matchup before changing your list."
+      : result === "tie"
+        ? "One more focused game will help this become a clearer signal."
+        : "Keep the sample moving until the issue pattern is easier to trust.";
 
   const versionOptions = useMemo(
     () =>
@@ -466,67 +515,144 @@ export function DemoMatchLogForm() {
   if (saved) {
     return (
       <section className="grid gap-4">
-        <div className="rounded-md bg-[#0F1A2D]/74 p-5 shadow-[0_20px_56px_rgba(0,0,0,0.26),inset_0_0_0_1px_rgba(34,197,94,0.18)] backdrop-blur sm:p-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div className="min-w-0">
-              <div className="flex items-center gap-3">
-                <CheckCircle2
-                  className="size-10 shrink-0 text-[#22C55E]"
-                  aria-hidden="true"
-                />
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#22C55E]">
-                    Game logged
-                  </p>
-                  <h2 className="text-2xl font-bold text-[#F8FAFC] sm:text-3xl">
-                    Structured signal preview
-                  </h2>
+        <div className="grid gap-4">
+          <div className="rounded-xl bg-[#0F1A2D]/74 p-5 shadow-[0_20px_56px_rgba(0,0,0,0.26),inset_0_0_0_1px_rgba(34,197,94,0.18)] backdrop-blur sm:p-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-500/14 text-emerald-300 shadow-[inset_0_0_0_1px_rgba(34,197,94,0.20)]">
+                    <CheckCircle2 className="size-6" aria-hidden="true" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#22C55E]">
+                      Game logged
+                    </p>
+                    <h2 className="mt-1 text-2xl font-bold text-[#F8FAFC] sm:text-3xl">
+                      Your testing signal moved.
+                    </h2>
+                  </div>
                 </div>
+                <p className="mt-4 text-base font-semibold leading-7 text-[#F8FAFC]">
+                  {readySummary}
+                </p>
               </div>
-              <p className="mt-3 text-sm leading-6 text-[#94A3B8]/82">
-                Demo mode mirrors the structured logging flow without saving anything to your account.
-              </p>
-            </div>
-            <span
-              className={`w-fit rounded px-2.5 py-1 text-xs font-bold uppercase tracking-[0.08em] ${signalCardClass(
+              <span className={`w-fit rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-[0.08em] ${signalCardClass(
                 insightUpdate.tone
-              )}`}
-            >
-              {insightUpdate.eyebrow}
-            </span>
-          </div>
+              )}`}>
+                {demoStatusBadge}
+              </span>
+            </div>
 
-          <div className="mt-5 rounded-md bg-[#07111F]/58 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
-            <p className="text-lg font-bold text-[#F8FAFC]">
-              {readySummary}
-            </p>
-            <p className="mt-2 text-sm leading-6 text-[#94A3B8]/80">
-              {insightUpdate.title}
-            </p>
-            <div className="mt-4 grid gap-2">
-              {insightUpdate.bullets.map((bullet) => (
+            <div className="mt-5 grid gap-2 sm:grid-cols-3">
+              {demoStatChips.map((chip) => (
                 <div
-                  key={bullet}
-                  className="rounded bg-[#0F1A2D]/72 px-3 py-2 text-sm leading-6 text-[#F8FAFC]/88"
+                  key={chip.label}
+                  className="rounded-xl bg-[#07111F]/58 px-3 py-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]"
                 >
-                  {bullet}
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                    {chip.label}
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-[#F8FAFC]">
+                    {chip.value}
+                  </p>
                 </div>
               ))}
             </div>
-            <p className="mt-4 rounded-md bg-[#4F8CFF]/10 px-3 py-2 text-sm font-medium leading-6 text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.16)]">
+          </div>
+
+          <div className="rounded-xl bg-[#07111F]/38 p-4 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.12)]">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
+                  Mission progress
+                </p>
+                <p className="mt-1 text-lg font-semibold text-[#F8FAFC]">
+                  {gameContext === "competitive" ? "Round-by-round review" : "Build matchup confidence"}
+                </p>
+              </div>
+              <span className="rounded-full bg-[#F5C84C]/12 px-3 py-1 text-xs font-bold uppercase tracking-[0.08em] text-[#FFE28A] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
+                {demoStatusBadge}
+              </span>
+            </div>
+            <div className="mt-4 flex items-center justify-between gap-3">
+              <p className="text-sm font-semibold text-[#F8FAFC]">
+                4/5 games
+              </p>
+              <div className="flex items-center gap-1.5">
+                {Array.from({ length: 5 }).map((_, index) => (
+                  <span
+                    key={index}
+                    className={`h-2.5 w-6 rounded-full ${
+                      index < 4 ? "bg-[#4F8CFF]" : "bg-[#1A2238]"
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+            <div className="mt-3 h-2 rounded-full bg-[#0B1020]/72">
+              <div className="h-2 w-[80%] rounded-full bg-[#4F8CFF]" />
+            </div>
+            <p className="mt-3 text-sm text-[#94A3B8]">
               {gameContext === "competitive"
-                ? `${opponent}: 4/5 focused games toward a stronger signal.`
-                : `${opponent}: 4/5 focused games toward a building signal.`}
-            </p>
-            <p className="mt-4 rounded-md bg-[#F5C84C]/10 px-3 py-2 text-sm font-semibold leading-6 text-[#FFE28A] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
-              {insightUpdate.recommendation}
+                ? "Signal improved. One more focused round strengthens the read."
+                : "Building signal. One more game makes this pattern easier to trust."}
             </p>
           </div>
 
-          <p className="mt-4 text-sm font-medium text-[#F5C84C]">
-            Demo mode only: no production data was changed.
-          </p>
-          <div className="mt-6 flex flex-col gap-2 sm:flex-row">
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+            <div className="rounded-xl bg-[#07111F]/34 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+              <div className="flex items-center gap-2">
+                <Sparkles className="size-4 text-[#F5C84C]" aria-hidden="true" />
+                <p className="text-sm font-semibold text-[#F8FAFC]">
+                  What this added
+                </p>
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {demoAddedItems.length ? (
+                  demoAddedItems.map((item) => (
+                    <span
+                      key={item}
+                      className="rounded-full bg-[#0B1020]/68 px-3 py-2 text-xs font-medium text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]"
+                    >
+                      {item}
+                    </span>
+                  ))
+                ) : (
+                  <span className="rounded-full bg-[#0B1020]/68 px-3 py-2 text-xs font-medium text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                    Matchup history updated
+                  </span>
+                )}
+              </div>
+              <details className="mt-4">
+                <summary className="cursor-pointer text-sm font-medium text-[#94A3B8]">
+                  Why this matters
+                </summary>
+                <p className="mt-2 text-sm text-[#B9C4D6]">
+                  {gameContext === "competitive"
+                    ? `${opponent}: 4/5 focused games toward a stronger signal.`
+                    : `${opponent}: 4/5 focused games toward a building signal.`}
+                </p>
+              </details>
+            </div>
+
+            <div className="rounded-xl bg-[#0B1020]/58 p-4 shadow-[inset_0_0_0_1px_rgba(245,200,76,0.14)]">
+              <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#F5C84C]">
+                Next best action
+              </p>
+              <p className="mt-2 text-lg font-semibold text-[#F8FAFC]">
+                {demoNextActionTitle}
+              </p>
+              <p className="mt-2 text-sm text-[#94A3B8]">
+                {demoNextActionCopy}
+              </p>
+              <div className="mt-4 flex items-center gap-2 text-sm font-medium text-[#DCE8FF]">
+                <ArrowRight className="size-4 text-[#F5C84C]" aria-hidden="true" />
+                Demo mode only. No production data changed.
+              </div>
+            </div>
+          </div>
+
+          <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto_auto]">
             <button
               type="button"
               className={`${primaryButton} h-12`}

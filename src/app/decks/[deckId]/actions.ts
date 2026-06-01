@@ -70,6 +70,31 @@ export async function createDeckVersion(deckId: string, formData: FormData) {
   revalidatePath(`/decks/${deckId}`);
 }
 
+export async function updateDeckArchetype(deckId: string, formData: FormData) {
+  const supabase = await verifyDeckOwnership(deckId);
+  const archetype = String(formData.get("archetype") ?? "").trim();
+
+  if (!archetype) {
+    throw new Error("Archetype is required.");
+  }
+
+  const { error } = await supabase
+    .from("decks")
+    .update({ archetype })
+    .eq("id", deckId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  revalidatePath("/dashboard");
+  revalidatePath("/decks");
+  revalidatePath(`/decks/${deckId}`);
+  revalidatePath("/matches");
+  revalidatePath("/matches/new");
+  revalidatePath("/matchups");
+}
+
 export async function markDeckVersionActive(
   deckId: string,
   versionId: string

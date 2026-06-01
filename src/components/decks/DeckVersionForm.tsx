@@ -21,7 +21,7 @@ export function DeckVersionForm({ action }: DeckVersionFormProps) {
   const nameInputRef = useRef<HTMLInputElement>(null);
   const analysis = useMemo(() => analyzeDeckList(decklist), [decklist]);
   const hasCards = analysis.cards.length > 0;
-  const hasSuggestion = analysis.suggestion.confidence !== "unknown";
+  const hasSuggestion = analysis.suggestion.isClearSuggestion;
 
   function useSuggestion() {
     if (!hasSuggestion) {
@@ -94,8 +94,23 @@ export function DeckVersionForm({ action }: DeckVersionFormProps) {
                     <p className="text-xs font-medium uppercase text-[#94A3B8]/70">
                       Suggested archetype
                     </p>
-                    <p className="truncate text-sm font-semibold text-[#F8FAFC]">
-                      Looks like {analysis.suggestion.archetype}
+                    <div className="mt-1 flex flex-wrap items-center gap-2">
+                      <p className="truncate text-sm font-semibold text-[#F8FAFC]">
+                        {analysis.suggestion.archetype}
+                      </p>
+                      <span
+                        className={`rounded-md px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] ${
+                          analysis.suggestion.confidence === "high"
+                            ? "bg-emerald-500/14 text-emerald-200"
+                            : "bg-[#F5C84C]/14 text-[#F5C84C]"
+                        }`}
+                      >
+                        {analysis.suggestion.confidenceLabel}
+                      </span>
+                    </div>
+                    <p className="mt-2 text-xs text-[#94A3B8]">
+                      Matched core cards:{" "}
+                      {analysis.suggestion.matchedCoreCards.join(", ")}
                     </p>
                   </div>
                 </div>
@@ -109,7 +124,7 @@ export function DeckVersionForm({ action }: DeckVersionFormProps) {
               </div>
             ) : (
               <p className="mt-3 text-xs text-[#94A3B8]/72">
-                No clear archetype yet. Choose manually on the deck if needed.
+                No clear archetype detected. Choose the deck archetype manually if you already know the build family.
               </p>
             )}
           </div>
