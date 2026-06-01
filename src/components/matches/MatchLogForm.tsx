@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useActionState, useEffect, useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { ArchetypePicker } from "@/components/ArchetypePicker";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
@@ -49,7 +49,10 @@ type DeckOption = {
 };
 
 type MatchLogFormProps = {
-  action: (formData: FormData) => void;
+  action: (
+    state: { error: string | null },
+    formData: FormData
+  ) => Promise<{ error: string | null }>;
   deckOptions: DeckOption[];
   opponentArchetypeOptions: string[];
   initialDeckVersionId?: string;
@@ -309,6 +312,7 @@ export function MatchLogForm({
   submitLabel = "Save game",
   wasSuccessful,
 }: MatchLogFormProps) {
+  const [actionState, formAction] = useActionState(action, { error: null });
   const metadata = initialMetadata ?? {};
   const [deckVersionId, setDeckVersionId] = useState(() => {
     if (initialDeckVersionId?.trim()) {
@@ -805,7 +809,7 @@ export function MatchLogForm({
       ) : null}
 
       <form
-        action={action}
+        action={formAction}
         className={`w-full max-w-full min-w-0 overflow-x-hidden p-3 sm:p-5 ${glassPanelStrong}`}
       >
         <input type="hidden" name="deck_version_id" value={deckVersionId} />
@@ -847,6 +851,14 @@ export function MatchLogForm({
         ))}
 
         <div className="grid gap-4">
+          {actionState.error ? (
+            <div className="rounded-xl bg-[#F43F5E]/10 px-4 py-3 text-sm font-medium text-rose-100 shadow-[inset_0_0_0_1px_rgba(244,63,94,0.18)]">
+              Something went wrong while saving this game. Please try again.
+              <span className="mt-1 block text-rose-200/80">
+                {actionState.error}
+              </span>
+            </div>
+          ) : null}
           {wasSuccessful ? (
             <div className="rounded-xl bg-[#07111F]/46 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]">
               <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#22C55E]">

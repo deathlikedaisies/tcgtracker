@@ -129,48 +129,61 @@ export async function deleteMatch(matchId: string) {
   revalidateMatchViews();
 }
 
-export async function updateMatch(matchId: string, formData: FormData) {
+export async function updateMatch(
+  matchId: string,
+  _state: { error: string | null },
+  formData: FormData
+) {
   const { supabase, user, match } = await verifyMatchOwner(matchId);
-  const payload = getMatchPayload(formData);
+  try {
+    const payload = getMatchPayload(formData);
 
-  await verifyDeckVersionOwner(payload.deckVersionId);
+    await verifyDeckVersionOwner(payload.deckVersionId);
 
-  const { error: updateError } = await supabase
-    .from("matches")
-    .update({
-      ...payload.match,
-      metadata: replaceKnownMatchMetadata(
-        match.metadata,
-        payload.match.metadata
-      ),
-    })
-    .eq("id", matchId)
-    .eq("user_id", user.id);
+    const { error: updateError } = await supabase
+      .from("matches")
+      .update({
+        ...payload.match,
+        metadata: replaceKnownMatchMetadata(
+          match.metadata,
+          payload.match.metadata
+        ),
+      })
+      .eq("id", matchId)
+      .eq("user_id", user.id);
 
-  if (updateError) {
-    throw new Error(updateError.message);
-  }
-
-  const { error: deleteTagsError } = await supabase
-    .from("match_tags")
-    .delete()
-    .eq("match_id", matchId);
-
-  if (deleteTagsError) {
-    throw new Error(deleteTagsError.message);
-  }
-
-  if (payload.tags.length) {
-    const { error: insertTagsError } = await supabase.from("match_tags").insert(
-      payload.tags.map((tag) => ({
-        match_id: matchId,
-        tag,
-      }))
-    );
-
-    if (insertTagsError) {
-      throw new Error(insertTagsError.message);
+    if (updateError) {
+      throw new Error(updateError.message);
     }
+
+    const { error: deleteTagsError } = await supabase
+      .from("match_tags")
+      .delete()
+      .eq("match_id", matchId);
+
+    if (deleteTagsError) {
+      throw new Error(deleteTagsError.message);
+    }
+
+    if (payload.tags.length) {
+      const { error: insertTagsError } = await supabase
+        .from("match_tags")
+        .insert(
+          payload.tags.map((tag) => ({
+            match_id: matchId,
+            tag,
+          }))
+        );
+
+      if (insertTagsError) {
+        throw new Error(insertTagsError.message);
+      }
+    }
+  } catch (error) {
+    return {
+      error:
+        error instanceof Error ? error.message : "Could not save this game.",
+    };
   }
 
   revalidateMatchViews();
