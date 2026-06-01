@@ -32,6 +32,7 @@ import {
 } from "@/lib/match-types";
 
 type StepResultValue = MatchResult | "";
+type SelectionTone = "blue" | "gold" | "emerald" | "rose";
 
 type SignalTone = "blue" | "gold" | "green" | "rose";
 type GameContext = "testing" | "competitive";
@@ -40,16 +41,25 @@ const subCardClass =
   "rounded-xl bg-[#0B1020]/46 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]";
 
 const largeToggleClass =
-  "flex min-h-14 w-full items-center justify-center rounded-xl bg-[#07111F]/58 px-3 text-center text-base font-semibold text-[#D7E0EF] transition hover:bg-[#1A2238]/60 hover:text-[#F8FAFC] active:scale-[0.98]";
+  "group relative flex min-h-14 w-full items-center justify-center overflow-hidden rounded-2xl border border-[#23314A] bg-[linear-gradient(180deg,rgba(11,16,32,0.96),rgba(7,17,31,0.88))] px-3 text-center text-base font-semibold text-[#D7E0EF] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-all duration-150 ease-out hover:-translate-y-0.5 hover:border-[#35507D] hover:bg-[#0D1830] hover:text-[#F8FAFC] hover:shadow-[0_12px_24px_rgba(0,0,0,0.18),inset_0_0_0_1px_rgba(79,140,255,0.12)] active:translate-y-0 active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C84C]/65 focus-visible:ring-offset-2 focus-visible:ring-offset-[#07111F]";
 
 const mediumToggleClass =
-  "flex min-h-12 w-full items-center justify-center rounded-lg bg-[#07111F]/56 px-3 text-center text-sm font-semibold text-[#B9C4D6] transition hover:bg-[#1A2238]/60 hover:text-[#F8FAFC] active:scale-[0.98]";
+  "group relative flex min-h-12 w-full items-center justify-center overflow-hidden rounded-xl border border-[#223049] bg-[linear-gradient(180deg,rgba(11,16,32,0.94),rgba(7,17,31,0.86))] px-3 text-center text-sm font-semibold text-[#B9C4D6] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-all duration-150 ease-out hover:-translate-y-0.5 hover:border-[#36507D] hover:text-[#F8FAFC] hover:shadow-[0_10px_22px_rgba(0,0,0,0.16),inset_0_0_0_1px_rgba(79,140,255,0.10)] active:translate-y-0 active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C84C]/65 focus-visible:ring-offset-2 focus-visible:ring-offset-[#07111F]";
 
 const tagToggleClass =
-  "inline-flex min-h-11 w-full items-center justify-start rounded-lg bg-[#07111F]/52 px-3 py-2 text-left text-sm font-semibold text-[#A8B5C8] transition hover:bg-[#1A2238]/60 hover:text-[#F8FAFC] active:scale-[0.98]";
+  "group relative inline-flex min-h-11 w-full items-center justify-start overflow-hidden rounded-xl border border-[#223049] bg-[linear-gradient(180deg,rgba(11,16,32,0.94),rgba(7,17,31,0.86))] px-3 py-2 text-left text-sm font-semibold text-[#A8B5C8] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-all duration-150 ease-out hover:-translate-y-0.5 hover:border-[#36507D] hover:text-[#F8FAFC] hover:shadow-[0_10px_22px_rgba(0,0,0,0.16),inset_0_0_0_1px_rgba(79,140,255,0.10)] active:translate-y-0 active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C84C]/65 focus-visible:ring-offset-2 focus-visible:ring-offset-[#07111F]";
 
 const selectedToggleClass =
-  "bg-[#4F8CFF]/22 text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.38),0_10px_24px_rgba(79,140,255,0.08)]";
+  "border-[#7CB4FF] bg-[linear-gradient(180deg,rgba(79,140,255,0.36),rgba(24,57,120,0.92))] text-[#F8FAFC] shadow-[0_16px_34px_rgba(79,140,255,0.18),inset_0_0_0_1px_rgba(184,209,255,0.42),inset_0_1px_0_rgba(255,255,255,0.12)] -translate-y-[1px]";
+
+const selectedGoldToggleClass =
+  "border-[#F5C84C] bg-[linear-gradient(180deg,rgba(245,200,76,0.28),rgba(107,78,13,0.94))] text-[#FFF8E1] shadow-[0_16px_34px_rgba(245,200,76,0.16),inset_0_0_0_1px_rgba(255,226,138,0.38),inset_0_1px_0_rgba(255,255,255,0.10)] -translate-y-[1px]";
+
+const selectedEmeraldToggleClass =
+  "border-[#34D399] bg-[linear-gradient(180deg,rgba(16,185,129,0.28),rgba(7,85,65,0.94))] text-[#ECFDF5] shadow-[0_16px_34px_rgba(16,185,129,0.16),inset_0_0_0_1px_rgba(167,243,208,0.36),inset_0_1px_0_rgba(255,255,255,0.10)] -translate-y-[1px]";
+
+const selectedRoseToggleClass =
+  "border-[#FB7185] bg-[linear-gradient(180deg,rgba(244,63,94,0.26),rgba(101,20,43,0.96))] text-[#FFF1F4] shadow-[0_16px_34px_rgba(244,63,94,0.16),inset_0_0_0_1px_rgba(255,189,206,0.34),inset_0_1px_0_rgba(255,255,255,0.10)] -translate-y-[1px]";
 
 const progressStepClass =
   "flex items-center gap-3 rounded-xl px-3 py-3 text-left transition";
@@ -125,6 +135,68 @@ function signalCardClass(tone: SignalTone) {
   }
 
   return "bg-[#4F8CFF]/[0.09] text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.18)]";
+}
+
+function getSelectedToneClass(tone: SelectionTone) {
+  if (tone === "gold") {
+    return selectedGoldToggleClass;
+  }
+
+  if (tone === "emerald") {
+    return selectedEmeraldToggleClass;
+  }
+
+  if (tone === "rose") {
+    return selectedRoseToggleClass;
+  }
+
+  return selectedToggleClass;
+}
+
+function getQualityTone(
+  value: MatchStartQuality | MatchOpeningHandQuality | MatchSequencingQuality
+): SelectionTone {
+  if (value === "bad") {
+    return "rose";
+  }
+
+  if (value === "okay") {
+    return "gold";
+  }
+
+  return "blue";
+}
+
+function getResultTone(value: MatchResult): SelectionTone {
+  if (value === "loss") {
+    return "rose";
+  }
+
+  if (value === "tie") {
+    return "gold";
+  }
+
+  return "emerald";
+}
+
+function SelectionMark({ tone }: { tone: SelectionTone }) {
+  const className =
+    tone === "gold"
+      ? "bg-[#FFF1B8] text-[#5A4300]"
+      : tone === "emerald"
+        ? "bg-[#D6FCE5] text-[#0E4B2B]"
+        : tone === "rose"
+          ? "bg-[#FFD3DC] text-[#6B1730]"
+          : "bg-[#DCE8FF] text-[#123060]";
+
+  return (
+    <span
+      aria-hidden="true"
+      className={`inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-black shadow-[0_6px_14px_rgba(0,0,0,0.18)] ${className}`}
+    >
+      ✓
+    </span>
+  );
 }
 
 function toggleSelection(values: string[], value: string) {
@@ -796,24 +868,34 @@ export function DemoMatchLogForm() {
                     <label className={label}>Your deck</label>
                     <div className="mt-2 grid gap-2">
                       {versionOptions.map((version) => (
+                        (() => {
+                          const isSelected = versionId === version.id;
+
+                          return (
                         <button
                           key={version.id}
                           type="button"
                           onClick={() => setVersionId(version.id)}
+                          aria-pressed={isSelected}
                           className={`${tagToggleClass} ${
-                            versionId === version.id ? selectedToggleClass : ""
+                            isSelected ? getSelectedToneClass("blue") : ""
                           }`}
                         >
-                          <span className="block">
-                            <span className="block text-sm font-semibold">
-                              {version.label}
-                            </span>
-                            <span className="block text-xs opacity-75">
-                              {version.archetype}
-                              {version.active ? " | active" : ""}
+                          <span className="flex items-start gap-2">
+                            {isSelected ? <SelectionMark tone="blue" /> : null}
+                            <span className="block">
+                              <span className="block text-sm font-semibold">
+                                {version.label}
+                              </span>
+                              <span className="block text-xs opacity-75">
+                                {version.archetype}
+                                {version.active ? " | active" : ""}
+                              </span>
                             </span>
                           </span>
                         </button>
+                          );
+                        })()
                       ))}
                     </div>
                   </div>
@@ -853,16 +935,26 @@ export function DemoMatchLogForm() {
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2">
                     {[true, false].map((value) => (
+                      (() => {
+                        const isSelected = wentFirst === value;
+
+                        return (
                       <button
                         key={String(value)}
                         type="button"
                         onClick={() => setWentFirst(value)}
+                        aria-pressed={isSelected}
                         className={`${largeToggleClass} ${
-                          wentFirst === value ? selectedToggleClass : ""
+                          isSelected ? getSelectedToneClass("blue") : ""
                         }`}
                       >
-                        {value ? "First" : "Second"}
+                        <span className="flex items-center gap-2">
+                          {isSelected ? <SelectionMark tone="blue" /> : null}
+                          <span>{value ? "First" : "Second"}</span>
+                        </span>
                       </button>
+                        );
+                      })()
                     ))}
                   </div>
                 </div>
@@ -883,16 +975,27 @@ export function DemoMatchLogForm() {
                   </div>
                   <div className="grid gap-3 sm:grid-cols-3">
                     {(["win", "loss", "tie"] as const).map((value) => (
+                      (() => {
+                        const isSelected = result === value;
+                        const tone = getResultTone(value);
+
+                        return (
                       <button
                         key={value}
                         type="button"
                         onClick={() => setResult(value)}
+                        aria-pressed={isSelected}
                         className={`${largeToggleClass} ${
-                          result === value ? selectedToggleClass : ""
+                          isSelected ? getSelectedToneClass(tone) : ""
                         }`}
                       >
-                        {getMatchResultLabel(value)}
+                        <span className="flex items-center gap-2">
+                          {isSelected ? <SelectionMark tone={tone} /> : null}
+                          <span>{getMatchResultLabel(value)}</span>
+                        </span>
                       </button>
+                        );
+                      })()
                     ))}
                   </div>
                 </div>
@@ -916,6 +1019,11 @@ export function DemoMatchLogForm() {
                       <legend className={label}>Start</legend>
                       <div className="mt-2 grid grid-cols-3 gap-2">
                         {MATCH_START_QUALITY_OPTIONS.map((value) => (
+                          (() => {
+                            const isSelected = startQuality === value;
+                            const tone = getQualityTone(value);
+
+                            return (
                           <button
                             key={value}
                             type="button"
@@ -924,12 +1032,18 @@ export function DemoMatchLogForm() {
                                 startQuality === value ? undefined : value
                               )
                             }
+                            aria-pressed={isSelected}
                             className={`${mediumToggleClass} ${
-                              startQuality === value ? selectedToggleClass : ""
+                              isSelected ? getSelectedToneClass(tone) : ""
                             }`}
                           >
-                            {getQualityLabel(value)}
+                            <span className="flex items-center gap-2">
+                              {isSelected ? <SelectionMark tone={tone} /> : null}
+                              <span>{getQualityLabel(value)}</span>
+                            </span>
                           </button>
+                            );
+                          })()
                         ))}
                       </div>
                     </fieldset>
@@ -937,6 +1051,11 @@ export function DemoMatchLogForm() {
                       <legend className={label}>Opening hand</legend>
                       <div className="mt-2 grid grid-cols-2 gap-2">
                         {MATCH_OPENING_HAND_OPTIONS.map((value) => (
+                          (() => {
+                            const isSelected = openingHandQuality === value;
+                            const tone = getQualityTone(value);
+
+                            return (
                           <button
                             key={value}
                             type="button"
@@ -945,14 +1064,18 @@ export function DemoMatchLogForm() {
                                 openingHandQuality === value ? undefined : value
                               )
                             }
+                            aria-pressed={isSelected}
                             className={`${mediumToggleClass} ${
-                              openingHandQuality === value
-                                ? selectedToggleClass
-                                : ""
+                              isSelected ? getSelectedToneClass(tone) : ""
                             }`}
                           >
-                            {getQualityLabel(value)}
+                            <span className="flex items-center gap-2">
+                              {isSelected ? <SelectionMark tone={tone} /> : null}
+                              <span>{getQualityLabel(value)}</span>
+                            </span>
                           </button>
+                            );
+                          })()
                         ))}
                       </div>
                     </fieldset>
@@ -960,6 +1083,11 @@ export function DemoMatchLogForm() {
                       <legend className={label}>Sequencing</legend>
                       <div className="mt-2 grid grid-cols-2 gap-2">
                         {MATCH_SEQUENCING_OPTIONS.map((value) => (
+                          (() => {
+                            const isSelected = sequencingQuality === value;
+                            const tone = getQualityTone(value);
+
+                            return (
                           <button
                             key={value}
                             type="button"
@@ -968,14 +1096,18 @@ export function DemoMatchLogForm() {
                                 sequencingQuality === value ? undefined : value
                               )
                             }
+                            aria-pressed={isSelected}
                             className={`${mediumToggleClass} ${
-                              sequencingQuality === value
-                                ? selectedToggleClass
-                                : ""
+                              isSelected ? getSelectedToneClass(tone) : ""
                             }`}
                           >
-                            {getQualityLabel(value)}
+                            <span className="flex items-center gap-2">
+                              {isSelected ? <SelectionMark tone={tone} /> : null}
+                              <span>{getQualityLabel(value)}</span>
+                            </span>
                           </button>
+                            );
+                          })()
                         ))}
                       </div>
                     </fieldset>
@@ -1000,16 +1132,27 @@ export function DemoMatchLogForm() {
                     <legend className={label}>{primaryTagTitle}</legend>
                     <div className="mt-2 grid gap-2 sm:grid-cols-2">
                       {primaryTagOptions.map((tag) => (
+                        (() => {
+                          const isSelected = primaryTags.includes(tag);
+                          const tone = result === "win" ? "emerald" : "rose";
+
+                          return (
                         <button
                           key={tag}
                           type="button"
                           onClick={() => setPrimaryTags(toggleSelection(primaryTags, tag))}
+                          aria-pressed={isSelected}
                           className={`${tagToggleClass} ${
-                            primaryTags.includes(tag) ? selectedToggleClass : ""
+                            isSelected ? getSelectedToneClass(tone) : ""
                           }`}
                         >
-                          {tag}
+                          <span className="flex items-center gap-2">
+                            {isSelected ? <SelectionMark tone={tone} /> : null}
+                            <span>{tag}</span>
+                          </span>
                         </button>
+                          );
+                        })()
                       ))}
                     </div>
                     {primaryExtraTagOptions.length ? (
@@ -1024,16 +1167,27 @@ export function DemoMatchLogForm() {
                     {moreIssueTagsOpen && primaryExtraTagOptions.length ? (
                       <div className="mt-3 grid gap-2 sm:grid-cols-2">
                         {primaryExtraTagOptions.map((tag) => (
+                          (() => {
+                            const isSelected = primaryTags.includes(tag);
+                            const tone = result === "win" ? "emerald" : "rose";
+
+                            return (
                           <button
                             key={tag}
                             type="button"
                             onClick={() => setPrimaryTags(toggleSelection(primaryTags, tag))}
+                            aria-pressed={isSelected}
                             className={`${tagToggleClass} ${
-                              primaryTags.includes(tag) ? selectedToggleClass : ""
+                              isSelected ? getSelectedToneClass(tone) : ""
                             }`}
                           >
-                            {tag}
+                            <span className="flex items-center gap-2">
+                              {isSelected ? <SelectionMark tone={tone} /> : null}
+                              <span>{tag}</span>
+                            </span>
                           </button>
+                            );
+                          })()
                         ))}
                       </div>
                     ) : null}
@@ -1056,20 +1210,29 @@ export function DemoMatchLogForm() {
                         </p>
                         <div className="mt-2 grid gap-2 sm:grid-cols-2">
                           {secondaryTagOptions.map((tag) => (
+                            (() => {
+                              const isSelected = secondaryTags.includes(tag);
+                              const tone = result === "win" ? "rose" : "emerald";
+
+                              return (
                             <button
                               key={tag}
                               type="button"
                               onClick={() =>
                                 setSecondaryTags(toggleSelection(secondaryTags, tag))
                               }
+                              aria-pressed={isSelected}
                               className={`${tagToggleClass} ${
-                                secondaryTags.includes(tag)
-                                  ? selectedToggleClass
-                                  : ""
+                                isSelected ? getSelectedToneClass(tone) : ""
                               }`}
                             >
-                              {tag}
+                              <span className="flex items-center gap-2">
+                                {isSelected ? <SelectionMark tone={tone} /> : null}
+                                <span>{tag}</span>
+                              </span>
                             </button>
+                              );
+                            })()
                           ))}
                         </div>
                       </div>
@@ -1097,16 +1260,26 @@ export function DemoMatchLogForm() {
                     </p>
                     <div className="mt-3 grid grid-cols-2 gap-2">
                       {MATCH_GAME_CONTEXT_OPTIONS.map((value) => (
+                        (() => {
+                          const isSelected = gameContext === value;
+
+                          return (
                         <button
                           key={value}
                           type="button"
                           onClick={() => setGameContext(value)}
+                          aria-pressed={isSelected}
                           className={`${mediumToggleClass} ${
-                            gameContext === value ? selectedToggleClass : ""
+                            isSelected ? getSelectedToneClass("gold") : ""
                           }`}
                         >
-                          {getGameContextLabel(value)}
+                          <span className="flex items-center gap-2">
+                            {isSelected ? <SelectionMark tone="gold" /> : null}
+                            <span>{getGameContextLabel(value)}</span>
+                          </span>
                         </button>
+                          );
+                        })()
                       ))}
                     </div>
                   </div>
