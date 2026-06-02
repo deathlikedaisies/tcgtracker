@@ -706,7 +706,7 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                       label="Manual archetype"
                       options={archetypeOptions}
                       defaultValue={deckArchetype}
-                      customOptionLabel={(value) => `Use custom deck archetype: ${value}`}
+                      customOptionPrefix="Use custom deck archetype"
                       required
                     />
                     <button type="submit" className={secondaryButton}>

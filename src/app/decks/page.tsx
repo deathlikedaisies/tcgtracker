@@ -743,7 +743,7 @@ export default async function DecksPage() {
                       label="Archetype"
                       options={archetypeOptions}
                       placeholder="Search or type an archetype"
-                      customOptionLabel={(value) => `Use custom deck archetype: ${value}`}
+                      customOptionPrefix="Use custom deck archetype"
                       required
                     />
 
