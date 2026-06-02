@@ -539,157 +539,175 @@ export default async function DecksPage() {
                   const deckArchetype = summary.deckArchetype;
 
                   const localListSummary = summary.analysis
-                    ? `${summary.analysis.totalCards} cards · ${summary.analysis.pokemonCount} Pokémon · ${summary.analysis.trainerCount} Trainer · ${summary.analysis.energyCount} Energy`
+                    ? `${summary.analysis.totalCards} cards${summary.analysis.unresolved.length ? ` / ${summary.analysis.unresolved.length} unresolved` : ""}`
                     : summary.parseError
-                      ? "List could not be parsed"
-                      : "Add a deck list to unlock local parsing";
+                      ? "List parse issue"
+                      : "Add list to parse";
                   const localListDetail = summary.parseError
                     ? summary.parseError
                     : summary.analysis
-                    ? summary.analysis.unresolved.length
-                      ? `${summary.analysis.unresolved.length} unresolved name${summary.analysis.unresolved.length === 1 ? "" : "s"}. Open deck for legality details.`
-                      : "Local list parsed. Open deck for legality details."
+                    ? `${summary.analysis.pokemonCount} Pokemon / ${summary.analysis.trainerCount} Trainer / ${summary.analysis.energyCount} Energy`
                     : summary.activeVersion
-                      ? "List parsing begins once a deck list is pasted."
+                      ? "Open deck for legality details."
                       : "Add a first version to start list checks.";
                   const versionPrompt = !summary.totalVersions
                     ? "Add first version"
                     : !summary.performance.total
                       ? "Log first game"
                       : "Open";
+                  const statusItems = [
+                    {
+                      label: "Active version",
+                      value: activeVersionName,
+                      detail: summary.activeVersionId
+                        ? "Current build selected for logging"
+                        : "Choose or create the build you want to test",
+                    },
+                    {
+                      label: "Games logged",
+                      value: summary.totalDeckGames
+                        ? `${summary.totalDeckGames} game${summary.totalDeckGames === 1 ? "" : "s"}`
+                        : "No games yet",
+                      detail: summary.totalDeckGames
+                        ? `${summary.performance.wins}W ${summary.performance.losses}L ${summary.performance.ties}T`
+                        : "Log 3 games to unlock first trends",
+                    },
+                    {
+                      label: "Current read",
+                      value: summary.trend.label,
+                      detail: summary.performance.total
+                        ? `${summary.performance.winRate}% win rate across ${summary.performance.total} games`
+                        : "Needs games",
+                    },
+                    {
+                      label: "List parse",
+                      value: localListSummary,
+                      detail: localListDetail,
+                    },
+                  ];
 
                   return (
                     <article
                       key={summary.deck.id}
                       className="rounded-[26px] bg-[radial-gradient(circle_at_top_left,rgba(79,140,255,0.12),transparent_34%),linear-gradient(180deg,rgba(15,26,45,0.94),rgba(7,17,31,0.88))] p-4 shadow-[0_20px_56px_rgba(0,0,0,0.24),inset_0_0_0_1px_rgba(148,163,184,0.08)] sm:p-5"
                     >
-                      <div className="grid gap-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)_220px] xl:items-start">
-                        <div className="min-w-0">
-                          <div className="flex items-start gap-3">
-                            <ArchetypeSprites
-                              archetype={deckArchetype}
-                              size="md"
-                              className="shrink-0"
-                            />
-                            <div className="min-w-0">
+                      <div className="grid gap-5">
+                        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_260px] xl:items-start">
+                          <div className="min-w-0">
+                            <div className="flex items-start gap-3">
+                              <ArchetypeSprites
+                                archetype={deckArchetype}
+                                size="md"
+                                className="shrink-0"
+                              />
+                              <div className="min-w-0">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <h3 className="truncate text-xl font-semibold text-[#F8FAFC]">
+                                    {summary.deck.name}
+                                  </h3>
+                                  <span className="rounded-full bg-[#4F8CFF]/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.14)]">
+                                    Manual archetype
+                                  </span>
+                                  {index === 0 ? (
+                                    <span className="rounded-full bg-[#F5C84C]/12 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#FFE28A] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
+                                      Active
+                                    </span>
+                                  ) : null}
+                                  <span className="rounded-full bg-[#07111F]/58 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                                    {summary.totalVersions ? "Testing" : "Needs version"}
+                                  </span>
+                                </div>
+                                <p className="mt-1 text-sm text-[#94A3B8]/76">
+                                  {deckArchetype}
+                                </p>
+                                <p className="mt-1 text-xs text-[#94A3B8]/62">
+                                  Created {formatDate(summary.deck.created_at)}
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="mt-4 rounded-[22px] bg-[#07111F]/42 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
                               <div className="flex flex-wrap items-center gap-2">
-                                <h3 className="truncate text-xl font-semibold text-[#F8FAFC]">
-                                  {summary.deck.name}
-                                </h3>
-                                <span className="rounded-full bg-[#4F8CFF]/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.14)]">
-                                  Manual archetype
+                                <span
+                                  className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${summary.trend.tone}`}
+                                >
+                                  {summary.trend.label}
                                 </span>
-                                {index === 0 ? (
+                                {summary.activeMission ? (
                                   <span className="rounded-full bg-[#F5C84C]/12 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#FFE28A] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
-                                    Active
+                                    Mission: {sessionCoach?.missionSkill}
                                   </span>
                                 ) : null}
                               </div>
-                              <p className="mt-1 text-sm text-[#94A3B8]/76">
-                                {deckArchetype}
+                              <p className="mt-3 line-clamp-3 text-sm leading-6 text-[#94A3B8]/72">
+                                {summary.deck.notes
+                                  ? summary.deck.notes
+                                  : summary.activeMission ?? summary.trend.detail}
                               </p>
-                              <p className="mt-1 text-xs text-[#94A3B8]/62">
-                                Created {formatDate(summary.deck.created_at)}
-                              </p>
-                              {summary.deck.notes ? (
-                                <p className="mt-3 line-clamp-3 text-sm leading-6 text-[#94A3B8]/72">
-                                  {summary.deck.notes}
-                                </p>
-                              ) : (
-                                <p className="mt-3 text-sm leading-6 text-[#94A3B8]/68">
-                                  {summary.totalVersions
-                                    ? "Versions are ready. Use the active build to sharpen matchup signal."
-                                    : "Create the deck family first, then add versions to start testing."}
-                                </p>
-                              )}
                             </div>
                           </div>
-                        </div>
 
-                        <div className="grid gap-3 sm:grid-cols-2">
-                          <div className="rounded-2xl bg-[#07111F]/42 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
-                            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
-                              Active version
-                            </p>
-                            <p className="mt-2 text-sm font-semibold text-[#F8FAFC]">
-                              {activeVersionName}
-                            </p>
-                          </div>
-                          <div className="rounded-2xl bg-[#07111F]/42 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
-                            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
-                              Games logged
-                            </p>
-                            <p className="mt-2 text-sm font-semibold text-[#F8FAFC]">
-                              {summary.totalDeckGames
-                                ? `${summary.totalDeckGames} game${summary.totalDeckGames === 1 ? "" : "s"}`
-                                : "No games logged yet"}
-                            </p>
-                          </div>
-                          <div className="rounded-2xl bg-[#07111F]/42 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
-                            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
-                              Current read
-                            </p>
-                            <p className="mt-2 text-sm font-semibold text-[#F8FAFC]">
-                              {summary.performance.total
-                                ? `${summary.performance.winRate}% win rate`
-                                : "Needs games"}
-                            </p>
-                          </div>
-                          <div className="rounded-2xl bg-[#07111F]/42 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
-                            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
-                              List parse
-                            </p>
-                            <p className="mt-2 text-sm font-semibold text-[#F8FAFC]">
-                              {localListSummary}
-                            </p>
-                          </div>
-                          <div className="rounded-2xl bg-[#07111F]/42 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)] sm:col-span-2">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <span
-                                className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${summary.trend.tone}`}
-                              >
-                                {summary.trend.label}
-                              </span>
-                              {summary.activeMission ? (
-                                <span className="rounded-full bg-[#F5C84C]/12 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#FFE28A] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
-                                  Mission: {sessionCoach?.missionSkill}
-                                </span>
-                              ) : (
-                                <span className="rounded-full bg-[#4F8CFF]/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.14)]">
-                                  {summary.totalVersions ? "Testing" : "Add version"}
-                                </span>
-                              )}
-                            </div>
-                            <p className="mt-2 text-sm leading-6 text-[#94A3B8]/72">
-                              {summary.activeMission ?? summary.trend.detail}
-                            </p>
-                            <p className="mt-1 text-xs leading-5 text-[#94A3B8]/62">
-                              {localListDetail}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="grid gap-2">
-                          <Link
-                            href={`/decks/${summary.deck.id}`}
-                            className={primaryButton}
-                          >
-                            {versionPrompt}
-                          </Link>
-                          <Link
-                            href={`/decks/${summary.deck.id}#versions`}
-                            className={secondaryButton}
-                          >
-                            Compare versions
-                          </Link>
-                          <form action={removeDeck}>
-                            <ConfirmSubmitButton
-                              message="Delete this deck and all of its versions and matches? This cannot be undone."
-                              className={`w-full ${dangerButton}`}
+                          <div className="grid gap-2 sm:grid-cols-3 xl:grid-cols-1">
+                            <Link
+                              href={`/decks/${summary.deck.id}`}
+                              className={primaryButton}
                             >
-                              Delete
-                            </ConfirmSubmitButton>
-                          </form>
+                              {versionPrompt}
+                            </Link>
+                            <Link
+                              href={`/decks/${summary.deck.id}#versions`}
+                              className={secondaryButton}
+                            >
+                              Compare versions
+                            </Link>
+                            <form action={removeDeck}>
+                              <ConfirmSubmitButton
+                                message="Delete this deck and all of its versions and matches? This cannot be undone."
+                                className={`w-full ${dangerButton}`}
+                              >
+                                Delete
+                              </ConfirmSubmitButton>
+                            </form>
+                          </div>
+                        </div>
+
+                        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                          {statusItems.map((item) => (
+                            <div
+                              key={item.label}
+                              className="rounded-[22px] bg-[#07111F]/42 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]"
+                            >
+                              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                                {item.label}
+                              </p>
+                              <p className="mt-2 text-sm font-semibold text-[#F8FAFC]">
+                                {item.value}
+                              </p>
+                              <p className="mt-2 text-xs leading-5 text-[#94A3B8]/68">
+                                {item.detail}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+
+                        <div className="flex flex-col gap-3 rounded-[22px] bg-[#07111F]/34 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.07)] sm:flex-row sm:items-center sm:justify-between">
+                          <div>
+                            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
+                              Experiment status
+                            </p>
+                            <p className="mt-1 text-sm leading-6 text-[#94A3B8]/72">
+                              {summary.activeMission
+                                ? summary.activeMission
+                                : summary.totalVersions
+                                  ? "Open this deck to compare versions, review parser evidence, and keep logging games into the active build."
+                                  : "Add a first version so this deck can become a real testing experiment."}
+                            </p>
+                          </div>
+                          <p className="text-xs leading-5 text-[#94A3B8]/62 sm:max-w-[280px] sm:text-right">
+                            {summary.buildFailed
+                              ? "One saved version needs review, but the deck is still accessible."
+                              : localListDetail}
+                          </p>
                         </div>
                       </div>
                     </article>

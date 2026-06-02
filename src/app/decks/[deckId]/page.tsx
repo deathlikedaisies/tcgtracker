@@ -22,7 +22,6 @@ import {
   glassPanelStrong,
   logoOnDark,
   pageTitle,
-  primaryButton,
   secondaryButton,
   sectionCopy,
   sectionTitle,
@@ -260,6 +259,9 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
   const deckName = safeText(deck.name, "Untitled deck");
   const deckNotes = safeOptionalText(deck.notes);
   const deckArchetype = safeText(deck.archetype, "Unknown archetype");
+  const hasExplicitActiveVersion = deckVersions.some((version) => version.is_active);
+  const needsPrimaryVersionSetup =
+    !deckVersions.length || !hasExplicitActiveVersion;
   const activeVersion =
     deckVersions.find((version) => version.is_active) ?? deckVersions[0] ?? null;
   const bestVersion = versionInsights
@@ -350,7 +352,7 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                       Active version
                     </p>
                     <p className="mt-2 text-sm font-semibold text-[#F8FAFC]">
-                      {activeVersion ? safeText(activeVersion.name, "Untitled version") : "No active version set"}
+                      {activeVersion ? safeText(activeVersion.name, "Untitled version") : "No active version"}
                     </p>
                   </div>
                   <div className="rounded-2xl bg-[#07111F]/42 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
@@ -387,11 +389,35 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                   <div>
                     <h2 className={sectionTitle}>Test versions</h2>
                     <p className={`mt-1 ${sectionCopy}`}>
-                      Manual archetype sets deck identity. Auto-detection below shows version-specific parser evidence.
+                      {needsPrimaryVersionSetup
+                        ? "Versions are what you log games with. Start by adding the build you actually want to test."
+                        : "Manual archetype sets deck identity. Auto-detection below shows version-specific parser evidence."}
                     </p>
                   </div>
                 </div>
               </div>
+
+              {needsPrimaryVersionSetup ? (
+                <div className={`p-5 sm:p-6 ${glassPanelStrong}`}>
+                  <DeckVersionForm
+                    action={createVersion}
+                    title={
+                      deckVersions.length
+                        ? "Set up an active test version"
+                        : "Add your first test version"
+                    }
+                    description={
+                      deckVersions.length
+                        ? "Paste a 60-card list and name the build you want to use for new match logs. You can mark it active immediately."
+                        : "Versions are what you log games with. Paste a 60-card list, give this build a clear name, and start your first test."
+                    }
+                    submitLabel={
+                      deckVersions.length ? "Create active test version" : "Create first version"
+                    }
+                    className="border-white/8 bg-[linear-gradient(180deg,rgba(15,26,45,0.96),rgba(7,17,31,0.92))] p-0 shadow-none"
+                  />
+                </div>
+              ) : null}
 
               {deckVersions.length ? (
                 deckVersions.map((version) => {
@@ -661,15 +687,11 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
               ) : (
                 <div className={emptyCard}>
                   <h3 className="text-lg font-semibold text-[#F8FAFC]">
-                    Add the first test version.
+                    No test versions yet.
                   </h3>
                   <p className={sectionCopy}>
-                    Versions are what SixPrizer uses for match logging, version comparison, and future archetype evidence.
+                    Add the first 60-card build above to unlock match logging, version comparison, and parser evidence.
                   </p>
-                  <a href="#add-version" className={`mt-5 ${primaryButton}`}>
-                    Add first version
-                    <ArrowRight className="ml-2 size-4" aria-hidden="true" />
-                  </a>
                 </div>
               )}
             </section>
@@ -715,7 +737,30 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                   </div>
                 </form>
 
-                <DeckVersionForm action={createVersion} />
+                {!needsPrimaryVersionSetup ? (
+                  <DeckVersionForm
+                    action={createVersion}
+                    title="Add another test version"
+                    description="Paste a 60-card list, name the build, and decide whether it should replace the current active version."
+                    submitLabel="Create version"
+                  />
+                ) : (
+                  <div className="rounded-[22px] bg-[#07111F]/42 p-4 shadow-[0_16px_40px_rgba(0,0,0,0.18),inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                    <div className="flex items-start gap-3">
+                      <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-2xl bg-[#F5C84C]/12 text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
+                        <ArrowRight className="size-5" aria-hidden="true" />
+                      </span>
+                      <div>
+                        <h3 className="text-base font-semibold text-[#F8FAFC]">
+                          Version setup is the next step
+                        </h3>
+                        <p className="mt-1 text-sm leading-6 text-[#94A3B8]/72">
+                          Use the main panel to add the build you want to log games with first. This side rail becomes the place to add extra versions after setup.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </aside>
           </div>

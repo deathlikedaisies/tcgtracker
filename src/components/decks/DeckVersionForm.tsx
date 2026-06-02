@@ -14,9 +14,19 @@ import { analyzeDeckList } from "@/lib/decklist";
 
 type DeckVersionFormProps = {
   action: (formData: FormData) => void;
+  title?: string;
+  description?: string;
+  className?: string;
+  submitLabel?: string;
 };
 
-export function DeckVersionForm({ action }: DeckVersionFormProps) {
+export function DeckVersionForm({
+  action,
+  title = "Add a test version",
+  description = "Paste a 60-card list, give the build a clear name, and choose whether it should become the active test version. You'll use this version when logging games.",
+  className = "",
+  submitLabel = "Create test version",
+}: DeckVersionFormProps) {
   const [decklist, setDecklist] = useState("");
   const [name, setName] = useState("");
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -38,16 +48,16 @@ export function DeckVersionForm({ action }: DeckVersionFormProps) {
   return (
     <form
       action={action}
-      className="rounded-[24px] bg-[linear-gradient(180deg,rgba(15,26,45,0.92),rgba(7,17,31,0.88))] p-4 shadow-[0_18px_50px_rgba(0,0,0,0.22),inset_0_0_0_1px_rgba(148,163,184,0.08)] sm:p-5"
+      className={`rounded-[24px] bg-[linear-gradient(180deg,rgba(15,26,45,0.92),rgba(7,17,31,0.88))] p-4 shadow-[0_18px_50px_rgba(0,0,0,0.22),inset_0_0_0_1px_rgba(148,163,184,0.08)] sm:p-5 ${className}`}
     >
       <div className="flex items-start gap-3">
         <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-2xl bg-[#F5C84C]/12 text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
           <Beaker className="size-5" aria-hidden="true" />
         </span>
         <div>
-          <h2 className="text-lg font-semibold text-[#F8FAFC]">Add a test version</h2>
+          <h2 className="text-lg font-semibold text-[#F8FAFC]">{title}</h2>
           <p className={`mt-1 ${sectionCopy}`}>
-            Paste a list, give the build a clear name, and decide whether it should become the active test version.
+            {description}
           </p>
         </div>
       </div>
@@ -192,7 +202,7 @@ export function DeckVersionForm({ action }: DeckVersionFormProps) {
         </label>
 
         <button type="submit" className={primaryButton}>
-          Create test version
+          {submitLabel}
           <ArrowRight className="ml-2 size-4" aria-hidden="true" />
         </button>
       </div>
