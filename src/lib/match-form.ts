@@ -13,6 +13,18 @@ export function optionalText(value: FormDataEntryValue | null) {
   return text || null;
 }
 
+export function parseWentFirstChoice(value: string | null | undefined) {
+  if (value === "true") {
+    return true;
+  }
+
+  if (value === "false") {
+    return false;
+  }
+
+  return null;
+}
+
 function optionalArray(formData: FormData, fieldName: string) {
   const values = parseSelectedTags(formData.getAll(fieldName));
   return values.length ? values : undefined;

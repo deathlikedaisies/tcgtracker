@@ -541,7 +541,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                         <div className="mt-3 flex flex-wrap gap-2 text-xs text-[#94A3B8]">
                           <span className={subtlePill}>
                             {match.went_first === null
-                              ? "Order not tracked"
+                              ? "Turn order unknown"
                               : match.went_first
                                 ? "Went first"
                                 : "Went second"}

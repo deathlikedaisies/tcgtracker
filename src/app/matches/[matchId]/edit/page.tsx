@@ -166,7 +166,7 @@ export default async function EditMatchPage({ params }: EditMatchPageProps) {
             initialResult={currentMatch.result}
             initialWentFirst={
               currentMatch.went_first === null
-                ? undefined
+                ? "unknown"
                 : currentMatch.went_first
                   ? "true"
                   : "false"

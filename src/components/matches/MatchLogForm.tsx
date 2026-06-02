@@ -35,6 +35,7 @@ import {
   type MatchSequencingQuality,
   type MatchStartQuality,
 } from "@/lib/match-types";
+import { parseWentFirstChoice } from "@/lib/match-form";
 import {
   matchCountsTowardMission,
   matchCountsTowardMissionContext,
@@ -73,7 +74,7 @@ type MatchLogFormProps = {
 };
 
 type StepResultValue = MatchResult | "";
-type StepWentFirstValue = "true" | "false" | "";
+type StepWentFirstValue = "true" | "false" | "unknown" | "";
 type SelectionTone = "blue" | "gold" | "emerald" | "rose";
 
 const sessionKeys = {
@@ -117,6 +118,10 @@ const selectedRoseToggleClass =
 
 const progressStepClass =
   "flex items-center gap-3 rounded-xl px-3 py-3 text-left transition";
+
+function parseWentFirstValue(value: string | null | undefined) {
+  return parseWentFirstChoice(value);
+}
 
 const rewardStatCardClass =
   "rounded-2xl bg-[#07111F]/62 px-3 py-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]";
@@ -271,7 +276,7 @@ function SelectionMark({ tone }: { tone: SelectionTone }) {
       aria-hidden="true"
       className={`inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-black shadow-[0_6px_14px_rgba(0,0,0,0.18)] ${className}`}
     >
-      ✓
+      {"\u2713"}
     </span>
   );
 }
@@ -521,12 +526,18 @@ export function MatchLogForm({
       : "";
   });
   const [wentFirst, setWentFirst] = useState<StepWentFirstValue>(() => {
-    if (initialWentFirst === "true" || initialWentFirst === "false") {
+    if (
+      initialWentFirst === "true" ||
+      initialWentFirst === "false" ||
+      initialWentFirst === "unknown"
+    ) {
       return initialWentFirst;
     }
 
     const stored = sessionStorage.getItem(sessionKeys.wentFirst);
-    return stored === "true" || stored === "false" ? stored : "";
+    return stored === "true" || stored === "false" || stored === "unknown"
+      ? (stored as StepWentFirstValue)
+      : "";
   });
   const [startQuality, setStartQuality] = useState<
     MatchStartQuality | undefined
@@ -619,12 +630,7 @@ export function MatchLogForm({
       ? {
           opponent_archetype: loggedOpponent,
           result: loggedResult,
-          went_first:
-            initialWentFirst === "true"
-              ? true
-              : initialWentFirst === "false"
-                ? false
-                : null,
+          went_first: parseWentFirstValue(initialWentFirst),
           event_type: initialEventType ?? null,
           played_at: new Date().toISOString(),
         }
@@ -708,8 +714,12 @@ export function MatchLogForm({
     if (result) {
       parts.push(getMatchResultLabel(result));
     }
-    if (wentFirst) {
-      parts.push(wentFirst === "true" ? "Went first" : "Went second");
+    if (wentFirst === "true") {
+      parts.push("Went first");
+    } else if (wentFirst === "false") {
+      parts.push("Went second");
+    } else if (wentFirst === "unknown") {
+      parts.push("Turn order unknown");
     }
 
     const highlightTags = [...issueTags, ...positiveTags].slice(0, 3);
@@ -821,7 +831,12 @@ export function MatchLogForm({
     },
     {
       label: "Turn-order sample",
-      value: wentFirst === "true" ? "+1 first-turn game" : "+1 second-turn game",
+      value:
+        wentFirst === "true"
+          ? "+1 first-turn game"
+          : wentFirst === "false"
+            ? "+1 second-turn game"
+            : "Turn order unknown",
     },
     {
       label: "Quality signal",
@@ -837,7 +852,12 @@ export function MatchLogForm({
       ? { label: "Matchup", value: opponentArchetype }
       : null,
     wentFirst
-      ? {
+      ? wentFirst === "unknown"
+        ? {
+            label: "Turn order",
+            value: "Turn order unknown",
+          }
+        : {
           label: "Turn order",
           value: wentFirst === "true" ? "First" : "Second",
         }
@@ -940,13 +960,14 @@ export function MatchLogForm({
         ? "Show both sides"
         : "Add positives too";
   const canAdvanceFromMatch = Boolean(opponentArchetype.trim());
-  const canAdvanceFromTurnOrder = wentFirst === "true" || wentFirst === "false";
+  const canAdvanceFromTurnOrder =
+    wentFirst === "true" || wentFirst === "false" || wentFirst === "unknown";
   const canAdvanceFromResult = result === "win" || result === "loss" || result === "tie";
   const blockedNextMessage =
     currentStep === 0 && !canAdvanceFromMatch
       ? "Choose an opponent deck to continue."
       : currentStep === 1 && !canAdvanceFromTurnOrder
-        ? "Choose whether you went first or second."
+        ? "Choose whether you went first, second, or can't remember."
         : currentStep === 2 && !canAdvanceFromResult
           ? "Choose win, loss, or tie."
           : null;
@@ -963,7 +984,13 @@ export function MatchLogForm({
         <p>Result: {result ? getMatchResultLabel(result) : "Not set"}</p>
         <p>
           Turn order:{" "}
-          {wentFirst ? (wentFirst === "true" ? "First" : "Second") : "Not set"}
+          {wentFirst === "true"
+            ? "First"
+            : wentFirst === "false"
+              ? "Second"
+              : wentFirst === "unknown"
+                ? "Turn order unknown"
+                : "Not set"}
         </p>
         <p>
           Tags:{" "}
@@ -1003,7 +1030,11 @@ export function MatchLogForm({
         />
         <input type="hidden" name="game_context" value={gameContext} />
         <input type="hidden" name="result" value={result} />
-        <input type="hidden" name="went_first" value={wentFirst} />
+        <input
+          type="hidden"
+          name="went_first"
+          value={wentFirst === "unknown" ? "unknown" : wentFirst}
+        />
         {startQuality ? (
           <input type="hidden" name="start_quality" value={startQuality} />
         ) : null}
@@ -1390,16 +1421,17 @@ export function MatchLogForm({
                           Turn order
                         </p>
                         <h2 className="mt-2 text-2xl font-semibold text-[#F8FAFC]">
-                          Did you go first or second?
+                          Did you go first, second, or can&apos;t remember?
                         </h2>
                         <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
-                          This helps SixPrizer separate matchup issues from turn-order issues.
+                          Choose turn order, or mark unknown if you can&apos;t remember.
                         </p>
                       </div>
-                      <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="grid gap-3 sm:grid-cols-3">
                         {[
                           ["true", "First"],
                           ["false", "Second"],
+                          ["unknown", "Can't remember"],
                         ].map(([value, turnLabel]) => (
                           (() => {
                             const isSelected = wentFirst === value;
@@ -1408,9 +1440,7 @@ export function MatchLogForm({
                           <button
                             key={value}
                             type="button"
-                            onClick={() =>
-                              setWentFirst(value as StepWentFirstValue)
-                            }
+                            onClick={() => setWentFirst(value as StepWentFirstValue)}
                             aria-pressed={isSelected}
                             className={`${largeToggleClass} ${
                               isSelected ? getSelectedToneClass("blue") : ""

@@ -10,9 +10,7 @@ import {
   ChevronDown,
   LogOut,
   ShieldAlert,
-  Sparkles,
   Target,
-  TrendingUp,
   type LucideIcon,
 } from "lucide-react";
 import {
@@ -622,18 +620,6 @@ function MissionHeroCard({
           </p>
         </div>
 
-        <div className="mt-3 rounded-2xl bg-[#0B1020]/52 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
-            Recent outcome
-          </p>
-          <p className="mt-2 text-sm font-semibold text-[#F8FAFC]">
-            {insight.completionStatus ?? "No completed mission yet"}
-          </p>
-          <p className="mt-1 text-xs leading-5 text-[#94A3B8]/72">
-            {insight.completionSummary ?? "Keep logging focused games to unlock a reviewable result."}
-          </p>
-        </div>
-
         <div className="mt-5 grid gap-2">
           <Link href={primaryHref} className={`${primaryButton} h-12`}>
             {primaryLabel}
@@ -761,7 +747,7 @@ export function DashboardContent({
 }: DashboardContentProps) {
   const router = useRouter();
   const supabase = createClient();
-  const [recordsExpanded, setRecordsExpanded] = useState(false);
+  const [insightsOpen, setInsightsOpen] = useState(false);
 
   const sampledMatchups = matchupSummary.filter((matchup) => matchup.matches >= 3);
   const worstMatchup = sampledMatchups.reduce<MatchupSummary | null>(
@@ -862,69 +848,66 @@ export function DashboardContent({
     activeDeck?.deck_versions?.find((version) => version.is_active) ??
     activeDeck?.deck_versions?.[0] ??
     null;
+  const focusMatchup = sessionCoach?.missionFocusOpponent
+    ? matchupSummary.find(
+        (matchup) => matchup.opponentArchetype === sessionCoach.missionFocusOpponent
+      ) ??
+      worstMatchup
+    : worstMatchup;
   const matchupPreview = matchupSummary.slice(0, 5);
   const deckPreview = deckPerformance.slice(0, 4);
   const issueChips = [
     sessionCoach?.commonIssue?.tag,
     trainingProgress.lossPatternTrend,
   ].filter((value, index, values): value is string => Boolean(value) && values.indexOf(value) === index);
-
-  const whatChangedCards = [
-    {
-      label: sessionCoach?.completionStatus ? "Recent outcome" : "Mission",
-      title:
-        sessionCoach?.completionStatus ??
-        sessionCoach?.missionStatusLabel ??
-        "First test in progress",
-      detail:
-        sessionCoach?.completionSummary ??
-        sessionCoach?.missionStatusReason ??
-        "Log a few more games before this becomes actionable.",
-      tone:
-        sessionCoach?.completionStatus === "Improvement detected"
-          ? ("green" as const)
-          : sessionCoach?.completionStatus === "Mission complete" ||
-              sessionCoach?.completionStatus === "Pattern confirmed"
-            ? ("gold" as const)
-            : sessionCoach?.completionStatus === "Pattern rejected"
-              ? ("rose" as const)
-              : sessionCoach?.missionStatus === "actionable_signal"
-                ? ("green" as const)
-              : ("blue" as const),
-    },
-    {
-      label: "Matchup change",
-      title: trainingProgress.currentWeakestImproved
-        ? `${trainingProgress.currentWeakestImproved} improved`
+  const actionableMatchupTitle =
+    sessionCoach?.missionFocusOpponent ?? focusMatchup?.opponentArchetype ?? "No clear leak yet";
+  const actionableMatchupDetail = focusMatchup
+    ? `${focusMatchup.winRate} across ${focusMatchup.matches} games`
+    : sessionCoach?.missionFocusOpponent
+      ? "This is the current coaching target. Log more games to validate the leak."
+      : getLowDataLabel(stats.totalMatches, 3, "Matchup signal ready");
+  const actionableMatchupTone: Tone = focusMatchup
+    ? parseRate(focusMatchup.winRate) <= 45
+      ? "rose"
+      : parseRate(focusMatchup.winRate) >= 55
+        ? "green"
+        : "gold"
+    : "blue";
+  const whatChangedCard = trainingProgress.currentWeakestImproved
+    ? {
+        label: "What changed",
+        title: `${trainingProgress.currentWeakestImproved} improved`,
+        detail: "The weakest recurring matchup is trending better in recent logs.",
+        tone: "green" as const,
+      }
+    : sessionCoach?.commonIssue
+      ? {
+          label: "What changed",
+          title: `${sessionCoach.commonIssue.tag} is the repeat leak`,
+          detail: `${sessionCoach.commonIssue.count} recent losses tagged.`,
+          tone: "rose" as const,
+      }
+      : lossPatternValue !== "No repeated issue yet"
+        ? {
+            label: "What changed",
+            title: lossPatternValue,
+            detail: "This is the clearest repeated loss note in recent games.",
+            tone: "gold" as const,
+          }
         : bestMatchup
-          ? `Best sample: ${bestMatchup.opponentArchetype}`
-          : "No matchup lift yet",
-      detail: trainingProgress.currentWeakestImproved
-        ? "The weakest recurring matchup is trending better in recent logs."
-        : bestMatchup
-          ? `${bestMatchup.winRate} across ${bestMatchup.matches} games.`
-          : "Log 3 more games into one matchup to surface movement.",
-      tone: trainingProgress.currentWeakestImproved ? ("green" as const) : ("blue" as const),
-    },
-    {
-      label: "Pattern",
-      title: lossPatternValue,
-      detail: trainingProgress.lossPatternTrend
-        ? "This is the clearest repeated loss note in recent games."
-        : "No repeated issue yet. Structured tags will sharpen this first.",
-      tone: trainingProgress.lossPatternTrend ? ("rose" as const) : ("gold" as const),
-    },
-    {
-      label: "Version trend",
-      title: bestDeckVersion
-        ? `${bestDeckVersion.deckVersionName} leads`
-        : "Needs another version",
-      detail: bestDeckVersion
-        ? `${bestDeckVersion.winRate} across ${bestDeckVersion.matches} logged games.`
-        : "Add another version to compare list changes.",
-      tone: bestDeckVersion ? ("green" as const) : ("gold" as const),
-    },
-  ];
+          ? {
+              label: "What changed",
+              title: `Best sample: ${bestMatchup.opponentArchetype}`,
+              detail: `${bestMatchup.winRate} across ${bestMatchup.matches} games.`,
+              tone: "blue" as const,
+            }
+      : {
+          label: "What changed",
+          title: "No clear shift yet",
+          detail: "Log a few more focused games to reveal movement.",
+          tone: "gold" as const,
+      };
 
   const nextAction = sessionCoach
     ? {
@@ -1014,7 +997,7 @@ export function DashboardContent({
                 />
               ) : null}
 
-              <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <section className="grid gap-3 lg:grid-cols-3">
                 <KpiCard
                   icon={Activity}
                   label="Recent form"
@@ -1026,75 +1009,39 @@ export function DashboardContent({
                 </KpiCard>
                 <KpiCard
                   icon={ShieldAlert}
-                  label="Biggest concern"
-                  value={
-                    sessionCoach?.commonIssue?.tag ??
-                    worstMatchup?.opponentArchetype ??
-                    "No pattern yet"
-                  }
-                  helper={
-                    sessionCoach?.commonIssue
-                      ? `${sessionCoach.commonIssue.count} recent losses tagged`
-                      : worstMatchup
-                        ? `${worstMatchup.winRate} across ${worstMatchup.matches} games`
-                        : getLowDataLabel(stats.totalMatches, 3, "Pattern detected")
-                  }
-                  tone="rose"
+                  label="Biggest actionable matchup"
+                  value={actionableMatchupTitle}
+                  helper={actionableMatchupDetail}
+                  tone={actionableMatchupTone}
                 />
-                <KpiCard
-                  icon={Sparkles}
-                  label="Best matchup"
-                  value={bestMatchup?.opponentArchetype ?? "Needs more signal"}
-                  helper={
-                    bestMatchup
-                      ? `${bestMatchup.winRate} across ${bestMatchup.matches} games`
-                      : getLowDataLabel(stats.totalMatches, 3, "Matchup signal ready")
-                  }
-                  tone="green"
-                />
-                <KpiCard
-                  icon={TrendingUp}
-                  label="Turn-order edge"
-                  value={
-                    turnOrderDelta === null
-                      ? "No split yet"
-                      : turnOrderDelta >= 0
-                        ? `First +${turnOrderDelta}%`
-                        : `Second +${Math.abs(turnOrderDelta)}%`
-                  }
-                  helper={
-                    turnOrderDelta === null
-                      ? "Needs more separated samples"
-                      : turnOrderDelta >= 0
-                        ? "You are currently stronger going first."
-                        : "Going second is currently holding up better."
-                  }
-                  tone="blue"
+                <ChangeCard
+                  label={whatChangedCard.label}
+                  title={whatChangedCard.title}
+                  detail={whatChangedCard.detail}
+                  tone={whatChangedCard.tone}
                 />
               </section>
 
-              <SectionCard
-                eyebrow="What changed"
-                title="Recent movement"
-                copy="Surface the patterns that shifted since your last focused block."
-              >
-                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                  {whatChangedCards.map((card) => (
-                    <ChangeCard
-                      key={card.label}
-                      label={card.label}
-                      title={card.title}
-                      detail={card.detail}
-                      tone={card.tone}
-                    />
-                  ))}
-                </div>
-              </SectionCard>
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setInsightsOpen((value) => !value)}
+                  className="inline-flex h-10 items-center gap-2 rounded-xl border border-[#4F8CFF]/18 bg-[#0B1020]/42 px-3.5 text-sm font-semibold text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.10)] transition hover:-translate-y-0.5 hover:bg-[#10192B] active:translate-y-0 active:scale-[0.98]"
+                  aria-expanded={insightsOpen}
+                >
+                  {insightsOpen ? "Hide insights" : "More insights"}
+                  <ChevronDown
+                    className={`size-4 transition-transform ${insightsOpen ? "rotate-180" : ""}`}
+                    aria-hidden="true"
+                  />
+                </button>
+              </div>
 
               <SectionCard
                 eyebrow="Analytics overview"
                 title="Visible coaching signal"
                 copy="Useful analytics stay on the page. Deep charts stay below."
+                className={insightsOpen ? "" : "hidden"}
                 action={
                   <Link href={nextAction.href} className={`${primaryButton} h-11`}>
                     {nextAction.title}
@@ -1272,6 +1219,7 @@ export function DashboardContent({
                 eyebrow="Active experiment"
                 title="Decks and versions"
                 copy="Keep the current list visible, then manage deeper deck records below."
+                className={insightsOpen ? "" : "hidden"}
                 action={
                   <Link href="/decks" className={`${secondaryButton} h-11`}>
                     Manage decks
@@ -1376,8 +1324,8 @@ export function DashboardContent({
               </SectionCard>
 
               <details
-                className="rounded-[26px] bg-[linear-gradient(180deg,rgba(15,26,45,0.92),rgba(7,17,31,0.88))] p-4 shadow-[0_18px_50px_rgba(0,0,0,0.18),inset_0_0_0_1px_rgba(148,163,184,0.08)]"
-                onToggle={(event) => setRecordsExpanded(event.currentTarget.open)}
+                className={`rounded-[26px] bg-[linear-gradient(180deg,rgba(15,26,45,0.92),rgba(7,17,31,0.88))] p-4 shadow-[0_18px_50px_rgba(0,0,0,0.18),inset_0_0_0_1px_rgba(148,163,184,0.08)] ${insightsOpen ? "" : "hidden"}`}
+                onToggle={(event) => setInsightsOpen(event.currentTarget.open)}
               >
                 <summary className="cursor-pointer list-none marker:hidden">
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -1397,7 +1345,7 @@ export function DashboardContent({
                     <div className="flex items-center gap-2">
                       <ShareReportButton report={shareReport} />
                       <span className="inline-flex items-center gap-1 text-xs font-medium text-[#94A3B8]/68">
-                        {recordsExpanded ? "Hide" : "Open"}
+                        More
                         <ChevronDown className="size-3.5" aria-hidden="true" />
                       </span>
                     </div>
@@ -1433,7 +1381,7 @@ export function DashboardContent({
                     <div className="rounded-[22px] bg-[#07111F]/42 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
                       <h2 className={sectionTitle}>Result trend</h2>
                       <p className={pageCopy}>Daily wins, losses, and ties from your logged matches.</p>
-                      {recordsExpanded && trendData.length ? (
+                      {insightsOpen && trendData.length ? (
                         <div className="mt-4 h-64 min-h-[256px] min-w-0">
                           <ResponsiveContainer width="100%" height="100%" minHeight={220}>
                             <LineChart data={trendData}>
@@ -1467,7 +1415,7 @@ export function DashboardContent({
                         </div>
                       ) : (
                         <ChartPlaceholder>
-                          {recordsExpanded
+                          {insightsOpen
                             ? "Log more games to build a result trend."
                             : "Open this section to view charts."}
                         </ChartPlaceholder>
@@ -1477,7 +1425,7 @@ export function DashboardContent({
                     <div className="rounded-[22px] bg-[#07111F]/42 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
                       <h2 className={sectionTitle}>Deck comparison</h2>
                       <p className={pageCopy}>Win rate by deck version, sorted by matches played.</p>
-                      {recordsExpanded && deckPerformanceChart.length ? (
+                      {insightsOpen && deckPerformanceChart.length ? (
                         <div className="mt-4 h-64 min-h-[256px] min-w-0">
                           <ResponsiveContainer width="100%" height="100%" minHeight={220}>
                             <BarChart data={deckPerformanceChart} layout="vertical">
@@ -1512,7 +1460,7 @@ export function DashboardContent({
                         </div>
                       ) : (
                         <ChartPlaceholder>
-                          {recordsExpanded
+                          {insightsOpen
                             ? "Add another deck version to compare testing results."
                             : "Open this section to view charts."}
                         </ChartPlaceholder>

@@ -8,6 +8,7 @@ import {
   buildMatchMetadataFromFormData,
   getGameContextEventType,
   optionalText,
+  parseWentFirstChoice,
 } from "@/lib/match-form";
 import {
   EVENT_TYPES,
@@ -34,6 +35,7 @@ export async function logMatch(
   let result = "";
   let eventType: string | null = null;
   let wentFirstValue: string | null = null;
+  let wentFirst: boolean | null = null;
 
   try {
     const deckVersionId = String(formData.get("deck_version_id") ?? "").trim();
@@ -42,6 +44,7 @@ export async function logMatch(
     ).trim();
     result = String(formData.get("result") ?? "").trim();
     wentFirstValue = optionalText(formData.get("went_first"));
+    wentFirst = parseWentFirstChoice(wentFirstValue);
     const metadata = buildMatchMetadataFromFormData(formData);
     eventType = metadata.game_context
       ? getGameContextEventType(metadata.game_context)
@@ -82,7 +85,7 @@ export async function logMatch(
         opponent_archetype: opponentArchetype,
         opponent_variant: optionalText(formData.get("opponent_variant")),
         result,
-        went_first: wentFirstValue === null ? null : wentFirstValue === "true",
+        went_first: wentFirst,
         event_type: eventType,
         format: LATEST_FORMAT,
         notes: optionalText(formData.get("notes")),
@@ -126,7 +129,7 @@ export async function logMatch(
     `/matches/new?success=1&opponent=${encodeURIComponent(
       opponentArchetype
     )}&result=${encodeURIComponent(result)}&event=${encodeURIComponent(eventType ?? "testing")}&went_first=${encodeURIComponent(
-      wentFirstValue ?? ""
+      wentFirstValue ?? "unknown"
     )}`
   );
 }

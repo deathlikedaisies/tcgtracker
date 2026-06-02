@@ -6,6 +6,7 @@ import {
   buildMatchMetadataFromFormData,
   getGameContextEventType,
   optionalText,
+  parseWentFirstChoice,
 } from "@/lib/match-form";
 import {
   EVENT_TYPES,
@@ -68,6 +69,7 @@ function getMatchPayload(formData: FormData) {
   ).trim();
   const result = String(formData.get("result") ?? "").trim();
   const wentFirstValue = optionalText(formData.get("went_first"));
+  const wentFirst = parseWentFirstChoice(wentFirstValue);
   const metadata = buildMatchMetadataFromFormData(formData);
   const eventType = metadata.game_context
     ? getGameContextEventType(metadata.game_context)
@@ -100,7 +102,7 @@ function getMatchPayload(formData: FormData) {
       opponent_archetype: opponentArchetype,
       opponent_variant: optionalText(formData.get("opponent_variant")),
       result,
-      went_first: wentFirstValue === null ? null : wentFirstValue === "true",
+      went_first: wentFirst,
       event_type: eventType,
       notes: optionalText(formData.get("notes")),
       metadata,

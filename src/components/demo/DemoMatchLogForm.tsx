@@ -32,6 +32,7 @@ import {
 } from "@/lib/match-types";
 
 type StepResultValue = MatchResult | "";
+type StepWentFirstValue = boolean | "unknown" | null;
 type SelectionTone = "blue" | "gold" | "emerald" | "rose";
 
 type SignalTone = "blue" | "gold" | "green" | "rose";
@@ -179,6 +180,22 @@ function getResultTone(value: MatchResult): SelectionTone {
   return "emerald";
 }
 
+function getWentFirstLabel(value: StepWentFirstValue) {
+  if (value === true) {
+    return "First";
+  }
+
+  if (value === false) {
+    return "Second";
+  }
+
+  if (value === "unknown") {
+    return "Turn order unknown";
+  }
+
+  return "Turn order not set";
+}
+
 function SelectionMark({ tone }: { tone: SelectionTone }) {
   const className =
     tone === "gold"
@@ -194,7 +211,7 @@ function SelectionMark({ tone }: { tone: SelectionTone }) {
       aria-hidden="true"
       className={`inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-black shadow-[0_6px_14px_rgba(0,0,0,0.18)] ${className}`}
     >
-      ✓
+      {"\u2713"}
     </span>
   );
 }
@@ -355,7 +372,7 @@ export function DemoMatchLogForm() {
   const [opponent, setOpponent] = useState("Mega Greninja");
   const [opponentVariant, setOpponentVariant] = useState("");
   const [result, setResult] = useState<StepResultValue>("");
-  const [wentFirst, setWentFirst] = useState<boolean | null>(null);
+  const [wentFirst, setWentFirst] = useState<StepWentFirstValue>(null);
   const [startQuality, setStartQuality] = useState<
     MatchStartQuality | undefined
   >("okay");
@@ -386,7 +403,7 @@ export function DemoMatchLogForm() {
     const parts = [
       `${getVersionLabel(versionId)} vs ${opponent}`,
       result ? getMatchResultLabel(result) : "Result not set",
-      wentFirst === null ? "Turn order not set" : wentFirst ? "Went first" : "Went second",
+      getWentFirstLabel(wentFirst),
     ];
     const highlightTags = [...issueTags, ...positiveTags].slice(0, 3);
 
@@ -463,7 +480,7 @@ export function DemoMatchLogForm() {
     currentStep === 0 && !canAdvanceFromMatch
       ? "Choose an opponent deck to continue."
       : currentStep === 1 && !canAdvanceFromTurnOrder
-        ? "Choose whether you went first or second."
+        ? "Choose whether you went first, second, or can't remember."
         : currentStep === 2 && !canAdvanceFromResult
           ? "Choose win, loss, or tie."
           : null;
@@ -487,7 +504,7 @@ export function DemoMatchLogForm() {
       </p>
       <div className="mt-4 grid gap-2 text-xs text-[#94A3B8]">
         <p>Result: {result ? getMatchResultLabel(result) : "Not set"}</p>
-        <p>Turn order: {wentFirst === null ? "Not set" : wentFirst ? "First" : "Second"}</p>
+        <p>Turn order: {getWentFirstLabel(wentFirst)}</p>
         <p>
           Tags:{" "}
           {[...issueTags, ...positiveTags].length
@@ -520,11 +537,11 @@ export function DemoMatchLogForm() {
     {
       label: "Turn-order sample",
       value:
-        wentFirst === null
-          ? "Turn order not set"
-          : wentFirst
-            ? "+1 first-turn game"
-            : "+1 second-turn game",
+        wentFirst === true
+          ? "+1 first-turn game"
+          : wentFirst === false
+            ? "+1 second-turn game"
+            : "Turn order unknown",
     },
     {
       label: "Quality signal",
@@ -539,7 +556,7 @@ export function DemoMatchLogForm() {
     opponent ? { label: "Matchup", value: opponent } : null,
     wentFirst === null
       ? null
-      : { label: "Turn order", value: wentFirst ? "First" : "Second" },
+      : { label: "Turn order", value: getWentFirstLabel(wentFirst) },
     openingHandQuality
       ? { label: "Opening hand", value: getQualityLabel(openingHandQuality) }
       : null,
@@ -951,11 +968,15 @@ export function DemoMatchLogForm() {
                       Did you go first or second?
                     </h2>
                     <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
-                      This helps SixPrizer separate matchup issues from turn-order issues.
+                      Choose turn order, or mark unknown if you can&apos;t remember.
                     </p>
                   </div>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    {[true, false].map((value) => (
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    {[
+                      { value: true, label: "First" },
+                      { value: false, label: "Second" },
+                      { value: "unknown" as const, label: "Can't remember" },
+                    ].map(({ value, label }) => (
                       (() => {
                         const isSelected = wentFirst === value;
 
@@ -971,7 +992,7 @@ export function DemoMatchLogForm() {
                       >
                         <span className="flex items-center gap-2">
                           {isSelected ? <SelectionMark tone="blue" /> : null}
-                          <span>{value ? "First" : "Second"}</span>
+                          <span>{label}</span>
                         </span>
                       </button>
                         );
