@@ -799,22 +799,16 @@ export function MatchLogForm({
   const postSaveStatusBadge = sessionCoach
     ? !countedTowardMission
       ? "Logged outside mission"
-      : postSaveMissionProgress === sessionCoach.progressGoal
-        ? sessionCoach.missionStatus === "improvement_detected"
-          ? "Improvement detected"
-          : "Mission complete"
-        : countedTowardContext
-          ? "Signal improved"
-          : sessionCoach.missionStatusLabel
+      : sessionCoach.completionStatus
+        ? sessionCoach.completionStatus
+        : sessionCoach.missionStatusLabel
     : "Game logged";
   const postSaveMissionCopy = sessionCoach
     ? !countedTowardMission
       ? "Logged outside current mission. It still updates matchup trends."
-      : postSaveMissionProgress === sessionCoach.progressGoal
-        ? sessionCoach.nextAction
-        : countedTowardMission && countedTowardContext
-          ? "This strengthens your current mission."
-          : sessionCoach.missionStatusReason
+      : sessionCoach.completionStatus
+        ? "Logged into the current review set."
+        : "This strengthened your current mission."
     : "This result was added to your matchup history.";
   const postSaveProgressPercent =
     sessionCoach && sessionCoach.progressGoal > 0 && postSaveMissionProgress !== null
@@ -874,18 +868,14 @@ export function MatchLogForm({
   const nextActionTitle = sessionCoach
     ? !countedTowardMission
       ? "Return to dashboard"
-      : postSaveMissionProgress === sessionCoach.progressGoal
-        ? "Review this matchup"
-        : sessionCoach.missionNextAction
+      : sessionCoach.missionNextAction
     : "Log another game";
   const nextActionCopy = sessionCoach
     ? !countedTowardMission
       ? "This game still updates your wider testing record."
-      : postSaveMissionProgress === sessionCoach.progressGoal
-        ? sessionCoach.nextAction
-        : countedTowardContext
-          ? sessionCoach.nextAction
-          : sessionCoach.missionStatusReason
+      : sessionCoach.completionStatus
+        ? "This keeps the matchup history fresh."
+        : sessionCoach.nextAction
     : "Keep your testing loop moving with one more data point.";
   const postSaveStatusToneClass = getRewardStatusToneClass(postSaveStatusBadge);
   const rewardPrimaryButtonClass =
@@ -1066,9 +1056,11 @@ export function MatchLogForm({
                           Game logged
                         </p>
                     <h2 className="mt-1 text-2xl font-bold text-[#F8FAFC] sm:text-3xl">
-                      {countedTowardMission
-                        ? "Your testing signal improved."
-                        : "Your matchup history moved."}
+                      {!countedTowardMission
+                        ? "Your matchup history moved."
+                        : sessionCoach?.completionStatus
+                          ? "Current review set updated."
+                          : "Current mission strengthened."}
                     </h2>
                   </div>
                 </div>
@@ -1076,9 +1068,11 @@ export function MatchLogForm({
                   {postSaveSummary}
                 </p>
                 <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
-                  {countedTowardMission
-                    ? "This log pushed the current coaching mission forward."
-                    : "This game sits outside the current mission, but it still strengthens the wider sample."}
+                  {!countedTowardMission
+                    ? "This game sits outside the current mission, but it still strengthens the wider sample."
+                    : sessionCoach?.completionStatus
+                      ? "This keeps the current review set fresh while you decide the next change."
+                      : "This log pushed the current coaching mission forward."}
                 </p>
               </div>
                   <span

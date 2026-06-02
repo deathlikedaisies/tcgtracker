@@ -505,13 +505,13 @@ export function DemoMatchLogForm() {
   );
   const demoStatusBadge =
     result === "win"
-      ? "Signal improved"
+      ? "Actionable signal"
       : result === "tie"
         ? "Building signal"
         : "Needs games";
   const demoMissionSupportLine =
-    demoStatusBadge === "Signal improved"
-      ? "Signal improved. Review the matchup before changing your list."
+    demoStatusBadge === "Actionable signal"
+      ? "This strengthened the current mission. Review before changing your list."
       : demoStatusBadge === "Building signal"
         ? "Building signal. One more game makes this pattern easier to trust."
         : "Needs games. Log a few more focused games before this becomes actionable.";
@@ -631,8 +631,8 @@ export function DemoMatchLogForm() {
                     </p>
                     <h2 className="mt-1 text-2xl font-bold text-[#F8FAFC] sm:text-3xl">
                       {result === "win"
-                        ? "Your testing signal improved."
-                        : "Your testing signal moved."}
+                        ? "Current mission strengthened."
+                        : "Testing sample updated."}
                     </h2>
                   </div>
                 </div>
@@ -705,8 +705,8 @@ export function DemoMatchLogForm() {
               <div className="h-2 w-[80%] rounded-full bg-[#4F8CFF]" />
             </div>
             <p className="mt-3 text-sm font-medium text-[#D7E0EF]">
-              {gameContext === "competitive" && demoStatusBadge === "Signal improved"
-                ? "Signal improved. One more focused round strengthens the read."
+              {gameContext === "competitive" && demoStatusBadge === "Actionable signal"
+                ? "This focused round is ready for review."
                 : demoMissionSupportLine}
             </p>
             <p className="mt-2 text-xs leading-5 text-[#94A3B8]/72">

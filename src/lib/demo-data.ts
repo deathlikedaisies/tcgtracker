@@ -320,21 +320,21 @@ export function getDemoInsights(): DemoInsightSummary {
   return {
     currentMission: {
       archetype: "Mega Greninja",
-      title: "Stabilize Mega Greninja going second",
+      title: "Review Mega Greninja matchup",
       progressLabel: "3/5 games",
       explanation:
-        "Mega Greninja is the current mission because the sample is large enough to coach, and the going-second losses repeat cleanly.",
+        "Mega Greninja is the current mission because the sample is large enough to coach and the same loss issues keep repeating.",
       why:
-        "Mega Lopunny still needs games. Mega Greninja already has repeated missed-setup notes and a clear first-versus-second split, so it is the better next test.",
+        "Mega Lopunny still needs games. Mega Greninja already has repeated missed-setup and bench-pressure notes, so it is the better next review.",
     },
     biggestStatisticalLeak,
     lowConfidenceWatchlist,
     recommendedNextTest: {
       archetype: "Mega Greninja",
-      title: "Run five more Mega Greninja games going second",
+      title: "Run five more Mega Greninja games",
       cta: "Test Mega Greninja",
       why:
-        "This is a building signal, not a final verdict. More games will confirm whether the issue is opening setup, bench pressure, or the current Dragapult version.",
+        "This is actionable, but not final. More games will confirm whether the issue is opening setup, bench pressure, or the current Dragapult version.",
       steps: [
         "Keep one extra switching card in the active Dragapult build.",
         "Tag whether bench pressure or missed setup creates the first prize deficit.",

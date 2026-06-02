@@ -27,17 +27,12 @@ export function SessionCoachPanel({
     : null;
   const contextProgress =
     insight.missionContextSeenCount > 0
-      ? `Focus evidence: ${insight.missionContextSeenCount} game${
+      ? `${insight.missionContextLabel}: ${insight.missionContextSeenCount} game${
           insight.missionContextSeenCount === 1 ? "" : "s"
         }`
-      : "Focus evidence: none yet";
+      : `${insight.missionContextLabel}: none yet`;
   const actionLabel =
-    ctaLabel ??
-    (insight.missionStatus === "mission_complete" ||
-    insight.missionStatus === "pattern_confirmed" ||
-    insight.missionStatus === "improvement_detected"
-      ? "Review mission"
-      : "Log next game");
+    ctaLabel ?? insight.ctaLabel;
 
   return (
     <section className="rounded-md bg-[#11182C]/88 p-3 shadow-[0_22px_58px_rgba(0,0,0,0.28),0_0_36px_rgba(245,200,76,0.04),inset_0_0_0_1px_rgba(245,200,76,0.13)] sm:p-4">
