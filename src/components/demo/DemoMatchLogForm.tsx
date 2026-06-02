@@ -367,25 +367,22 @@ export function DemoMatchLogForm() {
   const [gameContext, setGameContext] = useState<GameContext>("testing");
   const [eventName, setEventName] = useState("");
   const [roundNumber, setRoundNumber] = useState("");
-  const [testingSessionName, setTestingSessionName] = useState("League block A");
-  const [focusMatchup, setFocusMatchup] = useState("Mega Greninja");
-  const [opponent, setOpponent] = useState("Mega Greninja");
+  const [testingSessionName, setTestingSessionName] = useState("");
+  const [focusMatchup, setFocusMatchup] = useState("");
+  const [opponent, setOpponent] = useState("");
   const [opponentVariant, setOpponentVariant] = useState("");
   const [result, setResult] = useState<StepResultValue>("");
   const [wentFirst, setWentFirst] = useState<StepWentFirstValue>(null);
   const [startQuality, setStartQuality] = useState<
     MatchStartQuality | undefined
-  >("okay");
+  >(undefined);
   const [openingHandQuality, setOpeningHandQuality] = useState<
     MatchOpeningHandQuality | undefined
-  >("good");
+  >(undefined);
   const [sequencingQuality, setSequencingQuality] = useState<
     MatchSequencingQuality | undefined
-  >("okay");
-  const [issueTags, setIssueTags] = useState<string[]>([
-    "missed setup",
-    "poor prize trade",
-  ]);
+  >(undefined);
+  const [issueTags, setIssueTags] = useState<string[]>([]);
   const [positiveTags, setPositiveTags] = useState<string[]>([]);
   const [cardsShined, setCardsShined] = useState<string[]>([]);
   const [cardsFailed, setCardsFailed] = useState<string[]>([]);
@@ -401,7 +398,7 @@ export function DemoMatchLogForm() {
 
   const readySummary = useMemo(() => {
     const parts = [
-      `${getVersionLabel(versionId)} vs ${opponent}`,
+      opponent ? `${getVersionLabel(versionId)} vs ${opponent}` : getVersionLabel(versionId),
       result ? getMatchResultLabel(result) : "Result not set",
       getWentFirstLabel(wentFirst),
     ];
@@ -494,28 +491,32 @@ export function DemoMatchLogForm() {
     positiveTags,
   });
 
+  const summaryChipClass =
+    "inline-flex items-center rounded-full bg-[#0B1020]/72 px-2.5 py-1 text-[11px] font-semibold text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]";
   const desktopSummary = (
-    <div className="rounded-xl bg-[#0B1020]/52 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
-      <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#F5C84C]">
+    <div className="rounded-xl bg-[#0B1020]/52 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#F5C84C]">
         Live summary
       </p>
-      <p className="mt-3 text-sm font-medium leading-6 text-[#F8FAFC]">
-        {readySummary}
+      <p className="mt-2 text-sm font-medium leading-6 text-[#F8FAFC]">
+        {readySummary || "Start with a matchup, then add result and turn order."}
       </p>
-      <div className="mt-4 grid gap-2 text-xs text-[#94A3B8]">
-        <p>Result: {result ? getMatchResultLabel(result) : "Not set"}</p>
-        <p>Turn order: {getWentFirstLabel(wentFirst)}</p>
-        <p>
+      <div className="mt-3 flex flex-wrap gap-1.5">
+        <span className={summaryChipClass}>
+          Result: {result ? getMatchResultLabel(result) : "Not set"}
+        </span>
+        <span className={summaryChipClass}>Turn order: {getWentFirstLabel(wentFirst)}</span>
+        <span className={summaryChipClass}>
           Tags:{" "}
           {[...issueTags, ...positiveTags].length
-            ? [...issueTags, ...positiveTags].slice(0, 4).join(", ")
+            ? [...issueTags, ...positiveTags].slice(0, 2).join(", ")
             : "No tags yet"}
-        </p>
+        </span>
       </div>
-      <p className="mt-4 text-sm text-[#94A3B8]/76">
+      <p className="mt-3 text-xs text-[#94A3B8]/76">
         This will update your matchup trends.
       </p>
-      <Link href="/demo/matches" className={`mt-4 block w-full ${secondaryButton}`}>
+      <Link href="/demo/matches" className={`mt-3 block w-full ${secondaryButton}`}>
         Demo matches
       </Link>
     </div>
@@ -612,16 +613,16 @@ export function DemoMatchLogForm() {
     setGameContext("testing");
     setEventName("");
     setRoundNumber("");
-    setTestingSessionName("League block A");
-    setFocusMatchup("Mega Greninja");
-    setOpponent("Mega Greninja");
+    setTestingSessionName("");
+    setFocusMatchup("");
+    setOpponent("");
     setOpponentVariant("");
     setResult("");
     setWentFirst(null);
-    setStartQuality("okay");
-    setOpeningHandQuality("good");
-    setSequencingQuality("okay");
-    setIssueTags(["missed setup", "poor prize trade"]);
+    setStartQuality(undefined);
+    setOpeningHandQuality(undefined);
+    setSequencingQuality(undefined);
+    setIssueTags([]);
     setPositiveTags([]);
     setCardsShined([]);
     setCardsFailed([]);

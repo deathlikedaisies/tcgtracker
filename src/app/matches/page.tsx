@@ -323,9 +323,9 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
           </div>
         ) : null}
 
-        <form action="/matches" className={`p-4 sm:p-5 ${glassPanel}`}>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
-            <div className="flex flex-col gap-2 lg:col-span-2">
+        <form action="/matches" className={`p-3 sm:p-4 ${glassPanel}`}>
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
+            <div className="flex flex-col gap-2">
               <label htmlFor="deck_id" className={label}>
                 Deck
               </label>
@@ -343,7 +343,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                 ))}
               </select>
             </div>
-            <div className="flex flex-col gap-2 lg:col-span-2">
+            <div className="flex flex-col gap-2">
               <label
                 htmlFor="deck_version_id"
                 className={label}
@@ -365,7 +365,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                 ))}
               </select>
             </div>
-            <div className="flex flex-col gap-2 lg:col-span-2">
+            <div className="flex flex-col gap-2 md:col-span-2 xl:col-span-2">
               <ArchetypePicker
                 id="opponent_archetype"
                 name="opponent_archetype"
@@ -420,7 +420,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                 className={inputH10}
               />
             </div>
-            <div className="flex flex-col gap-2 sm:flex-row md:col-span-2 lg:col-span-2 lg:items-end">
+            <div className="flex flex-col gap-2 sm:flex-row md:col-span-2 xl:col-span-2 xl:items-end">
               <button
                 type="submit"
                 className={primaryButton}
@@ -435,7 +435,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
               </Link>
             </div>
             {sessionCoach ? (
-              <label className="flex min-h-10 items-center gap-2 rounded-md bg-[#0B1020]/36 px-3 text-sm font-medium text-[#F8FAFC] md:col-span-2 lg:col-span-6">
+              <label className="flex min-h-10 items-center gap-2 rounded-md bg-[#0B1020]/36 px-3 text-sm font-medium text-[#F8FAFC] md:col-span-2 xl:col-span-6">
                 <input
                   type="checkbox"
                   name="mission_only"

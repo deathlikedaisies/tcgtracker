@@ -971,18 +971,22 @@ export function MatchLogForm({
         : currentStep === 2 && !canAdvanceFromResult
           ? "Choose win, loss, or tie."
           : null;
+  const summaryChipClass =
+    "inline-flex items-center rounded-full bg-[#0B1020]/72 px-2.5 py-1 text-[11px] font-semibold text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]";
   const desktopSummary = (
-    <div className="rounded-xl bg-[#0B1020]/52 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
-      <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#F5C84C]">
+    <div className="rounded-xl bg-[#0B1020]/52 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#F5C84C]">
         Live summary
       </p>
-      <p className="mt-3 text-sm font-medium leading-6 text-[#F8FAFC]">
+      <p className="mt-2 text-sm font-medium leading-6 text-[#F8FAFC]">
         {readySummary ||
           "Choose a matchup, result, and turn order to start the quick log."}
       </p>
-      <div className="mt-4 grid gap-2 text-xs text-[#94A3B8]">
-        <p>Result: {result ? getMatchResultLabel(result) : "Not set"}</p>
-        <p>
+      <div className="mt-3 flex flex-wrap gap-1.5">
+        <span className={summaryChipClass}>
+          Result: {result ? getMatchResultLabel(result) : "Not set"}
+        </span>
+        <span className={summaryChipClass}>
           Turn order:{" "}
           {wentFirst === "true"
             ? "First"
@@ -991,18 +995,18 @@ export function MatchLogForm({
               : wentFirst === "unknown"
                 ? "Turn order unknown"
                 : "Not set"}
-        </p>
-        <p>
+        </span>
+        <span className={summaryChipClass}>
           Tags:{" "}
           {[...issueTags, ...positiveTags].length
-            ? [...issueTags, ...positiveTags].slice(0, 4).join(", ")
+            ? [...issueTags, ...positiveTags].slice(0, 2).join(", ")
             : "No tags yet"}
-        </p>
+        </span>
       </div>
-      <p className="mt-4 text-sm text-[#94A3B8]/76">
+      <p className="mt-3 text-xs text-[#94A3B8]/76">
         This will update your matchup trends.
       </p>
-      <Link href={secondaryHref} className={`mt-4 block w-full ${secondaryButton}`}>
+      <Link href={secondaryHref} className={`mt-3 block w-full ${secondaryButton}`}>
         {secondaryLabel}
       </Link>
     </div>
