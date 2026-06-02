@@ -9,6 +9,7 @@ import {
   emptyCard,
   logoOnDark,
   pageCopy,
+  pageHeaderCard,
   pageTitle,
   primaryButton,
   sectionCopy,
@@ -149,54 +150,54 @@ export default async function NewMatchPage({
               : undefined
           }
         />
-        <div className={`${appMain} mx-auto w-full max-w-6xl`}>
-        <div className="flex max-w-full min-w-0 flex-col gap-4 overflow-x-hidden lg:flex-row lg:flex-wrap lg:items-start lg:justify-between">
-          <div className="min-w-0 max-w-full">
-            <SixPrizerLogo {...logoOnDark} />
-            <p className="mt-5 text-sm font-medium text-[#4F8CFF]">Fast log</p>
-            <h1 className={pageTitle}>
-              Log a game
-            </h1>
-            <p className={pageCopy}>
-              Capture the matchup, result, and context before the next queue.
-            </p>
-          </div>
-          <div className="lg:hidden">
-            <AppNav current="log" />
-          </div>
-        </div>
-
-        {deckOptions.length ? (
-          <MatchLogForm
-            action={logMatch}
-            deckOptions={deckOptions}
-            opponentArchetypeOptions={opponentArchetypeOptions}
-            initialEventType={event}
-            initialOpponentArchetype={opponent}
-            initialResult={result}
-            initialWentFirst={wentFirst}
-            sessionCoach={sessionCoach}
-            wasSuccessful={success === "1"}
-          />
-        ) : (
-          <div className={`mt-8 ${emptyCard}`}>
-            <h2 className="text-lg font-semibold text-[#F8FAFC]">
-              No deck versions yet.
-            </h2>
-            <p className={`mt-2 ${sectionCopy}`}>
-              Create a deck and add a version before logging a match. SixPrizer
-              uses the version to compare builds and keep your testing history clean.
-            </p>
-            <div className="mt-5 flex flex-col gap-2 sm:flex-row">
-              <Link href="/decks" className={primaryButton}>
-                Create your first deck
-              </Link>
-              <Link href="/decks" className={secondaryButton}>
-                Manage decks
-              </Link>
+        <div className={`${appMain} mx-auto w-full max-w-7xl`}>
+          <header className={pageHeaderCard}>
+            <div>
+              <SixPrizerLogo {...logoOnDark} />
+              <p className="mt-4 text-sm font-medium text-[#4F8CFF]">
+                Fast log
+              </p>
+              <h1 className={pageTitle}>Log a game</h1>
+              <p className={pageCopy}>
+                Capture the matchup, result, and context before the next queue.
+              </p>
             </div>
-          </div>
-        )}
+            <div className="lg:hidden">
+              <AppNav current="log" />
+            </div>
+          </header>
+
+          {deckOptions.length ? (
+            <MatchLogForm
+              action={logMatch}
+              deckOptions={deckOptions}
+              opponentArchetypeOptions={opponentArchetypeOptions}
+              initialEventType={event}
+              initialOpponentArchetype={opponent}
+              initialResult={result}
+              initialWentFirst={wentFirst}
+              sessionCoach={sessionCoach}
+              wasSuccessful={success === "1"}
+            />
+          ) : (
+            <div className={`mt-8 ${emptyCard}`}>
+              <h2 className="text-lg font-semibold text-[#F8FAFC]">
+                No deck versions yet.
+              </h2>
+              <p className={`mt-2 ${sectionCopy}`}>
+                Create a deck and add a version before logging a match. SixPrizer
+                uses the version to compare builds and keep your testing history clean.
+              </p>
+              <div className="mt-5 flex flex-col gap-2 sm:flex-row">
+                <Link href="/decks" className={primaryButton}>
+                  Create your first deck
+                </Link>
+                <Link href="/decks" className={secondaryButton}>
+                  Manage decks
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
       </section>
     </main>

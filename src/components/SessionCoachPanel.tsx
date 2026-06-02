@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
+import { missionHeroCard, statCard } from "@/components/brand-styles";
 import type { SessionCoachInsight } from "@/lib/session-coach";
 
 type SessionCoachPanelProps = {
@@ -35,27 +36,27 @@ export function SessionCoachPanel({
     ctaLabel ?? insight.ctaLabel;
 
   return (
-    <section className="rounded-md bg-[#11182C]/88 p-3 shadow-[0_22px_58px_rgba(0,0,0,0.28),0_0_36px_rgba(245,200,76,0.04),inset_0_0_0_1px_rgba(245,200,76,0.13)] sm:p-4">
+    <section className={`${missionHeroCard} p-3 shadow-[0_22px_58px_rgba(0,0,0,0.28),0_0_36px_rgba(245,200,76,0.04),inset_0_0_0_1px_rgba(245,200,76,0.13)] sm:p-4`}>
       <div className="flex flex-col gap-2.5 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex size-8 items-center justify-center rounded-md bg-[#F5C84C]/12 text-xs font-bold text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
+            <span className="inline-flex size-8 items-center justify-center rounded-[12px] bg-[#F5C84C]/12 text-xs font-bold text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
               TC
             </span>
             <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#94A3B8]/58">
               Current mission
             </span>
-            <span className="rounded-md bg-[#4F8CFF]/10 px-2 py-1 text-xs font-semibold text-[#B8D1FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.14)]">
+            <span className="rounded-full bg-[#4F8CFF]/10 px-2.5 py-1 text-xs font-semibold text-[#B8D1FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.14)]">
               {insight.missionStatusLabel}
             </span>
-            <span className="rounded-md bg-[#07111F]/52 px-2 py-1 text-xs font-semibold text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]">
+            <span className="rounded-full bg-[#07111F]/52 px-2.5 py-1 text-xs font-semibold text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]">
               {insight.missionTypeLabel}
             </span>
           </div>
           <h2 className="mt-2 truncate text-2xl font-bold leading-tight tracking-tight text-[#F8FAFC] sm:text-3xl">
             {insight.missionTitle}
           </h2>
-          <div className="mt-1.5 flex min-w-0 items-center gap-2 rounded-md bg-[#0B1020]/24 px-2.5 py-1.5 sm:w-fit">
+          <div className="mt-1.5 flex min-w-0 items-center gap-2 rounded-[14px] bg-[#0B1020]/24 px-2.5 py-1.5 sm:w-fit">
             <ArchetypeSprites archetype={insight.archetype} className="shrink-0" />
             <p className="min-w-0 truncate text-sm font-medium text-[#94A3B8]/78">
               {insight.missionContextLabel}
@@ -65,7 +66,7 @@ export function SessionCoachPanel({
         {showCta ? (
           <Link
             href={insight.continueHref}
-            className="inline-flex h-11 w-full shrink-0 items-center justify-center rounded-md bg-[#F5C84C] px-5 text-sm font-bold text-[#0B1020] shadow-[0_14px_34px_rgba(245,200,76,0.22)] transition hover:-translate-y-0.5 hover:bg-[#ffd85f] active:translate-y-0 active:scale-[0.98] sm:w-fit"
+            className="inline-flex h-11 w-full shrink-0 items-center justify-center rounded-[14px] bg-[#F5C84C] px-5 text-sm font-bold text-[#0B1020] shadow-[0_14px_34px_rgba(245,200,76,0.22)] transition hover:-translate-y-0.5 hover:bg-[#ffd85f] active:translate-y-0 active:scale-[0.98] sm:w-fit"
           >
             {actionLabel}
           </Link>
@@ -79,7 +80,7 @@ export function SessionCoachPanel({
           </p>
           <div className="flex flex-wrap items-center gap-2">
             <div
-              className="flex items-center gap-1.5 rounded-md bg-[#0B1020]/36 px-2.5 py-1.5 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.035)]"
+              className={`${statCard} flex items-center gap-1.5 px-2.5 py-1.5`}
               aria-label={`${insight.missionProgress} of ${insight.missionTargetCount} games completed`}
             >
               {progressDots.map((complete, index) => (
@@ -118,7 +119,7 @@ export function SessionCoachPanel({
       ) : null}
 
       {insight.completionStatus ? (
-        <div className="mt-3 rounded-md bg-emerald-500/10 p-3 shadow-[inset_0_0_0_1px_rgba(34,197,94,0.18)]">
+        <div className={`${statCard} mt-3 bg-emerald-500/10 p-3 shadow-[inset_0_0_0_1px_rgba(34,197,94,0.18)]`}>
           <p className="text-xs font-semibold uppercase text-emerald-200">
             {insight.completionStatus}
           </p>
@@ -135,7 +136,7 @@ export function SessionCoachPanel({
         <summary className="inline-flex h-7 cursor-pointer list-none items-center rounded-md px-1.5 text-[11px] font-medium text-[#94A3B8]/62 transition hover:bg-[#0B1020]/30 hover:text-[#F8FAFC] marker:hidden">
           Why this mission
         </summary>
-        <div className="mt-2 grid gap-2 rounded-md bg-[#0B1020]/42 p-3 text-sm text-[#94A3B8] shadow-[inset_0_0_0_1px_rgba(248,250,252,0.05)] sm:grid-cols-2">
+        <div className={`${statCard} mt-2 grid gap-2 bg-[#0B1020]/42 p-3 text-sm text-[#94A3B8] sm:grid-cols-2`}>
           <p>{insight.missionReason}</p>
           <p>{insight.evidence}</p>
           <p>{insight.criteria}</p>

@@ -33,11 +33,15 @@ import {
   appMain,
   appShell,
   emptyCard,
+  insightCard,
+  missionHeroCard,
   logoOnDark,
   pageCopy,
   primaryButton,
+  secondaryPanel,
   sectionTitle,
   secondaryButton,
+  statCard,
 } from "@/components/brand-styles";
 import { ShareReportButton, type ShareReport } from "@/components/ShareReportButton";
 import { SixPrizerLogo } from "@/components/SixPrizerLogo";
@@ -253,9 +257,7 @@ function SectionCard({
   className?: string;
 }) {
   return (
-    <section
-      className={`rounded-[26px] bg-[linear-gradient(180deg,rgba(15,26,45,0.92),rgba(7,17,31,0.88))] p-4 shadow-[0_18px_50px_rgba(0,0,0,0.24),inset_0_0_0_1px_rgba(148,163,184,0.09)] backdrop-blur sm:p-5 ${className}`}
-    >
+    <section className={`${secondaryPanel} p-4 sm:p-5 ${className}`}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           {eyebrow ? (
@@ -289,7 +291,7 @@ function StatusChip({
   tone: Tone;
 }) {
   return (
-    <div className="rounded-2xl bg-[#07111F]/46 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+    <div className={statCard}>
       <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
         {label}
       </p>
@@ -316,7 +318,7 @@ function KpiCard({
   children?: ReactNode;
 }) {
   return (
-    <div className="rounded-[22px] bg-[linear-gradient(180deg,rgba(11,16,32,0.92),rgba(7,17,31,0.82))] p-4 shadow-[0_16px_40px_rgba(0,0,0,0.22),inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+    <div className={`${statCard} p-4`}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
@@ -354,7 +356,7 @@ function ChangeCard({
   tone: Tone;
 }) {
   return (
-    <div className="rounded-[22px] bg-[#07111F]/42 p-4 shadow-[0_14px_36px_rgba(0,0,0,0.16),inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+    <div className={`${insightCard} bg-[#07111F]/42 p-4`}>
       <span
         className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${toneClass(
           tone
@@ -380,7 +382,7 @@ function MetricBar({
   tone: Tone;
 }) {
   return (
-    <div className="rounded-2xl bg-[#07111F]/42 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+    <div className={statCard}>
       <div className="flex items-center justify-between gap-3">
         <p className="truncate text-sm font-semibold text-[#F8FAFC]">{label}</p>
         <p className="shrink-0 text-sm font-bold text-[#F8FAFC]">{value}%</p>
@@ -409,7 +411,7 @@ function RecentFormPanel({ matches }: { matches: RecentMatch[] }) {
 
   if (!preview.length) {
     return (
-      <div className="rounded-2xl bg-[#07111F]/42 p-4 text-sm text-[#94A3B8]/72 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+      <div className={`${statCard} p-4 text-sm text-[#94A3B8]/72`}>
         First test in progress. Log 3 more games to unlock a real trend.
       </div>
     );
@@ -424,10 +426,7 @@ function RecentFormPanel({ matches }: { matches: RecentMatch[] }) {
         </p>
       </div>
       {preview.map((match) => (
-        <div
-          key={match.id}
-          className="rounded-2xl bg-[#07111F]/42 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]"
-        >
+        <div key={match.id} className={statCard}>
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-[#F8FAFC]">
@@ -470,7 +469,7 @@ function TurnOrderPanel({
   return (
     <div className="grid gap-3">
       {rows.map((row) => (
-        <div key={row.label} className="rounded-2xl bg-[#07111F]/42 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+        <div key={row.label} className={statCard}>
           <div className="flex items-center justify-between gap-3">
             <p className="text-sm font-semibold text-[#F8FAFC]">{row.label}</p>
             <p className="text-sm font-bold text-[#F8FAFC]">{row.value}</p>
@@ -508,7 +507,7 @@ function MissionHeroCard({
   const primaryLabel = insight.ctaLabel;
 
   return (
-    <section className="grid gap-4 rounded-[30px] bg-[radial-gradient(circle_at_top_left,rgba(79,140,255,0.24),transparent_32%),radial-gradient(circle_at_top_right,rgba(245,200,76,0.16),transparent_24%),linear-gradient(180deg,rgba(15,26,45,0.98),rgba(7,17,31,0.92))] p-5 shadow-[0_28px_72px_rgba(0,0,0,0.34),0_0_44px_rgba(79,140,255,0.08),inset_0_0_0_1px_rgba(148,163,184,0.14)] sm:p-6 xl:grid-cols-[minmax(0,1.5fr)_360px]">
+    <section className={`grid gap-4 p-5 sm:p-6 xl:grid-cols-[minmax(0,1.5fr)_360px] ${missionHeroCard} bg-[radial-gradient(circle_at_top_left,rgba(79,140,255,0.24),transparent_32%),radial-gradient(circle_at_top_right,rgba(245,200,76,0.16),transparent_24%),linear-gradient(180deg,rgba(15,26,45,0.98),rgba(7,17,31,0.92))] shadow-[0_28px_72px_rgba(0,0,0,0.34),0_0_44px_rgba(79,140,255,0.08),inset_0_0_0_1px_rgba(148,163,184,0.14)]`}>
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2">
           <span className="inline-flex size-10 items-center justify-center rounded-2xl bg-[#F5C84C]/12 text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.18)]">

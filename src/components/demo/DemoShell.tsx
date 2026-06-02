@@ -9,7 +9,13 @@ import {
 } from "lucide-react";
 import { DemoBadge } from "@/components/demo/DemoBadge";
 import { SixPrizerLogo } from "@/components/SixPrizerLogo";
-import { appFrame, appMain, appShell, glassPanel, logoOnDark } from "@/components/brand-styles";
+import {
+  appFrame,
+  appMain,
+  appShell,
+  glassPanel,
+  logoOnDark,
+} from "@/components/brand-styles";
 
 type DemoSection = "dashboard" | "decks" | "matches" | "log" | "matchups";
 
@@ -50,7 +56,7 @@ export function DemoShell({ current, children }: DemoShellProps) {
                     key={item.href}
                     href={item.href}
                     aria-current={active ? "page" : undefined}
-                    className={`inline-flex h-11 items-center gap-3 rounded-md px-3 text-sm font-medium transition ${
+                    className={`inline-flex h-11 items-center gap-3 rounded-[14px] px-3 text-sm font-medium transition ${
                       active
                         ? "bg-[#4F8CFF]/18 text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.30),0_10px_24px_rgba(79,140,255,0.08)]"
                         : "text-[#94A3B8]/78 hover:bg-[#07111F]/58 hover:text-[#F8FAFC]"
@@ -65,7 +71,7 @@ export function DemoShell({ current, children }: DemoShellProps) {
 
             <Link
               href="/"
-              className="mt-auto inline-flex h-10 items-center justify-center rounded-md bg-[#07111F]/52 px-3 text-sm font-medium text-[#94A3B8] transition hover:bg-[#1A2238]/58 hover:text-[#F8FAFC]"
+              className="mt-auto inline-flex h-10 items-center justify-center rounded-[14px] bg-[#07111F]/52 px-3 text-sm font-medium text-[#94A3B8] transition hover:bg-[#1A2238]/58 hover:text-[#F8FAFC]"
             >
               Exit demo
             </Link>
@@ -73,12 +79,12 @@ export function DemoShell({ current, children }: DemoShellProps) {
         </aside>
 
         <section className={appMain}>
-          <header className="flex flex-col gap-3 rounded-md bg-[#0B1020]/44 p-3 shadow-[0_16px_46px_rgba(0,0,0,0.22),inset_0_0_0_1px_rgba(148,163,184,0.10)] backdrop-blur sm:p-4 lg:hidden">
+          <header className="flex flex-col gap-3 rounded-[26px] bg-[linear-gradient(180deg,rgba(15,26,45,0.94),rgba(7,17,31,0.86))] p-3 shadow-[0_16px_46px_rgba(0,0,0,0.22),inset_0_0_0_1px_rgba(148,163,184,0.10)] backdrop-blur sm:p-4 lg:hidden">
             <div className="flex items-center justify-between gap-3">
               <SixPrizerLogo {...logoOnDark} />
               <DemoBadge />
             </div>
-            <nav className="grid grid-cols-5 gap-1 rounded-md bg-[#07111F]/52 p-1">
+            <nav className="grid grid-cols-5 gap-1 rounded-[18px] bg-[#07111F]/52 p-1">
               {navItems.map((item) => {
                 const active = item.section === current;
 
@@ -86,7 +92,7 @@ export function DemoShell({ current, children }: DemoShellProps) {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`inline-flex h-9 min-w-0 items-center justify-center rounded-md px-1 text-[11px] font-semibold ${
+                    className={`inline-flex h-9 min-w-0 items-center justify-center rounded-[12px] px-1 text-[11px] font-semibold ${
                       active ? "bg-[#4F8CFF]/22 text-[#F8FAFC]" : "text-[#94A3B8]/78"
                     }`}
                   >

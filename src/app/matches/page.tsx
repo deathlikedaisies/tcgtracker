@@ -297,7 +297,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
             helper: sessionCoach?.missionTitle,
           }}
         />
-        <div className={`${appMain} mx-auto w-full max-w-6xl`}>
+        <div className={`${appMain} mx-auto w-full max-w-7xl`}>
         <header className={pageHeader}>
           <div>
             <SixPrizerLogo {...logoOnDark} />
@@ -318,7 +318,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
         ) : null}
 
         {params.updated === "1" ? (
-          <div className="rounded-md bg-emerald-500/10 px-4 py-3 text-sm font-medium text-emerald-200">
+          <div className="rounded-[14px] bg-emerald-500/10 px-4 py-3 text-sm font-medium text-emerald-200">
             Match updated.
           </div>
         ) : null}
@@ -435,7 +435,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
               </Link>
             </div>
             {sessionCoach ? (
-              <label className="flex min-h-10 items-center gap-2 rounded-md bg-[#0B1020]/36 px-3 text-sm font-medium text-[#F8FAFC] md:col-span-2 xl:col-span-6">
+              <label className="flex min-h-10 items-center gap-2 rounded-[14px] bg-[#0B1020]/36 px-3 text-sm font-medium text-[#F8FAFC] md:col-span-2 xl:col-span-6">
                 <input
                   type="checkbox"
                   name="mission_only"
@@ -495,7 +495,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                 return (
                   <article
                     key={match.id}
-                    className="rounded-md bg-[#0B1020]/40 p-4 transition hover:bg-[#0B1020]/56 hover:shadow-[0_14px_34px_rgba(0,0,0,0.16)]"
+                    className="rounded-[16px] bg-[#0B1020]/40 p-4 transition hover:bg-[#0B1020]/56 hover:shadow-[0_14px_34px_rgba(0,0,0,0.16)]"
                   >
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                       <div className="min-w-0">
@@ -504,7 +504,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                             {formatDate(match.played_at)}
                           </p>
                           <span
-                            className={`rounded-md px-2 py-1 text-xs font-medium uppercase ${
+                            className={`rounded-full px-2 py-1 text-xs font-medium uppercase ${
                               match.result === "win"
                                 ? "bg-emerald-500/15 text-emerald-300"
                                 : match.result === "loss"
@@ -515,12 +515,12 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                             {getMatchResultLabel(match.result)}
                           </span>
                           {countsTowardMission ? (
-                            <span className="rounded-md bg-[#F5C84C]/14 px-2 py-1 text-xs font-semibold text-[#F5C84C]">
+                            <span className="rounded-full bg-[#F5C84C]/14 px-2 py-1 text-xs font-semibold text-[#F5C84C]">
                               Mission progress
                             </span>
                           ) : null}
                           {countsTowardContext ? (
-                            <span className="rounded-md bg-[#4F8CFF]/14 px-2 py-1 text-xs font-semibold text-[#B8D1FF]">
+                            <span className="rounded-full bg-[#4F8CFF]/14 px-2 py-1 text-xs font-semibold text-[#B8D1FF]">
                               Focus evidence
                             </span>
                           ) : null}
@@ -597,7 +597,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                             {metadata.issue_tags?.map((tag) => (
                               <span
                                 key={`issue-${match.id}-${tag}`}
-                                className="rounded-md bg-[#F43F5E]/12 px-2 py-1 text-xs font-medium text-rose-100"
+                                className="rounded-full bg-[#F43F5E]/12 px-2 py-1 text-xs font-medium text-rose-100"
                               >
                                 {tag}
                               </span>
@@ -605,7 +605,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                             {metadata.positive_tags?.map((tag) => (
                               <span
                                 key={`positive-${match.id}-${tag}`}
-                                className="rounded-md bg-emerald-500/12 px-2 py-1 text-xs font-medium text-emerald-100"
+                                className="rounded-full bg-emerald-500/12 px-2 py-1 text-xs font-medium text-emerald-100"
                               >
                                 {tag}
                               </span>
@@ -619,7 +619,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                             {tags.map((tag) => (
                               <span
                                 key={tag}
-                                className="rounded-md bg-[#4F8CFF]/16 px-2 py-1 text-xs font-medium text-[#F8FAFC]"
+                                className="rounded-full bg-[#4F8CFF]/16 px-2 py-1 text-xs font-medium text-[#F8FAFC]"
                               >
                                 {tag}
                               </span>
@@ -629,7 +629,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                         {metadata.cards_shined?.length || metadata.cards_failed?.length ? (
                           <div className="mt-3 grid gap-2 sm:grid-cols-2">
                             {metadata.cards_shined?.length ? (
-                              <div className="rounded-md bg-[#07111F]/40 px-3 py-2 text-xs text-[#94A3B8]">
+                              <div className="rounded-[14px] bg-[#07111F]/40 px-3 py-2 text-xs text-[#94A3B8]">
                                 <span className="font-semibold text-[#F8FAFC]">
                                   Shined:
                                 </span>{" "}
@@ -637,7 +637,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                               </div>
                             ) : null}
                             {metadata.cards_failed?.length ? (
-                              <div className="rounded-md bg-[#07111F]/40 px-3 py-2 text-xs text-[#94A3B8]">
+                              <div className="rounded-[14px] bg-[#07111F]/40 px-3 py-2 text-xs text-[#94A3B8]">
                                 <span className="font-semibold text-[#F8FAFC]">
                                   Failed:
                                 </span>{" "}

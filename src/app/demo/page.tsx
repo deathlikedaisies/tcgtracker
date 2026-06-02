@@ -3,7 +3,16 @@ import { ArrowRight, ClipboardList, Layers3, Target, Trophy } from "lucide-react
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
 import { DemoConversionCta } from "@/components/demo/DemoConversionCta";
 import { DemoShell } from "@/components/demo/DemoShell";
-import { card, cardLarge, pageCopy, pageHeader, pageTitle, primaryButton, sectionCopy, sectionTitle } from "@/components/brand-styles";
+import {
+  card,
+  cardLarge,
+  pageCopy,
+  pageHeaderCard,
+  pageTitle,
+  primaryButton,
+  sectionCopy,
+  sectionTitle,
+} from "@/components/brand-styles";
 import {
   demoDecks,
   demoMatches,
@@ -33,7 +42,7 @@ export default function DemoPage() {
 
   return (
     <DemoShell current="dashboard">
-      <section className={pageHeader}>
+      <section className={pageHeaderCard}>
         <div>
           <p className="text-sm font-semibold text-[#4F8CFF]">Reviewer playtest</p>
           <h1 className={pageTitle}>SixPrizer demo workspace</h1>
@@ -78,7 +87,7 @@ export default function DemoPage() {
             <p className="text-sm font-semibold text-[#4F8CFF]">Demo tour</p>
             <h2 className={sectionTitle}>Follow the coaching loop</h2>
           </div>
-          <span className="w-fit rounded-md bg-[#4F8CFF]/12 px-2.5 py-1 text-xs font-semibold text-[#B8D1FF]">
+          <span className="w-fit rounded-full bg-[#4F8CFF]/12 px-2.5 py-1 text-xs font-semibold text-[#B8D1FF]">
             You are viewing sample data
           </span>
         </div>
@@ -87,9 +96,9 @@ export default function DemoPage() {
             <Link
               key={step}
               href={href}
-              className="group grid min-h-24 grid-rows-[auto_1fr] rounded-md bg-[#07111F]/52 p-3 transition hover:-translate-y-0.5 hover:bg-[#0F1A2D]/72"
-            >
-              <span className="inline-flex size-8 items-center justify-center rounded-md bg-[#F5C84C]/12 text-sm font-bold text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.18)]">
+            className="group grid min-h-24 grid-rows-[auto_1fr] rounded-[18px] bg-[#07111F]/52 p-3 transition hover:-translate-y-0.5 hover:bg-[#0F1A2D]/72"
+          >
+              <span className="inline-flex size-8 items-center justify-center rounded-[12px] bg-[#F5C84C]/12 text-sm font-bold text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.18)]">
                 {step}
               </span>
               <span className="mt-3 text-sm font-semibold leading-5 text-[#F8FAFC] transition group-hover:text-[#FFF1B8]">
@@ -116,7 +125,7 @@ export default function DemoPage() {
             </div>
             <div className="flex flex-col items-start gap-2 sm:items-end">
               <ArchetypeSprites archetype={insights.currentMission.archetype} size="md" />
-              <span className={`rounded-md px-2 py-1 text-xs font-semibold ${getConfidenceTone(missionMatchup.games.length)}`}>
+              <span className={`rounded-full px-2 py-1 text-xs font-semibold ${getConfidenceTone(missionMatchup.games.length)}`}>
                 {getConfidenceLabel(missionMatchup.games.length)}
               </span>
             </div>
@@ -135,7 +144,7 @@ export default function DemoPage() {
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {missionMatchup.tags.slice(0, 4).map((tag) => (
-                  <span key={tag} className="rounded-md bg-[#F43F5E]/10 px-2 py-1 text-xs font-medium text-rose-100">
+                  <span key={tag} className="rounded-full bg-[#F43F5E]/10 px-2 py-1 text-xs font-medium text-rose-100">
                     {tag}
                   </span>
                 ))}
@@ -151,7 +160,7 @@ export default function DemoPage() {
           <h2 className={sectionTitle}>Recent testing session</h2>
           <div className="mt-4 grid gap-2">
             {recent.slice(0, 6).map((match) => (
-              <div key={match.id} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-md bg-[#07111F]/52 p-2.5">
+              <div key={match.id} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-[16px] bg-[#07111F]/52 p-2.5">
                 <span
                   className={`size-2.5 rounded-full ${
                     match.result === "win"
@@ -176,11 +185,11 @@ export default function DemoPage() {
         <h2 className={sectionTitle}>Matchup intelligence snapshot</h2>
         <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
           {matchups.slice(0, 5).map((matchup) => (
-            <Link key={matchup.archetype} href="/demo/matchups" className="rounded-md bg-[#07111F]/52 p-3 transition hover:-translate-y-0.5">
+            <Link key={matchup.archetype} href="/demo/matchups" className="rounded-[18px] bg-[#07111F]/52 p-3 transition hover:-translate-y-0.5">
               <ArchetypeSprites archetype={matchup.archetype} />
               <div className="mt-2 flex min-w-0 items-center justify-between gap-2">
                 <p className="truncate text-sm font-semibold text-[#F8FAFC]">{matchup.archetype}</p>
-                <span className={`shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-semibold ${getConfidenceTone(matchup.games.length)}`}>
+                <span className={`shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${getConfidenceTone(matchup.games.length)}`}>
                   {matchup.games.length < 6 ? "Needs games" : getConfidenceLabel(matchup.games.length)}
                 </span>
               </div>

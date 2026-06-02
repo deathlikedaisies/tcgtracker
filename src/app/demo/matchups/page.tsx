@@ -2,7 +2,13 @@ import Link from "next/link";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
 import { DemoConversionCta } from "@/components/demo/DemoConversionCta";
 import { DemoShell } from "@/components/demo/DemoShell";
-import { cardLarge, pageCopy, pageHeader, pageTitle, primaryButton } from "@/components/brand-styles";
+import {
+  cardLarge,
+  pageCopy,
+  pageHeaderCard,
+  pageTitle,
+  primaryButton,
+} from "@/components/brand-styles";
 import {
   getConfidenceLabel,
   getConfidenceTone,
@@ -22,7 +28,7 @@ export default function DemoMatchupsPage() {
 
   return (
     <DemoShell current="matchups">
-      <section className={pageHeader}>
+      <section className={pageHeaderCard}>
         <div>
           <p className="text-sm font-semibold text-[#4F8CFF]">Matchup intelligence</p>
           <h1 className={pageTitle}>Demo matchup report</h1>
@@ -36,7 +42,7 @@ export default function DemoMatchupsPage() {
       </section>
 
       <section className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
-        <article className="rounded-md bg-[#2A1320]/84 p-4 shadow-[0_20px_56px_rgba(244,63,94,0.12),inset_0_0_0_1px_rgba(244,63,94,0.26)] backdrop-blur sm:p-5">
+        <article className="rounded-[22px] bg-[#2A1320]/84 p-4 shadow-[0_20px_56px_rgba(244,63,94,0.12),inset_0_0_0_1px_rgba(244,63,94,0.26)] backdrop-blur sm:p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.1em] text-rose-200">
             Actionable leak
           </p>
@@ -53,17 +59,17 @@ export default function DemoMatchupsPage() {
               </p>
             </div>
           </div>
-          <span className={`mt-4 inline-flex rounded-md px-2 py-1 text-xs font-semibold ${getConfidenceTone(biggestLeak.games.length)}`}>
+          <span className={`mt-4 inline-flex rounded-full px-2 py-1 text-xs font-semibold ${getConfidenceTone(biggestLeak.games.length)}`}>
             {getConfidenceLabel(biggestLeak.games.length)}
           </span>
           <div className="mt-5 grid gap-2 sm:grid-cols-2">
-            <div className="rounded-md bg-[#0B1020]/42 p-3">
+            <div className="rounded-[16px] bg-[#0B1020]/42 p-3">
               <p className="text-xs text-rose-100/70">Going first</p>
               <p className="text-2xl font-bold text-[#F8FAFC]">
                 {pct(biggestLeak.firstWins, biggestLeak.firstGames)}%
               </p>
             </div>
-            <div className="rounded-md bg-[#0B1020]/42 p-3">
+            <div className="rounded-[16px] bg-[#0B1020]/42 p-3">
               <p className="text-xs text-rose-100/70">Going second</p>
               <p className="text-2xl font-bold text-[#F43F5E]">
                 {pct(biggestLeak.secondWins, biggestLeak.secondGames)}%
@@ -82,7 +88,7 @@ export default function DemoMatchupsPage() {
           </p>
           <div className="mt-4 grid gap-3">
             {insights.recommendedNextTest.steps.map((item, index) => (
-              <div key={item} className="grid grid-cols-[32px_minmax(0,1fr)] gap-3 rounded-md bg-[#07111F]/52 p-3">
+              <div key={item} className="grid grid-cols-[32px_minmax(0,1fr)] gap-3 rounded-[16px] bg-[#07111F]/52 p-3">
                 <span className="inline-flex size-8 items-center justify-center rounded-full bg-[#4F8CFF]/18 text-sm font-bold text-[#B8D1FF]">
                   {index + 1}
                 </span>
@@ -101,13 +107,13 @@ export default function DemoMatchupsPage() {
               Low-sample matchups that look scary but need more games before becoming a mission.
             </p>
           </div>
-          <span className="rounded-md bg-[#F5C84C]/12 px-2 py-1 text-xs font-semibold text-[#F5C84C]">
+          <span className="rounded-full bg-[#F5C84C]/12 px-2 py-1 text-xs font-semibold text-[#F5C84C]">
             Early warning
           </span>
         </div>
         <div className="mt-4 grid gap-3 md:grid-cols-2">
           {insights.lowConfidenceWatchlist.map((matchup) => (
-            <article key={matchup.archetype} className="rounded-md bg-[#07111F]/52 p-3 shadow-[inset_0_0_0_1px_rgba(245,200,76,0.14)]">
+            <article key={matchup.archetype} className="rounded-[16px] bg-[#07111F]/52 p-3 shadow-[inset_0_0_0_1px_rgba(245,200,76,0.14)]">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-2">
                   <ArchetypeSprites archetype={matchup.archetype} />
@@ -118,7 +124,7 @@ export default function DemoMatchupsPage() {
                     </p>
                   </div>
                 </div>
-                <span className={`shrink-0 rounded-md px-2 py-1 text-xs font-semibold ${getConfidenceTone(matchup.games.length)}`}>
+                <span className={`shrink-0 rounded-full px-2 py-1 text-xs font-semibold ${getConfidenceTone(matchup.games.length)}`}>
                   Needs more games
                 </span>
               </div>
@@ -158,7 +164,7 @@ export default function DemoMatchupsPage() {
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {matchup.tags.slice(0, 3).map((tag) => (
-                  <span key={tag} className="rounded bg-[#0B1020]/62 px-1.5 py-0.5 text-[11px] text-[#94A3B8]">
+                  <span key={tag} className="rounded-full bg-[#0B1020]/62 px-1.5 py-0.5 text-[11px] text-[#94A3B8]">
                     {tag}
                   </span>
                 ))}

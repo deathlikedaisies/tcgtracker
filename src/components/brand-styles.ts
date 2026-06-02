@@ -12,7 +12,9 @@ export const appFrame =
 export const appMain = "flex min-w-0 flex-col gap-4 overflow-x-hidden sm:gap-5";
 
 export const pageHeader =
-  "rounded-md bg-[#0B1020]/44 p-3 shadow-[0_16px_46px_rgba(0,0,0,0.22),inset_0_0_0_1px_rgba(148,163,184,0.10)] flex flex-col gap-3 backdrop-blur lg:flex-row lg:items-start lg:justify-between sm:p-4";
+  "rounded-[26px] bg-[linear-gradient(180deg,rgba(15,26,45,0.94),rgba(7,17,31,0.86))] p-4 shadow-[0_18px_50px_rgba(0,0,0,0.24),inset_0_0_0_1px_rgba(148,163,184,0.09)] flex flex-col gap-3 backdrop-blur lg:flex-row lg:items-start lg:justify-between sm:p-5";
+
+export const pageHeaderCard = pageHeader;
 
 export const logoOnDark = {
   variant: "app-icon" as const,
@@ -32,26 +34,26 @@ export const sectionTitle = "text-lg font-semibold tracking-tight text-[#F8FAFC]
 export const sectionCopy = "text-sm leading-6 text-[#94A3B8]/72";
 
 export const card =
-  "rounded-md bg-[#0F1A2D]/74 p-3.5 shadow-[0_16px_42px_rgba(0,0,0,0.24),inset_0_0_0_1px_rgba(148,163,184,0.09)] backdrop-blur sm:p-4";
+  "rounded-[22px] bg-[linear-gradient(180deg,rgba(15,26,45,0.90),rgba(7,17,31,0.84))] p-3.5 shadow-[0_16px_42px_rgba(0,0,0,0.24),inset_0_0_0_1px_rgba(148,163,184,0.08)] backdrop-blur sm:p-4";
 
 export const cardLarge =
-  "rounded-md bg-[#0F1A2D]/74 p-4 shadow-[0_20px_56px_rgba(0,0,0,0.26),inset_0_0_0_1px_rgba(148,163,184,0.09)] backdrop-blur sm:p-5";
+  "rounded-[26px] bg-[linear-gradient(180deg,rgba(15,26,45,0.92),rgba(7,17,31,0.88))] p-4 shadow-[0_20px_56px_rgba(0,0,0,0.26),inset_0_0_0_1px_rgba(148,163,184,0.09)] backdrop-blur sm:p-5";
 
 export const glassPanel =
-  "rounded-md bg-[#0B1020]/52 shadow-[0_18px_54px_rgba(0,0,0,0.26),inset_0_0_0_1px_rgba(148,163,184,0.11)] backdrop-blur";
+  "rounded-[26px] bg-[#0B1020]/52 shadow-[0_18px_54px_rgba(0,0,0,0.26),inset_0_0_0_1px_rgba(148,163,184,0.11)] backdrop-blur";
 
 export const glassPanelStrong =
-  "rounded-md bg-[#0F1A2D]/82 shadow-[0_24px_72px_rgba(0,0,0,0.32),0_0_42px_rgba(79,140,255,0.055),inset_0_0_0_1px_rgba(148,163,184,0.12)] backdrop-blur";
+  "rounded-[26px] bg-[linear-gradient(180deg,rgba(15,26,45,0.88),rgba(7,17,31,0.92))] shadow-[0_24px_72px_rgba(0,0,0,0.32),0_0_42px_rgba(79,140,255,0.055),inset_0_0_0_1px_rgba(148,163,184,0.12)] backdrop-blur";
 
 export const emptyCard =
-  "rounded-md bg-[#0F1A2D]/66 p-6 shadow-[0_18px_52px_rgba(0,0,0,0.22),inset_0_0_0_1px_rgba(79,140,255,0.16)] sm:p-8";
+  "rounded-[26px] bg-[#0F1A2D]/66 p-6 shadow-[0_18px_52px_rgba(0,0,0,0.22),inset_0_0_0_1px_rgba(79,140,255,0.16)] sm:p-8";
 
 export const divider = "divide-y divide-white/6";
 
 export const label = "text-sm font-medium text-[#F8FAFC]";
 
 export const input =
-  "w-full max-w-full min-w-0 rounded-md bg-[#07111F]/72 px-3 text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.12)] outline-none transition placeholder:text-[#94A3B8]/52 focus:bg-[#07111F]/86 focus:shadow-[inset_0_0_0_1px_rgba(79,140,255,0.68),0_0_20px_rgba(79,140,255,0.10)]";
+  "w-full max-w-full min-w-0 rounded-[14px] bg-[#07111F]/72 px-3 text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.12)] outline-none transition placeholder:text-[#94A3B8]/52 focus:bg-[#07111F]/86 focus:shadow-[inset_0_0_0_1px_rgba(79,140,255,0.68),0_0_20px_rgba(79,140,255,0.10)]";
 
 export const inputH10 = `h-10 ${input}`;
 
@@ -60,16 +62,26 @@ export const inputH11 = `h-11 ${input}`;
 export const textarea = `${input} py-2`;
 
 export const primaryButton =
-  "inline-flex h-10 max-w-full items-center justify-center rounded-md bg-[#F5C84C] px-4 text-sm font-semibold text-[#07111F] shadow-[0_14px_34px_rgba(245,200,76,0.22)] transition hover:-translate-y-0.5 hover:bg-[#ffd85f] active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-[#94A3B8]";
+  "inline-flex h-10 max-w-full items-center justify-center rounded-[14px] bg-[#F5C84C] px-4 text-sm font-semibold text-[#07111F] shadow-[0_14px_34px_rgba(245,200,76,0.22)] transition hover:-translate-y-0.5 hover:bg-[#ffd85f] active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-[#94A3B8]";
 
 export const secondaryButton =
-  "inline-flex h-10 max-w-full items-center justify-center rounded-md bg-[#4F8CFF]/9 px-4 text-sm font-medium text-[#F8FAFC]/92 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.18),0_8px_20px_rgba(79,140,255,0.05)] transition hover:-translate-y-0.5 hover:bg-[#4F8CFF]/15 hover:shadow-[inset_0_0_0_1px_rgba(79,140,255,0.32),0_10px_24px_rgba(79,140,255,0.08)] active:translate-y-0 active:scale-[0.98]";
+  "inline-flex h-10 max-w-full items-center justify-center rounded-[14px] bg-[#4F8CFF]/9 px-4 text-sm font-medium text-[#F8FAFC]/92 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.18),0_8px_20px_rgba(79,140,255,0.05)] transition hover:-translate-y-0.5 hover:bg-[#4F8CFF]/15 hover:shadow-[inset_0_0_0_1px_rgba(79,140,255,0.32),0_10px_24px_rgba(79,140,255,0.08)] active:translate-y-0 active:scale-[0.98]";
 
 export const dangerButton =
-  "inline-flex h-10 max-w-full items-center justify-center rounded-md bg-[#F43F5E]/10 px-4 text-sm font-medium text-rose-200 transition hover:bg-[#F43F5E]/16";
+  "inline-flex h-10 max-w-full items-center justify-center rounded-[14px] bg-[#F43F5E]/10 px-4 text-sm font-medium text-rose-200 transition hover:bg-[#F43F5E]/16";
 
 export const subtlePill =
-  "rounded-md bg-[#07111F]/58 px-2 py-1 text-xs text-[#94A3B8]/86 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]";
+  "rounded-full bg-[#07111F]/58 px-2.5 py-1 text-xs text-[#94A3B8]/86 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]";
 
 export const metricCard =
-  "rounded-md bg-[#0B1020]/42 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.09)]";
+  "rounded-[20px] bg-[#0B1020]/42 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.09)]";
+
+export const primaryPanel = cardLarge;
+export const secondaryPanel = card;
+export const statCard = metricCard;
+export const missionHeroCard = cardLarge;
+export const missionMiniCard = card;
+export const insightCard = card;
+export const formSectionCard = glassPanelStrong;
+export const emptyStateCard = emptyCard;
+export const compactChip = subtlePill;

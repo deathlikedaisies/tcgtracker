@@ -481,7 +481,7 @@ export default async function MatchupsPage({
               : "Log games to build signal",
           }}
         />
-        <div className={`${appMain} mx-auto w-full max-w-6xl`}>
+        <div className={`${appMain} mx-auto w-full max-w-7xl`}>
         <header className={pageHeader}>
           <div>
             <SixPrizerLogo {...logoOnDark} />

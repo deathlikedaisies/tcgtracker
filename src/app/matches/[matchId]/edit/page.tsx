@@ -7,6 +7,7 @@ import {
   appShell,
   logoOnDark,
   pageCopy,
+  pageHeaderCard,
   pageTitle,
 } from "@/components/brand-styles";
 import { MatchLogForm } from "@/components/matches/MatchLogForm";
@@ -138,8 +139,8 @@ export default async function EditMatchPage({ params }: EditMatchPageProps) {
             helper: currentMatch.result,
           }}
         />
-        <div className={`${appMain} mx-auto w-full max-w-6xl`}>
-          <div className="flex max-w-full min-w-0 flex-col gap-4 overflow-x-hidden lg:flex-row lg:flex-wrap lg:items-start lg:justify-between">
+        <div className={`${appMain} mx-auto w-full max-w-7xl`}>
+          <header className={pageHeaderCard}>
             <div className="min-w-0 max-w-full">
               <SixPrizerLogo {...logoOnDark} />
               <p className="mt-5 text-sm font-medium text-[#94A3B8]">
@@ -153,7 +154,7 @@ export default async function EditMatchPage({ params }: EditMatchPageProps) {
             <div className="lg:hidden">
               <AppNav current="matches" />
             </div>
-          </div>
+          </header>
 
           <MatchLogForm
             action={saveMatch}

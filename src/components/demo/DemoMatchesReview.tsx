@@ -4,7 +4,13 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
 import { DemoConversionCta } from "@/components/demo/DemoConversionCta";
-import { cardLarge, pageCopy, pageHeader, pageTitle, primaryButton } from "@/components/brand-styles";
+import {
+  cardLarge,
+  pageCopy,
+  pageHeaderCard,
+  pageTitle,
+  primaryButton,
+} from "@/components/brand-styles";
 import { demoDecks, demoMatches, formatDemoDate, type DemoMatch } from "@/lib/demo-data";
 import { getMatchResultLabel } from "@/lib/match-types";
 
@@ -105,7 +111,7 @@ export function DemoMatchesReview() {
 
   return (
     <>
-      <section className={pageHeader}>
+      <section className={pageHeaderCard}>
         <div>
           <p className="text-sm font-semibold text-[#4F8CFF]">Review mode</p>
           <h1 className={pageTitle}>Mission match review</h1>
@@ -119,7 +125,7 @@ export function DemoMatchesReview() {
       </section>
 
       <section className="grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
-        <article className="rounded-md bg-[#0F1A2D]/78 p-4 shadow-[0_20px_56px_rgba(0,0,0,0.26),inset_0_0_0_1px_rgba(245,200,76,0.18)] backdrop-blur sm:p-5">
+        <article className="rounded-[22px] bg-[#0F1A2D]/78 p-4 shadow-[0_20px_56px_rgba(0,0,0,0.26),inset_0_0_0_1px_rgba(245,200,76,0.18)] backdrop-blur sm:p-5">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">
               <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#F5C84C]">
@@ -137,27 +143,27 @@ export function DemoMatchesReview() {
                 </div>
               </div>
             </div>
-            <span className="w-fit rounded-md bg-[#F5C84C]/12 px-2.5 py-1 text-xs font-bold text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.20)]">
+            <span className="w-fit rounded-full bg-[#F5C84C]/12 px-2.5 py-1 text-xs font-bold text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.20)]">
               {missionGames.length} relevant games
             </span>
           </div>
 
           <div className="mt-5 grid gap-2 sm:grid-cols-3">
-            <div className="rounded-md bg-[#07111F]/58 p-3">
+            <div className="rounded-[16px] bg-[#07111F]/58 p-3">
               <p className="text-xs text-[#94A3B8]/72">Mission losses</p>
               <p className="mt-1 text-2xl font-bold text-[#F43F5E]">{missionLosses.length}</p>
             </div>
-            <div className="rounded-md bg-[#07111F]/58 p-3">
+            <div className="rounded-[16px] bg-[#07111F]/58 p-3">
               <p className="text-xs text-[#94A3B8]/72">missed setup</p>
               <p className="mt-1 text-2xl font-bold text-[#F8FAFC]">{missedSetupCount}</p>
             </div>
-            <div className="rounded-md bg-[#07111F]/58 p-3">
+            <div className="rounded-[16px] bg-[#07111F]/58 p-3">
               <p className="text-xs text-[#94A3B8]/72">bench pressure</p>
               <p className="mt-1 text-2xl font-bold text-[#F8FAFC]">{benchPressureCount}</p>
             </div>
           </div>
 
-          <div className="mt-4 rounded-md bg-[#07111F]/58 p-3">
+          <div className="mt-4 rounded-[16px] bg-[#07111F]/58 p-3">
             <p className="text-sm font-semibold text-[#F8FAFC]">
               Key pattern: losses often involve slow setup or exposed bench pressure.
             </p>
@@ -182,7 +188,7 @@ export function DemoMatchesReview() {
                   key={filter.key}
                   type="button"
                   onClick={() => toggleFilter(filter.key)}
-                  className={`min-h-10 rounded-md px-3 text-sm font-semibold transition active:scale-[0.98] ${
+            className={`min-h-10 rounded-[14px] px-3 text-sm font-semibold transition active:scale-[0.98] ${
                     active
                       ? "bg-[#F5C84C] text-[#07111F] shadow-[0_12px_28px_rgba(245,200,76,0.18)]"
                       : "bg-[#07111F]/58 text-[#94A3B8] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)] hover:text-[#F8FAFC]"
@@ -213,7 +219,7 @@ export function DemoMatchesReview() {
               {filterSummary(activeFilters, filteredMatches)}
             </h2>
           </div>
-          <span className="w-fit rounded-md bg-[#4F8CFF]/12 px-2.5 py-1 text-xs font-semibold text-[#B8D1FF]">
+          <span className="w-fit rounded-full bg-[#4F8CFF]/12 px-2.5 py-1 text-xs font-semibold text-[#B8D1FF]">
             {demoMatches.length} seeded games total
           </span>
         </div>
@@ -226,7 +232,7 @@ export function DemoMatchesReview() {
             return (
               <article
                 key={match.id}
-                className={`grid gap-3 rounded-md p-3 sm:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)_auto] sm:items-center ${
+                className={`grid gap-3 rounded-[16px] p-3 sm:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)_auto] sm:items-center ${
                   missionGame
                     ? "bg-[#1A1824]/78 shadow-[inset_0_0_0_1px_rgba(245,200,76,0.22)]"
                     : "bg-[#07111F]/52"
@@ -247,17 +253,17 @@ export function DemoMatchesReview() {
                   <p className="text-xs leading-5 text-[#94A3B8]/76">{match.notes}</p>
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     {missionGame ? (
-                      <span className="rounded bg-[#F5C84C]/14 px-1.5 py-0.5 text-[11px] font-semibold text-[#F5C84C]">
+                      <span className="rounded-full bg-[#F5C84C]/14 px-1.5 py-0.5 text-[11px] font-semibold text-[#F5C84C]">
                         Mission game
                       </span>
                     ) : null}
                     {match.tags.includes("review") ? (
-                      <span className="rounded bg-[#F43F5E]/14 px-1.5 py-0.5 text-[11px] font-semibold text-rose-200">
+                      <span className="rounded-full bg-[#F43F5E]/14 px-1.5 py-0.5 text-[11px] font-semibold text-rose-200">
                         Review
                       </span>
                     ) : null}
                     {!match.wentFirst ? (
-                      <span className="rounded bg-[#4F8CFF]/14 px-1.5 py-0.5 text-[11px] font-semibold text-[#B8D1FF]">
+                      <span className="rounded-full bg-[#4F8CFF]/14 px-1.5 py-0.5 text-[11px] font-semibold text-[#B8D1FF]">
                         Going second sample
                       </span>
                     ) : null}

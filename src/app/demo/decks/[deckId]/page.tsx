@@ -2,7 +2,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
 import { DemoShell } from "@/components/demo/DemoShell";
-import { cardLarge, pageCopy, pageHeader, pageTitle, primaryButton } from "@/components/brand-styles";
+import {
+  cardLarge,
+  pageCopy,
+  pageHeaderCard,
+  pageTitle,
+  primaryButton,
+} from "@/components/brand-styles";
 import { demoMatches, formatDemoDate, getDemoDeck, getDemoMatchups, getWinRate } from "@/lib/demo-data";
 import { formatMatchRecord } from "@/lib/match-types";
 
@@ -23,7 +29,7 @@ export default async function DemoDeckDetailPage({ params }: DemoDeckDetailPageP
 
   return (
     <DemoShell current="decks">
-      <section className={pageHeader}>
+      <section className={pageHeaderCard}>
         <div className="flex min-w-0 gap-3">
           <ArchetypeSprites archetype={deck.archetype} size="md" />
           <div className="min-w-0">
@@ -42,11 +48,11 @@ export default async function DemoDeckDetailPage({ params }: DemoDeckDetailPageP
           <h2 className="text-xl font-bold text-[#F8FAFC]">Versions</h2>
           <div className="mt-4 grid gap-3">
             {deck.versions.map((version) => (
-              <div key={version.id} className="rounded-md bg-[#07111F]/52 p-3">
+              <div key={version.id} className="rounded-[16px] bg-[#07111F]/52 p-3">
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-sm font-semibold text-[#F8FAFC]">{version.name}</p>
                   {version.isActive ? (
-                    <span className="rounded-md bg-[#22C55E]/12 px-2 py-1 text-xs font-semibold text-emerald-200">
+                    <span className="rounded-full bg-[#22C55E]/12 px-2 py-1 text-xs font-semibold text-emerald-200">
                       Active
                     </span>
                   ) : null}
@@ -65,7 +71,7 @@ export default async function DemoDeckDetailPage({ params }: DemoDeckDetailPageP
           </div>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             {matchups.slice(0, 6).map((matchup) => (
-              <div key={matchup.archetype} className="rounded-md bg-[#07111F]/52 p-3">
+              <div key={matchup.archetype} className="rounded-[16px] bg-[#07111F]/52 p-3">
                 <div className="flex items-center gap-2">
                   <ArchetypeSprites archetype={matchup.archetype} />
                   <p className="min-w-0 truncate text-sm font-semibold text-[#F8FAFC]">{matchup.archetype}</p>
@@ -86,7 +92,7 @@ export default async function DemoDeckDetailPage({ params }: DemoDeckDetailPageP
         <h2 className="text-xl font-bold text-[#F8FAFC]">Recent matches with this deck</h2>
         <div className="mt-4 grid gap-2">
           {matches.slice(0, 10).map((match) => (
-            <div key={match.id} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-md bg-[#07111F]/52 p-3">
+            <div key={match.id} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-[16px] bg-[#07111F]/52 p-3">
               <span
                 className={`size-2.5 rounded-full ${
                   match.result === "win"
