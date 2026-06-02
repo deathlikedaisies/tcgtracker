@@ -48,7 +48,10 @@ export type DemoMatchup = {
   record: string;
 };
 
-export type DemoConfidence = "Low confidence" | "Building signal" | "Reliable trend";
+export type DemoConfidence =
+  | "Needs games"
+  | "Building signal"
+  | "Actionable signal";
 
 export type DemoInsightSummary = {
   currentMission: {
@@ -266,20 +269,20 @@ export function getDemoMatchups(matches: DemoMatch[] = demoMatches): DemoMatchup
 
 export function getConfidenceLabel(gameCount: number): DemoConfidence {
   if (gameCount < 6) {
-    return "Low confidence";
+    return "Needs games";
   }
 
   if (gameCount < 15) {
     return "Building signal";
   }
 
-  return "Reliable trend";
+  return "Actionable signal";
 }
 
 export function getConfidenceTone(gameCount: number) {
   const label = getConfidenceLabel(gameCount);
 
-  if (label === "Low confidence") {
+  if (label === "Needs games") {
     return "bg-[#F5C84C]/12 text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.22)]";
   }
 
@@ -320,9 +323,9 @@ export function getDemoInsights(): DemoInsightSummary {
       title: "Stabilize Mega Greninja going second",
       progressLabel: "3/5 games",
       explanation:
-        "Mega Greninja is the current mission because it has a meaningful sample and a repeated going-second setup pattern.",
+        "Mega Greninja is the current mission because the sample is large enough to coach, and the going-second losses repeat cleanly.",
       why:
-        "Mega Lopunny looks scary at 2-3, but five games is still noisy. Mega Greninja has fourteen games, repeated missed-setup tags, and a clear first/second split, so it is the better next test.",
+        "Mega Lopunny still needs games. Mega Greninja already has repeated missed-setup notes and a clear first-versus-second split, so it is the better next test.",
     },
     biggestStatisticalLeak,
     lowConfidenceWatchlist,

@@ -508,7 +508,13 @@ export function DemoMatchLogForm() {
       ? "Signal improved"
       : result === "tie"
         ? "Building signal"
-        : "Needs more games";
+        : "Needs games";
+  const demoMissionSupportLine =
+    demoStatusBadge === "Signal improved"
+      ? "Signal improved. Review the matchup before changing your list."
+      : demoStatusBadge === "Building signal"
+        ? "Building signal. One more game makes this pattern easier to trust."
+        : "Needs games. Log a few more focused games before this becomes actionable.";
   const demoStatChips = [
     { label: "Matchup sample", value: "+1 matchup game" },
     {
@@ -624,12 +630,19 @@ export function DemoMatchLogForm() {
                       Game logged
                     </p>
                     <h2 className="mt-1 text-2xl font-bold text-[#F8FAFC] sm:text-3xl">
-                      Your testing signal moved.
+                      {result === "win"
+                        ? "Your testing signal improved."
+                        : "Your testing signal moved."}
                     </h2>
                   </div>
                 </div>
                 <p className="mt-4 text-base font-semibold leading-7 text-[#F8FAFC]">
                   {readySummary}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
+                  {result === "win"
+                    ? "This demo log strengthens the current mission."
+                    : "This demo log adds one more data point to the testing loop."}
                 </p>
               </div>
               <span className={`w-fit rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-[0.08em] ${signalCardClass(
@@ -665,6 +678,9 @@ export function DemoMatchLogForm() {
                 <p className="mt-1 text-lg font-semibold text-[#F8FAFC]">
                   {gameContext === "competitive" ? "Round-by-round review" : "Build matchup confidence"}
                 </p>
+                <p className="mt-1 text-xs uppercase tracking-[0.08em] text-[#94A3B8]/72">
+                  {gameContext === "competitive" ? "Event-prep mission" : "Matchup mission"}
+                </p>
               </div>
               <span className="rounded-full bg-[#F5C84C]/12 px-3 py-1 text-xs font-bold uppercase tracking-[0.08em] text-[#FFE28A] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
                 {demoStatusBadge}
@@ -689,9 +705,14 @@ export function DemoMatchLogForm() {
               <div className="h-2 w-[80%] rounded-full bg-[#4F8CFF]" />
             </div>
             <p className="mt-3 text-sm font-medium text-[#D7E0EF]">
-              {gameContext === "competitive"
+              {gameContext === "competitive" && demoStatusBadge === "Signal improved"
                 ? "Signal improved. One more focused round strengthens the read."
-                : "Building signal. One more game makes this pattern easier to trust."}
+                : demoMissionSupportLine}
+            </p>
+            <p className="mt-2 text-xs leading-5 text-[#94A3B8]/72">
+              {gameContext === "competitive"
+                ? `${opponent}: 4/5 focused games. One more round unlocks review.`
+                : `${opponent}: 4/5 focused games. One more game strengthens the signal.`}
             </p>
           </div>
 

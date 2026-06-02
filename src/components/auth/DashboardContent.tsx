@@ -166,20 +166,31 @@ function getLowDataLabel(matches: number, threshold: number, label: string) {
 }
 
 function getMissionBadge(insight: SessionCoachInsight) {
-  if (insight.completionStatus?.toLowerCase().includes("improvement detected")) {
+  if (insight.missionStatus === "improvement_detected") {
     return { label: "Signal improved", tone: "green" as const };
   }
 
-  if (insight.missionState === "complete") {
+  if (
+    insight.missionStatus === "mission_complete" ||
+    insight.missionStatus === "pattern_confirmed"
+  ) {
     return { label: "Mission complete", tone: "gold" as const };
   }
 
-  if (insight.missionConfidence.toLowerCase().includes("building")) {
+  if (insight.missionStatus === "actionable_signal") {
+    return { label: "Actionable signal", tone: "green" as const };
+  }
+
+  if (insight.missionStatus === "building_signal") {
     return { label: "Building signal", tone: "blue" as const };
   }
 
-  if (insight.missionConfidence.toLowerCase().includes("strong")) {
-    return { label: "Strong signal", tone: "green" as const };
+  if (insight.missionStatus === "needs_more_focused_games") {
+    return { label: "Needs focus games", tone: "gold" as const };
+  }
+
+  if (insight.missionStatus === "pattern_rejected") {
+    return { label: "Pattern rejected", tone: "rose" as const };
   }
 
   return { label: "Needs more games", tone: "gold" as const };
@@ -528,6 +539,9 @@ function MissionHeroCard({
           >
             {badge.label}
           </span>
+          <span className="rounded-full bg-[#07111F]/58 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]">
+            {insight.missionTypeLabel}
+          </span>
         </div>
 
         <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -537,19 +551,15 @@ function MissionHeroCard({
               {insight.missionTitle}
             </h1>
             <p className="mt-2 text-sm leading-6 text-[#D6E0F0]/82 sm:text-base">
-              {insight.missionState === "complete"
-                ? insight.progressFeedback
-                : insight.missionContextSeenCount > 0
-                  ? `You are building signal against ${insight.archetype}.`
-                  : insight.missionReason}
+              {insight.missionStatusReason}
             </p>
           </div>
         </div>
 
         <div className="mt-5 grid gap-3 sm:grid-cols-3">
           <StatusChip
-            label="Focus"
-            value={insight.missionContextLabel}
+            label="Mission type"
+            value={insight.missionTypeLabel}
             tone="blue"
           />
           <StatusChip
@@ -558,8 +568,8 @@ function MissionHeroCard({
             tone="gold"
           />
           <StatusChip
-            label="Next best action"
-            value={nextActionTitle}
+            label="Signal state"
+            value={insight.missionStatusLabel}
             tone="green"
           />
         </div>
@@ -587,7 +597,7 @@ function MissionHeroCard({
             </p>
           </div>
           <span className="rounded-full bg-[#0B1020]/72 px-3 py-1 text-xs font-semibold text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]">
-            {insight.missionConfidence}
+            {insight.missionStatusLabel}
           </span>
         </div>
 
@@ -622,6 +632,18 @@ function MissionHeroCard({
           </p>
           <p className="mt-1 text-sm leading-6 text-[#94A3B8]/72">
             {nextActionCopy}
+          </p>
+        </div>
+
+        <div className="mt-3 rounded-2xl bg-[#0B1020]/52 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+            Recent outcome
+          </p>
+          <p className="mt-2 text-sm font-semibold text-[#F8FAFC]">
+            {insight.completionStatus ?? "No completed mission yet"}
+          </p>
+          <p className="mt-1 text-xs leading-5 text-[#94A3B8]/72">
+            {insight.completionSummary ?? "Keep logging focused games to unlock a reviewable result."}
           </p>
         </div>
 
@@ -862,20 +884,29 @@ export function DashboardContent({
 
   const whatChangedCards = [
     {
-      label: sessionCoach?.completionStatus ? "Signal" : "Mission",
+      label:
+        sessionCoach?.missionStatus === "improvement_detected" ||
+        sessionCoach?.missionStatus === "mission_complete" ||
+        sessionCoach?.missionStatus === "pattern_confirmed"
+          ? "Signal"
+          : "Mission",
       title:
         sessionCoach?.completionStatus ??
-        sessionCoach?.progressFeedback ??
+        sessionCoach?.missionStatusLabel ??
         "First test in progress",
       detail:
+        sessionCoach?.missionStatusReason ??
         sessionCoach?.completionSummary ??
-        sessionCoach?.evidence ??
         "Log a few more games before this becomes actionable.",
-      tone: sessionCoach?.completionStatus?.toLowerCase().includes("improvement")
-        ? ("green" as const)
-        : sessionCoach?.missionState === "complete"
-          ? ("gold" as const)
-          : ("blue" as const),
+      tone:
+        sessionCoach?.missionStatus === "improvement_detected"
+          ? ("green" as const)
+          : sessionCoach?.missionStatus === "mission_complete" ||
+              sessionCoach?.missionStatus === "pattern_confirmed"
+            ? ("gold" as const)
+            : sessionCoach?.missionStatus === "pattern_rejected"
+              ? ("rose" as const)
+              : ("blue" as const),
     },
     {
       label: "Matchup change",
@@ -912,15 +943,17 @@ export function DashboardContent({
   ];
 
   const nextAction = sessionCoach
-    ? sessionCoach.missionState === "complete"
+    ? sessionCoach.missionStatus === "mission_complete" ||
+      sessionCoach.missionStatus === "pattern_confirmed" ||
+      sessionCoach.missionStatus === "improvement_detected"
       ? {
           title: "Review this matchup",
           copy: "You have enough focused games to review before changing your list.",
           href: "/matchups",
         }
-      : sessionCoach.missionContextSeenCount < sessionCoach.missionContextTargetCount
+      : sessionCoach.missionStatus === "needs_more_focused_games"
         ? {
-            title: `Log ${sessionCoach.missionContextTargetCount - sessionCoach.missionContextSeenCount} more focus game${
+          title: `Log ${sessionCoach.missionContextTargetCount - sessionCoach.missionContextSeenCount} more focus game${
               sessionCoach.missionContextTargetCount - sessionCoach.missionContextSeenCount === 1
                 ? ""
                 : "s"
@@ -930,7 +963,7 @@ export function DashboardContent({
           }
         : {
             title: sessionCoach.missionNextAction,
-            copy: sessionCoach.progressFeedback,
+            copy: sessionCoach.nextAction,
             href: sessionCoach.continueHref,
           }
     : {

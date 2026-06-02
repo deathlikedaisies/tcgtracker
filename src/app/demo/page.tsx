@@ -181,7 +181,7 @@ export default function DemoPage() {
               <div className="mt-2 flex min-w-0 items-center justify-between gap-2">
                 <p className="truncate text-sm font-semibold text-[#F8FAFC]">{matchup.archetype}</p>
                 <span className={`shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-semibold ${getConfidenceTone(matchup.games.length)}`}>
-                  {matchup.games.length < 6 ? "Needs more games" : getConfidenceLabel(matchup.games.length)}
+                  {matchup.games.length < 6 ? "Needs games" : getConfidenceLabel(matchup.games.length)}
                 </span>
               </div>
               <p className={`mt-1 text-2xl font-bold ${matchup.winRate < 45 ? "text-[#F43F5E]" : matchup.winRate > 58 ? "text-[#22C55E]" : "text-[#F8FAFC]"}`}>

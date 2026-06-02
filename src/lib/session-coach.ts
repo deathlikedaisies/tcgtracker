@@ -1,4 +1,4 @@
-import {
+﻿import {
   countMatchResults,
   formatMatchRecord,
   type MatchResult,
@@ -13,6 +13,24 @@ export type CoachMatch = {
   played_at: string;
   match_tags?: { tag: string }[] | { tag: string } | null;
 };
+
+export type MissionType =
+  | "matchup"
+  | "loss-pattern"
+  | "turn-order"
+  | "baseline"
+  | "deck-version"
+  | "event-prep";
+
+export type MissionStatus =
+  | "needs_games"
+  | "building_signal"
+  | "needs_more_focused_games"
+  | "actionable_signal"
+  | "mission_complete"
+  | "pattern_confirmed"
+  | "pattern_rejected"
+  | "improvement_detected";
 
 export type SessionCoachInsight = {
   archetype: string;
@@ -31,6 +49,11 @@ export type SessionCoachInsight = {
   improvementDelta: number | null;
   issueTrend: string | null;
   missionState: "active" | "complete";
+  missionType: MissionType;
+  missionTypeLabel: string;
+  missionStatus: MissionStatus;
+  missionStatusLabel: string;
+  missionStatusReason: string;
   missionTitle: string;
   missionSkill: string;
   missionProgress: number;
@@ -96,46 +119,224 @@ function getWinRate(matches: CoachMatch[]) {
   return Math.round((wins / matches.length) * 100);
 }
 
-function getMissionConfidence(primaryCount: number, contextCount: number) {
-  if (primaryCount >= 10 && contextCount >= 3) {
-    return "Strong signal";
-  }
-
-  if (primaryCount >= 5) {
-    return "Building signal";
-  }
-
-  return "Needs more games";
+function getMissionTypeLabel(missionType: MissionType) {
+  return {
+    matchup: "Matchup mission",
+    "loss-pattern": "Loss-pattern mission",
+    "turn-order": "Turn-order mission",
+    baseline: "Baseline mission",
+    "deck-version": "Deck-version mission",
+    "event-prep": "Event-prep mission",
+  }[missionType];
 }
 
-function getProgressFeedback(completed: number, goal: number) {
+function getMissionType(
+  repeatedTag: { count: number; tag: string } | null,
+  turnContext: string
+): MissionType {
+  if (repeatedTag) {
+    return "loss-pattern";
+  }
+
+  if (turnContext) {
+    return "turn-order";
+  }
+
+  return "matchup";
+}
+
+function getMissionStatusLabel(status: MissionStatus) {
+  return {
+    needs_games: "Needs games",
+    building_signal: "Building signal",
+    needs_more_focused_games: "Needs more focused games",
+    actionable_signal: "Actionable signal",
+    mission_complete: "Mission complete",
+    pattern_confirmed: "Pattern confirmed",
+    pattern_rejected: "Pattern rejected",
+    improvement_detected: "Improvement detected",
+  }[status];
+}
+
+function getMissionActiveStatus(
+  completed: number,
+  goal: number,
+  contextCount: number,
+  contextGoal: number
+): MissionStatus {
+  if (completed < 3) {
+    return "needs_games";
+  }
+
+  if (completed >= goal - 1 && contextCount >= Math.min(2, contextGoal)) {
+    return "actionable_signal";
+  }
+
+  if (contextCount > 0 && contextCount < contextGoal) {
+    return "needs_more_focused_games";
+  }
+
+  return "building_signal";
+}
+
+function getMissionStatus(
+  completed: number,
+  goal: number,
+  contextCount: number,
+  contextGoal: number,
+  improvementDelta: number | null
+): MissionStatus {
+  if (completed < goal) {
+    return getMissionActiveStatus(completed, goal, contextCount, contextGoal);
+  }
+
+  if (improvementDelta !== null && improvementDelta > 0) {
+    return "improvement_detected";
+  }
+
+  if (improvementDelta !== null && improvementDelta < 0) {
+    return "pattern_rejected";
+  }
+
+  if (contextCount >= contextGoal) {
+    return "pattern_confirmed";
+  }
+
+  return "mission_complete";
+}
+
+function getMissionStatusReason(
+  status: MissionStatus,
+  completed: number,
+  goal: number,
+  contextCount: number,
+  contextGoal: number,
+  archetype: string
+) {
+  const remaining = Math.max(goal - completed, 0);
+  const focusRemaining = Math.max(contextGoal - contextCount, 0);
+
+  if (status === "needs_games") {
+    return `Log ${remaining} more game${remaining === 1 ? "" : "s"} before this becomes a coaching read.`;
+  }
+
+  if (status === "building_signal") {
+    return `Early pattern building against ${archetype}. Keep logging before changing your list.`;
+  }
+
+  if (status === "needs_more_focused_games") {
+    return `The mission is moving, but ${focusRemaining} more focus game${focusRemaining === 1 ? "" : "s"} will make the signal easier to trust.`;
+  }
+
+  if (status === "actionable_signal") {
+    return "You have enough focused evidence to start reviewing the pattern.";
+  }
+
+  if (status === "improvement_detected") {
+    return "The latest focused block improved. Review before making larger changes.";
+  }
+
+  if (status === "pattern_confirmed") {
+    return "Focused games now support a clear pattern worth reviewing.";
+  }
+
+  if (status === "pattern_rejected") {
+    return "The latest block did not improve the issue yet. Adjust the next test before locking in conclusions.";
+  }
+
+  return "Mission complete. Review the pattern before changing plans.";
+}
+
+function getProgressFeedback(
+  status: MissionStatus,
+  completed: number,
+  goal: number
+) {
   const remaining = Math.max(goal - completed, 0);
 
-  if (remaining === 0) {
-    return "Mission complete. Review the pattern before changing plans.";
+  if (status === "mission_complete" || status === "pattern_confirmed") {
+    return "Mission complete. Review before changing plans.";
+  }
+
+  if (status === "improvement_detected") {
+    return "Signal improved. Review the focused sample.";
+  }
+
+  if (status === "pattern_rejected") {
+    return "No improvement yet. Adjust the next test.";
   }
 
   if (remaining === 1) {
-    return "One more game to strengthen this signal.";
+    return "One more game unlocks review.";
   }
 
-  if (completed >= 3) {
+  if (status === "actionable_signal") {
+    return "You are close to a reviewable signal.";
+  }
+
+  if (status === "needs_more_focused_games") {
+    return "Focus games matter most now.";
+  }
+
+  if (status === "building_signal") {
     return "Building signal.";
   }
 
   return "Counts toward your current mission.";
 }
 
-function getMissionCta(skill: string, completed: number, goal: number) {
-  if (completed >= goal) {
-    return "Review mission";
+function getMissionNextAction(
+  status: MissionStatus,
+  completed: number,
+  goal: number,
+  contextCount: number,
+  contextGoal: number
+) {
+  const remaining = Math.max(goal - completed, 0);
+  const focusRemaining = Math.max(contextGoal - contextCount, 0);
+
+  if (
+    status === "mission_complete" ||
+    status === "pattern_confirmed" ||
+    status === "improvement_detected"
+  ) {
+    return {
+      title: "Review matchup",
+      detail: "You have enough signal to review before changing your list.",
+      ctaLabel: "Review mission",
+    };
   }
 
-  if (completed === 0) {
-    return "Log next game";
+  if (status === "pattern_rejected") {
+    return {
+      title: "Adjust the next test",
+      detail: "Try a new version or cleaner line before running the next focused block.",
+      ctaLabel: "Plan next test",
+    };
   }
 
-  return `Continue mission (${completed}/${goal})`;
+  if (status === "needs_more_focused_games") {
+    return {
+      title: `Log ${focusRemaining} more focus game${focusRemaining === 1 ? "" : "s"}`,
+      detail: "Keep the matchup or focus area consistent so the signal becomes trustworthy.",
+      ctaLabel: `Continue mission (${completed}/${goal})`,
+    };
+  }
+
+  if (status === "actionable_signal") {
+    return {
+      title: "Log one more focus game",
+      detail: "One more focused sample will make this review more convincing.",
+      ctaLabel: `Continue mission (${completed}/${goal})`,
+    };
+  }
+
+  return {
+    title: remaining === goal ? "Log next game" : `Log ${remaining} more games`,
+    detail: "Keep adding structured games so the pattern becomes clearer.",
+    ctaLabel:
+      completed === 0 ? "Log next game" : `Continue mission (${completed}/${goal})`,
+  };
 }
 
 function getCompletionStatus(
@@ -162,7 +363,7 @@ function getCompletionStatus(
 
   if (improvementDelta === null) {
     return {
-      completionStatus: "Test complete: review the result",
+      completionStatus: "Mission complete",
       completionSummary: `During test: ${formatComparisonRecord(duringMatches)}. No prior block to compare yet.`,
       improvementDelta,
       previousRecord: null,
@@ -171,7 +372,7 @@ function getCompletionStatus(
 
   if (improvementDelta > 0) {
     return {
-      completionStatus: "Mission complete: improvement detected",
+      completionStatus: "Improvement detected",
       completionSummary: `Before: ${formatComparisonRecord(previousMatches)}. During: ${formatComparisonRecord(duringMatches)}.`,
       improvementDelta,
       previousRecord: formatComparisonRecord(previousMatches),
@@ -180,7 +381,7 @@ function getCompletionStatus(
 
   if (improvementDelta === 0) {
     return {
-      completionStatus: "Test complete: no clear improvement yet",
+      completionStatus: "Pattern confirmed",
       completionSummary: `Before: ${formatComparisonRecord(previousMatches)}. During: ${formatComparisonRecord(duringMatches)}.`,
       improvementDelta,
       previousRecord: formatComparisonRecord(previousMatches),
@@ -188,7 +389,7 @@ function getCompletionStatus(
   }
 
   return {
-    completionStatus: "Test complete: more work needed",
+    completionStatus: "Pattern rejected",
     completionSummary: `Before: ${formatComparisonRecord(previousMatches)}. During: ${formatComparisonRecord(duringMatches)}.`,
     improvementDelta,
     previousRecord: formatComparisonRecord(previousMatches),
@@ -293,7 +494,11 @@ function formatMissionEvidence(
 ) {
   const focusEvidence = formatFocusEvidence(contextCount, relevantCount);
 
-  if (missionConfidence === "Strong signal") {
+  if (
+    missionConfidence === "Actionable signal" ||
+    missionConfidence === "Pattern confirmed" ||
+    missionConfidence === "Improvement detected"
+  ) {
     return `Pattern detected across ${relevantCount} relevant game${
       relevantCount === 1 ? "" : "s"
     }. ${focusEvidence}`;
@@ -516,22 +721,42 @@ export function buildSessionCoachInsight(
     const previousMatches = primaryMatches.slice(5, 10);
     const contextSeen = Math.min(contextMatches.length, 3);
     const missionSkill = "Stabilize testing baseline";
+    const missionType: MissionType = "baseline";
     const missionContextLabel = `Focus area: ${strongestPositiveSignal.archetype}`;
-    const missionConfidence = getMissionConfidence(
-      primaryMatches.length,
-      contextMatches.length
-    );
     const completion = getCompletionStatus(
       completed,
       5,
       duringMatches,
       previousMatches
     );
+    const missionStatus = getMissionStatus(
+      completed,
+      5,
+      contextSeen,
+      3,
+      completion.improvementDelta
+    );
+    const missionConfidence = getMissionStatusLabel(missionStatus);
+    const missionStatusReason = getMissionStatusReason(
+      missionStatus,
+      completed,
+      5,
+      contextSeen,
+      3,
+      strongestPositiveSignal.archetype
+    );
+    const missionNextAction = getMissionNextAction(
+      missionStatus,
+      completed,
+      5,
+      contextSeen,
+      3
+    );
 
     return {
       archetype: strongestPositiveSignal.archetype,
       confidence: missionConfidence,
-      ctaLabel: getMissionCta(strongestPositiveSignal.archetype, completed, 5),
+      ctaLabel: missionNextAction.ctaLabel,
       completionStatus: completion.completionStatus,
       completionSummary: completion.completionSummary,
       commonIssue: null,
@@ -544,6 +769,11 @@ export function buildSessionCoachInsight(
       improvementDelta: completion.improvementDelta,
       issueTrend: getLossPatternTrend(strongestPositiveSignal.matches),
       missionState: completed >= 5 ? "complete" : "active",
+      missionType,
+      missionTypeLabel: getMissionTypeLabel(missionType),
+      missionStatus,
+      missionStatusLabel: getMissionStatusLabel(missionStatus),
+      missionStatusReason,
       missionTitle: missionSkill,
       missionSkill,
       missionProgress: completed,
@@ -553,15 +783,9 @@ export function buildSessionCoachInsight(
       missionContextTargetCount: 3,
       missionReason: "No leak has repeated yet. Keep testing the current plan.",
       missionConfidence,
-      missionNextAction:
-        completed >= 5 ? "Review the baseline." : "Log the next game.",
+      missionNextAction: missionNextAction.title,
       missionResults: toMissionResults(primaryMatches),
-      nextAction:
-        completed >= 5
-          ? contextSeen >= 3
-            ? "Mission complete. Focus area had enough evidence to review."
-            : "Mission complete. The signal is still broad because the focus area was rare."
-          : `Log ${5 - completed} more game${5 - completed === 1 ? "" : "s"}.`,
+      nextAction: missionNextAction.detail,
       previousRecord: completion.previousRecord,
       weakMatchup: strongestPositiveSignal.archetype,
       condition: "No loss cluster yet",
@@ -570,7 +794,7 @@ export function buildSessionCoachInsight(
       nextTest: `Run 5 more games vs ${strongestPositiveSignal.archetype}.`,
       progressCompleted: completed,
       progressGoal: 5,
-      progressFeedback: getProgressFeedback(completed, 5),
+      progressFeedback: getProgressFeedback(missionStatus, completed, 5),
       reasoning: `You are ${formatMatchRecord(strongestPositiveSignal.wins, 0)} in this matchup so far.`,
       focus: "Keep the same deck and test whether the matchup stays stable.",
       record: formatMatchRecord(strongestPositiveSignal.wins, 0),
@@ -623,7 +847,7 @@ export function buildSessionCoachInsight(
   const condition = turnContext
     ? `Worse when ${turnContext}`
     : repeatedTag
-      ? `🔁 ${repeatedTag.tag} (${repeatedTag.count}x)`
+      ? `Pattern: ${repeatedTag.tag} (${repeatedTag.count}x)`
       : "Weakest recent matchup";
   const exactTest = `Play 5 games vs ${biggestLeak.archetype}${turnPhrase}.`;
   const focus = repeatedTag
@@ -640,15 +864,16 @@ export function buildSessionCoachInsight(
         )} otherwise.`
       : `All recent losses in this matchup happened when ${turnContext}.`
     : repeatedTag
-      ? `🔁 ${repeatedTag.tag} (${repeatedTag.count}x)`
+      ? `Pattern: ${repeatedTag.tag} (${repeatedTag.count}x)`
       : `You are ${formatMatchRecord(biggestLeak.wins, biggestLeak.losses)} against this matchup recently.`;
   const missionSkill = repeatedTag
     ? getSkillLabel(repeatedTag.tag)
     : turnContext === "going second"
       ? "Improve going-second play"
       : turnContext === "going first"
-        ? "Improve going-first play"
-        : "Reduce bad matchup losses";
+      ? "Improve going-first play"
+      : "Reduce bad matchup losses";
+  const missionType = getMissionType(repeatedTag, turnContext);
   const primaryMatches = getMissionMatches(recentMatches, missionSkill, turnContext);
   const sortedPrimaryMatches = [...primaryMatches].sort((first, second) =>
     second.played_at.localeCompare(first.played_at)
@@ -666,11 +891,29 @@ export function buildSessionCoachInsight(
     duringMatches,
     previousMatches
   );
-  const remaining = Math.max(5 - completed, 0);
   const missionContextLabel = `Focus area: ${biggestLeak.archetype}`;
-  const missionConfidence = getMissionConfidence(
-    sortedPrimaryMatches.length,
-    contextMatches.length
+  const missionStatus = getMissionStatus(
+    completed,
+    5,
+    contextSeen,
+    3,
+    completion.improvementDelta
+  );
+  const missionConfidence = getMissionStatusLabel(missionStatus);
+  const missionStatusReason = getMissionStatusReason(
+    missionStatus,
+    completed,
+    5,
+    contextSeen,
+    3,
+    biggestLeak.archetype
+  );
+  const missionNextAction = getMissionNextAction(
+    missionStatus,
+    completed,
+    5,
+    contextSeen,
+    3
   );
   const displayTag = repeatedTag ? formatIssueLabel(repeatedTag.tag) : null;
   const missionReason = repeatedTag
@@ -686,7 +929,7 @@ export function buildSessionCoachInsight(
   return {
     archetype: biggestLeak.archetype,
     confidence: missionConfidence,
-    ctaLabel: getMissionCta(missionSkill, completed, 5),
+    ctaLabel: missionNextAction.ctaLabel,
     completionStatus: completion.completionStatus,
     completionSummary: completion.completionSummary
       ? `${completion.completionSummary} ${formatFocusEvidence(
@@ -713,6 +956,11 @@ export function buildSessionCoachInsight(
     improvementDelta: completion.improvementDelta,
     issueTrend: getLossPatternTrend(biggestLeak.matches),
     missionState: completed >= 5 ? "complete" : "active",
+    missionType,
+    missionTypeLabel: getMissionTypeLabel(missionType),
+    missionStatus,
+    missionStatusLabel: getMissionStatusLabel(missionStatus),
+    missionStatusReason,
     missionTitle: missionSkill,
     missionSkill,
     missionProgress: completed,
@@ -722,15 +970,9 @@ export function buildSessionCoachInsight(
     missionContextTargetCount: 3,
     missionReason,
     missionConfidence,
-    missionNextAction:
-      completed >= 5 ? "Review mission" : `Log ${remaining} more game${remaining === 1 ? "" : "s"}.`,
+    missionNextAction: missionNextAction.title,
     missionResults: toMissionResults(sortedPrimaryMatches),
-    nextAction:
-      completed >= 5
-        ? contextSeen >= 3
-          ? "Mission complete. Strongest evidence came from focus-area games."
-          : "Mission complete. This remains a broad signal because focus evidence was limited."
-        : `Log ${remaining} more game${remaining === 1 ? "" : "s"}.`,
+    nextAction: missionNextAction.detail,
     previousRecord: completion.previousRecord,
     weakMatchup: biggestLeak.archetype,
     condition,
@@ -743,7 +985,7 @@ export function buildSessionCoachInsight(
       : `Run 5 games with ${biggestLeak.archetype} as the focus area.`,
     progressCompleted: completed,
     progressGoal: 5,
-    progressFeedback: getProgressFeedback(completed, 5),
+    progressFeedback: getProgressFeedback(missionStatus, completed, 5),
     reasoning,
     focus,
     record: formatMatchRecord(biggestLeak.wins, biggestLeak.losses),

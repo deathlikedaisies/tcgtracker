@@ -23,7 +23,7 @@ export function SessionCoachPanel({
     (_, index) => index < insight.missionProgress
   );
   const patternText = insight.commonIssue
-    ? `🔁 ${insight.commonIssue.tag} (${insight.commonIssue.count}x)`
+    ? `Pattern: ${insight.commonIssue.tag} (${insight.commonIssue.count}x)`
     : null;
   const contextProgress =
     insight.missionContextSeenCount > 0
@@ -33,21 +33,28 @@ export function SessionCoachPanel({
       : "Focus evidence: none yet";
   const actionLabel =
     ctaLabel ??
-    (insight.missionState === "complete" ? "Review mission" : "Log next game");
+    (insight.missionStatus === "mission_complete" ||
+    insight.missionStatus === "pattern_confirmed" ||
+    insight.missionStatus === "improvement_detected"
+      ? "Review mission"
+      : "Log next game");
 
   return (
     <section className="rounded-md bg-[#11182C]/88 p-3 shadow-[0_22px_58px_rgba(0,0,0,0.28),0_0_36px_rgba(245,200,76,0.04),inset_0_0_0_1px_rgba(245,200,76,0.13)] sm:p-4">
       <div className="flex flex-col gap-2.5 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex size-8 items-center justify-center rounded-md bg-[#F5C84C]/12 text-base text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
-              🧪
+            <span className="inline-flex size-8 items-center justify-center rounded-md bg-[#F5C84C]/12 text-xs font-bold text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
+              TC
             </span>
             <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#94A3B8]/58">
               Current mission
             </span>
             <span className="rounded-md bg-[#4F8CFF]/10 px-2 py-1 text-xs font-semibold text-[#B8D1FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.14)]">
-              {insight.missionConfidence}
+              {insight.missionStatusLabel}
+            </span>
+            <span className="rounded-md bg-[#07111F]/52 px-2 py-1 text-xs font-semibold text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]">
+              {insight.missionTypeLabel}
             </span>
           </div>
           <h2 className="mt-2 truncate text-2xl font-bold leading-tight tracking-tight text-[#F8FAFC] sm:text-3xl">
@@ -110,7 +117,7 @@ export function SessionCoachPanel({
       {!showCta ? (
         <div className="mt-2">
           <p className="text-xs font-medium text-[#94A3B8]/74">
-            {insight.missionNextAction}
+            {insight.nextAction}
           </p>
         </div>
       ) : null}

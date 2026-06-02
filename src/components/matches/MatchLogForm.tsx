@@ -797,18 +797,24 @@ export function MatchLogForm({
         }`
       : null;
   const postSaveStatusBadge = sessionCoach
-    ? postSaveMissionProgress === sessionCoach.progressGoal
-      ? "Mission complete"
-      : countedTowardMission && countedTowardContext
-        ? "Signal improved"
-        : sessionCoach.missionConfidence
+    ? !countedTowardMission
+      ? "Logged outside mission"
+      : postSaveMissionProgress === sessionCoach.progressGoal
+        ? sessionCoach.missionStatus === "improvement_detected"
+          ? "Improvement detected"
+          : "Mission complete"
+        : countedTowardContext
+          ? "Signal improved"
+          : sessionCoach.missionStatusLabel
     : "Game logged";
   const postSaveMissionCopy = sessionCoach
-    ? postSaveMissionProgress === sessionCoach.progressGoal
-      ? "Mission complete. Review the pattern before changing your list."
-      : countedTowardMission && countedTowardContext
-        ? "Progress improved and focus evidence moved forward."
-        : sessionCoach.progressFeedback
+    ? !countedTowardMission
+      ? "Logged outside current mission. It still updates matchup trends."
+      : postSaveMissionProgress === sessionCoach.progressGoal
+        ? sessionCoach.nextAction
+        : countedTowardMission && countedTowardContext
+          ? "This strengthens your current mission."
+          : sessionCoach.missionStatusReason
     : "This result was added to your matchup history.";
   const postSaveProgressPercent =
     sessionCoach && sessionCoach.progressGoal > 0 && postSaveMissionProgress !== null
@@ -866,18 +872,20 @@ export function MatchLogForm({
     } => Boolean(item)
   );
   const nextActionTitle = sessionCoach
-    ? postSaveMissionProgress === sessionCoach.progressGoal
-      ? "Review this matchup"
-      : countedTowardContext
-        ? "Log one more focus game"
-        : "Return to dashboard"
+    ? !countedTowardMission
+      ? "Return to dashboard"
+      : postSaveMissionProgress === sessionCoach.progressGoal
+        ? "Review this matchup"
+        : sessionCoach.missionNextAction
     : "Log another game";
   const nextActionCopy = sessionCoach
-    ? postSaveMissionProgress === sessionCoach.progressGoal
-      ? "Your mission is complete. Review the matchup before changing your list."
-      : countedTowardContext
-        ? "One more focused game will strengthen this signal."
-      : "Keep the sample moving before you make a deck decision."
+    ? !countedTowardMission
+      ? "This game still updates your wider testing record."
+      : postSaveMissionProgress === sessionCoach.progressGoal
+        ? sessionCoach.nextAction
+        : countedTowardContext
+          ? sessionCoach.nextAction
+          : sessionCoach.missionStatusReason
     : "Keep your testing loop moving with one more data point.";
   const postSaveStatusToneClass = getRewardStatusToneClass(postSaveStatusBadge);
   const rewardPrimaryButtonClass =
@@ -1050,22 +1058,29 @@ export function MatchLogForm({
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[20px] bg-emerald-500/14 text-emerald-300 shadow-[0_14px_28px_rgba(34,197,94,0.12),inset_0_0_0_1px_rgba(34,197,94,0.20)]">
-                        <CheckCircle2 className="size-7" aria-hidden="true" />
-                      </div>
-                      <div>
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[20px] bg-emerald-500/14 text-emerald-300 shadow-[0_14px_28px_rgba(34,197,94,0.12),inset_0_0_0_1px_rgba(34,197,94,0.20)]">
+                      <CheckCircle2 className="size-7" aria-hidden="true" />
+                    </div>
+                    <div>
                         <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#22C55E]">
                           Game logged
                         </p>
-                        <h2 className="mt-1 text-2xl font-bold text-[#F8FAFC] sm:text-3xl">
-                          Your testing signal moved.
-                        </h2>
-                      </div>
-                    </div>
-                    <p className="mt-4 text-base font-semibold leading-7 text-[#F8FAFC]">
-                      {postSaveSummary}
-                    </p>
+                    <h2 className="mt-1 text-2xl font-bold text-[#F8FAFC] sm:text-3xl">
+                      {countedTowardMission
+                        ? "Your testing signal improved."
+                        : "Your matchup history moved."}
+                    </h2>
                   </div>
+                </div>
+                <p className="mt-4 text-base font-semibold leading-7 text-[#F8FAFC]">
+                  {postSaveSummary}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
+                  {countedTowardMission
+                    ? "This log pushed the current coaching mission forward."
+                    : "This game sits outside the current mission, but it still strengthens the wider sample."}
+                </p>
+              </div>
                   <span
                     className={`w-fit rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-[0.08em] ${postSaveStatusToneClass}`}
                   >
@@ -1100,6 +1115,9 @@ export function MatchLogForm({
                       <p className="mt-1 text-lg font-semibold text-[#F8FAFC]">
                         {sessionCoach.missionTitle}
                       </p>
+                      <p className="mt-1 text-xs uppercase tracking-[0.08em] text-[#94A3B8]/72">
+                        {sessionCoach.missionTypeLabel}
+                      </p>
                     </div>
                     <span className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.08em] ${postSaveStatusToneClass}`}>
                       {postSaveStatusBadge}
@@ -1131,6 +1149,11 @@ export function MatchLogForm({
                   <p className="mt-3 text-sm font-medium text-[#D7E0EF]">
                     {postSaveMissionCopy}
                   </p>
+                  {postSaveSignalLine ? (
+                    <p className="mt-2 text-xs leading-5 text-[#94A3B8]/72">
+                      {postSaveSignalLine}
+                    </p>
+                  ) : null}
                 </div>
               ) : null}
 
