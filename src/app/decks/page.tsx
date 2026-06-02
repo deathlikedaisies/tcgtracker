@@ -72,6 +72,69 @@ type MatchRow = {
   match_tags: { tag: string }[] | null;
 };
 
+type DeckSummary = {
+  deck: {
+    id: string;
+    name: string;
+    archetype: string;
+    notes: string | null;
+    created_at: string;
+  };
+  deckId: string;
+  deckName: string;
+  deckArchetype: string;
+  deckNotes: string | null;
+  createdAt: string;
+  activeVersion: {
+    id: string;
+    name: string;
+    decklist: string | null;
+    notes: string | null;
+    is_active: boolean | null;
+    created_at: string;
+  } | null;
+  activeVersionId: string | null;
+  activeVersionName: string;
+  totalVersions: number;
+  totalDeckGames: number;
+  performance: ReturnType<typeof formatRecord>;
+  trend: ReturnType<typeof getTrendTone>;
+  analysis: DecklistAnalysis | null;
+  parseError: string | null;
+  activeMission: string | null;
+  listParseSummary: string;
+  listParseDetail: string;
+  versionPrompt: string;
+  buildFailed: boolean;
+};
+
+function safeText(value: unknown, fallback: string) {
+  if (typeof value !== "string") {
+    return fallback;
+  }
+
+  const trimmed = value.trim();
+  return trimmed || fallback;
+}
+
+function safeOptionalText(value: unknown) {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  return trimmed || null;
+}
+
+function getDeckVersions(value: Deck["deck_versions"]) {
+  return Array.isArray(value)
+    ? value.filter(
+        (version): version is DeckVersion =>
+          Boolean(version) && typeof version === "object"
+      )
+    : [];
+}
+
 function formatDate(value: string) {
   const date = new Date(value);
 
@@ -211,28 +274,90 @@ export default async function DecksPage() {
     userDecks.map((deck) => deck.archetype).filter(Boolean) as string[]
   );
 
-  const deckSummaries = userDecks.map((deck, index) => {
+  const deckSummaries = userDecks.map((deck, index): DeckSummary => {
+    const deckId = typeof deck.id === "string" ? deck.id : `invalid-deck-${index}`;
+    const deckName = safeText(deck.name, "Untitled deck");
+    const deckArchetype = safeText(deck.archetype, "Unknown archetype");
+    const deckNotes = safeOptionalText(deck.notes);
+
     try {
-      const versions = deck.deck_versions ?? [];
+      const versions = getDeckVersions(deck.deck_versions);
       const activeVersion =
         versions.find((version) => version.is_active) ?? versions[0] ?? null;
-      const versionIds = new Set(versions.map((version) => version.id));
+      const activeVersionId =
+        activeVersion && typeof activeVersion.id === "string"
+          ? activeVersion.id
+          : null;
+      const versionIds = new Set(
+        versions
+          .map((version) => (typeof version.id === "string" ? version.id : ""))
+          .filter(Boolean)
+      );
       const deckMatches = userMatches.filter((match) => versionIds.has(match.deck_version_id));
-      const activeVersionMatches = activeVersion
-        ? userMatches.filter((match) => match.deck_version_id === activeVersion.id)
+      const activeVersionMatches = activeVersionId
+        ? userMatches.filter((match) => match.deck_version_id === activeVersionId)
         : [];
       const performance = formatRecord(activeVersionMatches);
       const totalDeckGames = deckMatches.length;
       const trend = getTrendTone(performance.total, performance.winRate);
-      const { analysis, parseError } = safeAnalyzeDeckList(activeVersion?.decklist);
+      const { analysis, parseError } = safeAnalyzeDeckList(
+        typeof activeVersion?.decklist === "string" ? activeVersion.decklist : null
+      );
       const activeMission =
-        index === 0 && sessionCoach
-          ? sessionCoach.missionTitle
-          : null;
+        index === 0 && sessionCoach ? sessionCoach.missionTitle : null;
+      const activeVersionName = activeVersion
+        ? safeText(activeVersion.name, "Untitled version")
+        : "No active version set";
+      const listParseSummary = analysis
+        ? `${analysis.totalCards} cards · ${analysis.pokemonCount} Pokémon · ${analysis.trainerCount} Trainer · ${analysis.energyCount} Energy`
+        : parseError
+          ? "List could not be parsed"
+          : activeVersionId
+            ? "No list added"
+            : "Add a deck list to unlock local parsing";
+      const listParseDetail = parseError
+        ? parseError
+        : analysis
+          ? analysis.unresolved.length
+            ? `${analysis.unresolved.length} unresolved name${analysis.unresolved.length === 1 ? "" : "s"}. Open deck for legality details.`
+            : "Local list parsed. Open deck for legality details."
+          : activeVersionId
+            ? "This active version does not have a deck list yet."
+            : "Add a first version to start list checks.";
+      const versionPrompt = !versions.length
+        ? "Add first version"
+        : !performance.total
+          ? "Log first game"
+          : "Open";
 
       return {
-        deck,
-        activeVersion,
+        deck: {
+          id: deckId,
+          name: deckName,
+          archetype: deckArchetype,
+          notes: deckNotes,
+          created_at: typeof deck.created_at === "string" ? deck.created_at : "",
+        },
+        deckId,
+        deckName,
+        deckArchetype,
+        deckNotes,
+        createdAt: typeof deck.created_at === "string" ? deck.created_at : "",
+        activeVersion: activeVersion
+          ? {
+              id: activeVersionId ?? "",
+              name: activeVersionName,
+              decklist: typeof activeVersion.decklist === "string" ? activeVersion.decklist : null,
+              notes: safeOptionalText(activeVersion.notes),
+              is_active: activeVersion.is_active,
+              created_at:
+                typeof activeVersion.created_at === "string"
+                  ? activeVersion.created_at
+                  : "",
+            }
+          : null,
+        activeVersionId,
+        activeVersionName,
         totalVersions: versions.length,
         totalDeckGames,
         performance,
@@ -240,21 +365,42 @@ export default async function DecksPage() {
         analysis,
         parseError,
         activeMission,
+        listParseSummary,
+        listParseDetail,
+        versionPrompt,
+        buildFailed: false,
       };
     } catch {
       return {
-        deck,
+        deck: {
+          id: deckId,
+          name: deckName,
+          archetype: deckArchetype,
+          notes: deckNotes,
+          created_at: typeof deck.created_at === "string" ? deck.created_at : "",
+        },
+        deckId,
+        deckName,
+        deckArchetype,
+        deckNotes,
+        createdAt: typeof deck.created_at === "string" ? deck.created_at : "",
         activeVersion: null,
-        totalVersions: Array.isArray(deck.deck_versions) ? deck.deck_versions.length : 0,
+        activeVersionId: null,
+        activeVersionName: "Deck summary could not be built",
+        totalVersions: getDeckVersions(deck.deck_versions).length,
         totalDeckGames: 0,
         performance: { wins: 0, losses: 0, ties: 0, total: 0, winRate: 0 },
         trend: getTrendTone(0, 0),
         analysis: null,
         parseError: "This deck has invalid data. Open it to review the saved versions.",
         activeMission: null,
+        listParseSummary: "Deck summary could not be built",
+        listParseDetail: "Open this deck to review the saved versions and raw list.",
+        versionPrompt: "Open",
+        buildFailed: true,
       };
     }
-    });
+  });
 
   const totalVersions = deckSummaries.reduce(
     (count, deck) => count + deck.totalVersions,
@@ -336,10 +482,10 @@ export default async function DecksPage() {
                   icon: TrendingUp,
                   label: "Best performer",
                   value: bestPerformer
-                    ? `${bestPerformer.deck.name} ${bestPerformer.performance.winRate}%`
+                    ? `${bestPerformer.deckName} ${bestPerformer.performance.winRate}%`
                     : "Needs more data",
                   helper: bestPerformer
-                    ? `${bestPerformer.activeVersion?.name ?? "Active version"} across ${bestPerformer.performance.total} games`
+                    ? `${bestPerformer.activeVersionName} across ${bestPerformer.performance.total} games`
                     : "A clear read appears after a few logged games",
                   tone:
                     "bg-[#4F8CFF]/10 text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.16)]",
@@ -388,10 +534,10 @@ export default async function DecksPage() {
 
               {deckSummaries.length ? (
                 deckSummaries.map((summary, index) => {
-                  const removeDeck = deleteDeck.bind(null, summary.deck.id);
-                  const activeVersionName =
-                    summary.activeVersion?.name ?? "No active version set";
-                  const deckArchetype = summary.deck.archetype?.trim() || "Unknown archetype";
+                  const removeDeck = deleteDeck.bind(null, summary.deckId);
+                  const activeVersionName = summary.activeVersionName;
+                  const deckArchetype = summary.deckArchetype;
+
                   const localListSummary = summary.analysis
                     ? `${summary.analysis.totalCards} cards · ${summary.analysis.pokemonCount} Pokémon · ${summary.analysis.trainerCount} Trainer · ${summary.analysis.energyCount} Energy`
                     : summary.parseError

@@ -63,6 +63,33 @@ type DeckVersion = {
   created_at: string;
 };
 
+function safeText(value: unknown, fallback: string) {
+  if (typeof value !== "string") {
+    return fallback;
+  }
+
+  const trimmed = value.trim();
+  return trimmed || fallback;
+}
+
+function safeOptionalText(value: unknown) {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  return trimmed || null;
+}
+
+function getDeckVersions(value: unknown) {
+  return Array.isArray(value)
+    ? value.filter(
+        (version): version is DeckVersion =>
+          Boolean(version) && typeof version === "object"
+      )
+    : [];
+}
+
 function formatDate(value: string) {
   const date = new Date(value);
 
@@ -168,7 +195,7 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
     throw new Error(versionsError.message);
   }
 
-  const deckVersions = (versions ?? []) as DeckVersion[];
+  const deckVersions = getDeckVersions(versions);
   const createVersion = createDeckVersion.bind(null, deck.id);
 
   const { data: matches, error: matchesError } = await supabase
@@ -230,7 +257,9 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
   const totalWinRate = totalRecord.total
     ? Math.round((totalRecord.wins / totalRecord.total) * 100)
     : 0;
-  const deckArchetype = deck.archetype?.trim() || "Unknown archetype";
+  const deckName = safeText(deck.name, "Untitled deck");
+  const deckNotes = safeOptionalText(deck.notes);
+  const deckArchetype = safeText(deck.archetype, "Unknown archetype");
   const activeVersion =
     deckVersions.find((version) => version.is_active) ?? deckVersions[0] ?? null;
   const bestVersion = versionInsights
@@ -255,7 +284,7 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
       <section className={appFrame}>
         <AppSidebar
           current="decks"
-          deckLabel={deck.name}
+          deckLabel={deckName}
           insight={{
             label: "Version test",
             value: sessionCoach?.missionSkill ?? "Build a sample",
@@ -290,9 +319,9 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                           {deckArchetype}
                         </p>
                       </div>
-                      <h1 className={pageTitle}>{deck.name}</h1>
+                      <h1 className={pageTitle}>{deckName}</h1>
                       <p className="max-w-2xl text-sm leading-6 text-[#94A3B8]/72">
-                        {deck.notes ??
+                        {deckNotes ??
                           "Use the manual archetype as the deck-level identity. Auto-detected archetypes below stay version-specific."}
                       </p>
                     </div>
@@ -321,7 +350,7 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                       Active version
                     </p>
                     <p className="mt-2 text-sm font-semibold text-[#F8FAFC]">
-                      {activeVersion?.name ?? "No active version set"}
+                      {activeVersion ? safeText(activeVersion.name, "Untitled version") : "No active version set"}
                     </p>
                   </div>
                   <div className="rounded-2xl bg-[#07111F]/42 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
@@ -330,7 +359,10 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                     </p>
                     <p className="mt-2 text-sm font-semibold text-[#F8FAFC]">
                       {bestVersion
-                        ? `${deckVersions.find((version) => version.id === bestVersion.versionId)?.name ?? "Version"} ${Math.round(
+                        ? `${safeText(
+                            deckVersions.find((version) => version.id === bestVersion.versionId)?.name,
+                            "Version"
+                          )} ${Math.round(
                             (bestVersion.performance.wins / bestVersion.performance.total) * 100
                           )}%`
                         : totalRecord.total
