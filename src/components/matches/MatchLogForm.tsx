@@ -808,17 +808,23 @@ export function MatchLogForm({
       : null;
   const postSaveStatusBadge = sessionCoach
     ? !countedTowardMission
-      ? "Logged outside mission"
+      ? sessionCoach.missionGuidanceMode === "priority_watchlist"
+        ? "Outside watchlist"
+        : "Outside focused test"
       : sessionCoach.completionStatus
         ? sessionCoach.completionStatus
         : sessionCoach.missionStatusLabel
     : "Game logged";
   const postSaveMissionCopy = sessionCoach
     ? !countedTowardMission
-      ? "Logged outside current mission. It still updates matchup trends."
+      ? sessionCoach.missionGuidanceMode === "priority_watchlist"
+        ? "Logged outside the watchlist. It still updates your matchup history."
+        : "Logged outside the focused test. It still updates your matchup history."
       : sessionCoach.completionStatus
         ? "Logged into the current review set."
-        : "This strengthened your current mission."
+        : sessionCoach.missionGuidanceMode === "priority_watchlist"
+          ? "This strengthened your watchlist read."
+          : "This advanced your focused test."
     : "This result was added to your matchup history.";
   const postSaveProgressPercent =
     sessionCoach && sessionCoach.progressGoal > 0 && postSaveMissionProgress !== null
@@ -1095,7 +1101,9 @@ export function MatchLogForm({
                         ? "Your matchup history moved."
                         : sessionCoach?.completionStatus
                           ? "Current review set updated."
-                          : "Current mission strengthened."}
+                          : sessionCoach?.missionGuidanceMode === "priority_watchlist"
+                            ? "Watchlist read updated."
+                            : "Focused test advanced."}
                     </h2>
                   </div>
                 </div>
@@ -1104,10 +1112,14 @@ export function MatchLogForm({
                 </p>
                 <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
                   {!countedTowardMission
-                    ? "This game sits outside the current mission, but it still strengthens the wider sample."
+                    ? sessionCoach?.missionGuidanceMode === "priority_watchlist"
+                      ? "This game sits outside the watchlist, but it still strengthens the wider sample."
+                      : "This game sits outside the focused test, but it still strengthens the wider sample."
                     : sessionCoach?.completionStatus
                       ? "This keeps the current review set fresh while you decide the next change."
-                      : "This log pushed the current coaching mission forward."}
+                      : sessionCoach?.missionGuidanceMode === "priority_watchlist"
+                        ? "This log strengthened the current watchlist read."
+                        : "This log pushed the focused test forward."}
                 </p>
               </div>
                   <span
@@ -1145,7 +1157,7 @@ export function MatchLogForm({
                         {sessionCoach.missionTitle}
                       </p>
                       <p className="mt-1 text-xs uppercase tracking-[0.08em] text-[#94A3B8]/72">
-                        {sessionCoach.missionTypeLabel}
+                        {sessionCoach.missionGuidanceLabel}
                       </p>
                     </div>
                     <span className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.08em] ${postSaveStatusToneClass}`}>
@@ -1854,7 +1866,7 @@ export function MatchLogForm({
                             <ArchetypePicker
                               id="focus_matchup"
                               name="focus_matchup"
-                              label="Focus matchup"
+                              label="Priority matchup"
                               options={opponentArchetypeOptions}
                               value={focusMatchup}
                               placeholder="Optional"

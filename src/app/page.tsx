@@ -30,7 +30,7 @@ const heroSteps = [
     step: "3",
     icon: Target,
     title: "Test next",
-    copy: "Get a focused mission instead of guessing what to review or change.",
+    copy: "Get a priority watchlist or focused test instead of guessing what to review or change.",
   },
 ] as const;
 
@@ -91,7 +91,7 @@ function ProductPreview() {
               <ArchetypeSprites archetype="Mega Greninja" size="md" className="scale-[1.7]" />
             </div>
             <p className="mt-4 text-sm font-semibold text-[#F8FAFC]">Mega Greninja</p>
-            <p className="mt-1 text-xs text-[#94A3B8]/76">Focus matchup</p>
+            <p className="mt-1 text-xs text-[#94A3B8]/76">Priority watchlist</p>
           </div>
 
           <div className="grid gap-4">
@@ -175,11 +175,11 @@ function ProductPreview() {
                 <div className="flex items-center gap-2 text-[#4F8CFF]">
                   <Target className="size-4" aria-hidden="true" />
                   <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#94A3B8]/72">
-                    Next focus
+                    Next watch
                   </p>
                 </div>
                 <p className="mt-3 text-sm leading-6 text-[#F8FAFC]">
-                  Log one focused game going second
+                  Keep logging. When Mega Greninja appears, track bench pressure.
                 </p>
               </div>
 

@@ -177,7 +177,13 @@ function getMissionBadge(insight: SessionCoachInsight) {
   }
 
   if (insight.missionStatus === "needs_more_focused_games") {
-    return { label: "Needs focus games", tone: "gold" as const };
+    return {
+      label:
+        insight.missionGuidanceMode === "priority_watchlist"
+          ? "Needs more games"
+          : "Needs focus games",
+      tone: "gold" as const,
+    };
   }
 
   if (insight.missionStatus === "pattern_rejected") {
@@ -524,7 +530,7 @@ function MissionHeroCard({
             {badge.label}
           </span>
           <span className="rounded-full bg-[#07111F]/58 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]">
-            {insight.missionTypeLabel}
+            {insight.missionGuidanceLabel}
           </span>
         </div>
 
@@ -542,8 +548,8 @@ function MissionHeroCard({
 
         <div className="mt-5 grid gap-3 sm:grid-cols-3">
           <StatusChip
-            label="Mission type"
-            value={insight.missionTypeLabel}
+            label="Mission mode"
+            value={insight.missionGuidanceLabel}
             tone="blue"
           />
           <StatusChip
@@ -904,7 +910,7 @@ export function DashboardContent({
       : {
           label: "What changed",
           title: "No clear shift yet",
-          detail: "Log a few more focused games to reveal movement.",
+          detail: "Log a few more games to reveal movement.",
           tone: "gold" as const,
       };
 
@@ -942,7 +948,7 @@ export function DashboardContent({
         <AppSidebar
           current="dashboard"
           insight={{
-            label: "Next focus",
+            label: "Next action",
             value: sessionCoach?.missionTitle ?? "Log games to unlock coaching",
             helper: sessionCoach
               ? `${sessionCoach.missionProgress}/${sessionCoach.missionTargetCount} games`

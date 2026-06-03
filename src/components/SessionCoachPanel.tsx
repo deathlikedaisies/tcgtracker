@@ -50,7 +50,7 @@ export function SessionCoachPanel({
               {insight.missionStatusLabel}
             </span>
             <span className="rounded-full bg-[#07111F]/52 px-2.5 py-1 text-xs font-semibold text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]">
-              {insight.missionTypeLabel}
+              {insight.missionGuidanceLabel}
             </span>
           </div>
           <h2 className="mt-2 truncate text-2xl font-bold leading-tight tracking-tight text-[#F8FAFC] sm:text-3xl">

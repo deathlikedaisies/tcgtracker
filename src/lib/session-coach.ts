@@ -35,6 +35,8 @@ export type MissionType =
   | "deck-version"
   | "event-prep";
 
+export type MissionGuidanceMode = "priority_watchlist" | "focused_test";
+
 export type MissionStatus =
   | "needs_games"
   | "building_signal"
@@ -64,6 +66,8 @@ export type SessionCoachInsight = {
   missionState: "active" | "complete";
   missionType: MissionType;
   missionTypeLabel: string;
+  missionGuidanceMode: MissionGuidanceMode;
+  missionGuidanceLabel: string;
   missionStatus: MissionStatus;
   missionStatusLabel: string;
   missionStatusReason: string;
@@ -179,11 +183,23 @@ function getMissionTypeLabel(missionType: MissionType) {
   }[missionType];
 }
 
-function getMissionStatusLabel(status: MissionStatus) {
+function getMissionGuidanceMode(missionType: MissionType): MissionGuidanceMode {
+  return missionType === "matchup" ? "priority_watchlist" : "focused_test";
+}
+
+function getMissionGuidanceLabel(mode: MissionGuidanceMode) {
+  return mode === "priority_watchlist" ? "Priority watchlist" : "Focused test";
+}
+
+function getMissionStatusLabel(
+  status: MissionStatus,
+  mode: MissionGuidanceMode
+) {
   return {
     needs_games: "Needs games",
     building_signal: "Building signal",
-    needs_more_focused_games: "Needs more focused games",
+    needs_more_focused_games:
+      mode === "priority_watchlist" ? "Needs more games" : "Needs focus games",
     actionable_signal: "Actionable signal",
     mission_complete: "Mission complete",
     pattern_confirmed: "Pattern confirmed",
@@ -224,70 +240,120 @@ function getMissionStatus(
 
 function getMissionStatusReason(
   status: MissionStatus,
+  mode: MissionGuidanceMode,
   completed: number,
   goal: number,
   contextCount: number,
   contextGoal: number,
-  archetype: string
+  archetype: string,
+  focusTag: string | null,
+  turnContext: "going first" | "going second" | null
 ) {
   const remaining = Math.max(goal - completed, 0);
   const focusRemaining = Math.max(contextGoal - contextCount, 0);
+  const issueLabel = focusTag ? formatIssueLabel(focusTag) : null;
+  const turnContextLabel = turnContext ? ` ${turnContext}` : "";
 
   if (status === "needs_games") {
-    return `Log ${remaining} more game${remaining === 1 ? "" : "s"} before this becomes a coaching read.`;
+    return mode === "priority_watchlist"
+      ? `Keep logging normally. ${remaining} more game${
+          remaining === 1 ? "" : "s"
+        } will turn ${archetype} into a coaching read.`
+      : `Log ${remaining} more game${
+          remaining === 1 ? "" : "s"
+        } before this becomes a coaching read.`;
   }
 
   if (status === "building_signal") {
-    return `Early pattern building against ${archetype}. Keep logging before changing your list.`;
+    return mode === "priority_watchlist"
+      ? issueLabel
+        ? `Early watchlist read on ${archetype}. Keep logging normally and tag ${issueLabel}${turnContextLabel}.`
+        : `Early watchlist read on ${archetype}. Keep logging normally before changing your list.`
+      : `Early pattern building against ${archetype}. Keep logging before changing your list.`;
   }
 
   if (status === "needs_more_focused_games") {
-    return `The leak is showing, but ${focusRemaining} more focus game${focusRemaining === 1 ? "" : "s"} will make this read easier to trust.`;
+    return mode === "priority_watchlist"
+      ? issueLabel
+        ? `The leak is showing. When ${archetype} appears, tag ${issueLabel}${turnContextLabel} in ${focusRemaining} more game${
+            focusRemaining === 1 ? "" : "s"
+          }.`
+        : `The leak is showing. When ${archetype} appears, capture ${focusRemaining} more watchlist game${
+            focusRemaining === 1 ? "" : "s"
+          }.`
+      : `The leak is showing, but ${focusRemaining} more focus game${
+          focusRemaining === 1 ? "" : "s"
+        } will make this read easier to trust.`;
   }
 
   if (status === "actionable_signal") {
-    return "You have enough focused evidence to start reviewing the pattern.";
+    return mode === "priority_watchlist"
+      ? "You have enough watchlist evidence to start reviewing the pattern."
+      : "You have enough focused evidence to start reviewing the pattern.";
   }
 
-  return `Log ${remaining} more focused game${remaining === 1 ? "" : "s"} before changing plans.`;
+  return mode === "priority_watchlist"
+    ? `Keep logging normally. ${remaining} more watchlist game${
+        remaining === 1 ? "" : "s"
+      } will make this read easier to trust.`
+    : `Log ${remaining} more focused game${
+        remaining === 1 ? "" : "s"
+      } before changing plans.`;
 }
 
 function getProgressFeedback(
   status: MissionStatus,
+  mode: MissionGuidanceMode,
   completed: number,
   goal: number
 ) {
   const remaining = Math.max(goal - completed, 0);
 
   if (remaining === 1) {
-    return "One more game unlocks review.";
+    return mode === "priority_watchlist"
+      ? "One more watchlist game unlocks review."
+      : "One more game unlocks review.";
   }
 
   if (status === "actionable_signal") {
-    return "Focused sample is ready for review.";
+    return mode === "priority_watchlist"
+      ? "Watchlist sample is ready for review."
+      : "Focused sample is ready for review.";
   }
 
   if (status === "needs_more_focused_games") {
-    return "Focus games matter most now.";
+    return mode === "priority_watchlist"
+      ? "Watch for this matchup when it appears."
+      : "Focus games matter most now.";
   }
 
   if (status === "building_signal") {
-    return "Building signal.";
+    return mode === "priority_watchlist"
+      ? "Watchlist signal is building."
+      : "Building signal.";
   }
 
-  return "Counts toward your current mission.";
+  return mode === "priority_watchlist"
+    ? "Counts toward your current watchlist."
+    : "Counts toward your focused test.";
 }
 
 function getMissionNextAction(
   missionType: MissionType,
+  mode: MissionGuidanceMode,
   status: MissionStatus,
   completed: number,
   goal: number,
   contextCount: number,
-  contextGoal: number
+  contextGoal: number,
+  archetype: string,
+  focusTag: string | null,
+  turnContext: "going first" | "going second" | null
 ) {
   const remaining = Math.max(goal - completed, 0);
   const focusRemaining = Math.max(contextGoal - contextCount, 0);
+  const issueLabel = focusTag ? formatIssueLabel(focusTag) : null;
+  const turnContextDetail = turnContext ? ` ${turnContext}` : "";
 
   if (status === "actionable_signal") {
     return {
@@ -302,7 +368,11 @@ function getMissionNextAction(
       detail:
         missionType === "deck-version"
           ? "You have enough version data to compare before changing your list."
-          : "You have enough focused evidence to review before changing your list.",
+          : mode === "priority_watchlist"
+            ? issueLabel
+              ? `${archetype} is ready for review. Start with ${issueLabel}${turnContextDetail}.`
+              : `${archetype} is ready for review before you change your list.`
+            : "You have enough focused evidence to review before changing your list.",
       ctaLabel:
         missionType === "deck-version" ? "Compare versions" : "Review mission",
     };
@@ -310,17 +380,44 @@ function getMissionNextAction(
 
   if (status === "needs_more_focused_games") {
     return {
-      title: `Log ${focusRemaining} more focus game${focusRemaining === 1 ? "" : "s"}`,
-      detail: "Keep the matchup or focus area consistent so the signal becomes trustworthy.",
-      ctaLabel: `Continue mission (${completed}/${goal})`,
+      title:
+        mode === "priority_watchlist"
+          ? "Log next game"
+          : `Log ${focusRemaining} more focus game${
+              focusRemaining === 1 ? "" : "s"
+            }`,
+      detail:
+        mode === "priority_watchlist"
+          ? issueLabel
+            ? `Keep logging normally. When ${archetype} appears, tag ${issueLabel}${turnContextDetail}.`
+            : `Keep logging normally. When ${archetype} appears, capture the watchlist sample.`
+          : "Keep the matchup or focus area consistent so the signal becomes trustworthy.",
+      ctaLabel:
+        mode === "priority_watchlist"
+          ? "Log next game"
+          : `Continue mission (${completed}/${goal})`,
     };
   }
 
   return {
-    title: remaining === goal ? "Log next game" : `Log ${remaining} more games`,
-    detail: "Keep adding structured games so the pattern becomes clearer.",
+    title:
+      mode === "priority_watchlist"
+        ? "Log next game"
+        : remaining === goal
+          ? "Log next game"
+          : `Log ${remaining} more games`,
+    detail:
+      mode === "priority_watchlist"
+        ? issueLabel
+          ? `Keep logging normally. When ${archetype} appears, tag ${issueLabel}${turnContextDetail}.`
+          : `Keep logging normally. When ${archetype} appears, add it to the watchlist sample.`
+        : "Keep adding structured games so the pattern becomes clearer.",
     ctaLabel:
-      completed === 0 ? "Log next game" : `Continue mission (${completed}/${goal})`,
+      mode === "priority_watchlist"
+        ? "Log next game"
+        : completed === 0
+          ? "Log next game"
+          : `Continue mission (${completed}/${goal})`,
   };
 }
 
@@ -634,15 +731,15 @@ function buildMatchupMissionCandidates(
         missionReason: repeatedTag
           ? `${capitalizeLabel(commonIssueLabel ?? repeatedTag.tag)} keeps showing up in losses into ${archetype}.`
           : `${archetype} is the clearest underperforming matchup right now.`,
-        missionContextLabel: "Focus matchup",
+        missionContextLabel: "Watchlist games",
         missionContextTargetCount: 5,
         missionProgressGoal: 5,
         missionContextSeenCount: focusMatches.length,
         focus: repeatedTag
-          ? `Track ${commonIssueLabel ?? repeatedTag.tag} before changing your list.`
+          ? `Keep logging normally. When ${archetype} appears, track ${commonIssueLabel ?? repeatedTag.tag}${turnContext ? ` ${turnContext}` : ""}.`
           : turnContext
-            ? `Keep the turn order fixed and review your opening plan ${turnContext}.`
-            : "Keep the matchup constant so the loss pattern stays reviewable.",
+            ? `When ${archetype} appears ${turnContext}, review your opening plan.`
+            : `Keep logging normally. When ${archetype} appears, capture the watchlist sample.`,
         condition: turnContext
           ? `Leak is worse ${turnContext}`
           : `Record: ${formatMatchRecord(wins, losses, ties)}`,
@@ -650,11 +747,11 @@ function buildMatchupMissionCandidates(
           ? `${archetype} is costing more games when ${turnContext}.`
           : `${archetype} has the weakest sustained record in the current sample.`,
         exactTest: turnContext
-          ? `Play 5 more focused games into ${archetype} ${turnContext}.`
-          : `Play 5 more focused games into ${archetype}.`,
+          ? `Keep logging normally. When ${archetype} appears ${turnContext}, capture five watchlist games.`
+          : `Keep logging normally. When ${archetype} appears, capture five watchlist games.`,
         nextTest: turnContext
-          ? `Keep logging ${archetype} ${turnContext} and watch the same issue tags.`
-          : `Keep logging ${archetype} and see whether the same leak repeats.`,
+          ? `When ${archetype} appears ${turnContext}, watch for the same issue tags.`
+          : `When ${archetype} appears, see whether the same leak repeats.`,
         reasoning: repeatedTag
           ? `${formatMatchRecord(wins, losses, ties)} into ${archetype}. ${capitalizeLabel(
               commonIssueLabel ?? repeatedTag.tag
@@ -662,7 +759,7 @@ function buildMatchupMissionCandidates(
           : `${formatMatchRecord(wins, losses, ties)} into ${archetype}.`,
         criteria: turnContext
           ? `Counts ${archetype} games when ${turnContext}.`
-          : `Counts focused games into ${archetype}.`,
+          : `Counts watchlist games into ${archetype}.`,
         matches: groupedMatches,
         focusMatches,
         focusOpponent: archetype,
@@ -928,14 +1025,14 @@ function buildBaselineMissionCandidate(
     missionType: "baseline",
     missionTitle: "Build a focused sample",
     missionReason: "No leak has enough evidence yet, so keep the next block clean and consistent.",
-    missionContextLabel: "Focus matchup",
+    missionContextLabel: "Watchlist games",
     missionContextTargetCount: 3,
     missionProgressGoal: 5,
     missionContextSeenCount: focusMatches.length,
     focus: `Keep the same deck and pressure-test ${fallbackArchetype}.`,
     condition: "First test in progress",
     context: "A few more structured games will unlock the first real coaching read.",
-    exactTest: `Play 5 more focused games into ${fallbackArchetype}.`,
+    exactTest: `Keep logging normally. When ${fallbackArchetype} appears, capture five watchlist games.`,
     nextTest: `Keep logging ${fallbackArchetype} before changing your list.`,
     reasoning: `Most common recent matchup: ${fallbackArchetype}.`,
     criteria: "Counts your next focused testing block.",
@@ -954,6 +1051,8 @@ function buildBaselineMissionCandidate(
 function buildMissionInsightFromCandidate(
   candidate: MissionCandidate
 ): SessionCoachInsight {
+  const missionGuidanceMode = getMissionGuidanceMode(candidate.missionType);
+  const missionGuidanceLabel = getMissionGuidanceLabel(missionGuidanceMode);
   const sortedMissionMatches = sortMatchesByPlayedAt(
     candidate.focusMatches.length ? candidate.focusMatches : candidate.matches
   );
@@ -982,40 +1081,50 @@ function buildMissionInsightFromCandidate(
     contextSeen,
     candidate.missionContextTargetCount
   );
-  const missionStatusLabel = getMissionStatusLabel(missionStatus);
+  const missionStatusLabel = getMissionStatusLabel(
+    missionStatus,
+    missionGuidanceMode
+  );
   const missionStatusReason = getMissionStatusReason(
+    missionStatus,
+    missionGuidanceMode,
+    completed,
+    candidate.missionProgressGoal,
+    contextSeen,
+    candidate.missionContextTargetCount,
+    candidate.archetype,
+    candidate.focusTag,
+    candidate.focusTurnContext
+  );
+  const missionNextAction = getMissionNextAction(
+    candidate.missionType,
+    missionGuidanceMode,
     missionStatus,
     completed,
     candidate.missionProgressGoal,
     contextSeen,
     candidate.missionContextTargetCount,
-    candidate.archetype
-  );
-  const missionNextAction = getMissionNextAction(
-    candidate.missionType,
-    missionStatus,
-    completed,
-    candidate.missionProgressGoal,
-    contextSeen,
-    candidate.missionContextTargetCount
+    candidate.archetype,
+    candidate.focusTag,
+    candidate.focusTurnContext
   );
   const evidence =
     missionStatus === "actionable_signal"
-      ? `Focused sample: ${sortedMissionMatches.length} game${
+      ? `${missionGuidanceMode === "priority_watchlist" ? "Watchlist sample" : "Focused sample"}: ${sortedMissionMatches.length} game${
           sortedMissionMatches.length === 1 ? "" : "s"
         }. You can review this before changing your list.`
       : missionStatus === "needs_more_focused_games"
         ? `${candidate.missionContextLabel}: ${Math.max(
             candidate.missionContextTargetCount - contextSeen,
             0
-          )} more focus game${
+          )} more ${missionGuidanceMode === "priority_watchlist" ? "watchlist" : "focus"} game${
             candidate.missionContextTargetCount - contextSeen === 1 ? "" : "s"
           } to trust the read.`
         : missionStatus === "building_signal"
-          ? `Focused sample: ${sortedMissionMatches.length} game${
+          ? `${missionGuidanceMode === "priority_watchlist" ? "Watchlist sample" : "Focused sample"}: ${sortedMissionMatches.length} game${
               sortedMissionMatches.length === 1 ? "" : "s"
             }. Early pattern only.`
-          : `Focused sample: ${sortedMissionMatches.length} game${
+          : `${missionGuidanceMode === "priority_watchlist" ? "Watchlist sample" : "Focused sample"}: ${sortedMissionMatches.length} game${
               sortedMissionMatches.length === 1 ? "" : "s"
             }.`;
 
@@ -1040,6 +1149,8 @@ function buildMissionInsightFromCandidate(
     missionState: completion.completionStatus ? "complete" : "active",
     missionType: candidate.missionType,
     missionTypeLabel: getMissionTypeLabel(candidate.missionType),
+    missionGuidanceMode,
+    missionGuidanceLabel,
     missionStatus,
     missionStatusLabel,
     missionStatusReason,
@@ -1069,6 +1180,7 @@ function buildMissionInsightFromCandidate(
     progressGoal: candidate.missionProgressGoal,
     progressFeedback: getProgressFeedback(
       missionStatus,
+      missionGuidanceMode,
       completed,
       candidate.missionProgressGoal
     ),

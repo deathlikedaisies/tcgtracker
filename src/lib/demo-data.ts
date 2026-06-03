@@ -323,7 +323,7 @@ export function getDemoInsights(): DemoInsightSummary {
       title: "Review Mega Greninja matchup",
       progressLabel: "3/5 games",
       explanation:
-        "Mega Greninja is the current mission because the sample is large enough to coach and the same loss issues keep repeating.",
+        "Mega Greninja is the current priority watchlist because the sample is large enough to coach and the same loss issues keep repeating.",
       why:
         "Mega Lopunny still needs games. Mega Greninja already has repeated missed-setup and bench-pressure notes, so it is the better next review.",
     },

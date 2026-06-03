@@ -529,10 +529,10 @@ export function DemoMatchLogForm() {
         : "Needs games";
   const demoMissionSupportLine =
     demoStatusBadge === "Actionable signal"
-      ? "This strengthened the current mission. Review before changing your list."
+      ? "This strengthened the current watchlist read. Review before changing your list."
       : demoStatusBadge === "Building signal"
         ? "Building signal. One more game makes this pattern easier to trust."
-        : "Needs games. Log a few more focused games before this becomes actionable.";
+        : "Needs games. Keep logging normally until this watchlist becomes actionable.";
   const demoStatChips = [
     { label: "Matchup sample", value: "+1 matchup game" },
     {
@@ -581,15 +581,13 @@ export function DemoMatchLogForm() {
   const demoNextActionTitle =
     result === "win"
       ? "Review this matchup"
-      : result === "tie"
-        ? "Log one more focus game"
-        : "Log one more focus game";
+      : "Log next game";
   const demoNextActionCopy =
     result === "win"
       ? "The sample improved. Review the matchup before changing your list."
       : result === "tie"
-        ? "One more focused game will help this become a clearer signal."
-        : "Keep the sample moving until the issue pattern is easier to trust.";
+        ? "Keep logging normally. When this matchup appears, capture one more watchlist game."
+        : "Keep logging normally until the issue pattern is easier to trust.";
   const rewardPrimaryButtonClass =
     `${primaryButton} h-12 shadow-[0_14px_30px_rgba(79,140,255,0.16)]`;
   const rewardSecondaryButtonClass =
@@ -649,7 +647,7 @@ export function DemoMatchLogForm() {
                     </p>
                     <h2 className="mt-1 text-2xl font-bold text-[#F8FAFC] sm:text-3xl">
                       {result === "win"
-                        ? "Current mission strengthened."
+                        ? "Watchlist read updated."
                         : "Testing sample updated."}
                     </h2>
                   </div>
@@ -659,7 +657,7 @@ export function DemoMatchLogForm() {
                 </p>
                 <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
                   {result === "win"
-                    ? "This demo log strengthens the current mission."
+                    ? "This demo log strengthens the watchlist read."
                     : "This demo log adds one more data point to the testing loop."}
                 </p>
               </div>
@@ -697,7 +695,7 @@ export function DemoMatchLogForm() {
                   {gameContext === "competitive" ? "Round-by-round review" : "Build matchup confidence"}
                 </p>
                 <p className="mt-1 text-xs uppercase tracking-[0.08em] text-[#94A3B8]/72">
-                  {gameContext === "competitive" ? "Event-prep mission" : "Matchup mission"}
+                  {gameContext === "competitive" ? "Focused test" : "Priority watchlist"}
                 </p>
               </div>
               <span className="rounded-full bg-[#F5C84C]/12 px-3 py-1 text-xs font-bold uppercase tracking-[0.08em] text-[#FFE28A] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
@@ -730,7 +728,7 @@ export function DemoMatchLogForm() {
             <p className="mt-2 text-xs leading-5 text-[#94A3B8]/72">
               {gameContext === "competitive"
                 ? `${opponent}: 4/5 focused games. One more round unlocks review.`
-                : `${opponent}: 4/5 focused games. One more game strengthens the signal.`}
+                : `${opponent}: 4/5 watchlist games. One more matchup unlocks review.`}
             </p>
           </div>
 
@@ -772,7 +770,7 @@ export function DemoMatchLogForm() {
                 <p className="mt-2 text-sm text-[#B9C4D6]">
                   {gameContext === "competitive"
                     ? `${opponent}: 4/5 focused games toward a stronger signal.`
-                    : `${opponent}: 4/5 focused games toward a building signal.`}
+                    : `${opponent}: 4/5 watchlist games toward a stronger read.`}
                 </p>
               </details>
             </div>
@@ -1362,7 +1360,7 @@ export function DemoMatchLogForm() {
                         />
                       </div>
                       <div className={subCardClass}>
-                        <label className={label}>Focus matchup</label>
+                        <label className={label}>Priority matchup</label>
                         <input
                           value={focusMatchup}
                           onChange={(event) => setFocusMatchup(event.target.value)}

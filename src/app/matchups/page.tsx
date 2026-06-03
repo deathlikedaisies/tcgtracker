@@ -160,7 +160,7 @@ function getMatchupCoachLabel(matchup: {
     return {
       label: "Building signal",
       className: "bg-[#F5C84C]/14 text-[#F5C84C]",
-      action: "Run a focused set and watch whether the pattern repeats.",
+      action: "Keep logging and watch whether the pattern repeats.",
     };
   }
 
@@ -183,7 +183,7 @@ function getMatchupCoachLabel(matchup: {
   return {
     label: "Watchlist",
     className: "bg-[#F5C84C]/14 text-[#F5C84C]",
-    action: "Play a focused set to see which way this breaks.",
+    action: "Keep logging to see which way this breaks.",
   };
 }
 
@@ -549,7 +549,7 @@ export default async function MatchupsPage({
                   <p className="text-xs text-[#94A3B8]/72">Action</p>
                   <p className="mt-1 text-sm font-semibold leading-5 text-[#F8FAFC]">
                     {worstMatchup && worstMatchup.matches >= 15
-                      ? "Run a focused set"
+                      ? "Keep logging"
                       : "Keep building signal"}
                   </p>
                 </div>
