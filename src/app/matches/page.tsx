@@ -54,9 +54,12 @@ type MatchesPageProps = {
     start_date?: string;
     end_date?: string;
     mission_only?: string;
+    page?: string;
     updated?: string;
   }>;
 };
+
+const MATCHES_PAGE_SIZE = 25;
 
 type DeckWithVersions = {
   id: string;
@@ -118,6 +121,19 @@ type MatchRow = {
     | null;
 };
 
+type MatchFilterBaseRow = Pick<
+  MatchRow,
+  | "id"
+  | "deck_version_id"
+  | "opponent_archetype"
+  | "result"
+  | "went_first"
+  | "event_type"
+  | "played_at"
+  | "deck_versions"
+  | "match_tags"
+>;
+
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en", {
     month: "short",
@@ -136,13 +152,13 @@ function notePreview(notes: string | null) {
   return compact.length > 72 ? `${compact.slice(0, 72)}...` : compact;
 }
 
-function getDeckVersion(match: MatchRow) {
+function getDeckVersion(match: Pick<MatchRow, "deck_versions">) {
   return Array.isArray(match.deck_versions)
     ? match.deck_versions[0]
     : match.deck_versions;
 }
 
-function getDeckName(match: MatchRow) {
+function getDeckName(match: Pick<MatchRow, "deck_versions">) {
   const deck = getDeckVersion(match)?.decks;
   const resolvedDeck = Array.isArray(deck) ? deck[0] : deck;
 
@@ -171,6 +187,37 @@ function parseDateEnd(value: string | undefined) {
 
   date.setUTCDate(date.getUTCDate() + 1);
   return date;
+}
+
+function parsePage(value: string | undefined) {
+  const parsed = Number.parseInt(value ?? "1", 10);
+
+  if (!Number.isFinite(parsed) || parsed < 1) {
+    return 1;
+  }
+
+  return parsed;
+}
+
+function buildMatchesPageHref(
+  params: Awaited<MatchesPageProps["searchParams"]>,
+  page: number
+) {
+  const query = new URLSearchParams();
+
+  if (params.deck_id) query.set("deck_id", params.deck_id);
+  if (params.deck_version_id) query.set("deck_version_id", params.deck_version_id);
+  if (params.opponent_archetype) {
+    query.set("opponent_archetype", params.opponent_archetype);
+  }
+  if (params.result) query.set("result", params.result);
+  if (params.start_date) query.set("start_date", params.start_date);
+  if (params.end_date) query.set("end_date", params.end_date);
+  if (params.mission_only === "1") query.set("mission_only", "1");
+  if (page > 1) query.set("page", String(page));
+
+  const search = query.toString();
+  return search ? `/matches?${search}` : "/matches";
 }
 
 export default async function MatchesPage({ searchParams }: MatchesPageProps) {
@@ -202,10 +249,10 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
     throw new Error(decksError.message);
   }
 
-  const { data: matches, error: matchesError } = await supabase
+  const { data: allMatchRowsForCoach, error: matchesError } = await supabase
     .from("matches")
     .select(
-      "id, deck_version_id, opponent_archetype, opponent_variant, result, went_first, event_type, metadata, notes, played_at, deck_versions(id, name, deck_id, decks(id, name)), match_tags(tag)"
+      "id, deck_version_id, opponent_archetype, result, went_first, event_type, played_at, deck_versions(id, name, deck_id, decks(id, name)), match_tags(tag)"
     )
     .eq("user_id", user.id)
     .order("played_at", { ascending: false });
@@ -215,8 +262,8 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
   }
 
   const userDecks = (decks ?? []) as DeckWithVersions[];
-  const matchRows = (matches ?? []) as unknown as MatchRow[];
-  const sessionCoach = buildSessionCoachInsight(matchRows);
+  const coachMatchRows = (allMatchRowsForCoach ?? []) as unknown as MatchFilterBaseRow[];
+  const sessionCoach = buildSessionCoachInsight(coachMatchRows);
   const allVersions = userDecks.flatMap((deck) =>
     deck.deck_versions.map((version) => ({
       ...version,
@@ -236,7 +283,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
   const selectedVersionId = selectedVersion?.id ?? "";
   const archetypeOptions = getArchetypeOptions(
     null,
-    matchRows.map((match) => match.opponent_archetype)
+    coachMatchRows.map((match) => match.opponent_archetype)
   );
   const selectedOpponentArchetype = archetypeOptions.includes(
     params.opponent_archetype ?? ""
@@ -247,8 +294,9 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
   const startDate = parseDateStart(params.start_date);
   const endDate = parseDateEnd(params.end_date);
   const missionOnly = params.mission_only === "1";
+  const requestedPage = parsePage(params.page);
 
-  const filteredMatches = matchRows.filter((match) => {
+  const filteredMatchSummaries = coachMatchRows.filter((match) => {
     const deckVersion = getDeckVersion(match);
     const playedAt = new Date(match.played_at);
 
@@ -285,6 +333,47 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
 
     return true;
   });
+  const totalFilteredMatches = filteredMatchSummaries.length;
+  const totalPages = Math.max(
+    1,
+    Math.ceil(totalFilteredMatches / MATCHES_PAGE_SIZE)
+  );
+  const currentPage = Math.min(requestedPage, totalPages);
+  const pageStartIndex = (currentPage - 1) * MATCHES_PAGE_SIZE;
+  const pageMatchIds = filteredMatchSummaries
+    .slice(pageStartIndex, pageStartIndex + MATCHES_PAGE_SIZE)
+    .map((match) => match.id);
+  const pageMatchIndex = new Map(
+    pageMatchIds.map((id, index) => [id, index] as const)
+  );
+  const pageStart = totalFilteredMatches === 0 ? 0 : pageStartIndex + 1;
+  const pageEnd = Math.min(
+    pageStartIndex + MATCHES_PAGE_SIZE,
+    totalFilteredMatches
+  );
+
+  const { data: pageMatches, error: pageMatchesError } = pageMatchIds.length
+    ? await supabase
+        .from("matches")
+        .select(
+          "id, deck_version_id, opponent_archetype, opponent_variant, result, went_first, event_type, metadata, notes, played_at, deck_versions(id, name, deck_id, decks(id, name)), match_tags(tag)"
+        )
+        .eq("user_id", user.id)
+        .in("id", pageMatchIds)
+    : { data: [], error: null };
+
+  if (pageMatchesError) {
+    throw new Error(pageMatchesError.message);
+  }
+
+  const filteredMatches = ((pageMatches ?? []) as unknown as MatchRow[]).sort(
+    (first, second) =>
+      (pageMatchIndex.get(first.id) ?? Number.MAX_SAFE_INTEGER) -
+      (pageMatchIndex.get(second.id) ?? Number.MAX_SAFE_INTEGER)
+  );
+  const pageHref = (page: number) => buildMatchesPageHref(params, page);
+  const hasPreviousPage = currentPage > 1;
+  const hasNextPage = currentPage < totalPages;
 
   return (
     <main className={appShell}>
@@ -293,7 +382,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
           current="matches"
           insight={{
             label: "Sessions",
-            value: `${filteredMatches.length} in view`,
+            value: `${totalFilteredMatches} in view`,
             helper: sessionCoach?.missionTitle,
           }}
         />
@@ -449,7 +538,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
           </div>
         </form>
 
-        {!matchRows.length ? (
+        {!coachMatchRows.length ? (
           <section className={emptyCard}>
             <h2 className="text-2xl font-semibold tracking-tight text-[#F8FAFC]">
               No matches logged yet.
@@ -465,17 +554,45 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
               {hasAnyDeckVersions ? "Log your first game" : "Create your first deck"}
             </Link>
           </section>
-        ) : filteredMatches.length ? (
+        ) : totalFilteredMatches ? (
           <section className={cardLarge}>
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+              <div className="flex flex-col gap-1">
               <h2 className={sectionTitle}>
                 Match History
               </h2>
               <p className={sectionCopy}>
-                {filteredMatches.length} match
-                {filteredMatches.length === 1 ? "" : "es"} in this view
-                {missionOnly ? " that advance the current mission" : ""}.
+                {totalFilteredMatches <= MATCHES_PAGE_SIZE
+                  ? `Filtered to ${totalFilteredMatches} match${
+                      totalFilteredMatches === 1 ? "" : "es"
+                    }`
+                  : `Showing ${pageStart}-${pageEnd} of ${totalFilteredMatches} matches`}
+                {missionOnly ? " that advance the current mission" : ""}. Page{" "}
+                {currentPage} of {totalPages}.
               </p>
+            </div>
+              {totalPages > 1 ? (
+                <div className="flex flex-wrap gap-2">
+                  {hasPreviousPage ? (
+                    <Link href={pageHref(currentPage - 1)} className={secondaryButton}>
+                      Previous
+                    </Link>
+                  ) : (
+                    <span className={`${secondaryButton} pointer-events-none opacity-45`}>
+                      Previous
+                    </span>
+                  )}
+                  {hasNextPage ? (
+                    <Link href={pageHref(currentPage + 1)} className={secondaryButton}>
+                      Next
+                    </Link>
+                  ) : (
+                    <span className={`${secondaryButton} pointer-events-none opacity-45`}>
+                      Next
+                    </span>
+                  )}
+                </div>
+              ) : null}
             </div>
             <div className="mt-5 flex flex-col gap-3">
               {filteredMatches.map((match) => {
@@ -671,6 +788,33 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                 );
               })}
             </div>
+            {totalPages > 1 ? (
+              <div className="mt-5 flex flex-col gap-3 border-t border-white/6 pt-4 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm text-[#94A3B8]">
+                  Showing {pageStart}-{pageEnd} of {totalFilteredMatches} matches.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {hasPreviousPage ? (
+                    <Link href={pageHref(currentPage - 1)} className={secondaryButton}>
+                      Previous page
+                    </Link>
+                  ) : (
+                    <span className={`${secondaryButton} pointer-events-none opacity-45`}>
+                      Previous page
+                    </span>
+                  )}
+                  {hasNextPage ? (
+                    <Link href={pageHref(currentPage + 1)} className={primaryButton}>
+                      Next page
+                    </Link>
+                  ) : (
+                    <span className={`${primaryButton} pointer-events-none opacity-45`}>
+                      Next page
+                    </span>
+                  )}
+                </div>
+              </div>
+            ) : null}
           </section>
         ) : (
           <section className={emptyCard}>
