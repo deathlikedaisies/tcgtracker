@@ -66,9 +66,8 @@ const recordCards = [
 
 function ProductPreview() {
   return (
-    <div className="relative min-w-0 overflow-hidden rounded-[30px] bg-[linear-gradient(180deg,rgba(13,23,40,0.96),rgba(7,17,31,0.92))] p-5 shadow-[0_34px_96px_rgba(0,0,0,0.46),0_0_78px_rgba(79,140,255,0.14),inset_0_0_0_1px_rgba(148,163,184,0.14)] backdrop-blur sm:p-6">
-      <div className="pointer-events-none absolute -right-12 top-0 size-40 rounded-full bg-[#4F8CFF]/18 blur-3xl" />
-      <div className="pointer-events-none absolute bottom-0 left-6 size-32 rounded-full bg-[#F5C84C]/10 blur-3xl" />
+    <div className="relative min-w-0 overflow-hidden rounded-[30px] bg-[linear-gradient(180deg,rgba(14,24,42,0.95),rgba(8,17,31,0.91))] p-5 shadow-[0_24px_62px_rgba(0,0,0,0.30),inset_0_0_0_1px_rgba(148,163,184,0.12)] backdrop-blur sm:p-6">
+      <div className="pointer-events-none absolute -right-10 top-2 size-32 rounded-full bg-[#4F8CFF]/10 blur-3xl" />
 
       <div className="relative">
         <div className="flex flex-wrap items-start justify-between gap-3">
@@ -86,8 +85,8 @@ function ProductPreview() {
         </div>
 
         <div className="mt-6 grid gap-5 lg:grid-cols-[180px_minmax(0,1fr)]">
-          <div className="flex flex-col items-center justify-center rounded-[24px] bg-[radial-gradient(circle_at_center,rgba(79,140,255,0.20),transparent_58%),linear-gradient(180deg,rgba(11,16,32,0.82),rgba(7,17,31,0.92))] p-5 text-center shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
-            <div className="flex size-28 items-center justify-center rounded-full bg-[#07111F]/88 shadow-[0_0_42px_rgba(79,140,255,0.18),inset_0_0_0_1px_rgba(79,140,255,0.22)]">
+          <div className="flex flex-col items-center justify-center rounded-[24px] bg-[linear-gradient(180deg,rgba(11,18,32,0.76),rgba(8,15,28,0.88))] p-5 text-center shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+            <div className="flex size-28 items-center justify-center rounded-full bg-[radial-gradient(circle_at_center,rgba(79,140,255,0.14),transparent_56%),rgba(7,17,31,0.92)] shadow-[0_0_20px_rgba(79,140,255,0.10),inset_0_0_0_1px_rgba(79,140,255,0.20)]">
               <ArchetypeSprites archetype="Mega Greninja" size="md" className="scale-[1.7]" />
             </div>
             <p className="mt-4 text-sm font-semibold text-[#F8FAFC]">Mega Greninja</p>
@@ -228,7 +227,7 @@ export default async function Home() {
 
   return (
     <main className={`${marketingShell} relative`}>
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_-10%,rgba(79,140,255,0.16),transparent_42%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_-10%,rgba(79,140,255,0.10),transparent_40%)]" />
 
       <header className="relative px-4 py-4 sm:px-6">
         <div className={`mx-auto flex max-w-7xl items-center justify-between gap-3 px-3 py-3 ${pageHeaderCard}`}>
@@ -272,7 +271,7 @@ export default async function Home() {
             </p>
             <h1 className="mt-5 max-w-3xl text-4xl font-black leading-[0.95] tracking-tight text-[#F8FAFC] min-[390px]:text-5xl sm:text-6xl xl:text-7xl">
               <span className="block">From testing games to</span>
-              <span className="block text-[#F5C84C] drop-shadow-[0_0_22px_rgba(245,200,76,0.20)] sm:whitespace-nowrap">
+              <span className="block text-[#F5C84C] drop-shadow-[0_0_12px_rgba(245,200,76,0.12)] sm:whitespace-nowrap">
                 six-prize turns.
               </span>
             </h1>

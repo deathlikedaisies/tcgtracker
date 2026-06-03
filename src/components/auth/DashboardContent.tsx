@@ -513,7 +513,7 @@ function MissionHeroCard({
   const primaryLabel = insight.ctaLabel;
 
   return (
-    <section className={`grid gap-4 p-5 sm:p-6 xl:grid-cols-[minmax(0,1.5fr)_360px] ${missionHeroCard} bg-[radial-gradient(circle_at_top_left,rgba(79,140,255,0.24),transparent_32%),radial-gradient(circle_at_top_right,rgba(245,200,76,0.16),transparent_24%),linear-gradient(180deg,rgba(15,26,45,0.98),rgba(7,17,31,0.92))] shadow-[0_28px_72px_rgba(0,0,0,0.34),0_0_44px_rgba(79,140,255,0.08),inset_0_0_0_1px_rgba(148,163,184,0.14)]`}>
+    <section className={`grid gap-4 p-5 sm:p-6 xl:grid-cols-[minmax(0,1.5fr)_360px] ${missionHeroCard} bg-[linear-gradient(180deg,rgba(14,24,42,0.96),rgba(8,17,31,0.91))] shadow-[0_22px_52px_rgba(0,0,0,0.26),inset_0_0_0_1px_rgba(148,163,184,0.12)]`}>
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2">
           <span className="inline-flex size-10 items-center justify-center rounded-2xl bg-[#F5C84C]/12 text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.18)]">
@@ -546,7 +546,7 @@ function MissionHeroCard({
           </div>
         </div>
 
-        <div className="mt-5 grid gap-3 sm:grid-cols-3">
+          <div className="mt-5 grid gap-3 sm:grid-cols-3">
           <StatusChip
             label="Mission mode"
             value={insight.missionGuidanceLabel}
@@ -569,14 +569,14 @@ function MissionHeroCard({
             Why this mission
             <ChevronDown className="size-4" aria-hidden="true" />
           </summary>
-          <div className="mt-3 grid gap-2 rounded-2xl bg-[#07111F]/40 p-4 text-sm leading-6 text-[#94A3B8]/76 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)] lg:grid-cols-2">
+          <div className="mt-3 grid gap-2 rounded-2xl bg-[#0B1020]/52 p-4 text-sm leading-6 text-[#94A3B8]/76 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)] lg:grid-cols-2">
             <p>{insight.missionReason}</p>
             <p>{insight.evidence}</p>
           </div>
         </details>
       </div>
 
-      <div className="flex flex-col rounded-[24px] bg-[#07111F]/48 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+      <div className="flex flex-col rounded-[24px] bg-[linear-gradient(180deg,rgba(11,18,32,0.76),rgba(8,15,28,0.70))] p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.09)]">
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
@@ -604,7 +604,7 @@ function MissionHeroCard({
 
         <div className="mt-3 h-2 rounded-full bg-[#11182C]">
           <div
-            className="h-2 rounded-full bg-[#F5C84C] shadow-[0_0_18px_rgba(245,200,76,0.22)]"
+            className="h-2 rounded-full bg-[#F5C84C] shadow-[0_0_10px_rgba(245,200,76,0.14)]"
             style={{ width: `${progressPercent}%` }}
           />
         </div>
@@ -613,7 +613,7 @@ function MissionHeroCard({
           {insight.progressFeedback}
         </p>
 
-        <div className="mt-5 rounded-2xl bg-[#0B1020]/66 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+        <div className="mt-5 rounded-2xl bg-[#0B1020]/60 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
           <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
             Next move
           </p>
@@ -1232,7 +1232,7 @@ export function DashboardContent({
                 }
               >
                 <div className="grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-                  <div className="rounded-[24px] bg-[radial-gradient(circle_at_top_left,rgba(79,140,255,0.14),transparent_34%),linear-gradient(180deg,rgba(11,16,32,0.86),rgba(7,17,31,0.82))] p-4 shadow-[0_16px_44px_rgba(0,0,0,0.18),inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                  <div className="rounded-[24px] bg-[linear-gradient(180deg,rgba(12,20,36,0.84),rgba(8,16,29,0.82))] p-4 shadow-[0_14px_34px_rgba(0,0,0,0.18),inset_0_0_0_1px_rgba(148,163,184,0.08)]">
                     {activeDeck ? (
                       <div className="grid gap-4">
                         <div className="flex items-start gap-3">
@@ -1329,7 +1329,7 @@ export function DashboardContent({
               </SectionCard>
 
               <details
-                className={`rounded-[26px] bg-[linear-gradient(180deg,rgba(15,26,45,0.92),rgba(7,17,31,0.88))] p-4 shadow-[0_18px_50px_rgba(0,0,0,0.18),inset_0_0_0_1px_rgba(148,163,184,0.08)] ${insightsOpen ? "" : "hidden"}`}
+                className={`rounded-[26px] bg-[linear-gradient(180deg,rgba(14,24,42,0.92),rgba(8,17,31,0.88))] p-4 shadow-[0_16px_38px_rgba(0,0,0,0.18),inset_0_0_0_1px_rgba(148,163,184,0.09)] ${insightsOpen ? "" : "hidden"}`}
                 onToggle={(event) => setInsightsOpen(event.currentTarget.open)}
               >
                 <summary className="cursor-pointer list-none marker:hidden">

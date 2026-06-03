@@ -1085,11 +1085,11 @@ export function MatchLogForm({
           ) : null}
           {wasSuccessful ? (
             <div className="grid gap-4">
-              <div className="rounded-[28px] bg-[radial-gradient(circle_at_top_left,rgba(34,197,94,0.18),transparent_34%),linear-gradient(180deg,rgba(15,26,45,0.96),rgba(7,17,31,0.88))] p-5 shadow-[0_24px_64px_rgba(0,0,0,0.28),inset_0_0_0_1px_rgba(34,197,94,0.14)] sm:p-6">
+              <div className="rounded-[28px] bg-[linear-gradient(180deg,rgba(14,24,42,0.95),rgba(8,17,31,0.90))] p-5 shadow-[0_20px_48px_rgba(0,0,0,0.24),inset_0_0_0_1px_rgba(148,163,184,0.11)] sm:p-6">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0">
                     <div className="flex items-center gap-3">
-                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[20px] bg-emerald-500/14 text-emerald-300 shadow-[0_14px_28px_rgba(34,197,94,0.12),inset_0_0_0_1px_rgba(34,197,94,0.20)]">
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[20px] bg-emerald-500/12 text-emerald-300 shadow-[0_10px_22px_rgba(34,197,94,0.08),inset_0_0_0_1px_rgba(34,197,94,0.16)]">
                       <CheckCircle2 className="size-7" aria-hidden="true" />
                     </div>
                     <div>
@@ -1199,7 +1199,7 @@ export function MatchLogForm({
               ) : null}
 
               <div className="grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
-                <div className="rounded-[24px] bg-[#07111F]/34 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                <div className="rounded-[24px] bg-[#07111F]/38 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
                   <div className="flex items-center gap-2">
                     <Sparkles className="size-4 text-[#F5C84C]" aria-hidden="true" />
                     <p className="text-sm font-semibold text-[#F8FAFC]">
@@ -1241,7 +1241,7 @@ export function MatchLogForm({
                   ) : null}
                 </div>
 
-                <div className="rounded-[24px] bg-[#0B1020]/58 p-4 shadow-[inset_0_0_0_1px_rgba(245,200,76,0.14)]">
+                <div className="rounded-[24px] bg-[#0B1020]/54 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.09)]">
                   <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#F5C84C]">
                     Next best action
                   </p>

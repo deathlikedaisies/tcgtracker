@@ -1,8 +1,14 @@
+export const appBackground =
+  "bg-[#06101F] bg-[radial-gradient(ellipse_at_20%_0%,rgba(79,140,255,0.12),transparent_30%),radial-gradient(ellipse_at_82%_14%,rgba(79,140,255,0.05),transparent_22%),linear-gradient(180deg,#07111F_0%,#0B1020_48%,#050A14_100%)]";
+
+export const marketingBackground =
+  "bg-[#06101F] bg-[radial-gradient(ellipse_at_18%_8%,rgba(79,140,255,0.14),transparent_30%),radial-gradient(ellipse_at_78%_18%,rgba(245,200,76,0.05),transparent_20%),linear-gradient(180deg,#06101F_0%,#0B1020_48%,#050A14_100%)]";
+
 export const appShell =
-  "min-h-screen w-full max-w-full overflow-x-hidden bg-[#06101F] bg-[radial-gradient(ellipse_at_20%_0%,rgba(79,140,255,0.18),transparent_34%),radial-gradient(ellipse_at_85%_15%,rgba(124,58,237,0.10),transparent_30%),linear-gradient(180deg,#07111F_0%,#0B1020_48%,#050A14_100%)] px-4 py-4 text-[#F8FAFC] sm:px-6 sm:py-6";
+  `min-h-screen w-full max-w-full overflow-x-hidden ${appBackground} px-4 py-4 text-[#F8FAFC] sm:px-6 sm:py-6`;
 
 export const marketingShell =
-  "min-h-screen w-full max-w-full overflow-x-hidden bg-[#06101F] bg-[radial-gradient(ellipse_at_18%_10%,rgba(79,140,255,0.22),transparent_34%),radial-gradient(ellipse_at_78%_22%,rgba(245,200,76,0.08),transparent_24%),linear-gradient(180deg,#06101F_0%,#0B1020_48%,#050A14_100%)] text-[#F8FAFC]";
+  `min-h-screen w-full max-w-full overflow-x-hidden ${marketingBackground} text-[#F8FAFC]`;
 
 export const appContainer = "mx-auto flex w-full max-w-full min-w-0 flex-col gap-4 overflow-x-hidden sm:gap-5";
 
@@ -12,7 +18,7 @@ export const appFrame =
 export const appMain = "flex min-w-0 flex-col gap-4 overflow-x-hidden sm:gap-5";
 
 export const pageHeader =
-  "rounded-[26px] bg-[linear-gradient(180deg,rgba(15,26,45,0.94),rgba(7,17,31,0.86))] p-4 shadow-[0_18px_50px_rgba(0,0,0,0.24),inset_0_0_0_1px_rgba(148,163,184,0.09)] flex flex-col gap-3 backdrop-blur lg:flex-row lg:items-start lg:justify-between sm:p-5";
+  "rounded-[26px] bg-[linear-gradient(180deg,rgba(15,26,45,0.95),rgba(8,17,31,0.90))] p-4 shadow-[0_14px_38px_rgba(0,0,0,0.22),inset_0_0_0_1px_rgba(148,163,184,0.11)] flex flex-col gap-3 backdrop-blur lg:flex-row lg:items-start lg:justify-between sm:p-5";
 
 export const pageHeaderCard = pageHeader;
 
@@ -34,19 +40,19 @@ export const sectionTitle = "text-lg font-semibold tracking-tight text-[#F8FAFC]
 export const sectionCopy = "text-sm leading-6 text-[#94A3B8]/72";
 
 export const card =
-  "rounded-[22px] bg-[linear-gradient(180deg,rgba(15,26,45,0.90),rgba(7,17,31,0.84))] p-3.5 shadow-[0_16px_42px_rgba(0,0,0,0.24),inset_0_0_0_1px_rgba(148,163,184,0.08)] backdrop-blur sm:p-4";
+  "rounded-[22px] bg-[linear-gradient(180deg,rgba(14,24,42,0.92),rgba(8,17,31,0.88))] p-3.5 shadow-[0_14px_34px_rgba(0,0,0,0.22),inset_0_0_0_1px_rgba(148,163,184,0.09)] backdrop-blur sm:p-4";
 
 export const cardLarge =
-  "rounded-[26px] bg-[linear-gradient(180deg,rgba(15,26,45,0.92),rgba(7,17,31,0.88))] p-4 shadow-[0_20px_56px_rgba(0,0,0,0.26),inset_0_0_0_1px_rgba(148,163,184,0.09)] backdrop-blur sm:p-5";
+  "rounded-[26px] bg-[linear-gradient(180deg,rgba(14,24,42,0.94),rgba(8,17,31,0.90))] p-4 shadow-[0_18px_46px_rgba(0,0,0,0.24),inset_0_0_0_1px_rgba(148,163,184,0.10)] backdrop-blur sm:p-5";
 
 export const glassPanel =
-  "rounded-[26px] bg-[#0B1020]/52 shadow-[0_18px_54px_rgba(0,0,0,0.26),inset_0_0_0_1px_rgba(148,163,184,0.11)] backdrop-blur";
+  "rounded-[26px] bg-[linear-gradient(180deg,rgba(12,20,36,0.82),rgba(8,16,29,0.78))] shadow-[0_14px_34px_rgba(0,0,0,0.22),inset_0_0_0_1px_rgba(148,163,184,0.10)] backdrop-blur";
 
 export const glassPanelStrong =
-  "rounded-[26px] bg-[linear-gradient(180deg,rgba(15,26,45,0.88),rgba(7,17,31,0.92))] shadow-[0_24px_72px_rgba(0,0,0,0.32),0_0_42px_rgba(79,140,255,0.055),inset_0_0_0_1px_rgba(148,163,184,0.12)] backdrop-blur";
+  "rounded-[26px] bg-[linear-gradient(180deg,rgba(14,24,42,0.92),rgba(8,17,31,0.90))] shadow-[0_18px_44px_rgba(0,0,0,0.24),inset_0_0_0_1px_rgba(148,163,184,0.11)] backdrop-blur";
 
 export const emptyCard =
-  "rounded-[26px] bg-[#0F1A2D]/66 p-6 shadow-[0_18px_52px_rgba(0,0,0,0.22),inset_0_0_0_1px_rgba(79,140,255,0.16)] sm:p-8";
+  "rounded-[26px] bg-[linear-gradient(180deg,rgba(14,24,42,0.88),rgba(8,17,31,0.82))] p-6 shadow-[0_16px_38px_rgba(0,0,0,0.22),inset_0_0_0_1px_rgba(148,163,184,0.11)] sm:p-8";
 
 export const divider = "divide-y divide-white/6";
 
@@ -74,12 +80,15 @@ export const subtlePill =
   "rounded-full bg-[#07111F]/58 px-2.5 py-1 text-xs text-[#94A3B8]/86 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]";
 
 export const metricCard =
-  "rounded-[20px] bg-[#0B1020]/42 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.09)]";
+  "rounded-[20px] bg-[linear-gradient(180deg,rgba(11,18,32,0.72),rgba(8,14,26,0.64))] p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.09)]";
+
+export const accentGlow = "shadow-[0_0_18px_rgba(79,140,255,0.12)]";
 
 export const primaryPanel = cardLarge;
 export const secondaryPanel = card;
 export const statCard = metricCard;
-export const missionHeroCard = cardLarge;
+export const missionHeroCard =
+  "rounded-[26px] bg-[linear-gradient(180deg,rgba(14,24,42,0.95),rgba(8,17,31,0.91))] p-4 shadow-[0_20px_48px_rgba(0,0,0,0.24),inset_0_0_0_1px_rgba(148,163,184,0.11)] backdrop-blur sm:p-5";
 export const missionMiniCard = card;
 export const insightCard = card;
 export const formSectionCard = glassPanelStrong;

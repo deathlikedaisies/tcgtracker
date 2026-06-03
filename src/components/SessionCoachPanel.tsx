@@ -36,7 +36,7 @@ export function SessionCoachPanel({
     ctaLabel ?? insight.ctaLabel;
 
   return (
-    <section className={`${missionHeroCard} p-3 shadow-[0_22px_58px_rgba(0,0,0,0.28),0_0_36px_rgba(245,200,76,0.04),inset_0_0_0_1px_rgba(245,200,76,0.13)] sm:p-4`}>
+    <section className={`${missionHeroCard} p-3 shadow-[0_18px_42px_rgba(0,0,0,0.24),inset_0_0_0_1px_rgba(148,163,184,0.11)] sm:p-4`}>
       <div className="flex flex-col gap-2.5 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
@@ -56,7 +56,7 @@ export function SessionCoachPanel({
           <h2 className="mt-2 truncate text-2xl font-bold leading-tight tracking-tight text-[#F8FAFC] sm:text-3xl">
             {insight.missionTitle}
           </h2>
-          <div className="mt-1.5 flex min-w-0 items-center gap-2 rounded-[14px] bg-[#0B1020]/24 px-2.5 py-1.5 sm:w-fit">
+          <div className="mt-1.5 flex min-w-0 items-center gap-2 rounded-[14px] bg-[#0B1020]/46 px-2.5 py-1.5 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)] sm:w-fit">
             <ArchetypeSprites archetype={insight.archetype} className="shrink-0" />
             <p className="min-w-0 truncate text-sm font-medium text-[#94A3B8]/78">
               {insight.missionContextLabel}
@@ -99,7 +99,7 @@ export function SessionCoachPanel({
               {contextProgress}
             </span>
           </div>
-          <div className="mt-1.5 h-0.5 overflow-hidden rounded-full bg-[#1A2238]/38">
+          <div className="mt-1.5 h-0.5 overflow-hidden rounded-full bg-[#1A2238]/54">
             <div
               className={`h-0.5 rounded-full bg-[#F5C84C]/58 transition-all duration-500 ${
                 isPostSave ? "animate-pulse" : ""
@@ -119,7 +119,7 @@ export function SessionCoachPanel({
       ) : null}
 
       {insight.completionStatus ? (
-        <div className={`${statCard} mt-3 bg-emerald-500/10 p-3 shadow-[inset_0_0_0_1px_rgba(34,197,94,0.18)]`}>
+        <div className={`${statCard} mt-3 bg-[linear-gradient(180deg,rgba(10,24,20,0.88),rgba(8,17,31,0.86))] p-3 shadow-[inset_0_0_0_1px_rgba(34,197,94,0.14)]`}>
           <p className="text-xs font-semibold uppercase text-emerald-200">
             {insight.completionStatus}
           </p>
@@ -136,7 +136,7 @@ export function SessionCoachPanel({
         <summary className="inline-flex h-7 cursor-pointer list-none items-center rounded-md px-1.5 text-[11px] font-medium text-[#94A3B8]/62 transition hover:bg-[#0B1020]/30 hover:text-[#F8FAFC] marker:hidden">
           Why this mission
         </summary>
-        <div className={`${statCard} mt-2 grid gap-2 bg-[#0B1020]/42 p-3 text-sm text-[#94A3B8] sm:grid-cols-2`}>
+        <div className={`${statCard} mt-2 grid gap-2 bg-[linear-gradient(180deg,rgba(11,18,32,0.72),rgba(8,14,26,0.66))] p-3 text-sm text-[#94A3B8] sm:grid-cols-2`}>
           <p>{insight.missionReason}</p>
           <p>{insight.evidence}</p>
           <p>{insight.criteria}</p>
