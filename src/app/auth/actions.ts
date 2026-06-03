@@ -1,14 +1,20 @@
 "use server";
 
+import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { SupabaseConfigError } from "@/lib/supabase-config";
 
-type AuthMode = "login" | "signup";
+export type AuthMode = "login" | "signup";
 
 export type AuthResult = {
   ok: boolean;
   message?: string;
   needsEmailConfirmation?: boolean;
+};
+
+export type AuthFormState = {
+  message: string;
+  variant?: "error" | "success";
 };
 
 const AUTH_MESSAGES = {
@@ -85,4 +91,56 @@ export async function submitAuthForm(
     logSafeAuthError("Supabase auth request failed", error);
     return { ok: false, message: normalizeAuthError(error) };
   }
+}
+
+export async function submitAuthFormAction(
+  mode: AuthMode,
+  authConfigured: boolean,
+  _previousState: AuthFormState,
+  formData: FormData
+): Promise<AuthFormState> {
+  if (!authConfigured) {
+    return {
+      message:
+        "SixPrizer is not configured correctly. Please contact support.",
+      variant: "error",
+    };
+  }
+
+  const email = String(formData.get("email") ?? "").trim();
+  const password = String(formData.get("password") ?? "");
+  const confirmPassword = String(formData.get("confirm-password") ?? "");
+
+  if (!email || !password) {
+    return {
+      message: "Enter your email and password.",
+      variant: "error",
+    };
+  }
+
+  if (mode === "signup" && password !== confirmPassword) {
+    return {
+      message: "Passwords do not match.",
+      variant: "error",
+    };
+  }
+
+  const result = await submitAuthForm(mode, email, password);
+
+  if (!result.ok) {
+    return {
+      message: result.message ?? AUTH_MESSAGES.fallback,
+      variant: "error",
+    };
+  }
+
+  if (result.needsEmailConfirmation) {
+    // TODO: Supabase confirmation email subject/body and sender branding should be customized in the Supabase dashboard/custom SMTP.
+    return {
+      message: "Check your email to confirm your account, then log in.",
+      variant: "success",
+    };
+  }
+
+  redirect("/dashboard");
 }
