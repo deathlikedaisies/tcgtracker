@@ -31,6 +31,7 @@ import { SessionCoachPanel } from "@/components/SessionCoachPanel";
 import { getArchetypeOptions } from "@/lib/archetypes";
 import {
   analyzeDeckList,
+  getDecklistHealth,
   type DecklistAnalysis,
   isClearArchetypeSuggestion,
 } from "@/lib/decklist";
@@ -429,6 +430,11 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                   const insight = versionInsightById.get(version.id);
                   const analysis = insight?.analysis;
                   const parseError = insight?.parseError ?? null;
+                  const listHealth = getDecklistHealth(
+                    analysis ?? null,
+                    parseError,
+                    Boolean(version.decklist?.trim())
+                  );
                   const versionMatches = insight?.versionMatches ?? [];
                   const testStatus = getVersionTestStatus(versionMatches);
                   const versionName = version.name?.trim() || "Untitled version";
@@ -567,7 +573,7 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                                 No clear archetype detected
                               </p>
                               <p className="mt-2 text-sm leading-6 text-[#94A3B8]/72">
-                                Evidence is too thin to trust a parser guess. Keep the manual deck archetype as the primary identity here.
+                                No clear archetype detected. Complete the list or set the deck family manually before trusting the parser.
                               </p>
                             </div>
                           )}
@@ -621,6 +627,16 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                           </div>
                           {analysis?.cards.length ? (
                             <div className="mt-4 grid gap-3">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <span
+                                  className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${listHealth.toneClass}`}
+                                >
+                                  {listHealth.label}
+                                </span>
+                                <span className="text-xs font-semibold uppercase tracking-[0.08em] text-[#94A3B8]/72">
+                                  {listHealth.summary}
+                                </span>
+                              </div>
                               <div className="grid gap-3 sm:grid-cols-2">
                                 <div className="rounded-2xl bg-[#0B1020]/66 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
                                   <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
@@ -640,9 +656,7 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                                 </div>
                               </div>
                               <p className="text-sm leading-6 text-[#94A3B8]/72">
-                                {analysis.unresolved.length
-                                  ? "Some card names still need review. Open the raw list and clean up unresolved entries before checking legality in detail."
-                                  : "Local list parsed cleanly. Full legality lookup is not loaded on first view."}
+                                {listHealth.detail}
                               </p>
                               <p className="text-xs text-[#94A3B8]/68">
                                 Open deck details to review card resolution before any deeper legality check.
@@ -650,11 +664,11 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                             </div>
                           ) : parseError ? (
                             <p className="mt-4 text-sm leading-6 text-[#94A3B8]/72">
-                              {parseError}
+                              {listHealth.detail}
                             </p>
                           ) : (
                             <p className="mt-4 text-sm leading-6 text-[#94A3B8]/72">
-                              Add a parsed list to unlock local card-resolution checks.
+                              {listHealth.detail}
                             </p>
                           )}
                         </div>

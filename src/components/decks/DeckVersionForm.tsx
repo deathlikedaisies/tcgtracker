@@ -10,7 +10,7 @@ import {
   sectionCopy,
   textarea,
 } from "@/components/brand-styles";
-import { analyzeDeckList } from "@/lib/decklist";
+import { analyzeDeckList, getDecklistHealth } from "@/lib/decklist";
 
 type DeckVersionFormProps = {
   action: (formData: FormData) => void;
@@ -31,6 +31,10 @@ export function DeckVersionForm({
   const [name, setName] = useState("");
   const nameInputRef = useRef<HTMLInputElement>(null);
   const analysis = useMemo(() => analyzeDeckList(decklist), [decklist]);
+  const decklistHealth = useMemo(
+    () => getDecklistHealth(analysis, null, Boolean(decklist.trim())),
+    [analysis, decklist]
+  );
   const hasCards = analysis.cards.length > 0;
   const hasSuggestion = analysis.suggestion.isClearSuggestion;
 
@@ -110,6 +114,59 @@ export function DeckVersionForm({
           />
         </div>
 
+        <div className="rounded-[22px] bg-[#07111F]/42 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+          <div className="flex flex-wrap items-center gap-2">
+            <span
+              className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${decklistHealth.toneClass}`}
+            >
+              {decklistHealth.label}
+            </span>
+            <span className="text-xs font-semibold uppercase tracking-[0.08em] text-[#94A3B8]/76">
+              {decklistHealth.summary}
+            </span>
+          </div>
+
+          <div className="mt-4 grid gap-3 sm:grid-cols-5">
+            {[
+              {
+                label: "Total",
+                value: decklist.trim() ? `${analysis.totalCards} / 60` : "0 / 60",
+                tone:
+                  analysis.totalCards === 60 && decklist.trim()
+                    ? "text-emerald-200"
+                    : "text-[#FFE28A]",
+              },
+              { label: "Pokémon", value: String(analysis.pokemonCount), tone: "text-[#F8FAFC]" },
+              { label: "Trainer", value: String(analysis.trainerCount), tone: "text-[#F8FAFC]" },
+              { label: "Energy", value: String(analysis.energyCount), tone: "text-[#F8FAFC]" },
+              {
+                label: "Unresolved",
+                value: String(analysis.unresolved.length),
+                tone:
+                  analysis.unresolved.length === 0
+                    ? "text-emerald-200"
+                    : "text-[#FFE28A]",
+              },
+            ].map((stat) => (
+              <div
+                key={stat.label}
+                className="rounded-[18px] bg-[#0B1020]/66 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]"
+              >
+                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                  {stat.label}
+                </p>
+                <p className={`mt-2 text-base font-semibold ${stat.tone}`}>
+                  {stat.value}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <p className="mt-4 text-sm leading-6 text-[#94A3B8]/76">
+            {decklistHealth.detail}
+          </p>
+        </div>
+
         {hasCards ? (
           <div className="rounded-[22px] bg-[#07111F]/42 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
             <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.08em] text-[#94A3B8]/76">
@@ -172,7 +229,7 @@ export function DeckVersionForm({
                   No clear archetype detected
                 </p>
                 <p className="mt-2 text-sm leading-6 text-[#94A3B8]/72">
-                  That is fine for rogue or early builds. Use the manual deck archetype on the deck page if you already know the family.
+                  No clear archetype detected. Complete the list or set manually if you already know the deck family.
                 </p>
               </div>
             )}

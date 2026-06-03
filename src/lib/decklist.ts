@@ -40,6 +40,20 @@ export type DecklistAnalysis = {
   suggestion: ArchetypeSuggestion;
 };
 
+export type DecklistHealthState =
+  | "no_list"
+  | "complete"
+  | "incomplete"
+  | "needs_review";
+
+export type DecklistHealth = {
+  state: DecklistHealthState;
+  label: "No list added" | "Complete list" | "Incomplete list" | "Needs review";
+  summary: string;
+  detail: string;
+  toneClass: string;
+};
+
 type CardGroup = readonly string[];
 
 type ArchetypeRule = {
@@ -542,5 +556,84 @@ export function analyzeDeckList(decklist: string | null | undefined): DecklistAn
       .reduce((sum, card) => sum + card.quantity, 0),
     keyPokemon,
     suggestion: suggestArchetype(cards),
+  };
+}
+
+export function getDecklistHealth(
+  analysis: DecklistAnalysis | null,
+  parseError: string | null,
+  hasDecklist: boolean
+): DecklistHealth {
+  if (parseError) {
+    return {
+      state: "needs_review",
+      label: "Needs review",
+      summary: "List could not be parsed",
+      detail: parseError,
+      toneClass:
+        "bg-[#F43F5E]/10 text-rose-200 shadow-[inset_0_0_0_1px_rgba(244,63,94,0.16)]",
+    };
+  }
+
+  if (!hasDecklist) {
+    return {
+      state: "no_list",
+      label: "No list added",
+      summary: "No list added",
+      detail:
+        "No decklist added yet. You can add one later, but match labels may be less informative.",
+      toneClass:
+        "bg-[#4F8CFF]/10 text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.16)]",
+    };
+  }
+
+  if (!analysis) {
+    return {
+      state: "needs_review",
+      label: "Needs review",
+      summary: "List needs review",
+      detail: "This list needs review before trusting the summary.",
+      toneClass:
+        "bg-[#F43F5E]/10 text-rose-200 shadow-[inset_0_0_0_1px_rgba(244,63,94,0.16)]",
+    };
+  }
+
+  if (analysis.totalCards !== 60 || analysis.unresolved.length > 0) {
+    const issueCount = [];
+
+    if (analysis.totalCards !== 60) {
+      issueCount.push(`${analysis.totalCards} cards`);
+    }
+
+    if (analysis.unresolved.length > 0) {
+      issueCount.push(
+        `${analysis.unresolved.length} unresolved line${
+          analysis.unresolved.length === 1 ? "" : "s"
+        }`
+      );
+    }
+
+    return {
+      state: analysis.unresolved.length > 0 ? "needs_review" : "incomplete",
+      label: analysis.unresolved.length > 0 ? "Needs review" : "Incomplete list",
+      summary: issueCount.join(" · "),
+      detail:
+        analysis.unresolved.length > 0
+          ? `${analysis.unresolved.length} line${
+              analysis.unresolved.length === 1 ? "" : "s"
+            } could not be parsed. You can still save, but archetype detection may be less accurate.`
+          : `This list has ${analysis.totalCards} parsed cards. Most competitive Pokémon TCG decks should have 60.`,
+      toneClass:
+        "bg-[#F5C84C]/12 text-[#FFE28A] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]",
+    };
+  }
+
+  return {
+    state: "complete",
+    label: "Complete list",
+    summary: "60 cards · clean parse",
+    detail: "This list parsed cleanly as a 60-card deck.",
+    toneClass:
+      "bg-emerald-500/10 text-emerald-200 shadow-[inset_0_0_0_1px_rgba(34,197,94,0.16)]",
   };
 }

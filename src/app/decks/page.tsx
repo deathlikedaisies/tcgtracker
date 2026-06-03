@@ -36,6 +36,7 @@ import { SixPrizerLogo } from "@/components/SixPrizerLogo";
 import { getArchetypeOptions } from "@/lib/archetypes";
 import {
   analyzeDeckList,
+  getDecklistHealth,
   type DecklistAnalysis,
 } from "@/lib/decklist";
 import { LATEST_FORMAT } from "@/lib/formats";
@@ -303,6 +304,11 @@ export default async function DecksPage() {
       const { analysis, parseError } = safeAnalyzeDeckList(
         typeof activeVersion?.decklist === "string" ? activeVersion.decklist : null
       );
+      const listHealth = getDecklistHealth(
+        analysis,
+        parseError,
+        Boolean(activeVersion?.decklist?.trim())
+      );
       const activeMission =
         index === 0 && sessionCoach ? sessionCoach.missionTitle : null;
       const activeVersionName = activeVersion
@@ -324,6 +330,8 @@ export default async function DecksPage() {
           : activeVersionId
             ? "This active version does not have a deck list yet."
             : "Add a first version to start list checks.";
+      const resolvedListParseSummary = listParseSummary ? listHealth.summary : listHealth.summary;
+      const resolvedListParseDetail = listParseDetail ? listHealth.detail : listHealth.detail;
       const versionPrompt = !versions.length
         ? "Add first version"
         : !performance.total
@@ -365,8 +373,8 @@ export default async function DecksPage() {
         analysis,
         parseError,
         activeMission,
-        listParseSummary,
-        listParseDetail,
+        listParseSummary: resolvedListParseSummary,
+        listParseDetail: resolvedListParseDetail,
         versionPrompt,
         buildFailed: false,
       };
@@ -537,19 +545,14 @@ export default async function DecksPage() {
                   const removeDeck = deleteDeck.bind(null, summary.deckId);
                   const activeVersionName = summary.activeVersionName;
                   const deckArchetype = summary.deckArchetype;
+                  const listHealth = getDecklistHealth(
+                    summary.analysis,
+                    summary.parseError,
+                    Boolean(summary.activeVersion?.decklist?.trim())
+                  );
 
-                  const localListSummary = summary.analysis
-                    ? `${summary.analysis.totalCards} cards${summary.analysis.unresolved.length ? ` / ${summary.analysis.unresolved.length} unresolved` : ""}`
-                    : summary.parseError
-                      ? "List parse issue"
-                      : "Add list to parse";
-                  const localListDetail = summary.parseError
-                    ? summary.parseError
-                    : summary.analysis
-                    ? `${summary.analysis.pokemonCount} Pokemon / ${summary.analysis.trainerCount} Trainer / ${summary.analysis.energyCount} Energy`
-                    : summary.activeVersion
-                      ? "Open deck for legality details."
-                      : "Add a first version to start list checks.";
+                  const localListSummary = listHealth.summary;
+                  const localListDetail = listHealth.detail;
                   const versionPrompt = !summary.totalVersions
                     ? "Add first version"
                     : !summary.performance.total
