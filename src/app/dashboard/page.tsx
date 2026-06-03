@@ -3,10 +3,13 @@ import {
   buildSessionCoachInsight,
   buildTrainingProgressSummary,
 } from "@/lib/session-coach";
+import { buildPrimaryDeckInsight } from "@/lib/coach-insights";
 import {
   countMatchResults,
+  parseMatchMetadata,
   type MatchResult,
 } from "@/lib/match-types";
+import type { ReviewMatch } from "@/lib/review-analysis";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
 
@@ -18,6 +21,7 @@ type MatchRow = {
   went_first: boolean | null;
   event_type: string | null;
   played_at: string;
+  metadata: unknown;
   match_tags: {
     tag: string;
   }[] | null;
@@ -77,6 +81,22 @@ function formatChartDate(value: string) {
   }).format(new Date(value));
 }
 
+function toReviewMatch(match: MatchRow): ReviewMatch {
+  return {
+    id: match.id,
+    deckId: "",
+    deckName: "",
+    deckVersionId: match.deck_version_id,
+    deckVersionName: getDeckVersionName(match),
+    deckVersionIsActive: false,
+    opponentArchetype: match.opponent_archetype,
+    result: match.result,
+    wentFirst: match.went_first,
+    playedAt: match.played_at,
+    metadata: parseMatchMetadata(match.metadata),
+  };
+}
+
 export default async function DashboardPage() {
   const supabase = await createServerSupabaseClient();
   const {
@@ -100,7 +120,7 @@ export default async function DashboardPage() {
   const { data: matches, error: matchesError } = await supabase
     .from("matches")
     .select(
-      "id, deck_version_id, opponent_archetype, result, went_first, event_type, played_at, match_tags(tag), deck_versions(name)"
+      "id, deck_version_id, opponent_archetype, result, went_first, event_type, played_at, metadata, match_tags(tag), deck_versions(name)"
     )
     .eq("user_id", user.id)
     .order("played_at", { ascending: false });
@@ -116,6 +136,8 @@ export default async function DashboardPage() {
   );
   const sessionCoach = buildSessionCoachInsight(matchRows);
   const trainingProgress = buildTrainingProgressSummary(matchRows);
+  const reviewMatches = matchRows.map(toReviewMatch);
+  const deckCoachInsight = buildPrimaryDeckInsight(reviewMatches);
   const filteredMatches = matchRows;
   const totalRecord = getRecord(filteredMatches);
   const wentFirstRecord = getRecord(
@@ -230,6 +252,7 @@ export default async function DashboardPage() {
       deckPerformanceChart={deckPerformanceChart}
       sessionCoach={sessionCoach}
       trainingProgress={trainingProgress}
+      deckCoachInsight={deckCoachInsight}
     />
   );
 }

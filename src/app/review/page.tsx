@@ -355,6 +355,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
             </section>
           ) : (
             <>
+              {/* Sample context row */}
               <section className="grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
                 <article className={`p-5 ${glassPanel}`}>
                   <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
@@ -394,38 +395,104 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
                 </article>
               </section>
 
-              <section className="grid gap-4 xl:grid-cols-2">
-                {analysis.cards.map((card) => (
-                  <article key={card.key} className={`p-5 ${glassPanel}`}>
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div>
-                        <h2 className={sectionTitle}>{card.title}</h2>
-                        <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
-                          {card.explanation}
+              {/* Primary coach insight — shown prominently above the secondary grid */}
+              {analysis.cards.length > 0 ? (
+                <section
+                  className={`rounded-[24px] bg-[linear-gradient(180deg,rgba(12,20,36,0.96),rgba(8,16,29,0.92))] p-5 sm:p-6 ${
+                    analysis.cards[0].tone === "rose"
+                      ? "shadow-[0_22px_52px_rgba(0,0,0,0.26),inset_0_0_0_1px_rgba(244,63,94,0.22)]"
+                      : analysis.cards[0].tone === "emerald"
+                        ? "shadow-[0_22px_52px_rgba(0,0,0,0.26),inset_0_0_0_1px_rgba(34,197,94,0.22)]"
+                        : analysis.cards[0].tone === "gold"
+                          ? "shadow-[0_22px_52px_rgba(0,0,0,0.26),inset_0_0_0_1px_rgba(245,200,76,0.24)]"
+                          : "shadow-[0_22px_52px_rgba(0,0,0,0.26),inset_0_0_0_1px_rgba(79,140,255,0.20)]"
+                  }`}
+                >
+                  <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:gap-8">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="inline-flex size-8 items-center justify-center rounded-[12px] bg-[#F5C84C]/12 text-xs font-bold text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
+                          TC
+                        </span>
+                        <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#94A3B8]/58">
+                          Coach says
+                        </span>
+                        <span
+                          className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${getToneClass(analysis.cards[0].tone)}`}
+                        >
+                          {analysis.sampleStatusLabel}
+                        </span>
+                      </div>
+                      <h2 className="mt-4 text-2xl font-bold tracking-tight text-[#F8FAFC] sm:text-3xl">
+                        {analysis.cards[0].title}
+                      </h2>
+                      <p className="mt-3 text-base leading-7 text-[#D6E0F0]/84">
+                        {analysis.cards[0].explanation}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 flex-col gap-3 xl:w-72">
+                      <div className="rounded-[16px] bg-[#0B1020]/70 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                          Evidence
+                        </p>
+                        <p className={`mt-2 text-sm font-medium ${
+                          analysis.cards[0].tone === "rose"
+                            ? "text-rose-200"
+                            : analysis.cards[0].tone === "emerald"
+                              ? "text-emerald-300"
+                              : analysis.cards[0].tone === "gold"
+                                ? "text-[#F5C84C]"
+                                : "text-[#B8D1FF]"
+                        }`}>
+                          {analysis.cards[0].evidence}
                         </p>
                       </div>
-                      <span
-                        className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${getToneClass(card.tone)}`}
+                      <Link
+                        href={analysis.cards[0].ctaHref}
+                        className="inline-flex h-11 items-center justify-center rounded-[14px] bg-[#F5C84C] px-5 text-sm font-bold text-[#0B1020] shadow-[0_12px_28px_rgba(245,200,76,0.20)] transition hover:-translate-y-0.5 hover:bg-[#ffd85f] active:translate-y-0"
                       >
-                        Insight
-                      </span>
-                    </div>
-                    <div className="mt-4 rounded-[18px] bg-[#0B1020]/66 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
-                        Evidence
-                      </p>
-                      <p className="mt-2 text-sm font-medium text-[#F8FAFC]">
-                        {card.evidence}
-                      </p>
-                    </div>
-                    <div className="mt-4">
-                      <Link href={card.ctaHref} className={primaryButton}>
-                        {card.ctaLabel}
+                        {analysis.cards[0].ctaLabel}
                       </Link>
                     </div>
-                  </article>
-                ))}
-              </section>
+                  </div>
+                </section>
+              ) : null}
+
+              {/* Secondary insight cards */}
+              {analysis.cards.length > 1 ? (
+                <section className="grid gap-4 xl:grid-cols-2">
+                  {analysis.cards.slice(1).map((card) => (
+                    <article key={card.key} className={`p-5 ${glassPanel}`}>
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                          <h2 className={sectionTitle}>{card.title}</h2>
+                          <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
+                            {card.explanation}
+                          </p>
+                        </div>
+                        <span
+                          className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${getToneClass(card.tone)}`}
+                        >
+                          Insight
+                        </span>
+                      </div>
+                      <div className="mt-4 rounded-[18px] bg-[#0B1020]/66 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                          Evidence
+                        </p>
+                        <p className="mt-2 text-sm font-medium text-[#F8FAFC]">
+                          {card.evidence}
+                        </p>
+                      </div>
+                      <div className="mt-4">
+                        <Link href={card.ctaHref} className={primaryButton}>
+                          {card.ctaLabel}
+                        </Link>
+                      </div>
+                    </article>
+                  ))}
+                </section>
+              ) : null}
             </>
           )}
         </div>

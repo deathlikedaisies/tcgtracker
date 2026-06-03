@@ -54,6 +54,7 @@ import type {
   SessionCoachInsight,
   TrainingProgressSummary,
 } from "@/lib/session-coach";
+import type { ReviewInsightCard } from "@/lib/review-analysis";
 import { createClient } from "@/lib/supabase";
 
 type DeckSummary = {
@@ -132,6 +133,7 @@ type DashboardContentProps = {
   deckPerformanceChart: DeckPerformanceChartPoint[];
   sessionCoach: SessionCoachInsight | null;
   trainingProgress: TrainingProgressSummary;
+  deckCoachInsight?: ReviewInsightCard | null;
 };
 
 type Tone = "blue" | "gold" | "green" | "rose";
@@ -639,6 +641,65 @@ function MissionHeroCard({
   );
 }
 
+function DeckCoachCard({ insight }: { insight: ReviewInsightCard }) {
+  const borderColor =
+    insight.tone === "rose"
+      ? "shadow-[0_18px_46px_rgba(0,0,0,0.22),inset_0_0_0_1px_rgba(244,63,94,0.20)]"
+      : insight.tone === "emerald"
+        ? "shadow-[0_18px_46px_rgba(0,0,0,0.22),inset_0_0_0_1px_rgba(34,197,94,0.20)]"
+        : insight.tone === "gold"
+          ? "shadow-[0_18px_46px_rgba(0,0,0,0.22),inset_0_0_0_1px_rgba(245,200,76,0.22)]"
+          : "shadow-[0_18px_46px_rgba(0,0,0,0.22),inset_0_0_0_1px_rgba(79,140,255,0.20)]";
+
+  const accentColor =
+    insight.tone === "rose"
+      ? "text-rose-200"
+      : insight.tone === "emerald"
+        ? "text-emerald-300"
+        : insight.tone === "gold"
+          ? "text-[#F5C84C]"
+          : "text-[#4F8CFF]";
+
+  return (
+    <section
+      className={`rounded-[24px] bg-[linear-gradient(180deg,rgba(12,20,36,0.94),rgba(8,16,29,0.90))] p-5 ${borderColor}`}
+    >
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="inline-flex size-8 items-center justify-center rounded-[12px] bg-[#F5C84C]/12 text-xs font-bold text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
+              TC
+            </span>
+            <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#94A3B8]/58">
+              Coach says
+            </span>
+          </div>
+          <h2 className={`mt-3 text-xl font-bold tracking-tight text-[#F8FAFC] sm:text-2xl`}>
+            {insight.title}
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-[#D6E0F0]/82">
+            {insight.explanation}
+          </p>
+        </div>
+        <Link
+          href="/review"
+          className={`shrink-0 inline-flex h-10 items-center justify-center rounded-[14px] bg-[#F5C84C] px-4 text-sm font-bold text-[#0B1020] shadow-[0_10px_28px_rgba(245,200,76,0.20)] transition hover:-translate-y-0.5 hover:bg-[#ffd85f] active:translate-y-0 sm:self-start`}
+        >
+          Open Review
+        </Link>
+      </div>
+      <div className="mt-4 rounded-[14px] bg-[#0B1020]/60 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+          Evidence
+        </p>
+        <p className={`mt-1 text-sm font-medium ${accentColor}`}>
+          {insight.evidence}
+        </p>
+      </div>
+    </section>
+  );
+}
+
 function SetupChecklist({
   hasDecks,
   hasAnyDeckVersions,
@@ -749,6 +810,7 @@ export function DashboardContent({
   deckPerformanceChart,
   sessionCoach,
   trainingProgress,
+  deckCoachInsight,
 }: DashboardContentProps) {
   const router = useRouter();
   const supabase = createClient();
@@ -1000,6 +1062,10 @@ export function DashboardContent({
                   nextActionTitle={nextAction.title}
                   nextActionCopy={nextAction.copy}
                 />
+              ) : null}
+
+              {deckCoachInsight ? (
+                <DeckCoachCard insight={deckCoachInsight} />
               ) : null}
 
               <section className="grid gap-3 lg:grid-cols-3">
