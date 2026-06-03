@@ -126,7 +126,7 @@ export function DeckVersionForm({
             </span>
           </div>
 
-          <div className="mt-4 grid gap-3 sm:grid-cols-5">
+          <div className="mt-4 grid gap-3 grid-cols-2 min-[430px]:grid-cols-3 sm:grid-cols-5">
             {[
               {
                 label: "Total",

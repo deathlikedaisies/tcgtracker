@@ -62,13 +62,13 @@ export const inputH11 = `h-11 ${input}`;
 export const textarea = `${input} py-2`;
 
 export const primaryButton =
-  "inline-flex h-10 max-w-full items-center justify-center rounded-[14px] bg-[#F5C84C] px-4 text-sm font-semibold text-[#07111F] shadow-[0_14px_34px_rgba(245,200,76,0.22)] transition hover:-translate-y-0.5 hover:bg-[#ffd85f] active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-[#94A3B8]";
+  "inline-flex h-11 max-w-full items-center justify-center rounded-[14px] bg-[#F5C84C] px-4 text-sm font-semibold text-[#07111F] shadow-[0_14px_34px_rgba(245,200,76,0.22)] transition hover:-translate-y-0.5 hover:bg-[#ffd85f] active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-[#94A3B8] sm:h-10";
 
 export const secondaryButton =
-  "inline-flex h-10 max-w-full items-center justify-center rounded-[14px] bg-[#4F8CFF]/9 px-4 text-sm font-medium text-[#F8FAFC]/92 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.18),0_8px_20px_rgba(79,140,255,0.05)] transition hover:-translate-y-0.5 hover:bg-[#4F8CFF]/15 hover:shadow-[inset_0_0_0_1px_rgba(79,140,255,0.32),0_10px_24px_rgba(79,140,255,0.08)] active:translate-y-0 active:scale-[0.98]";
+  "inline-flex h-11 max-w-full items-center justify-center rounded-[14px] bg-[#4F8CFF]/9 px-4 text-sm font-medium text-[#F8FAFC]/92 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.18),0_8px_20px_rgba(79,140,255,0.05)] transition hover:-translate-y-0.5 hover:bg-[#4F8CFF]/15 hover:shadow-[inset_0_0_0_1px_rgba(79,140,255,0.32),0_10px_24px_rgba(79,140,255,0.08)] active:translate-y-0 active:scale-[0.98] sm:h-10";
 
 export const dangerButton =
-  "inline-flex h-10 max-w-full items-center justify-center rounded-[14px] bg-[#F43F5E]/10 px-4 text-sm font-medium text-rose-200 transition hover:bg-[#F43F5E]/16";
+  "inline-flex h-11 max-w-full items-center justify-center rounded-[14px] bg-[#F43F5E]/10 px-4 text-sm font-medium text-rose-200 transition hover:bg-[#F43F5E]/16 sm:h-10";
 
 export const subtlePill =
   "rounded-full bg-[#07111F]/58 px-2.5 py-1 text-xs text-[#94A3B8]/86 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]";

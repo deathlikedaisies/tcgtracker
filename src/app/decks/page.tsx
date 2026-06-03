@@ -674,7 +674,7 @@ export default async function DecksPage() {
                           </div>
                         </div>
 
-                        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                        <div className="grid gap-3 min-[430px]:grid-cols-2 xl:grid-cols-4">
                           {statusItems.map((item) => (
                             <div
                               key={item.label}

@@ -491,7 +491,7 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                               Performance
                             </p>
                           </div>
-                          <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                          <div className="mt-4 grid gap-3 grid-cols-2 min-[430px]:grid-cols-3">
                             <div className="rounded-2xl bg-[#0B1020]/66 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
                               <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
                                 Games
@@ -587,7 +587,7 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                             </p>
                           </div>
                           {analysis?.cards.length ? (
-                            <div className="mt-4 grid gap-3 sm:grid-cols-4">
+                            <div className="mt-4 grid gap-3 grid-cols-2 min-[430px]:grid-cols-4">
                               {[
                                 { label: "Total", value: analysis.totalCards },
                                 { label: "Pokémon", value: analysis.pokemonCount },
@@ -637,7 +637,7 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                                   {listHealth.summary}
                                 </span>
                               </div>
-                              <div className="grid gap-3 sm:grid-cols-2">
+                              <div className="grid gap-3 grid-cols-2">
                                 <div className="rounded-2xl bg-[#0B1020]/66 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
                                   <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
                                     Parsed cards

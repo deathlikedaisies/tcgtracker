@@ -588,7 +588,7 @@ export default async function MatchupsPage({
         ) : null}
 
         <form action="/matchups" className={`p-4 sm:p-5 ${glassPanel}`}>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
+          <div className="grid gap-4 min-[430px]:grid-cols-2 lg:grid-cols-6">
             <div className="flex flex-col gap-2 lg:col-span-2">
               <label
                 htmlFor="deck_id"

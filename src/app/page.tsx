@@ -97,7 +97,7 @@ function ProductPreview() {
           <div className="grid gap-4">
             <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_132px]">
               <div className="grid gap-4">
-                <div className="grid gap-3 sm:grid-cols-3">
+                <div className="grid gap-3 min-[430px]:grid-cols-3">
                   {recordCards.map((item) => (
                     <div
                       key={item.label}
@@ -150,7 +150,7 @@ function ProductPreview() {
               </div>
             </div>
 
-            <div className="grid gap-3 md:grid-cols-3">
+            <div className="grid gap-3 min-[430px]:grid-cols-2 md:grid-cols-3">
               <div className="rounded-[18px] bg-[#0F1A2D]/82 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.09)]">
                 <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#94A3B8]/72">
                   Focused games
@@ -272,7 +272,7 @@ export default async function Home() {
             </p>
             <h1 className="mt-5 max-w-3xl text-4xl font-black leading-[0.95] tracking-tight text-[#F8FAFC] min-[390px]:text-5xl sm:text-6xl xl:text-7xl">
               <span className="block">From testing games to</span>
-              <span className="block whitespace-nowrap text-[#F5C84C] drop-shadow-[0_0_22px_rgba(245,200,76,0.20)]">
+              <span className="block text-[#F5C84C] drop-shadow-[0_0_22px_rgba(245,200,76,0.20)] sm:whitespace-nowrap">
                 six-prize turns.
               </span>
             </h1>
