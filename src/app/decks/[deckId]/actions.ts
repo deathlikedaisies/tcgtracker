@@ -10,7 +10,8 @@ export type DeckVersionActionState = {
     versionId: string;
     versionName: string;
     isActive: boolean;
-    createdAt: string;
+    submittedAt: string;
+    mode: "created" | "updated";
   };
 };
 
@@ -123,7 +124,8 @@ export async function createDeckVersion(
         versionId: createdVersion.id,
         versionName: String(createdVersion.name ?? "").trim() || "Untitled version",
         isActive: Boolean(createdVersion.is_active),
-        createdAt: createdVersion.created_at,
+        submittedAt: createdVersion.created_at,
+        mode: "created",
       },
     };
   } catch (error) {
@@ -137,35 +139,104 @@ export async function createDeckVersion(
 export async function updateDeckVersion(
   deckId: string,
   versionId: string,
+  _state: DeckVersionActionState,
   formData: FormData
-) {
-  const supabase = await verifyDeckOwnership(deckId);
-  const name = String(formData.get("name") ?? "").trim();
-  const decklist = String(formData.get("decklist") ?? "").trim();
-  const notes = String(formData.get("notes") ?? "").trim();
+): Promise<DeckVersionActionState> {
+  try {
+    const supabase = await verifyDeckOwnership(deckId);
+    const name = String(formData.get("name") ?? "").trim();
+    const decklist = String(formData.get("decklist") ?? "").trim();
+    const notes = String(formData.get("notes") ?? "").trim();
+    const requestedActive = formData.get("is_active") === "on";
 
-  if (!name) {
-    throw new Error("Version name is required.");
+    if (!name) {
+      return { error: "Version name is required.", success: null };
+    }
+
+    const { data: currentVersion, error: currentVersionError } = await supabase
+      .from("deck_versions")
+      .select("id, is_active")
+      .eq("id", versionId)
+      .eq("deck_id", deckId)
+      .single();
+
+    if (currentVersionError || !currentVersion) {
+      return { error: "Deck version not found.", success: null };
+    }
+
+    const { data: siblingVersions, error: siblingVersionsError } = await supabase
+      .from("deck_versions")
+      .select("id, name, decklist")
+      .eq("deck_id", deckId)
+      .neq("id", versionId);
+
+    if (siblingVersionsError) {
+      return { error: siblingVersionsError.message, success: null };
+    }
+
+    const exactDuplicate = siblingVersions?.find(
+      (version) =>
+        String(version.name ?? "").trim().toLowerCase() === name.toLowerCase() &&
+        String(version.decklist ?? "").trim() === decklist
+    );
+
+    if (exactDuplicate) {
+      return {
+        error:
+          "Another version already uses this exact name and deck list. Edit that version instead of saving a duplicate.",
+        success: null,
+      };
+    }
+
+    if (requestedActive && !currentVersion.is_active) {
+      const { error: deactivateError } = await supabase
+        .from("deck_versions")
+        .update({ is_active: false })
+        .eq("deck_id", deckId);
+
+      if (deactivateError) {
+        return { error: deactivateError.message, success: null };
+      }
+    }
+
+    const { data: updatedVersion, error } = await supabase
+      .from("deck_versions")
+      .update({
+        name,
+        decklist: decklist || null,
+        notes: notes || null,
+        is_active: requestedActive ? true : currentVersion.is_active,
+      })
+      .eq("id", versionId)
+      .eq("deck_id", deckId)
+      .select("id, name, is_active")
+      .single();
+
+    if (error || !updatedVersion) {
+      return { error: error?.message ?? "Could not update version.", success: null };
+    }
+
+    revalidatePath("/decks");
+    revalidatePath("/dashboard");
+    revalidatePath(`/decks/${deckId}`);
+    revalidatePath("/matches/new");
+
+    return {
+      error: null,
+      success: {
+        versionId: updatedVersion.id,
+        versionName: String(updatedVersion.name ?? "").trim() || "Untitled version",
+        isActive: Boolean(updatedVersion.is_active),
+        submittedAt: new Date().toISOString(),
+        mode: "updated",
+      },
+    };
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : "Could not update version.",
+      success: null,
+    };
   }
-
-  const { error } = await supabase
-    .from("deck_versions")
-    .update({
-      name,
-      decklist: decklist || null,
-      notes: notes || null,
-    })
-    .eq("id", versionId)
-    .eq("deck_id", deckId);
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  revalidatePath("/decks");
-  revalidatePath("/dashboard");
-  revalidatePath(`/decks/${deckId}`);
-  revalidatePath("/matches/new");
 }
 
 export async function updateDeckArchetype(deckId: string, formData: FormData) {

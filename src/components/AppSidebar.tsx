@@ -10,7 +10,7 @@ import {
 import { SixPrizerLogo } from "@/components/SixPrizerLogo";
 import { glassPanel, logoOnDark } from "@/components/brand-styles";
 
-type AppSection = "dashboard" | "decks" | "matches" | "log" | "matchups";
+type AppSection = "dashboard" | "decks" | "matches" | "log" | "matchups" | "review";
 
 type AppSidebarProps = {
   current: AppSection;
@@ -25,7 +25,8 @@ type AppSidebarProps = {
 const navItems = [
   { href: "/dashboard", label: "Overview", section: "dashboard" as const, icon: Gauge },
   { href: "/matches/new", label: "Log game", section: "log" as const, icon: PlusCircle },
-  { href: "/matches", label: "Sessions", section: "matches" as const, icon: ClipboardList },
+  { href: "/review", label: "Review", section: "review" as const, icon: Target },
+  { href: "/matches", label: "Logs", section: "matches" as const, icon: ClipboardList },
   { href: "/decks", label: "Decks", section: "decks" as const, icon: Layers3 },
   { href: "/matchups", label: "Matchups", section: "matchups" as const, icon: BarChart3 },
 ];

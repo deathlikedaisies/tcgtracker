@@ -13,6 +13,7 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { ArchetypePicker } from "@/components/ArchetypePicker";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
 import { ConfirmSubmitButton } from "@/components/ConfirmSubmitButton";
+import { DeckVersionEditForm } from "@/components/decks/DeckVersionEditForm";
 import { DeckVersionForm } from "@/components/decks/DeckVersionForm";
 import {
   appFrame,
@@ -85,6 +86,19 @@ function safeOptionalText(value: unknown) {
 
   const trimmed = value.trim();
   return trimmed || null;
+}
+
+function normalizeDecklistUiText(value: string) {
+  if (!/[ÃÂâ]/.test(value)) {
+    return value;
+  }
+
+  try {
+    const bytes = Uint8Array.from(value, (character) => character.charCodeAt(0));
+    return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+  } catch {
+    return value;
+  }
 }
 
 function getDeckVersions(value: unknown) {
@@ -522,54 +536,16 @@ export default async function DeckDetailPage({
                               </button>
                             </form>
                           ) : null}
-                          <details className="group">
-                            <summary
-                              className={`${secondaryButton} h-10 cursor-pointer list-none px-4 marker:hidden`}
-                            >
-                              Edit
-                            </summary>
-                            <form action={saveVersionEdits} className="mt-3 grid gap-3 rounded-[20px] bg-[#07111F]/42 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
-                              <div className="grid gap-2">
-                                <label htmlFor={`edit-name-${version.id}`} className="text-sm font-medium text-[#F8FAFC]">
-                                  Version name
-                                </label>
-                                <input
-                                  id={`edit-name-${version.id}`}
-                                  name="name"
-                                  required
-                                  defaultValue={versionName}
-                                  className="h-10 w-full rounded-[14px] bg-[#07111F]/72 px-3 text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.12)] outline-none transition placeholder:text-[#94A3B8]/52 focus:bg-[#07111F]/86 focus:shadow-[inset_0_0_0_1px_rgba(79,140,255,0.68),0_0_20px_rgba(79,140,255,0.10)]"
-                                />
-                              </div>
-                              <div className="grid gap-2">
-                                <label htmlFor={`edit-list-${version.id}`} className="text-sm font-medium text-[#F8FAFC]">
-                                  Decklist
-                                </label>
-                                <textarea
-                                  id={`edit-list-${version.id}`}
-                                  name="decklist"
-                                  rows={6}
-                                  defaultValue={version.decklist ?? ""}
-                                  className="w-full rounded-[14px] bg-[#07111F]/72 px-3 py-2 text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.12)] outline-none transition placeholder:text-[#94A3B8]/52 focus:bg-[#07111F]/86 focus:shadow-[inset_0_0_0_1px_rgba(79,140,255,0.68),0_0_20px_rgba(79,140,255,0.10)]"
-                                />
-                              </div>
-                              <div className="grid gap-2">
-                                <label htmlFor={`edit-notes-${version.id}`} className="text-sm font-medium text-[#F8FAFC]">
-                                  Notes
-                                </label>
-                                <textarea
-                                  id={`edit-notes-${version.id}`}
-                                  name="notes"
-                                  rows={3}
-                                  defaultValue={version.notes ?? ""}
-                                  className="w-full rounded-[14px] bg-[#07111F]/72 px-3 py-2 text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.12)] outline-none transition placeholder:text-[#94A3B8]/52 focus:bg-[#07111F]/86 focus:shadow-[inset_0_0_0_1px_rgba(79,140,255,0.68),0_0_20px_rgba(79,140,255,0.10)]"
-                                />
-                              </div>
-                              <button type="submit" className={secondaryButton}>
-                                Save changes
-                              </button>
-                            </form>
-                          </details>
+                          <DeckVersionEditForm
+                            action={saveVersionEdits}
+                            versionId={version.id}
+                            versionName={versionName}
+                            decklist={version.decklist ?? ""}
+                            notes={version.notes ?? ""}
+                            isActive={version.is_active}
+                            unresolvedLines={analysis?.unresolved.map((line) => line.raw) ?? []}
+                            parseError={parseError}
+                          />
                           {canDeleteVersion ? (
                             <form action={removeVersion}>
                               <ConfirmSubmitButton
@@ -738,7 +714,7 @@ export default async function DeckDetailPage({
                                   {listHealth.label}
                                 </span>
                                 <span className="text-xs font-semibold uppercase tracking-[0.08em] text-[#94A3B8]/72">
-                                  {listHealth.summary}
+                                  {normalizeDecklistUiText(listHealth.summary)}
                                 </span>
                               </div>
                               <div className="grid gap-3 grid-cols-2">
@@ -760,19 +736,23 @@ export default async function DeckDetailPage({
                                 </div>
                               </div>
                               <p className="text-sm leading-6 text-[#94A3B8]/72">
-                                {listHealth.detail}
+                                {normalizeDecklistUiText(listHealth.detail)}
                               </p>
                               <p className="text-xs text-[#94A3B8]/68">
-                                Open deck details to review card resolution before any deeper legality check.
+                                {analysis.unresolved.length > 0
+                                  ? `Use Edit decklist to resolve the line${
+                                      analysis.unresolved.length === 1 ? "" : "s"
+                                    } blocking a clean parse.`
+                                  : "Open deck details to review card resolution before any deeper legality check."}
                               </p>
                             </div>
                           ) : parseError ? (
                             <p className="mt-4 text-sm leading-6 text-[#94A3B8]/72">
-                              {listHealth.detail}
+                              {normalizeDecklistUiText(listHealth.detail)}
                             </p>
                           ) : (
                             <p className="mt-4 text-sm leading-6 text-[#94A3B8]/72">
-                              {listHealth.detail}
+                              {normalizeDecklistUiText(listHealth.detail)}
                             </p>
                           )}
                         </div>

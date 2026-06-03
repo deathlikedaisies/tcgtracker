@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-type AppNavSection = "dashboard" | "decks" | "matches" | "log" | "matchups";
+type AppNavSection = "dashboard" | "decks" | "matches" | "log" | "matchups" | "review";
 
 type AppNavProps = {
   current: AppNavSection;
@@ -13,9 +13,10 @@ const navItems: {
   section: AppNavSection;
 }[] = [
   { href: "/dashboard", label: "Dashboard", shortLabel: "Home", section: "dashboard" },
-  { href: "/decks", label: "Decks", shortLabel: "Decks", section: "decks" },
-  { href: "/matches", label: "Matches", shortLabel: "Logs", section: "matches" },
   { href: "/matches/new", label: "Log game", shortLabel: "Log", section: "log" },
+  { href: "/review", label: "Review", shortLabel: "Review", section: "review" },
+  { href: "/matches", label: "Logs", shortLabel: "Logs", section: "matches" },
+  { href: "/decks", label: "Decks", shortLabel: "Decks", section: "decks" },
   { href: "/matchups", label: "Matchups", shortLabel: "Match", section: "matchups" },
 ];
 
@@ -23,7 +24,7 @@ export function AppNav({ current }: AppNavProps) {
   return (
     <nav
       aria-label="Primary"
-      className="grid w-full max-w-full grid-cols-5 gap-1.5 overflow-x-hidden rounded-[18px] bg-[#07111F]/52 p-1.5 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)] backdrop-blur sm:w-auto sm:flex sm:flex-wrap sm:justify-end"
+      className="grid w-full max-w-full grid-cols-6 gap-1.5 overflow-x-hidden rounded-[18px] bg-[#07111F]/52 p-1.5 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)] backdrop-blur sm:w-auto sm:flex sm:flex-wrap sm:justify-end"
     >
       {navItems.map((item) => {
         const isCurrent = item.section === current;

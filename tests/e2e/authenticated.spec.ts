@@ -5,6 +5,7 @@ import { expectNoAppError } from "./helpers/assertions";
 const authRoutes = [
   { path: "/dashboard", heading: "Overview" },
   { path: "/matches/new", heading: "Log a game" },
+  { path: "/review", heading: "Review" },
   { path: "/matches", heading: "Matches" },
   { path: "/decks", heading: "Deck Experiments" },
   { path: "/matchups", heading: "Matchup Intelligence" },
