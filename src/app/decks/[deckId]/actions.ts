@@ -4,6 +4,16 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 
+export type DeckVersionActionState = {
+  error: string | null;
+  success: null | {
+    versionId: string;
+    versionName: string;
+    isActive: boolean;
+    createdAt: string;
+  };
+};
+
 async function getSignedInUserId() {
   const supabase = await createServerSupabaseClient();
   const {
@@ -33,41 +43,129 @@ async function verifyDeckOwnership(deckId: string) {
   return supabase;
 }
 
-export async function createDeckVersion(deckId: string, formData: FormData) {
+export async function createDeckVersion(
+  deckId: string,
+  _state: DeckVersionActionState,
+  formData: FormData
+): Promise<DeckVersionActionState> {
+  try {
+    const supabase = await verifyDeckOwnership(deckId);
+    const name = String(formData.get("name") ?? "").trim();
+    const decklist = String(formData.get("decklist") ?? "").trim();
+    const notes = String(formData.get("notes") ?? "").trim();
+    const requestedActive = formData.get("is_active") === "on";
+
+    if (!name) {
+      return { error: "Version name is required.", success: null };
+    }
+
+    const { data: existingVersions, error: existingVersionsError } = await supabase
+      .from("deck_versions")
+      .select("id, name, decklist")
+      .eq("deck_id", deckId);
+
+    if (existingVersionsError) {
+      return { error: existingVersionsError.message, success: null };
+    }
+
+    const hasExistingVersions = Boolean(existingVersions?.length);
+    const exactDuplicate = existingVersions?.find(
+      (version) =>
+        String(version.name ?? "").trim().toLowerCase() === name.toLowerCase() &&
+        String(version.decklist ?? "").trim() === decklist
+    );
+
+    if (exactDuplicate) {
+      return {
+        error:
+          "This deck already has a version with the same name and deck list. Edit the existing version instead of creating a duplicate.",
+        success: null,
+      };
+    }
+
+    const isActive = requestedActive || !hasExistingVersions;
+
+    if (isActive) {
+      const { error } = await supabase
+        .from("deck_versions")
+        .update({ is_active: false })
+        .eq("deck_id", deckId);
+
+      if (error) {
+        return { error: error.message, success: null };
+      }
+    }
+
+    const { data: createdVersion, error } = await supabase
+      .from("deck_versions")
+      .insert({
+        deck_id: deckId,
+        name,
+        decklist: decklist || null,
+        notes: notes || null,
+        is_active: isActive,
+      })
+      .select("id, name, is_active, created_at")
+      .single();
+
+    if (error || !createdVersion) {
+      return { error: error?.message ?? "Could not create version.", success: null };
+    }
+
+    revalidatePath("/decks");
+    revalidatePath("/dashboard");
+    revalidatePath(`/decks/${deckId}`);
+    revalidatePath("/matches/new");
+
+    return {
+      error: null,
+      success: {
+        versionId: createdVersion.id,
+        versionName: String(createdVersion.name ?? "").trim() || "Untitled version",
+        isActive: Boolean(createdVersion.is_active),
+        createdAt: createdVersion.created_at,
+      },
+    };
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : "Could not create version.",
+      success: null,
+    };
+  }
+}
+
+export async function updateDeckVersion(
+  deckId: string,
+  versionId: string,
+  formData: FormData
+) {
   const supabase = await verifyDeckOwnership(deckId);
   const name = String(formData.get("name") ?? "").trim();
   const decklist = String(formData.get("decklist") ?? "").trim();
   const notes = String(formData.get("notes") ?? "").trim();
-  const isActive = formData.get("is_active") === "on";
 
   if (!name) {
     throw new Error("Version name is required.");
   }
 
-  if (isActive) {
-    const { error } = await supabase
-      .from("deck_versions")
-      .update({ is_active: false })
-      .eq("deck_id", deckId);
-
-    if (error) {
-      throw new Error(error.message);
-    }
-  }
-
-  const { error } = await supabase.from("deck_versions").insert({
-    deck_id: deckId,
-    name,
-    decklist: decklist || null,
-    notes: notes || null,
-    is_active: isActive,
-  });
+  const { error } = await supabase
+    .from("deck_versions")
+    .update({
+      name,
+      decklist: decklist || null,
+      notes: notes || null,
+    })
+    .eq("id", versionId)
+    .eq("deck_id", deckId);
 
   if (error) {
     throw new Error(error.message);
   }
 
+  revalidatePath("/decks");
+  revalidatePath("/dashboard");
   revalidatePath(`/decks/${deckId}`);
+  revalidatePath("/matches/new");
 }
 
 export async function updateDeckArchetype(deckId: string, formData: FormData) {
@@ -130,5 +228,78 @@ export async function markDeckVersionActive(
     throw new Error(activateError.message);
   }
 
+  revalidatePath("/decks");
+  revalidatePath("/dashboard");
   revalidatePath(`/decks/${deckId}`);
+  revalidatePath("/matches/new");
+}
+
+export async function deleteDeckVersion(deckId: string, versionId: string) {
+  const supabase = await verifyDeckOwnership(deckId);
+  const { data: version, error: versionError } = await supabase
+    .from("deck_versions")
+    .select("id, is_active, created_at")
+    .eq("id", versionId)
+    .eq("deck_id", deckId)
+    .single();
+
+  if (versionError || !version) {
+    throw new Error("Deck version not found.");
+  }
+
+  const { count, error: matchesError } = await supabase
+    .from("matches")
+    .select("id", { count: "exact", head: true })
+    .eq("deck_version_id", versionId);
+
+  if (matchesError) {
+    throw new Error(matchesError.message);
+  }
+
+  if ((count ?? 0) > 0) {
+    throw new Error(
+      "This version has logged games. Delete is blocked until archive support exists."
+    );
+  }
+
+  const { error: deleteError } = await supabase
+    .from("deck_versions")
+    .delete()
+    .eq("id", versionId)
+    .eq("deck_id", deckId);
+
+  if (deleteError) {
+    throw new Error(deleteError.message);
+  }
+
+  if (version.is_active) {
+    const { data: fallbackVersion, error: fallbackError } = await supabase
+      .from("deck_versions")
+      .select("id")
+      .eq("deck_id", deckId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (fallbackError) {
+      throw new Error(fallbackError.message);
+    }
+
+    if (fallbackVersion?.id) {
+      const { error: activateFallbackError } = await supabase
+        .from("deck_versions")
+        .update({ is_active: true })
+        .eq("id", fallbackVersion.id)
+        .eq("deck_id", deckId);
+
+      if (activateFallbackError) {
+        throw new Error(activateFallbackError.message);
+      }
+    }
+  }
+
+  revalidatePath("/decks");
+  revalidatePath("/dashboard");
+  revalidatePath(`/decks/${deckId}`);
+  revalidatePath("/matches/new");
 }

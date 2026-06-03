@@ -43,6 +43,7 @@ type DeckWithVersions = {
 
 type NewMatchPageProps = {
   searchParams: Promise<{
+    deck_version_id?: string;
     event?: string;
     opponent?: string;
     result?: string;
@@ -59,6 +60,7 @@ export default async function NewMatchPage({
     opponent,
     result,
     success,
+    deck_version_id: deckVersionId,
     went_first: wentFirst,
   } = await searchParams;
   const supabase = await createServerSupabaseClient();
@@ -172,6 +174,7 @@ export default async function NewMatchPage({
               action={logMatch}
               deckOptions={deckOptions}
               opponentArchetypeOptions={opponentArchetypeOptions}
+              initialDeckVersionId={deckVersionId}
               initialEventType={event}
               initialOpponentArchetype={opponent}
               initialResult={result}

@@ -1,6 +1,6 @@
 export type MatchResult = "win" | "loss" | "tie";
 export type MatchGameContext = "testing" | "competitive";
-export type MatchStartQuality = "good" | "okay" | "bad";
+export type MatchStartQuality = "great" | "good" | "okay" | "bad";
 export type MatchOpeningHandQuality = "great" | "good" | "okay" | "bad";
 export type MatchSequencingQuality = "great" | "good" | "okay" | "bad";
 
@@ -30,7 +30,12 @@ export const MATCH_GAME_CONTEXT_OPTIONS = [
   "testing",
   "competitive",
 ] as const;
-export const MATCH_START_QUALITY_OPTIONS = ["good", "okay", "bad"] as const;
+export const MATCH_START_QUALITY_OPTIONS = [
+  "great",
+  "good",
+  "okay",
+  "bad",
+] as const;
 export const MATCH_OPENING_HAND_OPTIONS = [
   "great",
   "good",

@@ -12,6 +12,7 @@ import { AppNav } from "@/components/AppNav";
 import { AppSidebar } from "@/components/AppSidebar";
 import { ArchetypePicker } from "@/components/ArchetypePicker";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
+import { ConfirmSubmitButton } from "@/components/ConfirmSubmitButton";
 import { DeckVersionForm } from "@/components/decks/DeckVersionForm";
 import {
   appFrame,
@@ -44,13 +45,18 @@ import {
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import {
   createDeckVersion,
+  deleteDeckVersion,
   markDeckVersionActive,
+  updateDeckVersion,
   updateDeckArchetype,
 } from "./actions";
 
 type DeckDetailPageProps = {
   params: Promise<{
     deckId: string;
+  }>;
+  searchParams: Promise<{
+    created?: string;
   }>;
 };
 
@@ -90,7 +96,7 @@ function getDeckVersions(value: unknown) {
     : [];
 }
 
-function formatDate(value: string) {
+function formatDateTime(value: string) {
   const date = new Date(value);
 
   if (Number.isNaN(date.getTime())) {
@@ -101,6 +107,8 @@ function formatDate(value: string) {
     month: "short",
     day: "numeric",
     year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
   }).format(date);
 }
 
@@ -162,8 +170,12 @@ function getSuggestionBadgeTone(confidence: "high" | "medium" | "low" | "none") 
     : "bg-[#F5C84C]/14 text-[#F5C84C]";
 }
 
-export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
+export default async function DeckDetailPage({
+  params,
+  searchParams,
+}: DeckDetailPageProps) {
   const { deckId } = await params;
+  const { created } = await searchParams;
   const supabase = await createServerSupabaseClient();
   const {
     data: { user },
@@ -378,6 +390,17 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
             </section>
           </div>
 
+          {created === "1" ? (
+            <div className="rounded-[24px] bg-emerald-500/10 px-5 py-4 text-sm text-emerald-100 shadow-[0_18px_40px_rgba(0,0,0,0.2),inset_0_0_0_1px_rgba(34,197,94,0.16)]">
+              <p className="font-semibold text-emerald-200">Deck created</p>
+              <p className="mt-1 text-emerald-100/86">
+                {deckVersions.length
+                  ? "Your deck is ready. Pick the active test version you want to log games with."
+                  : "Your deck family is saved. Add the first test version below to start logging games."}
+              </p>
+            </div>
+          ) : null}
+
           {sessionCoach ? <SessionCoachPanel insight={sessionCoach} /> : null}
 
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
@@ -402,6 +425,7 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                 <div className={`p-5 sm:p-6 ${glassPanelStrong}`}>
                   <DeckVersionForm
                     action={createVersion}
+                    deckHref={`/decks/${deck.id}`}
                     title={
                       deckVersions.length
                         ? "Set up an active test version"
@@ -427,6 +451,16 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                     deck.id,
                     version.id
                   );
+                  const saveVersionEdits = updateDeckVersion.bind(
+                    null,
+                    deck.id,
+                    version.id
+                  );
+                  const removeVersion = deleteDeckVersion.bind(
+                    null,
+                    deck.id,
+                    version.id
+                  );
                   const insight = versionInsightById.get(version.id);
                   const analysis = insight?.analysis;
                   const parseError = insight?.parseError ?? null;
@@ -443,6 +477,7 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                   const ties = insight?.performance.ties ?? 0;
                   const total = insight?.performance.total ?? 0;
                   const winRate = total ? Math.round((wins / total) * 100) : 0;
+                  const canDeleteVersion = total === 0;
 
                   return (
                     <article
@@ -457,7 +492,7 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                             </h3>
                             {version.is_active ? (
                               <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-emerald-200 shadow-[inset_0_0_0_1px_rgba(34,197,94,0.16)]">
-                                Active
+                                Active test version
                               </span>
                             ) : null}
                             <span
@@ -467,20 +502,89 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                             </span>
                           </div>
                           <p className="mt-1 text-xs text-[#94A3B8]/62">
-                            Created {formatDate(version.created_at)}
+                            Created {formatDateTime(version.created_at)}
+                          </p>
+                          <p className="mt-2 text-sm leading-6 text-[#94A3B8]/72">
+                            {version.is_active
+                              ? "This is the version used when logging new games."
+                              : "Make this active if you want future match logs to use this build."}
                           </p>
                         </div>
 
-                        {!version.is_active ? (
-                          <form action={markActive}>
-                            <button
-                              type="submit"
-                              className={`${secondaryButton} h-10 px-4`}
+                        <div className="flex flex-wrap gap-2">
+                          {!version.is_active ? (
+                            <form action={markActive}>
+                              <button
+                                type="submit"
+                                className={`${secondaryButton} h-10 px-4`}
+                              >
+                                Make active
+                              </button>
+                            </form>
+                          ) : null}
+                          <details className="group">
+                            <summary
+                              className={`${secondaryButton} h-10 cursor-pointer list-none px-4 marker:hidden`}
                             >
-                              Make active
-                            </button>
-                          </form>
-                        ) : null}
+                              Edit
+                            </summary>
+                            <form action={saveVersionEdits} className="mt-3 grid gap-3 rounded-[20px] bg-[#07111F]/42 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                              <div className="grid gap-2">
+                                <label htmlFor={`edit-name-${version.id}`} className="text-sm font-medium text-[#F8FAFC]">
+                                  Version name
+                                </label>
+                                <input
+                                  id={`edit-name-${version.id}`}
+                                  name="name"
+                                  required
+                                  defaultValue={versionName}
+                                  className="h-10 w-full rounded-[14px] bg-[#07111F]/72 px-3 text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.12)] outline-none transition placeholder:text-[#94A3B8]/52 focus:bg-[#07111F]/86 focus:shadow-[inset_0_0_0_1px_rgba(79,140,255,0.68),0_0_20px_rgba(79,140,255,0.10)]"
+                                />
+                              </div>
+                              <div className="grid gap-2">
+                                <label htmlFor={`edit-list-${version.id}`} className="text-sm font-medium text-[#F8FAFC]">
+                                  Decklist
+                                </label>
+                                <textarea
+                                  id={`edit-list-${version.id}`}
+                                  name="decklist"
+                                  rows={6}
+                                  defaultValue={version.decklist ?? ""}
+                                  className="w-full rounded-[14px] bg-[#07111F]/72 px-3 py-2 text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.12)] outline-none transition placeholder:text-[#94A3B8]/52 focus:bg-[#07111F]/86 focus:shadow-[inset_0_0_0_1px_rgba(79,140,255,0.68),0_0_20px_rgba(79,140,255,0.10)]"
+                                />
+                              </div>
+                              <div className="grid gap-2">
+                                <label htmlFor={`edit-notes-${version.id}`} className="text-sm font-medium text-[#F8FAFC]">
+                                  Notes
+                                </label>
+                                <textarea
+                                  id={`edit-notes-${version.id}`}
+                                  name="notes"
+                                  rows={3}
+                                  defaultValue={version.notes ?? ""}
+                                  className="w-full rounded-[14px] bg-[#07111F]/72 px-3 py-2 text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.12)] outline-none transition placeholder:text-[#94A3B8]/52 focus:bg-[#07111F]/86 focus:shadow-[inset_0_0_0_1px_rgba(79,140,255,0.68),0_0_20px_rgba(79,140,255,0.10)]"
+                                />
+                              </div>
+                              <button type="submit" className={secondaryButton}>
+                                Save changes
+                              </button>
+                            </form>
+                          </details>
+                          {canDeleteVersion ? (
+                            <form action={removeVersion}>
+                              <ConfirmSubmitButton
+                                message="Delete this version? This cannot be undone."
+                                className="inline-flex h-10 items-center justify-center rounded-[14px] bg-[#F43F5E]/10 px-4 text-sm font-medium text-rose-200 transition hover:bg-[#F43F5E]/16"
+                              >
+                                Delete
+                              </ConfirmSubmitButton>
+                            </form>
+                          ) : (
+                            <div className="rounded-[14px] bg-[#0B1020]/66 px-3 py-2 text-xs leading-5 text-[#94A3B8] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                              This version has logged games. Archive would be safer than delete.
+                            </div>
+                          )}
+                        </div>
                       </div>
 
                       <div className="mt-4 grid gap-4 xl:grid-cols-2">
@@ -754,6 +858,7 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
                 {!needsPrimaryVersionSetup ? (
                   <DeckVersionForm
                     action={createVersion}
+                    deckHref={`/decks/${deck.id}`}
                     title="Add another test version"
                     description="Paste a 60-card list, name the build, and decide whether it should replace the current active version."
                     submitLabel="Create version"

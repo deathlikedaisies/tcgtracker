@@ -10,19 +10,16 @@ import {
 } from "lucide-react";
 import { AppNav } from "@/components/AppNav";
 import { AppSidebar } from "@/components/AppSidebar";
-import { ArchetypePicker } from "@/components/ArchetypePicker";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
 import { ConfirmSubmitButton } from "@/components/ConfirmSubmitButton";
+import { DeckCreateForm } from "@/components/decks/DeckCreateForm";
 import {
   appFrame,
   appMain,
   appShell,
   dangerButton,
   emptyCard,
-  glassPanel,
   glassPanelStrong,
-  inputH10,
-  label,
   logoOnDark,
   pageCopy,
   pageTitle,
@@ -30,7 +27,6 @@ import {
   secondaryButton,
   sectionCopy,
   sectionTitle,
-  textarea,
 } from "@/components/brand-styles";
 import { SixPrizerLogo } from "@/components/SixPrizerLogo";
 import { getArchetypeOptions } from "@/lib/archetypes";
@@ -43,7 +39,7 @@ import { LATEST_FORMAT } from "@/lib/formats";
 import { type MatchResult } from "@/lib/match-types";
 import { buildSessionCoachInsight } from "@/lib/session-coach";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
-import { createDeck, deleteDeck } from "./actions";
+import { deleteDeck } from "./actions";
 
 type DeckVersion = {
   id: string;
@@ -563,7 +559,7 @@ export default async function DecksPage() {
                       label: "Active version",
                       value: activeVersionName,
                       detail: summary.activeVersionId
-                        ? "Current build selected for logging"
+                        ? "This is the version used when logging new games"
                         : "Choose or create the build you want to test",
                     },
                     {
@@ -613,7 +609,7 @@ export default async function DecksPage() {
                                   </span>
                                   {index === 0 ? (
                                     <span className="rounded-full bg-[#F5C84C]/12 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#FFE28A] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
-                                      Active
+                                      Active test version
                                     </span>
                                   ) : null}
                                   <span className="rounded-full bg-[#07111F]/58 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
@@ -742,50 +738,10 @@ export default async function DecksPage() {
                   </p>
                 </div>
 
-                <form action={createDeck} className={`p-4 ${glassPanel}`}>
-                  <div className="mt-1 flex flex-col gap-4">
-                    <input type="hidden" name="format" value={LATEST_FORMAT} />
-                    <div className="flex flex-col gap-2">
-                      <label htmlFor="name" className={label}>
-                        Deck name
-                      </label>
-                      <input
-                        id="name"
-                        name="name"
-                        required
-                        placeholder="Mega Lucario Duns"
-                        className={inputH10}
-                      />
-                    </div>
-
-                    <ArchetypePicker
-                      id="archetype"
-                      name="archetype"
-                      label="Archetype"
-                      options={archetypeOptions}
-                      placeholder="Search or type an archetype"
-                      customOptionPrefix="Use custom deck archetype"
-                      required
-                    />
-
-                    <div className="flex flex-col gap-2">
-                      <label htmlFor="notes" className={label}>
-                        Notes
-                      </label>
-                      <textarea
-                        id="notes"
-                        name="notes"
-                        rows={4}
-                        placeholder="What are you testing with this deck family?"
-                        className={textarea}
-                      />
-                    </div>
-
-                    <button type="submit" className={primaryButton}>
-                      Create deck
-                    </button>
-                  </div>
-                </form>
+                <DeckCreateForm
+                  archetypeOptions={archetypeOptions}
+                  hasDecks={Boolean(userDecks.length)}
+                />
 
                 <div className="rounded-[22px] bg-[#07111F]/42 p-4 shadow-[0_16px_40px_rgba(0,0,0,0.18),inset_0_0_0_1px_rgba(148,163,184,0.08)]">
                   <div className="flex items-start gap-3">

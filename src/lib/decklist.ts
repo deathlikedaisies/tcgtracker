@@ -74,7 +74,7 @@ type ArchetypeCandidate = {
 };
 
 const sectionPatterns: Array<[DecklistSection, RegExp]> = [
-  ["pokemon", /^pok[eÃ©]mon\s*:?\s*\d*$/i],
+  ["pokemon", /^pok(?:e|é)mon\s*:?\s*\d*$/i],
   ["trainer", /^trainers?\s*:?\s*\d*$/i],
   ["energy", /^energ(?:y|ies)\s*:?\s*\d*$/i],
 ];
@@ -85,14 +85,14 @@ const cardLinePattern =
 function normalize(value: string) {
   return value
     .trim()
-    .replace(/[â€™â€˜`]/g, "'")
+    .replace(/[’‘`]/g, "'")
     .replace(/\s+/g, " ")
     .toLowerCase();
 }
 
 function normalizeCardName(value: string) {
   return normalize(value)
-    .replace(/\bpokemon\b/g, "pokÃ©mon")
+    .replace(/\bpokemon\b/g, "pokémon")
     .replace(/\s+-\s+/g, " ")
     .replace(/[.,]/g, "");
 }

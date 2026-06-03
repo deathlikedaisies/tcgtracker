@@ -192,7 +192,8 @@ function normalize(value: string) {
 function cleanChipValue(value: string) {
   return value
     .trim()
-    .replace(/\s+/g, " ");
+    .replace(/\s+/g, " ")
+    .slice(0, 40);
 }
 
 function toggleSelection(values: string[], value: string) {
@@ -321,19 +322,25 @@ function ChipInput({
   onChange,
   placeholder,
   fieldName,
+  helperText,
 }: {
   labelText: string;
   values: string[];
   onChange: (values: string[]) => void;
   placeholder: string;
-  fieldName: string;
+  fieldName?: string;
+  helperText?: string;
 }) {
   const [draft, setDraft] = useState("");
 
   function addDraftValue() {
     const nextValue = cleanChipValue(draft);
+    const normalizedNextValue = normalize(nextValue);
+    const alreadySelected = values.some(
+      (candidate) => normalize(candidate) === normalizedNextValue
+    );
 
-    if (!nextValue || values.includes(nextValue)) {
+    if (!nextValue || alreadySelected) {
       setDraft("");
       return;
     }
@@ -364,6 +371,7 @@ function ChipInput({
         <div className="mt-3 flex gap-2">
           <input
             value={draft}
+            maxLength={40}
             onChange={(event) => setDraft(event.target.value)}
             onKeyDown={(event) => {
               if (event.key === "Enter" || event.key === ",") {
@@ -387,9 +395,14 @@ function ChipInput({
             Add
           </button>
         </div>
-        {values.map((value) => (
-          <input key={value} type="hidden" name={fieldName} value={value} />
-        ))}
+        {fieldName
+          ? values.map((value) => (
+              <input key={value} type="hidden" name={fieldName} value={value} />
+            ))
+          : null}
+        {helperText ? (
+          <p className="mt-2 text-xs leading-5 text-[#94A3B8]/68">{helperText}</p>
+        ) : null}
       </div>
     </div>
   );
@@ -1531,7 +1544,7 @@ export function MatchLogForm({
                       <div className="grid gap-3">
                         <fieldset className={subCardClass}>
                           <legend className={label}>Start</legend>
-                          <div className="mt-2 grid grid-cols-3 gap-2">
+                          <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
                             {MATCH_START_QUALITY_OPTIONS.map((value) => (
                               (() => {
                                 const isSelected = startQuality === value;
@@ -1563,7 +1576,7 @@ export function MatchLogForm({
                         </fieldset>
                         <fieldset className={subCardClass}>
                           <legend className={label}>Opening hand</legend>
-                          <div className="mt-2 grid grid-cols-2 gap-2">
+                          <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
                             {MATCH_OPENING_HAND_OPTIONS.map((value) => (
                               (() => {
                                 const isSelected = openingHandQuality === value;
@@ -1597,7 +1610,7 @@ export function MatchLogForm({
                         </fieldset>
                         <fieldset className={subCardClass}>
                           <legend className={label}>Sequencing</legend>
-                          <div className="mt-2 grid grid-cols-2 gap-2">
+                          <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
                             {MATCH_SEQUENCING_OPTIONS.map((value) => (
                               (() => {
                                 const isSelected = sequencingQuality === value;
@@ -1716,6 +1729,17 @@ export function MatchLogForm({
                           </div>
                         ) : null}
                       </fieldset>
+                      <ChipInput
+                        labelText={
+                          result === "win"
+                            ? "Add custom positive tag"
+                            : "Add custom issue tag"
+                        }
+                        values={primaryTags}
+                        onChange={setPrimaryTags}
+                        placeholder="e.g. Item Lock, prize map error, stadium lock"
+                        helperText="Press Enter or Add. Custom tags are saved with the normal structured tags."
+                      />
                       <div className={subCardClass}>
                         <button
                           type="button"
@@ -1762,6 +1786,19 @@ export function MatchLogForm({
                                   );
                                 })()
                               ))}
+                            </div>
+                            <div className="mt-3">
+                              <ChipInput
+                                labelText={
+                                  result === "win"
+                                    ? "Add custom issue tag"
+                                    : "Add custom positive tag"
+                                }
+                                values={secondaryTags}
+                                onChange={setSecondaryTags}
+                                placeholder="e.g. Item Lock, prize map error, stadium lock"
+                                helperText="Keep rare or matchup-specific details here without waiting for a built-in tag."
+                              />
                             </div>
                           </div>
                         ) : null}
