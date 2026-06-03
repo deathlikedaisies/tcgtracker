@@ -564,20 +564,42 @@ export default async function MatchupsPage({
                 </h2>
               </div>
               <div className="mt-4 grid gap-2">
-                {[
-                  sessionCoach?.missionTitle ?? "Build a five-game sample",
+                {([
+                  {
+                    label: sessionCoach?.missionTitle ?? "Build a five-game sample",
+                    href: "/review",
+                    cta: "Open review",
+                  },
                   worstMatchup
-                    ? `Tag every loss vs ${worstMatchup.opponentArchetype}`
-                    : "Log your first matchup set",
-                  "Compare going first vs second",
-                ].map((item, index) => (
-                  <div key={item} className="flex gap-3 rounded-md bg-[#07111F]/44 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                    ? {
+                        label: `Tag every loss vs ${worstMatchup.opponentArchetype}`,
+                        href: "/matches/new",
+                        cta: "Log a game",
+                      }
+                    : {
+                        label: "Log your first matchup set",
+                        href: "/matches/new",
+                        cta: "Log a game",
+                      },
+                  {
+                    label: "Compare going first vs second in your recent losses",
+                    href: "/review",
+                    cta: "Open review",
+                  },
+                ] as { label: string; href: string; cta: string }[]).map((item, index) => (
+                  <div key={item.label} className="flex items-center gap-3 rounded-md bg-[#07111F]/44 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
                     <span className="inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-[#4F8CFF] text-xs font-bold text-white">
                       {index + 1}
                     </span>
-                    <p className="text-sm font-medium leading-5 text-[#F8FAFC]">
-                      {item}
+                    <p className="min-w-0 flex-1 text-sm font-medium leading-5 text-[#F8FAFC]">
+                      {item.label}
                     </p>
+                    <Link
+                      href={item.href}
+                      className="shrink-0 rounded-md bg-[#4F8CFF]/18 px-3 py-1 text-xs font-semibold text-[#B8D1FF] transition hover:bg-[#4F8CFF]/28"
+                    >
+                      {item.cta}
+                    </Link>
                   </div>
                 ))}
               </div>
