@@ -26,7 +26,7 @@ test.describe("authenticated routes", () => {
     test(`${route.path} loads in the authenticated shell`, async ({ page }) => {
       await page.goto(route.path);
 
-      await expect(page.getByRole("heading", { name: route.heading })).toBeVisible();
+      await expect(page.getByRole("heading", { name: route.heading, exact: true })).toBeVisible();
       await expect(page.locator("body")).toContainText("SixPrizer");
       await expect(page.getByRole("link", { name: "Decks" }).first()).toBeVisible();
       await expect(page.getByLabel("Email")).toHaveCount(0);
