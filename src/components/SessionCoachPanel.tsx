@@ -56,11 +56,19 @@ export function SessionCoachPanel({
           <h2 className="mt-2 truncate text-2xl font-bold leading-tight tracking-tight text-[#F8FAFC] sm:text-3xl">
             {insight.missionTitle}
           </h2>
-          <div className="mt-1.5 flex min-w-0 items-center gap-2 rounded-[14px] bg-[#0B1020]/46 px-2.5 py-1.5 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)] sm:w-fit">
-            <ArchetypeSprites archetype={insight.archetype} className="shrink-0" />
-            <p className="min-w-0 truncate text-sm font-medium text-[#94A3B8]/78">
-              {insight.missionContextLabel}
-            </p>
+          <p className="mt-1 text-sm leading-5 text-[#D6E0F0]/78">
+            {insight.whyThisMatters}
+          </p>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <div className="flex min-w-0 items-center gap-2 rounded-[14px] bg-[#0B1020]/46 px-2.5 py-1.5 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+              <ArchetypeSprites archetype={insight.archetype} className="shrink-0" />
+              <p className="min-w-0 truncate text-sm font-medium text-[#94A3B8]/78">
+                {insight.missionContextLabel}
+              </p>
+            </div>
+            <span className="inline-flex items-center gap-1 rounded-full bg-[#F5C84C]/8 px-2 py-1 text-[10px] font-semibold text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.14)]">
+              {insight.rewardLabel}
+            </span>
           </div>
         </div>
         {showCta ? (
@@ -118,7 +126,21 @@ export function SessionCoachPanel({
         </div>
       ) : null}
 
-      {insight.completionStatus ? (
+      {insight.completionLesson ? (
+        <div className={`${statCard} mt-3 bg-[linear-gradient(180deg,rgba(10,24,20,0.88),rgba(8,17,31,0.86))] p-3 shadow-[inset_0_0_0_1px_rgba(34,197,94,0.14)]`}>
+          <p className="text-xs font-semibold uppercase text-emerald-200">
+            Read unlocked
+          </p>
+          <p className="mt-2 text-sm leading-6 text-[#F8FAFC]">
+            {insight.completionLesson}
+          </p>
+          {insight.nextAction ? (
+            <p className="mt-1 text-sm text-[#94A3B8]">
+              {insight.nextAction}
+            </p>
+          ) : null}
+        </div>
+      ) : insight.completionStatus ? (
         <div className={`${statCard} mt-3 bg-[linear-gradient(180deg,rgba(10,24,20,0.88),rgba(8,17,31,0.86))] p-3 shadow-[inset_0_0_0_1px_rgba(34,197,94,0.14)]`}>
           <p className="text-xs font-semibold uppercase text-emerald-200">
             {insight.completionStatus}

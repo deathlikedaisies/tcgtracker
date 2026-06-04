@@ -9,6 +9,7 @@ import {
   parseMatchMetadata,
   type MatchResult,
 } from "@/lib/match-types";
+import type { CoachMatch } from "@/lib/session-coach";
 import type { ReviewMatch } from "@/lib/review-analysis";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
@@ -21,7 +22,13 @@ type MatchRow = {
   went_first: boolean | null;
   event_type: string | null;
   played_at: string;
-  metadata: unknown;
+  metadata: {
+    start_quality?: string;
+    opening_hand_quality?: string;
+    sequencing_quality?: string;
+    issue_tags?: string[];
+    positive_tags?: string[];
+  } | null;
   match_tags: {
     tag: string;
   }[] | null;
@@ -134,7 +141,7 @@ export default async function DashboardPage() {
   const hasAnyDeckVersions = deckRows.some(
     (deck) => (deck.deck_versions ?? []).length > 0
   );
-  const sessionCoach = buildSessionCoachInsight(matchRows);
+  const sessionCoach = buildSessionCoachInsight(matchRows as unknown as CoachMatch[]);
   const trainingProgress = buildTrainingProgressSummary(matchRows);
   const reviewMatches = matchRows.map(toReviewMatch);
   const deckCoachInsight = buildPrimaryDeckInsight(reviewMatches);

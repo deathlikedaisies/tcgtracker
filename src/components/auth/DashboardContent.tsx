@@ -617,7 +617,25 @@ function MissionHeroCard({
           {insight.progressFeedback}
         </p>
 
-        <div className="mt-5 rounded-2xl bg-[#0B1020]/60 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+        <div className="mt-3 rounded-2xl bg-[#0B1020]/60 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+            Why this matters
+          </p>
+          <p className="mt-1 text-sm leading-5 text-[#D6E0F0]/82">
+            {insight.whyThisMatters}
+          </p>
+        </div>
+
+        <div className="mt-2 flex items-center gap-2 rounded-xl bg-[#F5C84C]/8 px-3 py-2 shadow-[inset_0_0_0_1px_rgba(245,200,76,0.14)]">
+          <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[#F5C84C]/72">
+            Reward
+          </span>
+          <span className="text-xs font-semibold text-[#F5C84C]">
+            {insight.rewardLabel}
+          </span>
+        </div>
+
+        <div className="mt-3 rounded-2xl bg-[#0B1020]/60 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
           <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
             Next move
           </p>
@@ -628,6 +646,17 @@ function MissionHeroCard({
             {nextActionCopy}
           </p>
         </div>
+
+        {insight.completionLesson ? (
+          <div className="mt-2 rounded-2xl bg-emerald-500/8 p-3 shadow-[inset_0_0_0_1px_rgba(34,197,94,0.16)]">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-emerald-300">
+              Read unlocked
+            </p>
+            <p className="mt-1 text-sm leading-5 text-[#F8FAFC]">
+              {insight.completionLesson}
+            </p>
+          </div>
+        ) : null}
 
         <div className="mt-5 grid gap-2">
           <Link href={primaryHref} className={`${primaryButton} h-12`}>

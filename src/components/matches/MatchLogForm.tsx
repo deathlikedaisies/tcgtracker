@@ -828,16 +828,25 @@ export function MatchLogForm({
         ? sessionCoach.completionStatus
         : sessionCoach.missionStatusLabel
     : "Game logged";
+  const remaining = sessionCoach
+    ? Math.max(sessionCoach.progressGoal - (postSaveMissionProgress ?? 0), 0)
+    : 0;
   const postSaveMissionCopy = sessionCoach
     ? !countedTowardMission
-      ? sessionCoach.missionGuidanceMode === "priority_watchlist"
-        ? "Logged outside the watchlist. It still updates your matchup history."
-        : "Logged outside the focused test. It still updates your matchup history."
-      : sessionCoach.completionStatus
-        ? "Logged into the current review set."
-        : sessionCoach.missionGuidanceMode === "priority_watchlist"
-          ? "This strengthened your watchlist read."
-          : "This advanced your focused test."
+      ? "This game is outside the current mission, but it still updates your wider history."
+      : sessionCoach.completionLesson
+        ? sessionCoach.completionLesson
+        : sessionCoach.missionGuidanceMode === "investigation"
+          ? remaining > 0
+            ? `${remaining} more log${remaining === 1 ? "" : "s"} will tell us whether this is a real pattern.`
+            : "This pattern is strong enough to review."
+          : sessionCoach.missionGuidanceMode === "priority_watchlist"
+            ? remaining > 0
+              ? `${remaining} more watchlist game${remaining === 1 ? "" : "s"} until the read is ready.`
+              : "This is strong enough to review before changing your list."
+            : remaining > 0
+              ? `${remaining} more game${remaining === 1 ? "" : "s"} until this read is ready.`
+              : "This focused sample is ready to review."
     : "This result was added to your matchup history.";
   const postSaveProgressPercent =
     sessionCoach && sessionCoach.progressGoal > 0 && postSaveMissionProgress !== null
@@ -1240,14 +1249,19 @@ export function MatchLogForm({
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
-                        Mission progress
+                        Mission
                       </p>
                       <p className="mt-1 text-lg font-semibold text-[#F8FAFC]">
                         {sessionCoach.missionTitle}
                       </p>
-                      <p className="mt-1 text-xs uppercase tracking-[0.08em] text-[#94A3B8]/72">
-                        {sessionCoach.missionGuidanceLabel}
-                      </p>
+                      <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                        <span className="text-xs text-[#94A3B8]/72">
+                          {sessionCoach.missionGuidanceLabel}
+                        </span>
+                        <span className="text-[10px] font-semibold text-[#F5C84C]/80">
+                          → {sessionCoach.rewardLabel}
+                        </span>
+                      </div>
                     </div>
                     <span className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.08em] ${postSaveStatusToneClass}`}>
                       {postSaveStatusBadge}

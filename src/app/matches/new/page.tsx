@@ -94,7 +94,7 @@ export default async function NewMatchPage({
 
   const { data: previousMatches, error: previousMatchesError } = await supabase
     .from("matches")
-    .select("opponent_archetype, result, went_first, event_type, played_at, match_tags(tag)")
+    .select("opponent_archetype, result, went_first, event_type, played_at, metadata, match_tags(tag)")
     .eq("user_id", user.id)
     .order("played_at", { ascending: false });
 

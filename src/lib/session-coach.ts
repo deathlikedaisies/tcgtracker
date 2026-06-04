@@ -13,6 +13,13 @@ export type CoachMatch = {
   event_type: string | null;
   played_at: string;
   match_tags?: { tag: string }[] | { tag: string } | null;
+  metadata?: {
+    start_quality?: string;
+    opening_hand_quality?: string;
+    sequencing_quality?: string;
+    issue_tags?: string[];
+    positive_tags?: string[];
+  } | null;
   deck_versions?:
     | {
         id?: string;
@@ -33,9 +40,15 @@ export type MissionType =
   | "turn-order"
   | "baseline"
   | "deck-version"
-  | "event-prep";
+  | "event-prep"
+  | "deck-leak"
+  | "positive-pattern";
 
-export type MissionGuidanceMode = "priority_watchlist" | "focused_test";
+export type MissionGuidanceMode =
+  | "priority_watchlist"
+  | "focused_test"
+  | "investigation"
+  | "version_test";
 
 export type MissionStatus =
   | "needs_games"
@@ -53,6 +66,9 @@ export type SessionCoachInsight = {
   ctaLabel: string;
   completionStatus: string | null;
   completionSummary: string | null;
+  whyThisMatters: string;
+  rewardLabel: string;
+  completionLesson: string | null;
   commonIssue: {
     count: number;
     tag: string;
@@ -116,12 +132,14 @@ export type TrainingProgressSummary = {
 };
 
 type MissionCandidate = {
-  priority: 1 | 2 | 3 | 4 | 5;
+  priority: 1 | 2 | 3 | 4 | 5 | 6;
   score: number;
   archetype: string;
   missionType: MissionType;
   missionTitle: string;
   missionReason: string;
+  whyThisMatters: string;
+  rewardLabel: string;
   missionContextLabel: string;
   missionContextTargetCount: number;
   focus: string;
@@ -157,6 +175,22 @@ function getTags(match: CoachMatch) {
     : [match.match_tags.tag];
 }
 
+const LOW_QUALITY_VALUES = new Set(["bad", "okay"]);
+
+function getMetadataQuality(
+  match: CoachMatch,
+  field: "start_quality" | "opening_hand_quality" | "sequencing_quality"
+): string | null {
+  if (!match.metadata) return null;
+  const val = match.metadata[field];
+  return typeof val === "string" ? val : null;
+}
+
+function getMetadataPositiveTags(match: CoachMatch): string[] {
+  if (!match.metadata) return [];
+  return Array.isArray(match.metadata.positive_tags) ? match.metadata.positive_tags : [];
+}
+
 function formatComparisonRecord(matches: CoachMatch[]) {
   const { wins, losses, ties } = countMatchResults(matches);
 
@@ -174,21 +208,29 @@ function getWinRate(matches: CoachMatch[]) {
 
 function getMissionTypeLabel(missionType: MissionType) {
   return {
-    matchup: "Matchup mission",
-    "loss-pattern": "Loss-pattern mission",
-    "turn-order": "Turn-order mission",
-    baseline: "Baseline mission",
-    "deck-version": "Deck-version mission",
-    "event-prep": "Event-prep mission",
-  }[missionType];
+    matchup: "Priority watchlist",
+    "loss-pattern": "Tag investigation",
+    "turn-order": "Turn-order investigation",
+    baseline: "Build sample",
+    "deck-version": "Version test",
+    "event-prep": "Event prep",
+    "deck-leak": "Deck leak",
+    "positive-pattern": "Positive pattern",
+  }[missionType] ?? "Mission";
 }
 
 function getMissionGuidanceMode(missionType: MissionType): MissionGuidanceMode {
-  return missionType === "matchup" ? "priority_watchlist" : "focused_test";
+  if (missionType === "matchup") return "priority_watchlist";
+  if (missionType === "deck-version") return "version_test";
+  if (missionType === "deck-leak" || missionType === "loss-pattern" || missionType === "positive-pattern") return "investigation";
+  return "focused_test";
 }
 
 function getMissionGuidanceLabel(mode: MissionGuidanceMode) {
-  return mode === "priority_watchlist" ? "Priority watchlist" : "Focused test";
+  if (mode === "priority_watchlist") return "Priority watchlist";
+  if (mode === "investigation") return "Investigation";
+  if (mode === "version_test") return "Version test";
+  return "Focused test";
 }
 
 function getMissionStatusLabel(
@@ -197,15 +239,15 @@ function getMissionStatusLabel(
 ) {
   return {
     needs_games: "Needs games",
-    building_signal: "Building signal",
+    building_signal: mode === "investigation" ? "Pattern forming" : "Building signal",
     needs_more_focused_games:
-      mode === "priority_watchlist" ? "Needs more games" : "Needs focus games",
-    actionable_signal: "Actionable signal",
-    mission_complete: "Mission complete",
+      mode === "priority_watchlist" ? "Needs more games" : "Needs more logs",
+    actionable_signal: "Strong enough to review",
+    mission_complete: "Read unlocked",
     pattern_confirmed: "Pattern confirmed",
     pattern_rejected: "Pattern rejected",
     improvement_detected: "Improvement detected",
-  }[status];
+  }[status] ?? "In progress";
 }
 
 function getMissionActiveStatus(
@@ -310,32 +352,42 @@ function getProgressFeedback(
   const remaining = Math.max(goal - completed, 0);
 
   if (remaining === 1) {
-    return mode === "priority_watchlist"
-      ? "One more watchlist game unlocks review."
-      : "One more game unlocks review.";
+    return mode === "investigation"
+      ? "One more log will confirm the pattern."
+      : mode === "priority_watchlist"
+        ? "One more watchlist game unlocks the read."
+        : "One more game unlocks the read.";
   }
 
   if (status === "actionable_signal") {
-    return mode === "priority_watchlist"
-      ? "Watchlist sample is ready for review."
-      : "Focused sample is ready for review.";
+    return mode === "investigation"
+      ? "This pattern is strong enough to review."
+      : mode === "priority_watchlist"
+        ? "This is strong enough to review before changing the list."
+        : "Focused sample is ready for review.";
   }
 
   if (status === "needs_more_focused_games") {
     return mode === "priority_watchlist"
-      ? "Watch for this matchup when it appears."
-      : "Focus games matter most now.";
+      ? "When this matchup appears, capture it."
+      : mode === "investigation"
+        ? "Keep logging and tagging consistently."
+        : "Focus games matter most now.";
   }
 
   if (status === "building_signal") {
-    return mode === "priority_watchlist"
-      ? "Watchlist signal is building."
-      : "Building signal.";
+    return mode === "investigation"
+      ? `${remaining} more log${remaining === 1 ? "" : "s"} will tell us whether this is a real pattern.`
+      : mode === "priority_watchlist"
+        ? `${remaining} more watchlist game${remaining === 1 ? "" : "s"} until the read is ready.`
+        : "Building signal.";
   }
 
-  return mode === "priority_watchlist"
-    ? "Counts toward your current watchlist."
-    : "Counts toward your focused test.";
+  return mode === "investigation"
+    ? "Keep logging to build the pattern."
+    : mode === "priority_watchlist"
+      ? "Counts toward your current watchlist."
+      : "Counts toward your focused test.";
 }
 
 function getMissionNextAction(
@@ -575,36 +627,6 @@ function toMissionResults(matches: CoachMatch[]) {
   }));
 }
 
-function getSkillLabel(tag: string) {
-  const normalized = tag.toLowerCase();
-
-  if (normalized.includes("prize")) {
-    return "Improve your prize plan";
-  }
-
-  if (normalized.includes("sequenc")) {
-    return "Improve sequencing";
-  }
-
-  if (normalized.includes("setup")) {
-    return "Clean up setup decisions";
-  }
-
-  if (normalized.includes("draw")) {
-    return "Stabilize early turns";
-  }
-
-  if (normalized.includes("misplay")) {
-    return "Reduce misplays";
-  }
-
-  if (normalized.includes("bad matchup")) {
-    return "Reduce bad matchup losses";
-  }
-
-  return `Improve ${tag}`;
-}
-
 function formatIssueLabel(tag: string) {
   const normalized = tag.toLowerCase();
 
@@ -656,6 +678,104 @@ function getLossPatternTrend(matches: CoachMatch[]) {
   return null;
 }
 
+function buildDeckLeakMissionCandidate(
+  matches: CoachMatch[]
+): MissionCandidate | null {
+  const qualityFields = [
+    "start_quality",
+    "opening_hand_quality",
+    "sequencing_quality",
+  ] as const;
+
+  const fieldLabels: Record<string, string> = {
+    start_quality: "start",
+    opening_hand_quality: "opening hand",
+    sequencing_quality: "sequencing",
+  };
+
+  const fieldTitles: Record<string, string> = {
+    start_quality: "Poor starts are costing this deck games.",
+    opening_hand_quality: "Opening hand quality is hurting your results.",
+    sequencing_quality: "Sequencing issues are costing you games.",
+  };
+
+  const fieldRewards: Record<string, string> = {
+    start_quality: "Unlock deck start review",
+    opening_hand_quality: "Unlock opening hand review",
+    sequencing_quality: "Unlock sequencing review",
+  };
+
+  const strongest = qualityFields
+    .map((field) => {
+      const known = matches.filter((m) => Boolean(getMetadataQuality(m, field)));
+      const low = known.filter((m) =>
+        LOW_QUALITY_VALUES.has(getMetadataQuality(m, field) ?? "")
+      );
+      const lowLosses = low.filter((m) => m.result === "loss").length;
+      const lowRate = low.length ? lowLosses / low.length : 0;
+      const high = known.filter(
+        (m) => !LOW_QUALITY_VALUES.has(getMetadataQuality(m, field) ?? "")
+      );
+      const highLosses = high.filter((m) => m.result === "loss").length;
+      const highRate = high.length ? highLosses / high.length : 0;
+      return { field, known, low, lowLosses, lowRate, high, highLosses, highRate, delta: lowRate - highRate };
+    })
+    .filter(
+      (c) =>
+        c.low.length >= 3 &&
+        c.lowLosses >= 2 &&
+        (c.delta >= 0.15 || c.lowRate >= 0.6)
+    )
+    .sort((a, b) => b.delta - a.delta)[0];
+
+  if (!strongest) return null;
+
+  const fieldLabel = fieldLabels[strongest.field] ?? strongest.field;
+  const lossPct = Math.round(strongest.lowRate * 100);
+  const eventType =
+    getMostCommonValue(
+      matches
+        .map((m) => m.event_type)
+        .filter((v): v is string => Boolean(v))
+    ) ?? "testing";
+
+  const comparisonLine =
+    strongest.high.length >= 2
+      ? ` Only ${strongest.highLosses} of ${strongest.high.length} games with Good or Great ${fieldLabel} were losses.`
+      : "";
+
+  return {
+    priority: 1 as const,
+    score: strongest.lowLosses * 4 + strongest.delta * 20 + strongest.low.length,
+    archetype: "Your deck",
+    missionType: "deck-leak" as const,
+    missionTitle: fieldTitles[strongest.field] ?? `Poor ${fieldLabel} quality detected.`,
+    missionReason: `You lose ${lossPct}% of games when ${fieldLabel} is Bad or Okay.`,
+    whyThisMatters: `${strongest.lowLosses} of ${strongest.low.length} games with Bad or Okay ${fieldLabel} were losses.${comparisonLine}`,
+    rewardLabel: fieldRewards[strongest.field] ?? "Unlock deck leak review",
+    missionContextLabel: "Quality-rated games",
+    missionContextTargetCount: 5,
+    missionProgressGoal: 5,
+    missionContextSeenCount: strongest.known.length,
+    focus: `Log more games and keep rating ${fieldLabel} quality honestly.`,
+    condition: `${lossPct}% loss rate with Bad/Okay ${fieldLabel}`,
+    context: `Your ${fieldLabel} quality is the clearest deck-side pattern right now.`,
+    exactTest: `Log 3 more games with quality ratings before changing tech cards.`,
+    nextTest: `Check whether fixing ${fieldLabel} issues reduces your loss rate.`,
+    reasoning: `${strongest.lowLosses} of ${strongest.low.length} Bad/Okay ${fieldLabel} games were losses.`,
+    criteria: `Counts games with ${fieldLabel} quality rated.`,
+    matches,
+    focusMatches: strongest.known,
+    focusOpponent: null,
+    focusTurnContext: null,
+    focusTag: null,
+    focusDeckVersionIds: [],
+    commonIssue: null,
+    continueHref: "/review",
+    eventType,
+  };
+}
+
 function buildMatchupMissionCandidates(
   matches: CoachMatch[]
 ): MissionCandidate[] {
@@ -705,11 +825,7 @@ function buildMatchupMissionCandidates(
             .map((match) => match.event_type)
             .filter((value): value is string => Boolean(value))
         ) ?? "testing";
-      const titleBase =
-        versionFocus && versionFocusCount >= Math.ceil(total * 0.6)
-          ? `Review ${versionFocus} into ${archetype}`
-          : `Review ${archetype} matchup`;
-      const missionTitle = titleBase;
+      const missionTitle = `${archetype} is your priority watchlist.`;
       const commonIssueLabel = repeatedTag
         ? formatIssueLabel(repeatedTag.tag)
         : null;
@@ -721,9 +837,14 @@ function buildMatchupMissionCandidates(
         repeatedTagRate * 10 +
         (turnContext ? 6 : 0) +
         (versionFocus && versionFocusCount >= Math.ceil(total * 0.6) ? 4 : 0);
+      const whyRecord = formatMatchRecord(wins, losses, ties);
+      const whyIssue = repeatedTag
+        ? ` ${capitalizeLabel(commonIssueLabel ?? repeatedTag.tag)} shows up in ${repeatedTag.count} of those losses.`
+        : "";
+      const whyTurn = turnContext ? ` Leak is worse ${turnContext}.` : "";
 
       return [{
-        priority: 1 as const,
+        priority: 3 as const,
         score,
         archetype,
         missionType: "matchup" as const,
@@ -731,12 +852,14 @@ function buildMatchupMissionCandidates(
         missionReason: repeatedTag
           ? `${capitalizeLabel(commonIssueLabel ?? repeatedTag.tag)} keeps showing up in losses into ${archetype}.`
           : `${archetype} is the clearest underperforming matchup right now.`,
+        whyThisMatters: `You are ${whyRecord} vs ${archetype}.${whyIssue}${whyTurn}`,
+        rewardLabel: "Unlock matchup read",
         missionContextLabel: "Watchlist games",
         missionContextTargetCount: 5,
         missionProgressGoal: 5,
         missionContextSeenCount: focusMatches.length,
         focus: repeatedTag
-          ? `Keep logging normally. When ${archetype} appears, track ${commonIssueLabel ?? repeatedTag.tag}${turnContext ? ` ${turnContext}` : ""}.`
+          ? `Keep logging normally. When ${archetype} appears, tag ${commonIssueLabel ?? repeatedTag.tag}${turnContext ? ` ${turnContext}` : ""}.`
           : turnContext
             ? `When ${archetype} appears ${turnContext}, review your opening plan.`
             : `Keep logging normally. When ${archetype} appears, capture the watchlist sample.`,
@@ -747,8 +870,8 @@ function buildMatchupMissionCandidates(
           ? `${archetype} is costing more games when ${turnContext}.`
           : `${archetype} has the weakest sustained record in the current sample.`,
         exactTest: turnContext
-          ? `Keep logging normally. When ${archetype} appears ${turnContext}, capture five watchlist games.`
-          : `Keep logging normally. When ${archetype} appears, capture five watchlist games.`,
+          ? `Keep logging normally. When ${archetype} appears ${turnContext}, capture the watchlist sample.`
+          : `Keep logging normally. When ${archetype} appears, tag what breaks first.`,
         nextTest: turnContext
           ? `When ${archetype} appears ${turnContext}, watch for the same issue tags.`
           : `When ${archetype} appears, see whether the same leak repeats.`,
@@ -784,7 +907,7 @@ function buildLossPatternMissionCandidate(
 
   const repeatedTag = getMostCommonTag(losses.flatMap(getTags));
 
-  if (!repeatedTag || repeatedTag.count < 4) {
+  if (!repeatedTag || repeatedTag.count < 2) {
     return null;
   }
 
@@ -793,38 +916,40 @@ function buildLossPatternMissionCandidate(
     focusMatches.map((match) => match.opponent_archetype.trim()).filter(Boolean)
   );
   const issueLabel = formatIssueLabel(repeatedTag.tag);
+  const lossPct = losses.length
+    ? Math.round((repeatedTag.count / losses.length) * 100)
+    : 0;
   const eventType =
     getMostCommonValue(
       focusMatches
         .map((match) => match.event_type)
         .filter((value): value is string => Boolean(value))
     ) ?? "testing";
+  const isEarlySignal = repeatedTag.count < 4;
 
   return {
-    priority: 2,
+    priority: 2 as const,
     score: repeatedTag.count * 4 + affectedMatchups.size * 3 + focusMatches.length,
     archetype:
       getMostCommonValue(
         focusMatches.map((match) => match.opponent_archetype).filter(Boolean)
       ) ?? "Current field",
     missionType: "loss-pattern",
-    missionTitle: getSkillLabel(repeatedTag.tag),
-    missionReason: `${capitalizeLabel(issueLabel)} appears in ${repeatedTag.count} losses across ${affectedMatchups.size} matchup${
-      affectedMatchups.size === 1 ? "" : "s"
-    }.`,
+    missionTitle: `"${repeatedTag.tag}" is showing up in your losses.`,
+    missionReason: `${capitalizeLabel(issueLabel)} appears in ${repeatedTag.count} of ${losses.length} losses.`,
+    whyThisMatters: `You tagged "${repeatedTag.tag}" in ${repeatedTag.count} of ${losses.length} losses (${lossPct}%).${isEarlySignal ? " Early signal." : " Consistent pattern."}`,
+    rewardLabel: `Unlock ${issueLabel} breakdown`,
     missionContextLabel: "Tagged losses",
-    missionContextTargetCount: 4,
+    missionContextTargetCount: 3,
     missionProgressGoal: 5,
     missionContextSeenCount: focusMatches.length,
-    focus: `Keep tagging ${issueLabel} consistently so the pattern stays reviewable.`,
+    focus: `Keep tagging "${repeatedTag.tag}" consistently — each log sharpens the read.`,
     condition: `Pattern: ${repeatedTag.tag}`,
-    context: "This issue is repeating across different losses, not just one matchup.",
-    exactTest: `Log 5 more games and tag ${issueLabel} honestly when it matters.`,
-    nextTest: `Run another focused block and check whether ${issueLabel} still repeats.`,
-    reasoning: `${capitalizeLabel(issueLabel)} appears in ${repeatedTag.count} recent loss${
-      repeatedTag.count === 1 ? "" : "es"
-    }.`,
-    criteria: `Counts losses tagged with ${issueLabel}.`,
+    context: "This issue is repeating across losses, not just one matchup.",
+    exactTest: `Log more games and tag "${issueLabel}" honestly when it appears.`,
+    nextTest: `Keep logging and watch whether "${issueLabel}" still dominates after the next block.`,
+    reasoning: `${capitalizeLabel(issueLabel)} appears in ${repeatedTag.count} of ${losses.length} recent losses.`,
+    criteria: `Counts losses tagged with "${issueLabel}".`,
     matches,
     focusMatches,
     focusOpponent: null,
@@ -832,7 +957,7 @@ function buildLossPatternMissionCandidate(
     focusTag: repeatedTag.tag,
     focusDeckVersionIds: [],
     commonIssue: repeatedTag,
-    continueHref: "/matches",
+    continueHref: "/review",
     eventType,
   };
 }
@@ -870,7 +995,7 @@ function buildTurnOrderMissionCandidate(
     ) ?? "testing";
 
   return {
-    priority: 3,
+    priority: 4 as const,
     score: delta + focusMatches.length + (repeatedTag?.count ?? 0) * 2,
     archetype: getMostCommonValue(
       focusMatches.map((match) => match.opponent_archetype).filter(Boolean)
@@ -878,23 +1003,25 @@ function buildTurnOrderMissionCandidate(
     missionType: "turn-order",
     missionTitle:
       weakerSide === "going second"
-        ? "Stabilize going second games"
-        : "Stabilize going first games",
+        ? "Going second is hurting your results."
+        : "Going first is hurting your results.",
     missionReason:
       weakerSide === "going second"
         ? `Second-turn games trail first-turn games by ${delta} percentage points.`
         : `First-turn games trail second-turn games by ${delta} percentage points.`,
-    missionContextLabel: "Focused turn-order games",
+    whyThisMatters: `Going first: ${formatComparisonRecord(firstMatches)}. Going second: ${formatComparisonRecord(secondMatches)}. A ${delta}-point gap is significant.`,
+    rewardLabel: "Unlock turn-order read",
+    missionContextLabel: "Turn-order games",
     missionContextTargetCount: 5,
     missionProgressGoal: 5,
     missionContextSeenCount: focusMatches.length,
     focus: repeatedTag
-      ? `Watch ${issueLabel ?? repeatedTag.tag} in ${weakerSide} games.`
-      : `Keep logging the same turn order so the split stays reviewable.`,
+      ? `Watch "${issueLabel ?? repeatedTag.tag}" in ${weakerSide} games.`
+      : `Keep logging and note turn order so the split stays reviewable.`,
     condition: `Split: ${weakerSide}`,
-    context: `Turn order is changing the result more than most matchup reads right now.`,
-    exactTest: `Play 5 more games ${weakerSide}.`,
-    nextTest: `Keep logging ${weakerSide} games before changing your list.`,
+    context: `Turn order is changing results more than matchup reads right now.`,
+    exactTest: `Log more games and track turn order — do not skip "Can't remember" entries.`,
+    nextTest: `Keep logging with turn order tracked before changing your list.`,
     reasoning: `Going first: ${formatComparisonRecord(firstMatches)}. Going second: ${formatComparisonRecord(secondMatches)}.`,
     criteria: `Counts games played ${weakerSide}.`,
     matches,
@@ -904,7 +1031,7 @@ function buildTurnOrderMissionCandidate(
     focusTag: repeatedTag?.tag ?? null,
     focusDeckVersionIds: [],
     commonIssue: repeatedTag,
-    continueHref: "/matchups",
+    continueHref: "/review",
     eventType,
   };
 }
@@ -968,21 +1095,23 @@ function buildDeckVersionMissionCandidate(
     ) ?? "testing";
 
   return {
-    priority: 4,
+    priority: 5 as const,
     score: delta + focusMatches.length,
     archetype: "Deck versions",
     missionType: "deck-version",
-    missionTitle: `Compare ${weakestVersion.name} vs ${bestVersion.name}`,
+    missionTitle: `Test whether ${bestVersion.name} actually improved.`,
     missionReason: `${bestVersion.name} leads ${weakestVersion.name} by ${delta} win-rate points.`,
-    missionContextLabel: "Compared versions",
+    whyThisMatters: `${bestVersion.name}: ${formatComparisonRecord(bestVersion.matches)}. ${weakestVersion.name}: ${formatComparisonRecord(weakestVersion.matches)}. A ${delta}-point gap is worth testing.`,
+    rewardLabel: "Unlock version comparison",
+    missionContextLabel: "Version games",
     missionContextTargetCount: 2,
     missionProgressGoal: 6,
     missionContextSeenCount: 2,
-    focus: "Review whether the better version is actually worth committing to.",
+    focus: "Keep logging with the same version so the comparison stays clean.",
     condition: `Version gap: ${delta} points`,
-    context: "You now have enough version sample to compare builds directly.",
-    exactTest: `Review ${weakestVersion.name} against ${bestVersion.name}.`,
-    nextTest: "Choose the next version to keep testing or retire the weaker build.",
+    context: "You have enough version data to start comparing builds before committing.",
+    exactTest: `Log more games with ${bestVersion.name} and compare the pattern.`,
+    nextTest: `After the next block, decide whether to commit to ${bestVersion.name} or test a third version.`,
     reasoning: `${weakestVersion.name}: ${formatComparisonRecord(
       weakestVersion.matches
     )}. ${bestVersion.name}: ${formatComparisonRecord(bestVersion.matches)}.`,
@@ -1018,24 +1147,35 @@ function buildBaselineMissionCandidate(
         .filter((value): value is string => Boolean(value))
     ) ?? "testing";
 
+  const totalGames = matches.length;
+  const gamesNeeded = Math.max(5 - totalGames, 0);
+
   return {
-    priority: 5,
+    priority: 6 as const,
     score: focusMatches.length,
     archetype: fallbackArchetype,
     missionType: "baseline",
-    missionTitle: "Build a focused sample",
-    missionReason: "No leak has enough evidence yet, so keep the next block clean and consistent.",
-    missionContextLabel: "Watchlist games",
-    missionContextTargetCount: 3,
+    missionTitle:
+      totalGames < 5
+        ? `Log ${gamesNeeded} more game${gamesNeeded === 1 ? "" : "s"} to unlock your first read.`
+        : "Build a focused sample.",
+    missionReason: "No strong pattern has enough evidence yet. Keep logging consistently.",
+    whyThisMatters:
+      totalGames < 5
+        ? `You have ${totalGames} logged game${totalGames === 1 ? "" : "s"}. The coach needs at least 5 before patterns become reliable.`
+        : "No single pattern stands out yet. A clean block of games will surface the first real read.",
+    rewardLabel: "Unlock first coach read",
+    missionContextLabel: "Logged games",
+    missionContextTargetCount: 5,
     missionProgressGoal: 5,
-    missionContextSeenCount: focusMatches.length,
-    focus: `Keep the same deck and pressure-test ${fallbackArchetype}.`,
-    condition: "First test in progress",
+    missionContextSeenCount: Math.min(totalGames, 5),
+    focus: `Keep logging with the same deck and rate quality honestly every game.`,
+    condition: "Building baseline sample",
     context: "A few more structured games will unlock the first real coaching read.",
-    exactTest: `Keep logging normally. When ${fallbackArchetype} appears, capture five watchlist games.`,
-    nextTest: `Keep logging ${fallbackArchetype} before changing your list.`,
-    reasoning: `Most common recent matchup: ${fallbackArchetype}.`,
-    criteria: "Counts your next focused testing block.",
+    exactTest: `Log 5 games total with quality ratings and tags to unlock the coaching loop.`,
+    nextTest: `After the next 5 games, check Review to see if any pattern emerged.`,
+    reasoning: `${totalGames} logged game${totalGames === 1 ? "" : "s"} so far.`,
+    criteria: "Counts total logged games.",
     matches,
     focusMatches,
     focusOpponent: fallbackArchetype,
@@ -1043,7 +1183,81 @@ function buildBaselineMissionCandidate(
     focusTag: null,
     focusDeckVersionIds: [],
     commonIssue: null,
-    continueHref: `/matches/new?event=${encodeURIComponent(eventType)}`,
+    continueHref: `/matches/new`,
+    eventType,
+  };
+}
+
+function buildPositivePatternMissionCandidate(
+  matches: CoachMatch[]
+): MissionCandidate | null {
+  const wins = matches.filter((m) => m.result === "win");
+
+  if (wins.length < 3) return null;
+
+  // Check metadata positive_tags first (most specific)
+  const metaPositiveCounts = new Map<string, number>();
+  for (const m of wins) {
+    for (const tag of getMetadataPositiveTags(m)) {
+      metaPositiveCounts.set(tag, (metaPositiveCounts.get(tag) ?? 0) + 1);
+    }
+  }
+
+  // Also check match_tags that appear in wins
+  const tagPositiveCounts = new Map<string, number>();
+  for (const m of wins) {
+    for (const tag of getTags(m)) {
+      tagPositiveCounts.set(tag, (tagPositiveCounts.get(tag) ?? 0) + 1);
+    }
+  }
+
+  const topMeta = Array.from(metaPositiveCounts.entries()).sort((a, b) => b[1] - a[1])[0];
+  const topTag = Array.from(tagPositiveCounts.entries()).sort((a, b) => b[1] - a[1])[0];
+
+  const [tag, count] = topMeta && topMeta[1] >= 2
+    ? topMeta
+    : topTag && topTag[1] >= 2
+      ? topTag
+      : [null, 0];
+
+  if (!tag || count < 2) return null;
+
+  const winPct = Math.round((count / wins.length) * 100);
+  const eventType =
+    getMostCommonValue(
+      wins.map((m) => m.event_type).filter((v): v is string => Boolean(v))
+    ) ?? "testing";
+
+  return {
+    priority: 5 as const,
+    score: count * 3 + wins.length,
+    archetype: "Your deck",
+    missionType: "positive-pattern" as const,
+    missionTitle: `"${tag}" may be worth keeping.`,
+    missionReason: `"${tag}" appears in ${count} of ${wins.length} wins (${winPct}%).`,
+    whyThisMatters: `You marked "${tag}" in ${count} of ${wins.length} wins. This is the strongest positive signal in your data.`,
+    rewardLabel: "Unlock keep/cut signal",
+    missionContextLabel: "Tagged wins",
+    missionContextTargetCount: 3,
+    missionProgressGoal: 3,
+    missionContextSeenCount: count,
+    focus: `Keep playing and tagging before cutting this package from the list.`,
+    condition: `Positive signal: ${tag}`,
+    context: "This pattern appears consistently in wins — do not cut it without more testing.",
+    exactTest: `Log 3 more games before deciding whether to cut this package.`,
+    nextTest: `After the next block, check whether "${tag}" still appears more often in wins than losses.`,
+    reasoning: `"${tag}" appears in ${count} of ${wins.length} wins.`,
+    criteria: `Counts wins tagged with "${tag}".`,
+    matches,
+    focusMatches: wins.filter((m) =>
+      getMetadataPositiveTags(m).includes(tag) || getTags(m).includes(tag)
+    ),
+    focusOpponent: null,
+    focusTurnContext: null,
+    focusTag: tag,
+    focusDeckVersionIds: [],
+    commonIssue: null,
+    continueHref: "/review",
     eventType,
   };
 }
@@ -1128,12 +1342,41 @@ function buildMissionInsightFromCandidate(
               sortedMissionMatches.length === 1 ? "" : "s"
             }.`;
 
+  // Generate completion lesson from available data
+  const completionLesson = completion.completionStatus
+    ? (() => {
+        const lessonsLeft = Math.max(candidate.missionProgressGoal - completed, 0);
+        if (candidate.missionType === "deck-leak") {
+          return `${candidate.reasoning} Before changing tech cards, test whether a list change improves this pattern.`;
+        }
+        if (candidate.missionType === "loss-pattern" && candidate.commonIssue) {
+          return `"${candidate.commonIssue.tag}" is your most consistent loss tag. Check Review to see what else it overlaps with.`;
+        }
+        if (candidate.missionType === "positive-pattern" && candidate.focusTag) {
+          return `"${candidate.focusTag}" appears reliably in wins. Do not cut this package before testing a version without it.`;
+        }
+        if (candidate.missionType === "matchup" && candidate.focusOpponent) {
+          return `You now have a ${candidate.missionContextSeenCount}-game watchlist read on ${candidate.focusOpponent}. Open Review to see the full breakdown.`;
+        }
+        if (candidate.missionType === "deck-version") {
+          return `${candidate.reasoning} If the gap persists after more games, commit to the stronger version.`;
+        }
+        if (lessonsLeft <= 0) {
+          return `This read is strong enough to review before changing your list.`;
+        }
+        return null;
+      })()
+    : null;
+
   return {
     archetype: candidate.archetype,
     confidence: missionStatusLabel,
     ctaLabel: missionNextAction.ctaLabel,
     completionStatus: completion.completionStatus,
     completionSummary: completion.completionSummary,
+    whyThisMatters: candidate.whyThisMatters,
+    rewardLabel: candidate.rewardLabel,
+    completionLesson,
     commonIssue: candidate.commonIssue
       ? {
           ...candidate.commonIssue,
@@ -1253,6 +1496,24 @@ export function matchCountsTowardMission(
     );
   }
 
+  if (insight.missionType === "deck-leak") {
+    // Any game with quality metadata contributes to the deck-leak investigation
+    const m = match as CoachMatch;
+    return Boolean(
+      m.metadata?.start_quality ||
+      m.metadata?.opening_hand_quality ||
+      m.metadata?.sequencing_quality
+    );
+  }
+
+  if (insight.missionType === "positive-pattern") {
+    return (
+      match.result === "win" &&
+      !!insight.missionFocusTag &&
+      getTags(match).includes(insight.missionFocusTag)
+    );
+  }
+
   if (insight.missionType === "turn-order") {
     return insight.missionFocusTurnContext === "going second"
       ? match.went_first === false
@@ -1318,24 +1579,22 @@ export function buildSessionCoachInsight(
   if (!recentMatches.length) {
     return null;
   }
+
   const candidates: MissionCandidate[] = [
     ...buildMatchupMissionCandidates(recentMatches),
   ];
+
+  const deckLeakCandidate = buildDeckLeakMissionCandidate(recentMatches);
   const lossPatternCandidate = buildLossPatternMissionCandidate(recentMatches);
   const turnOrderCandidate = buildTurnOrderMissionCandidate(recentMatches);
   const deckVersionCandidate = buildDeckVersionMissionCandidate(recentMatches);
+  const positivePatternCandidate = buildPositivePatternMissionCandidate(recentMatches);
 
-  if (lossPatternCandidate) {
-    candidates.push(lossPatternCandidate);
-  }
-
-  if (turnOrderCandidate) {
-    candidates.push(turnOrderCandidate);
-  }
-
-  if (deckVersionCandidate) {
-    candidates.push(deckVersionCandidate);
-  }
+  if (deckLeakCandidate) candidates.push(deckLeakCandidate);
+  if (lossPatternCandidate) candidates.push(lossPatternCandidate);
+  if (turnOrderCandidate) candidates.push(turnOrderCandidate);
+  if (deckVersionCandidate) candidates.push(deckVersionCandidate);
+  if (positivePatternCandidate) candidates.push(positivePatternCandidate);
 
   candidates.push(buildBaselineMissionCandidate(recentMatches));
 
