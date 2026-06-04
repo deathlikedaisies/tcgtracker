@@ -917,6 +917,63 @@ export function MatchLogForm({
         : sessionCoach.nextAction
     : "Keep your testing loop moving with one more data point.";
   const postSaveStatusToneClass = getRewardStatusToneClass(postSaveStatusBadge);
+
+  // Derive a plain-English coaching line from what was just logged
+  const postLogCoachLine = (() => {
+    if (!wasSuccessful) return null;
+    if (result === "loss") {
+      if (issueTags.length) {
+        const topTag = issueTags[0];
+        return {
+          line: `This adds to your "${topTag}" pattern.`,
+          detail: "Keep tagging consistently to sharpen the read.",
+        };
+      }
+      if (startQuality === "bad" || startQuality === "okay") {
+        return {
+          line: "Another game with a bad or okay start.",
+          detail: "The start quality signal is growing in your loss data.",
+        };
+      }
+      if (openingHandQuality === "bad" || openingHandQuality === "okay") {
+        return {
+          line: "Another game where the opening hand was weak.",
+          detail: "This strengthens the opening hand pattern in your losses.",
+        };
+      }
+      if (sequencingQuality === "bad" || sequencingQuality === "okay") {
+        return {
+          line: "Another sequencing issue logged.",
+          detail: "Check Review to see if this is becoming a pattern.",
+        };
+      }
+      return {
+        line: countedTowardMission
+          ? `This loss counts toward your current mission.`
+          : "Loss added to your matchup history.",
+        detail: "Add issue tags next time to help the coach find patterns.",
+      };
+    }
+    if (result === "win") {
+      if (positiveTags.length) {
+        return {
+          line: `"${positiveTags[0]}" came through in this win.`,
+          detail: "Each tagged win helps identify what to keep in the list.",
+        };
+      }
+      return {
+        line: countedTowardMission
+          ? "This win counts toward your current mission."
+          : "Win added to your matchup history.",
+        detail: "Add positive tags next time to track what worked.",
+      };
+    }
+    return {
+      line: "Tie logged and added to your history.",
+      detail: "Ties count toward your sample but not win rate.",
+    };
+  })();
+
   const rewardPrimaryButtonClass =
     `${primaryButton} h-12 shadow-[0_14px_30px_rgba(79,140,255,0.16)]`;
   const rewardSecondaryButtonClass =
@@ -1158,6 +1215,25 @@ export function MatchLogForm({
                   ))}
                 </div>
               </div>
+
+              {postLogCoachLine ? (
+                <div className="rounded-[20px] bg-[#07111F]/44 p-4 shadow-[inset_0_0_0_1px_rgba(245,200,76,0.18)]">
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex size-6 items-center justify-center rounded-[8px] bg-[#F5C84C]/12 text-[10px] font-bold text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
+                      TC
+                    </span>
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#94A3B8]/52">
+                      Coach says
+                    </span>
+                  </div>
+                  <p className="mt-2 text-base font-semibold text-[#F8FAFC]">
+                    {postLogCoachLine.line}
+                  </p>
+                  <p className="mt-1 text-sm text-[#94A3B8]/76">
+                    {postLogCoachLine.detail}
+                  </p>
+                </div>
+              ) : null}
 
               {sessionCoach ? (
                 <div className="rounded-[24px] bg-[#07111F]/44 p-4 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.12)]">

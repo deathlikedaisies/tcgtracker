@@ -152,7 +152,7 @@ function getMatchupCoachLabel(matchup: {
     return {
       label: "Needs more data",
       className: "bg-[#4F8CFF]/14 text-[#B8D1FF]",
-      action: "Early signal based on limited games. Keep logging before changing plans.",
+      action: `Too few games to read. Log ${Math.max(6 - matchup.matches, 1)} more before drawing conclusions.`,
     };
   }
 
@@ -160,7 +160,7 @@ function getMatchupCoachLabel(matchup: {
     return {
       label: "Building signal",
       className: "bg-[#F5C84C]/14 text-[#F5C84C]",
-      action: "Keep logging and watch whether the pattern repeats.",
+      action: "Early pattern. Keep logging normally — when this matchup appears, tag what goes wrong.",
     };
   }
 
@@ -168,22 +168,22 @@ function getMatchupCoachLabel(matchup: {
     return {
       label: "Strong matchup",
       className: "bg-emerald-500/14 text-emerald-200",
-      action: "Keep the plan stable and verify after the next session.",
+      action: "Good signal. Keep the plan stable and verify after more logged games.",
     };
   }
 
   if (matchup.winRateValue <= 45) {
     return {
-      label: "Actionable leak",
+      label: "Priority watchlist",
       className: "bg-[#F43F5E]/14 text-rose-200",
-      action: "Run 5 targeted games and tag every loss.",
+      action: "When this matchup appears, tag the first thing that breaks. Do not change the list until the pattern is clear.",
     };
   }
 
   return {
     label: "Watchlist",
     className: "bg-[#F5C84C]/14 text-[#F5C84C]",
-    action: "Keep logging to see which way this breaks.",
+    action: "Pattern unclear — could go either way. Keep logging to see which direction this moves.",
   };
 }
 

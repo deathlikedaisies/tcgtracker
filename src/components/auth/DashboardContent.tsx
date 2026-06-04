@@ -498,10 +498,12 @@ function MissionHeroCard({
   insight,
   nextActionTitle,
   nextActionCopy,
+  deckCoachInsight,
 }: {
   insight: SessionCoachInsight;
   nextActionTitle: string;
   nextActionCopy: string;
+  deckCoachInsight?: ReviewInsightCard | null;
 }) {
   const badge = getMissionBadge(insight);
   const progressPercent = Math.min(
@@ -637,65 +639,42 @@ function MissionHeroCard({
           </Link>
         </div>
       </div>
-    </section>
-  );
-}
 
-function DeckCoachCard({ insight }: { insight: ReviewInsightCard }) {
-  const borderColor =
-    insight.tone === "rose"
-      ? "shadow-[0_18px_46px_rgba(0,0,0,0.22),inset_0_0_0_1px_rgba(244,63,94,0.20)]"
-      : insight.tone === "emerald"
-        ? "shadow-[0_18px_46px_rgba(0,0,0,0.22),inset_0_0_0_1px_rgba(34,197,94,0.20)]"
-        : insight.tone === "gold"
-          ? "shadow-[0_18px_46px_rgba(0,0,0,0.22),inset_0_0_0_1px_rgba(245,200,76,0.22)]"
-          : "shadow-[0_18px_46px_rgba(0,0,0,0.22),inset_0_0_0_1px_rgba(79,140,255,0.20)]";
-
-  const accentColor =
-    insight.tone === "rose"
-      ? "text-rose-200"
-      : insight.tone === "emerald"
-        ? "text-emerald-300"
-        : insight.tone === "gold"
-          ? "text-[#F5C84C]"
-          : "text-[#4F8CFF]";
-
-  return (
-    <section
-      className={`rounded-[24px] bg-[linear-gradient(180deg,rgba(12,20,36,0.94),rgba(8,16,29,0.90))] p-5 ${borderColor}`}
-    >
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex size-8 items-center justify-center rounded-[12px] bg-[#F5C84C]/12 text-xs font-bold text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
-              TC
-            </span>
-            <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#94A3B8]/58">
-              Coach says
-            </span>
+      {deckCoachInsight ? (
+        <div className="xl:col-span-2 mt-0 rounded-[18px] bg-[#0B1020]/60 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+            <div className="flex min-w-0 flex-1 items-center gap-3">
+              <div className="flex shrink-0 items-center gap-1.5">
+                <span className="inline-flex size-6 items-center justify-center rounded-[8px] bg-[#F5C84C]/12 text-[10px] font-bold text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
+                  TC
+                </span>
+                <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#94A3B8]/52">
+                  Coach says
+                </span>
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold text-[#F8FAFC]">
+                  {deckCoachInsight.title}
+                </p>
+                <p className={`mt-0.5 truncate text-xs font-medium ${
+                  deckCoachInsight.tone === "rose" ? "text-rose-300" :
+                  deckCoachInsight.tone === "emerald" ? "text-emerald-300" :
+                  deckCoachInsight.tone === "gold" ? "text-[#F5C84C]" :
+                  "text-[#B8D1FF]"
+                }`}>
+                  {deckCoachInsight.evidence}
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/review"
+              className="shrink-0 inline-flex h-8 items-center justify-center rounded-[10px] bg-[#F5C84C] px-3 text-xs font-bold text-[#0B1020] shadow-[0_8px_20px_rgba(245,200,76,0.18)] transition hover:-translate-y-0.5 hover:bg-[#ffd85f] active:translate-y-0"
+            >
+              Open Review
+            </Link>
           </div>
-          <h2 className={`mt-3 text-xl font-bold tracking-tight text-[#F8FAFC] sm:text-2xl`}>
-            {insight.title}
-          </h2>
-          <p className="mt-2 text-sm leading-6 text-[#D6E0F0]/82">
-            {insight.explanation}
-          </p>
         </div>
-        <Link
-          href="/review"
-          className={`shrink-0 inline-flex h-10 items-center justify-center rounded-[14px] bg-[#F5C84C] px-4 text-sm font-bold text-[#0B1020] shadow-[0_10px_28px_rgba(245,200,76,0.20)] transition hover:-translate-y-0.5 hover:bg-[#ffd85f] active:translate-y-0 sm:self-start`}
-        >
-          Open Review
-        </Link>
-      </div>
-      <div className="mt-4 rounded-[14px] bg-[#0B1020]/60 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
-          Evidence
-        </p>
-        <p className={`mt-1 text-sm font-medium ${accentColor}`}>
-          {insight.evidence}
-        </p>
-      </div>
+      ) : null}
     </section>
   );
 }
@@ -944,7 +923,7 @@ export function DashboardContent({
   const whatChangedCard = trainingProgress.currentWeakestImproved
     ? {
         label: "What changed",
-        title: `${trainingProgress.currentWeakestImproved} improved`,
+        title: "Matchup trending better",
         detail: "The weakest recurring matchup is trending better in recent logs.",
         tone: "green" as const,
       }
@@ -1061,11 +1040,33 @@ export function DashboardContent({
                   insight={sessionCoach}
                   nextActionTitle={nextAction.title}
                   nextActionCopy={nextAction.copy}
+                  deckCoachInsight={deckCoachInsight}
                 />
-              ) : null}
-
-              {deckCoachInsight ? (
-                <DeckCoachCard insight={deckCoachInsight} />
+              ) : deckCoachInsight ? (
+                <section className="rounded-[24px] bg-[linear-gradient(180deg,rgba(12,20,36,0.94),rgba(8,16,29,0.90))] p-5 shadow-[0_18px_46px_rgba(0,0,0,0.22),inset_0_0_0_1px_rgba(245,200,76,0.22)]">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="inline-flex size-8 items-center justify-center rounded-[12px] bg-[#F5C84C]/12 text-xs font-bold text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
+                      TC
+                    </span>
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#94A3B8]/58">
+                      Coach says
+                    </span>
+                  </div>
+                  <h2 className="mt-3 text-xl font-bold tracking-tight text-[#F8FAFC]">
+                    {deckCoachInsight.title}
+                  </h2>
+                  <p className="mt-2 text-sm leading-6 text-[#D6E0F0]/82">
+                    {deckCoachInsight.explanation}
+                  </p>
+                  <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <p className={`text-sm font-medium ${deckCoachInsight.tone === "rose" ? "text-rose-200" : deckCoachInsight.tone === "emerald" ? "text-emerald-300" : deckCoachInsight.tone === "gold" ? "text-[#F5C84C]" : "text-[#B8D1FF]"}`}>
+                      {deckCoachInsight.evidence}
+                    </p>
+                    <Link href="/review" className="shrink-0 inline-flex h-10 items-center justify-center rounded-[14px] bg-[#F5C84C] px-4 text-sm font-bold text-[#0B1020] shadow-[0_10px_28px_rgba(245,200,76,0.20)] transition hover:-translate-y-0.5 hover:bg-[#ffd85f] active:translate-y-0">
+                      Open Review
+                    </Link>
+                  </div>
+                </section>
               ) : null}
 
               <section className="grid gap-3 lg:grid-cols-3">

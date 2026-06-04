@@ -20,13 +20,11 @@ import {
   inputH10,
   label,
 } from "@/components/brand-styles";
-import { SessionCoachPanel } from "@/components/SessionCoachPanel";
 import { SixPrizerLogo } from "@/components/SixPrizerLogo";
 import {
   buildReviewAnalysis,
   type ReviewMatch,
 } from "@/lib/review-analysis";
-import { buildSessionCoachInsight } from "@/lib/session-coach";
 import {
   parseMatchMetadata,
   type MatchMetadata,
@@ -168,25 +166,6 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
 
   const userDecks = (decks ?? []) as DeckWithVersions[];
   const allMatches = (matches ?? []) as MatchRow[];
-  const sessionCoach = buildSessionCoachInsight(
-    allMatches.map((match) => ({
-      id: match.id,
-      deck_version_id: match.deck_version_id,
-      opponent_archetype: match.opponent_archetype,
-      result: match.result,
-      went_first: match.went_first,
-      event_type: match.event_type,
-      played_at: match.played_at,
-      match_tags: match.match_tags,
-      deck_versions: getDeckVersion(match)
-        ? {
-            id: getDeckVersion(match)?.id,
-            name: getDeckVersion(match)?.name,
-            deck_id: getDeckVersion(match)?.deck_id,
-          }
-        : null,
-    }))
-  );
 
   const selectedDeck = userDecks.find((deck) => deck.id === params.deck_id) ?? null;
   const selectedVersionFilter = params.version_filter ?? "";
@@ -254,7 +233,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
           current="review"
           insight={{
             label: "Review mode",
-            value: sessionCoach?.missionTitle ?? "Find the next testing question",
+            value: analysis.cards[0]?.title ?? "Find the next testing question",
             helper: analysis.sampleSummary,
           }}
         />
@@ -273,8 +252,6 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
               <AppNav current="review" />
             </div>
           </header>
-
-          {sessionCoach ? <SessionCoachPanel insight={sessionCoach} /> : null}
 
           <form action="/review" className={`p-4 ${glassPanel}`}>
             <div className="grid gap-3 min-[430px]:grid-cols-2 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_auto]">
@@ -355,47 +332,21 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
             </section>
           ) : (
             <>
-              {/* Sample context row */}
-              <section className="grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
-                <article className={`p-5 ${glassPanel}`}>
-                  <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
-                    Recent sample
-                  </p>
-                  <h2 className="mt-2 text-2xl font-semibold text-[#F8FAFC]">
-                    {analysis.sampleSummary}
-                  </h2>
-                  <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
-                    {analysis.sampleStatusReason}
-                  </p>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    <span className={subtlePill}>
-                      {analysis.sampleStatusLabel}
-                    </span>
-                    {selectedDeck ? (
-                      <span className={subtlePill}>{selectedDeck.name}</span>
-                    ) : null}
-                    {selectedVersionFilter === "active" ? (
-                      <span className={subtlePill}>Active version only</span>
-                    ) : selectedVersion ? (
-                      <span className={subtlePill}>{selectedVersion.name}</span>
-                    ) : null}
-                  </div>
-                </article>
+              {/* Sample context — compact pill row, not a full card */}
+              <div className="flex flex-wrap items-center gap-2">
+                <span className={subtlePill}>{analysis.sampleSummary}</span>
+                <span className={subtlePill}>{analysis.sampleStatusLabel}</span>
+                {selectedDeck ? (
+                  <span className={subtlePill}>{selectedDeck.name}</span>
+                ) : null}
+                {selectedVersionFilter === "active" ? (
+                  <span className={subtlePill}>Active version only</span>
+                ) : selectedVersion ? (
+                  <span className={subtlePill}>{selectedVersion.name}</span>
+                ) : null}
+              </div>
 
-                <article className={`p-5 ${glassPanel}`}>
-                  <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#F5C84C]">
-                    What this page does
-                  </p>
-                  <h2 className="mt-2 text-xl font-semibold text-[#F8FAFC]">
-                    Review the games, not just the totals
-                  </h2>
-                  <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
-                    This page looks for repeated matchup leaks, weak quality patterns, recurring issue tags, positive tech signals, and version gaps.
-                  </p>
-                </article>
-              </section>
-
-              {/* Primary coach insight — shown prominently above the secondary grid */}
+              {/* Primary coach insight — the first thing the user sees */}
               {analysis.cards.length > 0 ? (
                 <section
                   className={`rounded-[24px] bg-[linear-gradient(180deg,rgba(12,20,36,0.96),rgba(8,16,29,0.92))] p-5 sm:p-6 ${
@@ -458,41 +409,61 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
                 </section>
               ) : null}
 
-              {/* Secondary insight cards */}
-              {analysis.cards.length > 1 ? (
-                <section className="grid gap-4 xl:grid-cols-2">
-                  {analysis.cards.slice(1).map((card) => (
-                    <article key={card.key} className={`p-5 ${glassPanel}`}>
-                      <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div>
-                          <h2 className={sectionTitle}>{card.title}</h2>
-                          <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
-                            {card.explanation}
-                          </p>
-                        </div>
-                        <span
-                          className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${getToneClass(card.tone)}`}
-                        >
-                          Insight
-                        </span>
-                      </div>
-                      <div className="mt-4 rounded-[18px] bg-[#0B1020]/66 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
-                          Evidence
-                        </p>
-                        <p className="mt-2 text-sm font-medium text-[#F8FAFC]">
-                          {card.evidence}
+              {/* Secondary insight cards — max 3 visible, rest behind details */}
+              {analysis.cards.length > 1 ? (() => {
+                const secondaryCards = analysis.cards.slice(1);
+                const visibleCards = secondaryCards.slice(0, 3);
+                const hiddenCards = secondaryCards.slice(3);
+
+                const renderCard = (card: typeof secondaryCards[0]) => (
+                  <article key={card.key} className={`p-5 ${glassPanel}`}>
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <h2 className={sectionTitle}>{card.title}</h2>
+                        <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
+                          {card.explanation}
                         </p>
                       </div>
-                      <div className="mt-4">
-                        <Link href={card.ctaHref} className={primaryButton}>
-                          {card.ctaLabel}
-                        </Link>
-                      </div>
-                    </article>
-                  ))}
-                </section>
-              ) : null}
+                      <span
+                        className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${getToneClass(card.tone)}`}
+                      >
+                        Insight
+                      </span>
+                    </div>
+                    <div className="mt-4 rounded-[18px] bg-[#0B1020]/66 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                        Evidence
+                      </p>
+                      <p className="mt-2 text-sm font-medium text-[#F8FAFC]">
+                        {card.evidence}
+                      </p>
+                    </div>
+                    <div className="mt-4">
+                      <Link href={card.ctaHref} className={primaryButton}>
+                        {card.ctaLabel}
+                      </Link>
+                    </div>
+                  </article>
+                );
+
+                return (
+                  <>
+                    <section className="grid gap-4 xl:grid-cols-2">
+                      {visibleCards.map(renderCard)}
+                    </section>
+                    {hiddenCards.length > 0 ? (
+                      <details className="group">
+                        <summary className="inline-flex cursor-pointer list-none items-center gap-2 rounded-xl bg-[#0B1020]/46 px-4 py-2.5 text-sm font-semibold text-[#B8D1FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.14)] transition hover:bg-[#0B1020]/62 marker:hidden">
+                          {hiddenCards.length} more insight{hiddenCards.length > 1 ? "s" : ""}
+                        </summary>
+                        <section className="mt-4 grid gap-4 xl:grid-cols-2">
+                          {hiddenCards.map(renderCard)}
+                        </section>
+                      </details>
+                    ) : null}
+                  </>
+                );
+              })() : null}
             </>
           )}
         </div>
