@@ -1,6 +1,6 @@
 import { AuthForm } from "@/components/auth/AuthForm";
 import { glassPanelStrong, marketingShell, pageCopy } from "@/components/brand-styles";
-import { SixPrizerLogo } from "@/components/SixPrizerLogo";
+import { BrandLogo } from "@/components/BrandLogo";
 import { getOptionalSupabaseConfig } from "@/lib/supabase-config";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
@@ -39,10 +39,7 @@ export default async function LoginPage() {
     <main className={`flex items-center justify-center px-4 py-8 sm:px-6 sm:py-12 ${marketingShell}`}>
       <section className={`w-full max-w-sm p-5 sm:p-6 ${glassPanelStrong}`}>
         <div className="mb-6">
-          <SixPrizerLogo
-            markClassName="size-8 bg-[#1A2238]"
-            textClassName="text-sm text-[#F8FAFC]"
-          />
+          <BrandLogo variant="horizontal" size="sm" />
           <h1 className="mt-2 text-2xl font-semibold tracking-tight text-[#F8FAFC]">
             Log in to SixPrizer
           </h1>

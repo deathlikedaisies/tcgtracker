@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowRight, ClipboardList, Layers3, Sparkles, Target, TrendingUp } from "lucide-react";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
-import { SixPrizerLogo } from "@/components/SixPrizerLogo";
+import { BrandLogo } from "@/components/BrandLogo";
 import {
   cardLarge,
   marketingShell,
@@ -231,13 +231,10 @@ export default async function Home() {
 
       <header className="relative px-4 py-4 sm:px-6">
         <div className={`mx-auto flex max-w-7xl items-center justify-between gap-3 px-3 py-3 ${pageHeaderCard}`}>
-          <SixPrizerLogo
-            variant="app-icon"
-            size="lg"
-            hideTextOnMobile
-            className="group transition hover:scale-[1.02]"
-            markClassName="bg-[#1A2238] transition group-hover:shadow-[0_0_28px_rgba(79,140,255,0.28)]"
-            textClassName="tracking-tight"
+          <BrandLogo
+            variant="horizontal"
+            size="md"
+            className="transition hover:opacity-90"
           />
           <div className="flex min-w-0 items-center justify-end gap-1.5 sm:gap-2">
             <Link
