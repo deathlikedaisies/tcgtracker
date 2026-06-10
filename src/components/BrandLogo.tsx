@@ -1,6 +1,6 @@
 type BrandLogoProps = {
   variant?: "icon" | "horizontal";
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "xl";
   className?: string;
 };
 
@@ -8,6 +8,7 @@ const iconDims = {
   sm: { w: 28, h: 28, cls: "h-7 w-7" },
   md: { w: 40, h: 40, cls: "h-10 w-10" },
   lg: { w: 56, h: 56, cls: "h-14 w-14" },
+  xl: { w: 56, h: 56, cls: "h-14 w-14" },
 } as const;
 
 // Horizontal logo natural size: 1989×526. Actual aspect ratio ≈ 3.78:1.
@@ -17,6 +18,8 @@ const horizontalDims = {
   sm: { w: 106, h: 28, cls: "h-7 w-auto max-w-full" },
   md: { w: 144, h: 38, cls: "h-[38px] w-auto max-w-full" },
   lg: { w: 197, h: 52, cls: "h-[52px] w-auto max-w-full" },
+  // xl: landing page hero — responsive 36px mobile / 50px desktop
+  xl: { w: 189, h: 50, cls: "h-9 sm:h-[50px] w-auto max-w-full" },
 } as const;
 
 export function BrandLogo({

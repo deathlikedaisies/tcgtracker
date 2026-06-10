@@ -6,7 +6,6 @@ import { BrandLogo } from "@/components/BrandLogo";
 import {
   cardLarge,
   marketingShell,
-  pageHeaderCard,
   primaryButton,
   secondaryButton,
   sectionCopy,
@@ -230,13 +229,21 @@ export default async function Home() {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_-10%,rgba(79,140,255,0.10),transparent_40%)]" />
 
       <header className="relative px-4 py-4 sm:px-6">
-        <div className={`mx-auto flex max-w-7xl items-center justify-between gap-3 px-3 py-3 ${pageHeaderCard}`}>
+        {/* Landing-specific header card — not the shared pageHeaderCard */}
+        <div className="relative mx-auto flex max-w-7xl items-center justify-between gap-3 overflow-hidden rounded-[26px] bg-[linear-gradient(180deg,rgba(10,18,38,0.98),rgba(6,13,26,0.96))] px-4 py-3.5 shadow-[0_16px_44px_rgba(0,0,0,0.30),inset_0_0_0_1px_rgba(79,140,255,0.22),inset_0_1px_0_rgba(255,255,255,0.04)] backdrop-blur sm:px-5 sm:py-4">
+          {/* Soft blue ambient behind logo (left side) */}
+          <div className="pointer-events-none absolute -left-8 -top-8 h-40 w-40 rounded-full bg-[#4F8CFF]/[0.16] blur-2xl" aria-hidden="true" />
+          {/* Soft gold ambient near CTA (right side) */}
+          <div className="pointer-events-none absolute -right-8 -top-8 h-40 w-40 rounded-full bg-[#F5C84C]/[0.10] blur-2xl" aria-hidden="true" />
+          {/* Bottom gradient line: blue left → transparent → gold right */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-[linear-gradient(90deg,rgba(79,140,255,0.35),transparent_40%,transparent_60%,rgba(245,200,76,0.22))]" aria-hidden="true" />
+
           <BrandLogo
             variant="horizontal"
-            size="md"
-            className="transition hover:opacity-90"
+            size="xl"
+            className="relative z-10 transition hover:opacity-90"
           />
-          <div className="flex min-w-0 items-center justify-end gap-1.5 sm:gap-2">
+          <div className="relative z-10 flex min-w-0 items-center justify-end gap-1.5 sm:gap-2">
             <Link
               href="/demo"
               className="hidden h-10 items-center justify-center rounded-[14px] px-3 text-sm font-medium text-[#B8D1FF] transition hover:bg-[#4F8CFF]/10 hover:text-[#F8FAFC] active:scale-[0.98] sm:inline-flex"
