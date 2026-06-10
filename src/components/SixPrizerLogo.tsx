@@ -15,6 +15,14 @@ const shellSizes = {
   lg: "size-12 sm:size-14",
 };
 
+// Intrinsic size hints matching the CSS container sizes (px) — prevents
+// the 1107×1107 natural PNG from influencing layout before CSS is applied.
+const markPixelSizes = {
+  sm: 32,
+  md: 44,
+  lg: 56,
+};
+
 const wordmarkSizes = {
   sm: "text-sm",
   md: "text-lg",
@@ -48,12 +56,14 @@ export function SixPrizerLogo({
       className={`flex items-center gap-3 ${className}`}
       role="img"
     >
-      <span className={`${defaultMarkClassName} ${markClassName}`}>
+      <span className={`${defaultMarkClassName} ${markClassName} overflow-hidden`}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/brand/sixprizer_icon.png"
           alt=""
           aria-hidden="true"
+          width={markPixelSizes[size]}
+          height={markPixelSizes[size]}
           className={`${isWatermark ? "size-full opacity-50" : "size-full"} object-contain`}
           draggable={false}
         />

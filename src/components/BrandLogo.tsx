@@ -10,11 +10,13 @@ const iconDims = {
   lg: { w: 56, h: 56, cls: "h-14 w-14" },
 } as const;
 
-// Horizontal logo is approx 5:1 aspect ratio
+// Horizontal logo natural size: 1989×526. Actual aspect ratio ≈ 3.78:1.
+// Width hints are derived from (h * 1989/526), rounded.
+// CSS h-* + max-w-full controls the actual rendered size.
 const horizontalDims = {
-  sm: { w: 140, h: 28, cls: "h-7 w-auto" },
-  md: { w: 190, h: 38, cls: "h-[38px] w-auto" },
-  lg: { w: 260, h: 52, cls: "h-[52px] w-auto" },
+  sm: { w: 106, h: 28, cls: "h-7 w-auto max-w-full" },
+  md: { w: 144, h: 38, cls: "h-[38px] w-auto max-w-full" },
+  lg: { w: 197, h: 52, cls: "h-[52px] w-auto max-w-full" },
 } as const;
 
 export function BrandLogo({
