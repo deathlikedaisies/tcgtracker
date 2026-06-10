@@ -86,7 +86,7 @@ function ProductPreview() {
           </span>
         </div>
 
-        <div className="mt-6 grid gap-5 lg:grid-cols-[180px_minmax(0,1fr)]">
+        <div className="mt-6 grid gap-5 xl:grid-cols-[172px_minmax(0,1fr)] 2xl:grid-cols-[180px_minmax(0,1fr)]">
           <div className="flex flex-col items-center justify-center rounded-[24px] bg-[linear-gradient(180deg,rgba(11,18,32,0.80),rgba(8,15,28,0.90))] p-5 text-center shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08),inset_0_1px_0_rgba(255,255,255,0.02)]">
             <div className="flex size-28 items-center justify-center rounded-full bg-[radial-gradient(circle_at_center,rgba(79,140,255,0.14),transparent_56%),rgba(7,17,31,0.92)] shadow-[0_0_20px_rgba(79,140,255,0.10),inset_0_0_0_1px_rgba(79,140,255,0.20)]">
               <ArchetypeSprites archetype="Mega Greninja" size="md" className="scale-[1.7]" />
@@ -96,7 +96,7 @@ function ProductPreview() {
           </div>
 
           <div className="grid gap-4">
-            <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_132px]">
+            <div className="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_132px]">
               <div className="grid gap-4">
                 <div className="grid gap-3 min-[430px]:grid-cols-3">
                   {recordCards.map((item) => (
@@ -151,7 +151,7 @@ function ProductPreview() {
               </div>
             </div>
 
-            <div className="grid gap-3 min-[430px]:grid-cols-2 md:grid-cols-3">
+            <div className="grid gap-3 min-[430px]:grid-cols-2 2xl:grid-cols-3">
               <div className="rounded-[18px] bg-[#0F1A2D]/82 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.09),inset_0_1px_0_rgba(255,255,255,0.02)]">
                 <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#94A3B8]/72">
                   Focused games
@@ -278,8 +278,8 @@ export default async function Home() {
       </header>
 
       <section className="relative px-4 pb-12 pt-9 sm:px-6 sm:pb-16 sm:pt-10">
-        <div className="mx-auto grid max-w-7xl gap-8 xl:gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
-          <div className="relative min-w-0 overflow-hidden rounded-[30px] bg-[linear-gradient(180deg,rgba(16,26,45,0.95),rgba(8,17,31,0.90))] p-5 shadow-[0_24px_62px_rgba(0,0,0,0.28),inset_0_0_0_1px_rgba(148,163,184,0.12),inset_0_1px_0_rgba(255,255,255,0.03)] backdrop-blur sm:p-6 lg:p-8 xl:p-9">
+        <div className="mx-auto grid max-w-[1400px] gap-8 xl:gap-9 2xl:gap-10 lg:grid-cols-[1fr_1fr] lg:items-center">
+          <div className="relative min-w-0 overflow-hidden rounded-[30px] bg-[linear-gradient(180deg,rgba(16,26,45,0.95),rgba(8,17,31,0.90))] p-5 shadow-[0_24px_62px_rgba(0,0,0,0.28),inset_0_0_0_1px_rgba(148,163,184,0.12),inset_0_1px_0_rgba(255,255,255,0.03)] backdrop-blur sm:p-6 lg:px-9 lg:py-8 xl:px-10 xl:py-9">
             <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.05),transparent_22%,rgba(79,140,255,0.04)_46%,rgba(245,200,76,0.035)_68%,transparent_84%)]" />
             <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,rgba(79,140,255,0.28),rgba(255,255,255,0.08),rgba(245,200,76,0.22))]" />
             <div className="pointer-events-none absolute -left-10 -top-10 size-36 rounded-full bg-[#4F8CFF]/[0.12] blur-3xl" />
@@ -290,9 +290,9 @@ export default async function Home() {
                 <Sparkles className="size-4" aria-hidden="true" />
                 Built for competitive Pokemon TCG testing
               </p>
-              <h1 className="mt-5 max-w-[12ch] text-4xl font-black leading-[0.96] tracking-tight text-[#F8FAFC] min-[390px]:text-5xl sm:text-6xl xl:text-[4rem] 2xl:text-[4.75rem]">
+              <h1 className="mt-5 max-w-[11.5ch] text-4xl font-black leading-[0.96] tracking-tight text-[#F8FAFC] min-[390px]:text-5xl sm:text-6xl xl:text-[3.75rem] 2xl:text-[4.5rem]">
                 <span className="block">From testing games to</span>
-                <span className="block max-w-[10ch] text-[#F5C84C] drop-shadow-[0_0_12px_rgba(245,200,76,0.12)] 2xl:max-w-none 2xl:whitespace-nowrap">
+                <span className="block max-w-[9.8ch] text-[#F5C84C] drop-shadow-[0_0_12px_rgba(245,200,76,0.12)] min-[1440px]:max-w-none 2xl:whitespace-nowrap">
                   six-prize turns.
                 </span>
               </h1>
