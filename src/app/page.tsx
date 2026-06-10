@@ -228,45 +228,63 @@ export default async function Home() {
     <main className={`${marketingShell} relative`}>
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_-10%,rgba(79,140,255,0.10),transparent_40%)]" />
 
-      <header className="relative px-4 py-4 sm:px-6">
-        {/* Landing-specific header card — not the shared pageHeaderCard */}
-        <div className="relative mx-auto flex max-w-7xl items-center justify-between gap-3 overflow-hidden rounded-[26px] bg-[linear-gradient(180deg,rgba(10,18,38,0.98),rgba(6,13,26,0.96))] px-4 py-3.5 shadow-[0_16px_44px_rgba(0,0,0,0.30),inset_0_0_0_1px_rgba(79,140,255,0.22),inset_0_1px_0_rgba(255,255,255,0.04)] backdrop-blur sm:px-5 sm:py-4">
-          {/* Soft blue ambient behind logo (left side) */}
-          <div className="pointer-events-none absolute -left-8 -top-8 h-40 w-40 rounded-full bg-[#4F8CFF]/[0.16] blur-2xl" aria-hidden="true" />
-          {/* Soft gold ambient near CTA (right side) */}
-          <div className="pointer-events-none absolute -right-8 -top-8 h-40 w-40 rounded-full bg-[#F5C84C]/[0.10] blur-2xl" aria-hidden="true" />
-          {/* Bottom gradient line: blue left → transparent → gold right */}
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-[linear-gradient(90deg,rgba(79,140,255,0.35),transparent_40%,transparent_60%,rgba(245,200,76,0.22))]" aria-hidden="true" />
-
-          <BrandLogo
-            variant="horizontal"
-            size="xl"
-            className="relative z-10 transition hover:opacity-90"
+      <header className="relative px-4 py-3 sm:px-6 sm:py-4">
+        <div className="relative mx-auto max-w-7xl overflow-hidden rounded-[24px] bg-[linear-gradient(180deg,rgba(10,18,38,0.98),rgba(6,13,26,0.96))] px-3 py-3 shadow-[0_16px_44px_rgba(0,0,0,0.30),inset_0_0_0_1px_rgba(79,140,255,0.22),inset_0_1px_0_rgba(255,255,255,0.04)] backdrop-blur sm:rounded-[26px] sm:px-5 sm:py-4">
+          <div
+            className="pointer-events-none absolute -left-8 -top-8 h-40 w-40 rounded-full bg-[#4F8CFF]/[0.16] blur-2xl"
+            aria-hidden="true"
           />
-          <div className="relative z-10 flex min-w-0 items-center justify-end gap-1.5 sm:gap-2">
-            <Link
-              href="/demo"
-              className="hidden h-10 items-center justify-center rounded-[14px] px-3 text-sm font-medium text-[#B8D1FF] transition hover:bg-[#4F8CFF]/10 hover:text-[#F8FAFC] active:scale-[0.98] sm:inline-flex"
-            >
-              Preview demo
-            </Link>
+          <div
+            className="pointer-events-none absolute -right-8 -top-8 h-40 w-40 rounded-full bg-[#F5C84C]/[0.10] blur-2xl"
+            aria-hidden="true"
+          />
+          <div
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-[linear-gradient(90deg,rgba(79,140,255,0.35),transparent_40%,transparent_60%,rgba(245,200,76,0.22))]"
+            aria-hidden="true"
+          />
+
+          <div className="relative z-10 flex min-w-0 items-center justify-between gap-3">
+            <BrandLogo
+              variant="horizontal"
+              size="xl"
+              className="min-w-0 max-w-[128px] shrink object-left transition hover:opacity-90 sm:max-w-none sm:shrink-0"
+            />
+
+            <div className="flex shrink-0 items-center justify-end gap-1.5 sm:gap-2">
+              <Link
+                href="/demo"
+                className="hidden h-10 items-center justify-center rounded-[14px] px-3 text-sm font-medium text-[#B8D1FF] transition hover:bg-[#4F8CFF]/10 hover:text-[#F8FAFC] active:scale-[0.98] sm:inline-flex"
+              >
+                Preview demo
+              </Link>
+              <Link
+                href="/login"
+                className="hidden h-10 items-center justify-center rounded-[14px] px-3 text-sm font-medium text-[#94A3B8] transition hover:bg-white/5 hover:text-[#F8FAFC] active:scale-[0.98] sm:inline-flex"
+              >
+                Log in
+              </Link>
+              <Link
+                href="/signup"
+                className="inline-flex h-9 items-center justify-center whitespace-nowrap rounded-[14px] bg-[#F5C84C]/92 px-3 text-xs font-bold text-[#07111F] shadow-[0_10px_24px_rgba(245,200,76,0.16)] transition hover:-translate-y-0.5 hover:bg-[#ffd85f] active:translate-y-0 active:scale-[0.98] sm:h-10 sm:px-4 sm:text-sm"
+              >
+                <span className="sm:hidden">Start tracking</span>
+                <span className="hidden sm:inline">Start tracking games</span>
+              </Link>
+            </div>
+          </div>
+
+          <div className="relative z-10 mt-3 flex justify-end sm:hidden">
             <Link
               href="/login"
-              className="inline-flex h-10 items-center justify-center rounded-[14px] px-3 text-sm font-medium text-[#94A3B8] transition hover:bg-white/5 hover:text-[#F8FAFC] active:scale-[0.98]"
+              className="inline-flex h-8 items-center justify-center whitespace-nowrap rounded-[12px] px-1 text-sm font-medium text-[#94A3B8]/84 transition hover:text-[#F8FAFC]"
             >
               Log in
-            </Link>
-            <Link
-              href="/signup"
-              className="inline-flex h-10 max-w-full items-center justify-center rounded-[14px] bg-[#F5C84C]/92 px-3 text-xs font-bold text-[#07111F] shadow-[0_10px_24px_rgba(245,200,76,0.16)] transition hover:-translate-y-0.5 hover:bg-[#ffd85f] active:translate-y-0 active:scale-[0.98] sm:px-4 sm:text-sm"
-            >
-              Start tracking games
             </Link>
           </div>
         </div>
       </header>
 
-      <section className="relative px-4 pb-12 pt-6 sm:px-6 sm:pb-16 sm:pt-10">
+      <section className="relative px-4 pb-12 pt-8 sm:px-6 sm:pb-16 sm:pt-10">
         <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.88fr_1.12fr] lg:items-center">
           <div className="min-w-0">
             <p className="inline-flex items-center gap-2 rounded-full bg-[#4F8CFF]/12 px-3 py-1.5 text-sm font-semibold text-[#B8D1FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.22)]">
