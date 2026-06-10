@@ -18,8 +18,8 @@ const horizontalDims = {
   sm: { w: 106, h: 28, cls: "h-7 w-auto max-w-full" },
   md: { w: 144, h: 38, cls: "h-[38px] w-auto max-w-full" },
   lg: { w: 197, h: 52, cls: "h-[52px] w-auto max-w-full" },
-  // xl: landing page hero — responsive 36px mobile / 50px desktop
-  xl: { w: 189, h: 50, cls: "h-9 sm:h-[50px] w-auto max-w-full" },
+  // xl: landing page only — 28px mobile (matches sm size) / 50px desktop
+  xl: { w: 189, h: 50, cls: "h-7 sm:h-[50px] w-auto max-w-full" },
 } as const;
 
 export function BrandLogo({
