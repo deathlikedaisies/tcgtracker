@@ -5,8 +5,10 @@ import { getArchetypeSprites } from "@/lib/archetype-sprites";
 
 type ArchetypeSpritesProps = {
   archetype: string | null | undefined;
-  size?: "sm" | "md";
+  size?: "sm" | "md" | "lg";
+  variant?: "framed" | "bare";
   className?: string;
+  imageClassName?: string;
 };
 
 function getInitials(archetype: string | null | undefined) {
@@ -25,7 +27,9 @@ function getInitials(archetype: string | null | undefined) {
 export function ArchetypeSprites({
   archetype,
   size = "sm",
+  variant = "framed",
   className = "",
+  imageClassName = "",
 }: ArchetypeSpritesProps) {
   const sprites = useMemo(() => getArchetypeSprites(archetype), [archetype]);
   const [failedSpritesByArchetype, setFailedSpritesByArchetype] = useState<
@@ -37,9 +41,11 @@ export function ArchetypeSprites({
   const visibleSprites = sprites.filter(
     (sprite) => !failedSprites.includes(sprite.filename)
   );
-  const dimensions = size === "md" ? "size-9" : "size-7";
-  const imageDimensions = size === "md" ? "size-8" : "size-6";
-  const offset = size === "md" ? "-ml-2" : "-ml-1.5";
+  const dimensions =
+    size === "lg" ? "size-12" : size === "md" ? "size-9" : "size-7";
+  const imageDimensions =
+    size === "lg" ? "size-11" : size === "md" ? "size-8" : "size-6";
+  const offset = size === "lg" ? "-ml-2.5" : size === "md" ? "-ml-2" : "-ml-1.5";
   const fallbackText = getInitials(archetype);
 
   if (!visibleSprites.length) {
@@ -61,17 +67,15 @@ export function ArchetypeSprites({
       title={archetype ?? "Unknown archetype"}
     >
       {visibleSprites.slice(0, 2).map((sprite, index) => (
-        <span
-          key={sprite.filename}
-          className={`inline-flex ${dimensions} items-center justify-center rounded-md bg-[#0B1020]/60 shadow-[0_10px_24px_rgba(0,0,0,0.28),0_0_18px_rgba(79,140,255,0.08),inset_0_0_0_1px_rgba(248,250,252,0.08)] ${
-            index > 0 ? offset : ""
-          }`}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
+        variant === "bare" ? (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
+            key={sprite.filename}
             src={`/sprites/${sprite.filename}`}
             alt=""
-            className={`${imageDimensions} object-contain`}
+            className={`${imageDimensions} object-contain drop-shadow-[0_12px_22px_rgba(0,0,0,0.34)] ${imageClassName} ${
+              index > 0 ? offset : ""
+            }`}
             loading="lazy"
             onError={() =>
               setFailedSpritesByArchetype((current) => {
@@ -83,15 +87,41 @@ export function ArchetypeSprites({
 
                 return {
                   ...current,
-                  [failedSpriteKey]: [
-                    ...failedForArchetype,
-                    sprite.filename,
-                  ],
+                  [failedSpriteKey]: [...failedForArchetype, sprite.filename],
                 };
               })
             }
           />
-        </span>
+        ) : (
+          <span
+            key={sprite.filename}
+            className={`inline-flex ${dimensions} items-center justify-center rounded-md bg-[#0B1020]/60 shadow-[0_10px_24px_rgba(0,0,0,0.28),0_0_18px_rgba(79,140,255,0.08),inset_0_0_0_1px_rgba(248,250,252,0.08)] ${
+              index > 0 ? offset : ""
+            }`}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={`/sprites/${sprite.filename}`}
+              alt=""
+              className={`${imageDimensions} object-contain ${imageClassName}`}
+              loading="lazy"
+              onError={() =>
+                setFailedSpritesByArchetype((current) => {
+                  const failedForArchetype = current[failedSpriteKey] ?? [];
+
+                  if (failedForArchetype.includes(sprite.filename)) {
+                    return current;
+                  }
+
+                  return {
+                    ...current,
+                    [failedSpriteKey]: [...failedForArchetype, sprite.filename],
+                  };
+                })
+              }
+            />
+          </span>
+        )
       ))}
     </span>
   );

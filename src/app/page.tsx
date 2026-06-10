@@ -88,8 +88,14 @@ function ProductPreview() {
 
         <div className="mt-6 grid gap-5 xl:grid-cols-[172px_minmax(0,1fr)] 2xl:grid-cols-[180px_minmax(0,1fr)]">
           <div className="flex flex-col items-center justify-center rounded-[24px] bg-[linear-gradient(180deg,rgba(11,18,32,0.80),rgba(8,15,28,0.90))] p-5 text-center shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08),inset_0_1px_0_rgba(255,255,255,0.02)]">
-            <div className="flex size-28 items-center justify-center rounded-full bg-[radial-gradient(circle_at_center,rgba(79,140,255,0.14),transparent_56%),rgba(7,17,31,0.92)] shadow-[0_0_20px_rgba(79,140,255,0.10),inset_0_0_0_1px_rgba(79,140,255,0.20)]">
-              <ArchetypeSprites archetype="Mega Greninja" size="md" className="scale-[1.7]" />
+            <div className="flex size-28 items-center justify-center rounded-full bg-[radial-gradient(circle_at_center,rgba(79,140,255,0.16),transparent_54%),radial-gradient(circle_at_50%_42%,rgba(255,255,255,0.04),transparent_64%),rgba(7,17,31,0.92)] shadow-[0_0_24px_rgba(79,140,255,0.10),inset_0_0_0_1px_rgba(79,140,255,0.20)] sm:size-32">
+              <ArchetypeSprites
+                archetype="Mega Greninja"
+                size="lg"
+                variant="bare"
+                className="overflow-visible"
+                imageClassName="size-20 scale-[1.12] min-[390px]:size-[5.25rem] sm:size-24 sm:scale-[1.16]"
+              />
             </div>
             <p className="mt-4 text-sm font-semibold text-[#F8FAFC]">Mega Greninja</p>
             <p className="mt-1 text-xs text-[#94A3B8]/76">Priority watchlist</p>
