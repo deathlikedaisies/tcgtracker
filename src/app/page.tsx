@@ -278,7 +278,7 @@ export default async function Home() {
       </header>
 
       <section className="relative px-4 pb-12 pt-9 sm:px-6 sm:pb-16 sm:pt-10">
-        <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.88fr_1.12fr] lg:items-center">
+        <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
           <div className="relative min-w-0 overflow-hidden rounded-[30px] bg-[linear-gradient(180deg,rgba(16,26,45,0.95),rgba(8,17,31,0.90))] p-5 shadow-[0_24px_62px_rgba(0,0,0,0.28),inset_0_0_0_1px_rgba(148,163,184,0.12),inset_0_1px_0_rgba(255,255,255,0.03)] backdrop-blur sm:p-6 lg:p-7">
             <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.05),transparent_22%,rgba(79,140,255,0.04)_46%,rgba(245,200,76,0.035)_68%,transparent_84%)]" />
             <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,rgba(79,140,255,0.28),rgba(255,255,255,0.08),rgba(245,200,76,0.22))]" />
@@ -290,9 +290,9 @@ export default async function Home() {
                 <Sparkles className="size-4" aria-hidden="true" />
                 Built for competitive Pokemon TCG testing
               </p>
-              <h1 className="mt-5 max-w-3xl text-4xl font-black leading-[0.95] tracking-tight text-[#F8FAFC] min-[390px]:text-5xl sm:text-6xl xl:text-7xl">
+              <h1 className="mt-5 max-w-3xl text-4xl font-black leading-[0.95] tracking-tight text-[#F8FAFC] min-[390px]:text-5xl sm:text-6xl xl:text-[4.25rem] 2xl:text-7xl">
                 <span className="block">From testing games to</span>
-                <span className="block text-[#F5C84C] drop-shadow-[0_0_12px_rgba(245,200,76,0.12)] sm:whitespace-nowrap">
+                <span className="block text-[#F5C84C] drop-shadow-[0_0_12px_rgba(245,200,76,0.12)] 2xl:whitespace-nowrap">
                   six-prize turns.
                 </span>
               </h1>
