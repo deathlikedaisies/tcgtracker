@@ -65,8 +65,11 @@ const recordCards = [
 
 function ProductPreview() {
   return (
-    <div className="relative min-w-0 overflow-hidden rounded-[30px] bg-[linear-gradient(180deg,rgba(14,24,42,0.95),rgba(8,17,31,0.91))] p-5 shadow-[0_24px_62px_rgba(0,0,0,0.30),inset_0_0_0_1px_rgba(148,163,184,0.12)] backdrop-blur sm:p-6">
+    <div className="relative min-w-0 overflow-hidden rounded-[30px] bg-[linear-gradient(180deg,rgba(15,25,44,0.96),rgba(8,17,31,0.92))] p-5 shadow-[0_24px_62px_rgba(0,0,0,0.30),inset_0_0_0_1px_rgba(148,163,184,0.12),inset_0_1px_0_rgba(255,255,255,0.03)] backdrop-blur sm:p-6">
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.045),transparent_24%,rgba(245,200,76,0.035)_56%,transparent_78%)]" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,rgba(79,140,255,0.22),rgba(255,255,255,0.08),rgba(245,200,76,0.16))]" />
       <div className="pointer-events-none absolute -right-10 top-2 size-32 rounded-full bg-[#4F8CFF]/10 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-12 right-12 size-32 rounded-full bg-[#F5C84C]/[0.05] blur-3xl" />
 
       <div className="relative">
         <div className="flex flex-wrap items-start justify-between gap-3">
@@ -84,7 +87,7 @@ function ProductPreview() {
         </div>
 
         <div className="mt-6 grid gap-5 lg:grid-cols-[180px_minmax(0,1fr)]">
-          <div className="flex flex-col items-center justify-center rounded-[24px] bg-[linear-gradient(180deg,rgba(11,18,32,0.76),rgba(8,15,28,0.88))] p-5 text-center shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+          <div className="flex flex-col items-center justify-center rounded-[24px] bg-[linear-gradient(180deg,rgba(11,18,32,0.80),rgba(8,15,28,0.90))] p-5 text-center shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08),inset_0_1px_0_rgba(255,255,255,0.02)]">
             <div className="flex size-28 items-center justify-center rounded-full bg-[radial-gradient(circle_at_center,rgba(79,140,255,0.14),transparent_56%),rgba(7,17,31,0.92)] shadow-[0_0_20px_rgba(79,140,255,0.10),inset_0_0_0_1px_rgba(79,140,255,0.20)]">
               <ArchetypeSprites archetype="Mega Greninja" size="md" className="scale-[1.7]" />
             </div>
@@ -110,7 +113,7 @@ function ProductPreview() {
                   ))}
                 </div>
 
-                <div className="rounded-[20px] bg-[#0F1A2D]/82 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.09)]">
+                <div className="rounded-[20px] bg-[#0F1A2D]/82 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.09),inset_0_1px_0_rgba(255,255,255,0.02)]">
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#94A3B8]/72">
                       Record
@@ -130,7 +133,7 @@ function ProductPreview() {
                 </div>
               </div>
 
-              <div className="flex flex-col items-center justify-center rounded-[22px] bg-[#0F1A2D]/82 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.09)]">
+              <div className="flex flex-col items-center justify-center rounded-[22px] bg-[#0F1A2D]/82 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.09),inset_0_1px_0_rgba(255,255,255,0.02)]">
                 <div
                   className="relative flex size-28 items-center justify-center rounded-full"
                   style={{
@@ -149,7 +152,7 @@ function ProductPreview() {
             </div>
 
             <div className="grid gap-3 min-[430px]:grid-cols-2 md:grid-cols-3">
-              <div className="rounded-[18px] bg-[#0F1A2D]/82 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.09)]">
+              <div className="rounded-[18px] bg-[#0F1A2D]/82 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.09),inset_0_1px_0_rgba(255,255,255,0.02)]">
                 <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#94A3B8]/72">
                   Focused games
                 </p>
@@ -169,7 +172,7 @@ function ProductPreview() {
                 </p>
               </div>
 
-              <div className="rounded-[18px] bg-[#0F1A2D]/82 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.09)]">
+              <div className="rounded-[18px] bg-[#0F1A2D]/82 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.09),inset_0_1px_0_rgba(255,255,255,0.02)]">
                 <div className="flex items-center gap-2 text-[#4F8CFF]">
                   <Target className="size-4" aria-hidden="true" />
                   <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#94A3B8]/72">
@@ -181,7 +184,7 @@ function ProductPreview() {
                 </p>
               </div>
 
-              <div className="rounded-[18px] bg-[#0F1A2D]/82 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.09)]">
+              <div className="rounded-[18px] bg-[#0F1A2D]/82 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.09),inset_0_1px_0_rgba(255,255,255,0.02)]">
                 <div className="flex items-center gap-2 text-emerald-300">
                   <TrendingUp className="size-4" aria-hidden="true" />
                   <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#94A3B8]/72">
@@ -276,50 +279,60 @@ export default async function Home() {
 
       <section className="relative px-4 pb-12 pt-9 sm:px-6 sm:pb-16 sm:pt-10">
         <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.88fr_1.12fr] lg:items-center">
-          <div className="min-w-0">
-            <p className="inline-flex items-center gap-2 rounded-full bg-[#4F8CFF]/12 px-3 py-1.5 text-sm font-semibold text-[#B8D1FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.22)]">
-              <Sparkles className="size-4" aria-hidden="true" />
-              Built for competitive Pokemon TCG testing
-            </p>
-            <h1 className="mt-5 max-w-3xl text-4xl font-black leading-[0.95] tracking-tight text-[#F8FAFC] min-[390px]:text-5xl sm:text-6xl xl:text-7xl">
-              <span className="block">From testing games to</span>
-              <span className="block text-[#F5C84C] drop-shadow-[0_0_12px_rgba(245,200,76,0.12)] sm:whitespace-nowrap">
-                six-prize turns.
-              </span>
-            </h1>
-            <p className="mt-5 max-w-2xl text-base leading-7 text-[#C7D2E5] sm:text-lg sm:leading-8">
-              Log games fast, spot the matchups costing you wins, and know what to test next.
-            </p>
-            <p className="mt-3 text-sm font-medium text-[#94A3B8]/82">
-              Stop changing lists based on vibes.
-            </p>
+          <div className="relative min-w-0 overflow-hidden rounded-[30px] bg-[linear-gradient(180deg,rgba(16,26,45,0.95),rgba(8,17,31,0.90))] p-5 shadow-[0_24px_62px_rgba(0,0,0,0.28),inset_0_0_0_1px_rgba(148,163,184,0.12),inset_0_1px_0_rgba(255,255,255,0.03)] backdrop-blur sm:p-6 lg:p-7">
+            <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.05),transparent_22%,rgba(79,140,255,0.04)_46%,rgba(245,200,76,0.035)_68%,transparent_84%)]" />
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,rgba(79,140,255,0.28),rgba(255,255,255,0.08),rgba(245,200,76,0.22))]" />
+            <div className="pointer-events-none absolute -left-10 -top-10 size-36 rounded-full bg-[#4F8CFF]/[0.12] blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-14 right-8 size-36 rounded-full bg-[#F5C84C]/[0.06] blur-3xl" />
 
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-              <Link
-                href="/signup"
-                className={`${primaryButton} min-h-12 px-7 text-base shadow-[0_18px_44px_rgba(245,200,76,0.30)]`}
-              >
-                Start tracking games
-                <ArrowRight className="ml-2 size-4" aria-hidden="true" />
-              </Link>
-              <Link href="/demo" className={`${secondaryButton} h-12 px-6`}>
-                Preview demo
-              </Link>
-            </div>
-            <p className="mt-4 text-sm leading-6 text-[#94A3B8]/82">
-              No account needed to preview demo data.
-            </p>
+            <div className="relative">
+              <p className="inline-flex items-center gap-2 rounded-full bg-[#4F8CFF]/12 px-3 py-1.5 text-sm font-semibold text-[#B8D1FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.22)]">
+                <Sparkles className="size-4" aria-hidden="true" />
+                Built for competitive Pokemon TCG testing
+              </p>
+              <h1 className="mt-5 max-w-3xl text-4xl font-black leading-[0.95] tracking-tight text-[#F8FAFC] min-[390px]:text-5xl sm:text-6xl xl:text-7xl">
+                <span className="block">From testing games to</span>
+                <span className="block text-[#F5C84C] drop-shadow-[0_0_12px_rgba(245,200,76,0.12)] sm:whitespace-nowrap">
+                  six-prize turns.
+                </span>
+              </h1>
+              <p className="mt-5 max-w-2xl text-base leading-7 text-[#C7D2E5] sm:text-lg sm:leading-8">
+                Log games fast, spot the matchups costing you wins, and know what to test next.
+              </p>
+              <p className="mt-3 text-sm font-medium text-[#94A3B8]/82">
+                Stop changing lists based on vibes.
+              </p>
 
-            <div className="mt-7 flex flex-wrap gap-2">
-              {featureChips.map(([label, Icon]) => (
-                <div
-                  key={label}
-                  className="inline-flex items-center gap-2 rounded-full bg-[#0B1020]/42 px-3 py-2 text-sm font-medium text-[#F8FAFC]/88 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.09)]"
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                <Link
+                  href="/signup"
+                  className={`${primaryButton} min-h-12 px-7 text-base shadow-[0_18px_44px_rgba(245,200,76,0.30),0_0_0_1px_rgba(245,200,76,0.22)]`}
                 >
-                  <Icon className="size-4 text-[#4F8CFF]" aria-hidden="true" />
-                  {label}
-                </div>
-              ))}
+                  Start tracking games
+                  <ArrowRight className="ml-2 size-4" aria-hidden="true" />
+                </Link>
+                <Link
+                  href="/demo"
+                  className={`${secondaryButton} h-12 px-6 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.22),0_10px_28px_rgba(0,0,0,0.12)]`}
+                >
+                  Preview demo
+                </Link>
+              </div>
+              <p className="mt-4 text-sm leading-6 text-[#94A3B8]/82">
+                No account needed to preview demo data.
+              </p>
+
+              <div className="mt-7 flex flex-wrap gap-2">
+                {featureChips.map(([label, Icon]) => (
+                  <div
+                    key={label}
+                    className="inline-flex items-center gap-2 rounded-full bg-[#0B1020]/42 px-3 py-2 text-sm font-medium text-[#F8FAFC]/88 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.09),inset_0_1px_0_rgba(255,255,255,0.02)]"
+                  >
+                    <Icon className="size-4 text-[#4F8CFF]" aria-hidden="true" />
+                    {label}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
