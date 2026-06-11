@@ -537,6 +537,35 @@ function getMissionCandidateValue(first: MissionCandidate, second: MissionCandid
   return second.focusMatches.length - first.focusMatches.length;
 }
 
+function isHighConfidenceMatchupLeak({
+  total,
+  wins,
+  losses,
+  repeatedTagCount,
+  repeatedTagRate,
+  hasTurnContext,
+}: {
+  total: number;
+  wins: number;
+  losses: number;
+  repeatedTagCount: number;
+  repeatedTagRate: number;
+  hasTurnContext: boolean;
+}) {
+  const lossRate = total ? losses / total : 0;
+  const winRate = total ? wins / total : 0;
+  const strongSample = total >= 12;
+  const poorRecord = lossRate >= 0.55 || winRate <= 0.35;
+  const strongTagSupport =
+    repeatedTagCount >= 4 && (repeatedTagRate >= 0.3 || repeatedTagCount >= 6);
+
+  return (
+    strongSample &&
+    poorRecord &&
+    (strongTagSupport || total >= 20 || hasTurnContext)
+  );
+}
+
 function getCompletionStatus(
   completed: number,
   goal: number,
@@ -745,7 +774,7 @@ function buildDeckLeakMissionCandidate(
       : "";
 
   return {
-    priority: 1 as const,
+    priority: 3 as const,
     score: strongest.lowLosses * 4 + strongest.delta * 20 + strongest.low.length,
     archetype: "Your deck",
     missionType: "deck-leak" as const,
@@ -811,6 +840,14 @@ function buildMatchupMissionCandidates(
       const repeatedTagRate =
         repeatedTag && losses ? repeatedTag.count / losses : 0;
       const turnContext = getTurnContextForMatches(groupedMatches);
+      const highConfidenceLeak = isHighConfidenceMatchupLeak({
+        total,
+        wins,
+        losses,
+        repeatedTagCount: repeatedTag?.count ?? 0,
+        repeatedTagRate,
+        hasTurnContext: Boolean(turnContext),
+      });
       const focusMatches = groupedMatches;
       const versionNames = groupedMatches
         .map((match) => getDeckVersionMeta(match).name)
@@ -836,6 +873,7 @@ function buildMatchupMissionCandidates(
         (repeatedTag?.count ?? 0) * 2.5 +
         repeatedTagRate * 10 +
         (turnContext ? 6 : 0) +
+        (highConfidenceLeak ? 12 : 0) +
         (versionFocus && versionFocusCount >= Math.ceil(total * 0.6) ? 4 : 0);
       const whyRecord = formatMatchRecord(wins, losses, ties);
       const whyIssue = repeatedTag
@@ -844,7 +882,7 @@ function buildMatchupMissionCandidates(
       const whyTurn = turnContext ? ` Leak is worse ${turnContext}.` : "";
 
       return [{
-        priority: 3 as const,
+        priority: highConfidenceLeak ? (1 as const) : (4 as const),
         score,
         archetype,
         missionType: "matchup" as const,
@@ -852,7 +890,7 @@ function buildMatchupMissionCandidates(
         missionReason: repeatedTag
           ? `${capitalizeLabel(commonIssueLabel ?? repeatedTag.tag)} keeps showing up in losses into ${archetype}.`
           : `${archetype} is the clearest underperforming matchup right now.`,
-        whyThisMatters: `You are ${whyRecord} vs ${archetype}.${whyIssue}${whyTurn}`,
+      whyThisMatters: `Across all decks, you are ${whyRecord} vs ${archetype}.${whyIssue}${whyTurn}`,
         rewardLabel: "Unlock matchup read",
         missionContextLabel: "Watchlist games",
         missionContextTargetCount: 5,
@@ -886,7 +924,7 @@ function buildMatchupMissionCandidates(
         matches: groupedMatches,
         focusMatches,
         focusOpponent: archetype,
-        focusTurnContext: null,
+        focusTurnContext: turnContext,
         focusTag: repeatedTag?.tag ?? null,
         focusDeckVersionIds: [],
         commonIssue: repeatedTag,
