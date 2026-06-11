@@ -462,27 +462,20 @@ function toSharedReportRecord(value: unknown): SharedReportRecord | null {
   };
 }
 
-async function generateUniqueReportSlug(seed: string) {
-  const admin = createAdminSupabaseClient();
+function buildReportSlugCandidate(seed: string, attempt: number) {
   const base = slugify(seed) || "sixprizer-report";
+  return attempt === 0
+    ? `${base}-${Math.random().toString(36).slice(2, 6)}`
+    : `${base}-${Math.random().toString(36).slice(2, 8)}`;
+}
 
-  for (let attempt = 0; attempt < 20; attempt += 1) {
-    const candidate =
-      attempt === 0
-        ? base
-        : `${base}-${Math.random().toString(36).slice(2, 8)}`;
-    const { data } = await admin
-      .from("shared_reports")
-      .select("id")
-      .eq("slug", candidate)
-      .maybeSingle();
-
-    if (!data) {
-      return candidate;
-    }
-  }
-
-  return `${base}-${Date.now().toString(36)}`;
+function isUniqueViolation(message: string) {
+  const normalized = message.toLowerCase();
+  return (
+    normalized.includes("duplicate") ||
+    normalized.includes("unique") ||
+    normalized.includes("shared_reports_slug_key")
+  );
 }
 
 function buildMatchupSummary(
@@ -1212,7 +1205,7 @@ export async function getPublicProfilePageData(handle: string): Promise<PublicPr
 }
 
 export async function createSharedReport(userId: string, input: CreateSharedReportInput) {
-  const admin = createAdminSupabaseClient();
+  const supabase = await createServerSupabaseClient();
 
   if (!SHARED_REPORT_TYPES.includes(input.reportType)) {
     throw new Error("Invalid report type.");
@@ -1227,32 +1220,43 @@ export async function createSharedReport(userId: string, input: CreateSharedRepo
     throw new Error("Report title is required.");
   }
 
-  await getProfileByUserIdInternal(userId);
-  const slug = await generateUniqueReportSlug(input.slugSeed ?? title);
-
-  const { data, error } = await admin
-    .from("shared_reports")
-    .insert({
-      user_id: userId,
-      slug,
-      report_type: input.reportType,
-      title,
-      summary: input.summary ?? {},
-      visibility: input.visibility,
-    })
-    .select("*")
-    .single();
-
-  if (error) {
-    throw new Error(error.message);
+  const profile = await getProfileByUserIdForViewer(userId);
+  if (!profile) {
+    throw new Error("Create a profile before sharing reports.");
   }
 
-  const report = toSharedReportRecord(data);
-  if (!report) {
-    throw new Error("Report could not be created.");
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    const slug = buildReportSlugCandidate(input.slugSeed ?? title, attempt);
+    const { data, error } = await supabase
+      .from("shared_reports")
+      .insert({
+        user_id: userId,
+        slug,
+        report_type: input.reportType,
+        title,
+        summary: input.summary ?? {},
+        visibility: input.visibility,
+      })
+      .select("*")
+      .single();
+
+    if (error) {
+      if (isUniqueViolation(error.message)) {
+        continue;
+      }
+
+      throw new Error(error.message);
+    }
+
+    const report = toSharedReportRecord(data);
+    if (!report) {
+      throw new Error("Report could not be created.");
+    }
+
+    return report;
   }
 
-  return report;
+  throw new Error("Report slug could not be generated.");
 }
 
 export async function getSharedReportBySlug(slug: string): Promise<PublicReportPageData | null> {
@@ -1461,14 +1465,14 @@ export async function createMatchupSharedReport(
   userId: string,
   input: MatchupReportInput
 ) {
-  const admin = createAdminSupabaseClient();
-  const profile = await getProfileByUserIdInternal(userId);
+  const supabase = await createServerSupabaseClient();
+  const profile = await getProfileByUserIdForViewer(userId);
 
   if (!profile) {
     throw new Error("Create a profile before sharing reports.");
   }
 
-  const { data: matches, error: matchesError } = await admin
+  const { data: matches, error: matchesError } = await supabase
     .from("matches")
     .select(
       "id, deck_version_id, opponent_archetype, result, went_first, played_at, metadata, deck_versions(id, name, deck_id, decks(id, name))"
