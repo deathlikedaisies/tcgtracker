@@ -28,3 +28,39 @@ export async function expectNoHorizontalOverflow(page: Page) {
 
   expect(hasOverflow).toBe(false);
 }
+
+export async function expectHeadingVisible(
+  page: Page,
+  name: string | RegExp
+) {
+  const heading = page.getByRole("heading", { name }).first();
+
+  try {
+    await expect(heading).toBeVisible();
+  } catch (error) {
+    const [url, title, headings, bodyText] = await Promise.all([
+      page.url(),
+      page.title().catch(() => ""),
+      page
+        .getByRole("heading")
+        .allTextContents()
+        .catch(() => [] as string[]),
+      page
+        .locator("body")
+        .innerText()
+        .catch(() => ""),
+    ]);
+
+    const diagnostic = [
+      `url=${url}`,
+      `title=${title || "n/a"}`,
+      `headings=${JSON.stringify(headings)}`,
+      `body=${JSON.stringify(bodyText.slice(0, 500))}`,
+    ].join(" ");
+
+    const originalMessage =
+      error instanceof Error ? error.message : String(error);
+
+    throw new Error(`${originalMessage}\n${diagnostic}`);
+  }
+}

@@ -1,6 +1,10 @@
 import { expect, test } from "@playwright/test";
 import { getMissingAuthEnvReason, login } from "./helpers/auth";
-import { expectNoAppError, expectNoHorizontalOverflow } from "./helpers/assertions";
+import {
+  expectHeadingVisible,
+  expectNoAppError,
+  expectNoHorizontalOverflow,
+} from "./helpers/assertions";
 
 const publicRoutes = [
   { path: "/", assertion: () => ({ role: "heading" as const, name: /From testing games to/i }) },
@@ -29,7 +33,7 @@ test.describe("mobile layout", () => {
       await page.goto(route.path);
 
       const target = route.assertion();
-      await expect(page.getByRole(target.role, { name: target.name })).toBeVisible();
+      await expectHeadingVisible(page, target.name);
       await expectNoAppError(page);
       await expectNoHorizontalOverflow(page);
     });
@@ -50,7 +54,7 @@ test.describe("mobile layout", () => {
       test(`${route.path} is readable on mobile`, async ({ page }) => {
         await page.goto(route.path);
 
-        await expect(page.getByRole("heading", { name: route.heading }).first()).toBeVisible();
+        await expectHeadingVisible(page, route.heading);
         await expect(page.getByLabel("Email")).toHaveCount(0);
         await expectNoAppError(page);
         await expectNoHorizontalOverflow(page);
