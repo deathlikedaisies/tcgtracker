@@ -9,6 +9,7 @@ const authRoutes = [
   { path: "/matches", heading: "Matches" },
   { path: "/decks", heading: "Deck Experiments" },
   { path: "/matchups", heading: "Matchup Intelligence" },
+  { path: "/settings/profile", heading: /Profile|Create your profile/i },
 ];
 
 test.describe("authenticated routes", () => {
@@ -26,11 +27,24 @@ test.describe("authenticated routes", () => {
     test(`${route.path} loads in the authenticated shell`, async ({ page }) => {
       await page.goto(route.path);
 
-      await expect(page.getByRole("heading", { name: route.heading, exact: true })).toBeVisible();
+      await expect(page.getByRole("heading", { name: route.heading }).first()).toBeVisible();
       await expect(page.locator("body")).toContainText("SixPrizer");
       await expect(page.getByRole("link", { name: "Decks" }).first()).toBeVisible();
       await expect(page.getByLabel("Email")).toHaveCount(0);
       await expectNoAppError(page);
     });
   }
+
+  test("/matchups can create a persisted matchup report", async ({ page }) => {
+    await page.goto("/matchups");
+
+    const createReportButton = page.getByRole("button", { name: "Create report link" });
+    await expect(createReportButton).toBeVisible();
+    await createReportButton.click();
+
+    await page.waitForURL(/\/r\//, { timeout: 30000 });
+    await expect(page.getByRole("heading").first()).toBeVisible();
+    await expect(page.locator("body")).toContainText("Shared from SixPrizer");
+    await expectNoAppError(page);
+  });
 });

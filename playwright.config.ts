@@ -1,6 +1,9 @@
+import { loadEnvConfig } from "@next/env";
 import os from "node:os";
 import path from "node:path";
 import { defineConfig, devices } from "@playwright/test";
+
+loadEnvConfig(process.cwd());
 
 const baseURL = process.env.PLAYWRIGHT_BASE_URL || "http://localhost:3000";
 const artifactRoot = path.join(os.tmpdir(), "sixprizer-playwright");

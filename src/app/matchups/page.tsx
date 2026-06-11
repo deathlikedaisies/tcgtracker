@@ -32,6 +32,7 @@ import {
 import { SixPrizerLogo } from "@/components/SixPrizerLogo";
 import { SessionCoachPanel } from "@/components/SessionCoachPanel";
 import { ShareReportButton, type ShareReport } from "@/components/ShareReportButton";
+import { createMatchupSharedReportAction } from "@/app/community/actions";
 import { getArchetypeOptions } from "@/lib/archetypes";
 import {
   countMatchResults,
@@ -52,6 +53,7 @@ type MatchupsPageProps = {
     end_date?: string;
     opponent_archetype?: string;
     sort?: string;
+    share_error?: string;
   }>;
 };
 
@@ -500,10 +502,33 @@ export default async function MatchupsPage({
               <AppNav current="matchups" />
             </div>
             {hasFilteredMatches ? (
-              <ShareReportButton report={shareReport} />
+              <div className="flex flex-wrap gap-2 lg:justify-end">
+                <ShareReportButton report={shareReport} />
+                {worstMatchup ? (
+                  <form
+                    action={createMatchupSharedReportAction.bind(
+                      null,
+                      selectedDeckId || null,
+                      selectedVersionId || null,
+                      worstMatchup.opponentArchetype,
+                      "link_only"
+                    )}
+                  >
+                    <button type="submit" className={primaryButton}>
+                      Create report link
+                    </button>
+                  </form>
+                ) : null}
+              </div>
             ) : null}
           </div>
         </header>
+
+        {params.share_error ? (
+          <section className="rounded-[18px] border border-rose-400/18 bg-[linear-gradient(180deg,rgba(68,12,26,0.74),rgba(20,10,18,0.82))] px-4 py-3 text-sm font-medium text-rose-100 shadow-[0_18px_38px_rgba(0,0,0,0.24)]">
+            Matchup report could not be created right now. Try again in a moment.
+          </section>
+        ) : null}
 
         {hasFilteredMatches ? (
           <section className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_340px]">

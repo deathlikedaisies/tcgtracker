@@ -8,6 +8,7 @@ const publicRoutes = [
   { path: "/login", assertion: () => ({ role: "heading" as const, name: "Log in to SixPrizer" }) },
   { path: "/signup", assertion: () => ({ role: "heading" as const, name: "Create your SixPrizer account" }) },
   { path: "/demo/matches/new", assertion: () => ({ role: "heading" as const, name: "Log a demo game" }) },
+  { path: "/u/sixprizer-missing-profile", assertion: () => ({ role: "heading" as const, name: "Profile unavailable" }) },
 ];
 
 const authenticatedRoutes = [
@@ -17,6 +18,7 @@ const authenticatedRoutes = [
   { path: "/matches", heading: "Matches" },
   { path: "/decks", heading: "Deck Experiments" },
   { path: "/matchups", heading: "Matchup Intelligence" },
+  { path: "/settings/profile", heading: /Profile|Create your profile/i },
 ];
 
 test.describe("mobile layout", () => {
@@ -48,7 +50,7 @@ test.describe("mobile layout", () => {
       test(`${route.path} is readable on mobile`, async ({ page }) => {
         await page.goto(route.path);
 
-        await expect(page.getByRole("heading", { name: route.heading, exact: true })).toBeVisible();
+        await expect(page.getByRole("heading", { name: route.heading }).first()).toBeVisible();
         await expect(page.getByLabel("Email")).toHaveCount(0);
         await expectNoAppError(page);
         await expectNoHorizontalOverflow(page);

@@ -5,6 +5,7 @@ import {
   Gauge,
   Layers3,
   PlusCircle,
+  Settings2,
   Target,
 } from "lucide-react";
 import { SixPrizerLogo } from "@/components/SixPrizerLogo";
@@ -16,7 +17,14 @@ import {
   premiumInset,
 } from "@/components/brand-styles";
 
-type AppSection = "dashboard" | "decks" | "matches" | "log" | "matchups" | "review";
+type AppSection =
+  | "dashboard"
+  | "decks"
+  | "matches"
+  | "log"
+  | "matchups"
+  | "review"
+  | "settings";
 
 type AppSidebarProps = {
   current: AppSection;
@@ -91,6 +99,17 @@ export function AppSidebar({ current, deckLabel, insight }: AppSidebarProps) {
             ) : null}
           </div>
         ) : null}
+
+        <div className={`${insight ? "mt-3" : "mt-auto"} pt-3`}>
+          <Link
+            href="/settings/profile"
+            aria-current={current === "settings" ? "page" : undefined}
+            className={current === "settings" ? navItemActive : navItem}
+          >
+            <Settings2 className="size-4 shrink-0" aria-hidden="true" />
+            Profile
+          </Link>
+        </div>
       </div>
     </aside>
   );

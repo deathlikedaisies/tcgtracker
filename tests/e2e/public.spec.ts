@@ -35,4 +35,11 @@ test.describe("public routes", () => {
     await expect(page.getByRole("heading", { name: "Create your SixPrizer account" })).toBeVisible();
     await expectNoAppError(page);
   });
+
+  test("missing public profile shows the unavailable state", async ({ page }) => {
+    await page.goto("/u/sixprizer-missing-profile");
+
+    await expect(page.getByRole("heading", { name: "Profile unavailable" })).toBeVisible();
+    await expectNoAppError(page);
+  });
 });
