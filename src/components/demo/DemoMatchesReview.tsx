@@ -6,9 +6,12 @@ import { ArchetypeSprites } from "@/components/ArchetypeSprites";
 import { DemoConversionCta } from "@/components/demo/DemoConversionCta";
 import {
   cardLarge,
+  glassPanelStrong,
   pageCopy,
   pageHeaderCard,
   pageTitle,
+  premiumInset,
+  premiumInsetStrong,
   primaryButton,
 } from "@/components/brand-styles";
 import { demoDecks, demoMatches, formatDemoDate, type DemoMatch } from "@/lib/demo-data";
@@ -125,7 +128,7 @@ export function DemoMatchesReview() {
       </section>
 
       <section className="grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
-        <article className="rounded-[22px] bg-[#0F1A2D]/78 p-4 shadow-[0_20px_56px_rgba(0,0,0,0.26),inset_0_0_0_1px_rgba(245,200,76,0.18)] backdrop-blur sm:p-5">
+        <article className={`${glassPanelStrong} p-4 sm:p-5`}>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">
               <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#F5C84C]">
@@ -149,21 +152,21 @@ export function DemoMatchesReview() {
           </div>
 
           <div className="mt-5 grid gap-2 sm:grid-cols-3">
-            <div className="rounded-[16px] bg-[#07111F]/58 p-3">
+            <div className={`${premiumInset} p-3`}>
               <p className="text-xs text-[#94A3B8]/72">Mission losses</p>
               <p className="mt-1 text-2xl font-bold text-[#F43F5E]">{missionLosses.length}</p>
             </div>
-            <div className="rounded-[16px] bg-[#07111F]/58 p-3">
+            <div className={`${premiumInset} p-3`}>
               <p className="text-xs text-[#94A3B8]/72">missed setup</p>
               <p className="mt-1 text-2xl font-bold text-[#F8FAFC]">{missedSetupCount}</p>
             </div>
-            <div className="rounded-[16px] bg-[#07111F]/58 p-3">
+            <div className={`${premiumInset} p-3`}>
               <p className="text-xs text-[#94A3B8]/72">bench pressure</p>
               <p className="mt-1 text-2xl font-bold text-[#F8FAFC]">{benchPressureCount}</p>
             </div>
           </div>
 
-          <div className="mt-4 rounded-[16px] bg-[#07111F]/58 p-3">
+          <div className={`${premiumInsetStrong} mt-4 p-3`}>
             <p className="text-sm font-semibold text-[#F8FAFC]">
               Key pattern: losses often involve slow setup or exposed bench pressure.
             </p>
@@ -191,7 +194,7 @@ export function DemoMatchesReview() {
             className={`min-h-10 rounded-[14px] px-3 text-sm font-semibold transition active:scale-[0.98] ${
                     active
                       ? "bg-[#F5C84C] text-[#07111F] shadow-[0_12px_28px_rgba(245,200,76,0.18)]"
-                      : "bg-[#07111F]/58 text-[#94A3B8] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)] hover:text-[#F8FAFC]"
+                      : `${premiumInset} text-[#94A3B8] hover:text-[#F8FAFC]`
                   }`}
                 >
                   {filter.label}
@@ -234,8 +237,8 @@ export function DemoMatchesReview() {
                 key={match.id}
                 className={`grid gap-3 rounded-[16px] p-3 sm:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)_auto] sm:items-center ${
                   missionGame
-                    ? "bg-[#1A1824]/78 shadow-[inset_0_0_0_1px_rgba(245,200,76,0.22)]"
-                    : "bg-[#07111F]/52"
+                    ? "bg-[linear-gradient(180deg,rgba(26,24,36,0.86),rgba(12,16,28,0.76))] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.22)]"
+                    : premiumInset
                 }`}
               >
                 <div className="flex min-w-0 items-center gap-3">
@@ -268,7 +271,7 @@ export function DemoMatchesReview() {
                       </span>
                     ) : null}
                     {match.tags.map((tag) => (
-                      <span key={tag} className="rounded bg-[#0B1020]/62 px-1.5 py-0.5 text-[11px] text-[#94A3B8]">
+                      <span key={tag} className={`${premiumInset} rounded px-1.5 py-0.5 text-[11px] text-[#94A3B8]`}>
                         {tag}
                       </span>
                     ))}

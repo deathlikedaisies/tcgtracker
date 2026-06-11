@@ -6,9 +6,11 @@ import { DemoShell } from "@/components/demo/DemoShell";
 import {
   card,
   cardLarge,
+  interactiveTile,
   pageCopy,
   pageHeaderCard,
   pageTitle,
+  premiumInset,
   primaryButton,
   sectionCopy,
   sectionTitle,
@@ -96,7 +98,7 @@ export default function DemoPage() {
             <Link
               key={step}
               href={href}
-            className="group grid min-h-24 grid-rows-[auto_1fr] rounded-[18px] bg-[#07111F]/52 p-3 transition hover:-translate-y-0.5 hover:bg-[#0F1A2D]/72"
+            className={`${interactiveTile} group grid min-h-24 grid-rows-[auto_1fr] p-3`}
           >
               <span className="inline-flex size-8 items-center justify-center rounded-[12px] bg-[#F5C84C]/12 text-sm font-bold text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.18)]">
                 {step}
@@ -136,7 +138,7 @@ export default function DemoPage() {
                 <span className="font-medium text-[#F8FAFC]">Progress</span>
                 <span className="text-[#94A3B8]">{insights.currentMission.progressLabel}</span>
               </div>
-              <div className="mt-2 h-2 overflow-hidden rounded-full bg-[#07111F]/78">
+              <div className={`${premiumInset} mt-2 h-2 overflow-hidden rounded-full`}>
                 <div className="h-full w-3/5 rounded-full bg-[#F5C84C]" />
               </div>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-[#94A3B8]/76">
@@ -160,7 +162,7 @@ export default function DemoPage() {
           <h2 className={sectionTitle}>Recent testing session</h2>
           <div className="mt-4 grid gap-2">
             {recent.slice(0, 6).map((match) => (
-              <div key={match.id} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-[16px] bg-[#07111F]/52 p-2.5">
+              <div key={match.id} className={`${premiumInset} grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-[16px] p-2.5`}>
                 <span
                   className={`size-2.5 rounded-full ${
                     match.result === "win"
@@ -185,7 +187,7 @@ export default function DemoPage() {
         <h2 className={sectionTitle}>Matchup intelligence snapshot</h2>
         <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
           {matchups.slice(0, 5).map((matchup) => (
-            <Link key={matchup.archetype} href="/demo/matchups" className="rounded-[18px] bg-[#07111F]/52 p-3 transition hover:-translate-y-0.5">
+            <Link key={matchup.archetype} href="/demo/matchups" className={`${interactiveTile} p-3`}>
               <ArchetypeSprites archetype={matchup.archetype} />
               <div className="mt-2 flex min-w-0 items-center justify-between gap-2">
                 <p className="truncate text-sm font-semibold text-[#F8FAFC]">{matchup.archetype}</p>

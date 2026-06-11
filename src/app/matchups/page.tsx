@@ -14,12 +14,15 @@ import {
   emptyCard,
   glassPanel,
   glassPanelStrong,
+  interactiveTile,
   inputH10,
   label,
   logoOnDark,
   pageCopy,
   pageHeader,
   pageTitle,
+  premiumInset,
+  premiumInsetStrong,
   primaryButton,
   secondaryButton,
   sectionCopy,
@@ -527,13 +530,13 @@ export default async function MatchupsPage({
                 </p>
               </div>
               <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                <div className="rounded-md bg-[#07111F]/44 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                <div className={`${premiumInset} rounded-[16px] p-3`}>
                   <p className="text-xs text-[#94A3B8]/72">Samples</p>
                   <p className="mt-1 text-lg font-bold text-[#F8FAFC]">
                     {worstMatchup?.matches ?? 0}
                   </p>
                 </div>
-                <div className="rounded-md bg-[#07111F]/44 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                <div className={`${premiumInset} rounded-[16px] p-3`}>
                   <p className="text-xs text-[#94A3B8]/72">Record</p>
                   <p className="mt-1 text-lg font-bold text-[#F8FAFC]">
                     {worstMatchup
@@ -545,7 +548,7 @@ export default async function MatchupsPage({
                       : "0-0"}
                   </p>
                 </div>
-                <div className="rounded-md bg-[#07111F]/44 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                <div className={`${premiumInset} rounded-[16px] p-3`}>
                   <p className="text-xs text-[#94A3B8]/72">Action</p>
                   <p className="mt-1 text-sm font-semibold leading-5 text-[#F8FAFC]">
                     {worstMatchup && worstMatchup.matches >= 15
@@ -587,7 +590,7 @@ export default async function MatchupsPage({
                     cta: "Open review",
                   },
                 ] as { label: string; href: string; cta: string }[]).map((item, index) => (
-                  <div key={item.label} className="flex items-center gap-3 rounded-md bg-[#07111F]/44 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                  <div key={item.label} className={`${premiumInset} flex items-center gap-3 rounded-[16px] p-3`}>
                     <span className="inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-[#4F8CFF] text-xs font-bold text-white">
                       {index + 1}
                     </span>
@@ -765,7 +768,7 @@ export default async function MatchupsPage({
                 return (
                   <article
                     key={matchup.opponentArchetype}
-                    className="rounded-md bg-[#07111F]/46 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)] transition hover:bg-[#0B1020]/58 hover:shadow-[0_14px_34px_rgba(0,0,0,0.16),inset_0_0_0_1px_rgba(79,140,255,0.12)]"
+                    className={`${interactiveTile} rounded-[16px] p-4`}
                   >
                   <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px] lg:items-center">
                     <div>
@@ -818,7 +821,7 @@ export default async function MatchupsPage({
                     </div>
                   </div>
 
-                  <details className="mt-4 rounded-md bg-[#11182C]/50 p-3">
+                  <details className={`${premiumInsetStrong} mt-4 rounded-[16px] p-3`}>
                     <summary className="cursor-pointer text-sm font-medium text-[#F8FAFC] transition hover:text-[#F5C84C]">
                       Preparation notes
                     </summary>
@@ -836,7 +839,7 @@ export default async function MatchupsPage({
                             <form
                               key={`${yourArchetype}-${matchup.opponentArchetype}`}
                               action={saveMatchupNote}
-                              className="rounded-md bg-[#0B1020]/46 p-3"
+                              className={`${premiumInset} rounded-[16px] p-3`}
                             >
                               <input
                                 type="hidden"

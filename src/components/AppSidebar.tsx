@@ -8,7 +8,13 @@ import {
   Target,
 } from "lucide-react";
 import { SixPrizerLogo } from "@/components/SixPrizerLogo";
-import { glassPanel, logoOnDark } from "@/components/brand-styles";
+import {
+  logoOnDark,
+  navItem,
+  navItemActive,
+  navRailPanel,
+  premiumInset,
+} from "@/components/brand-styles";
 
 type AppSection = "dashboard" | "decks" | "matches" | "log" | "matchups" | "review";
 
@@ -33,12 +39,12 @@ const navItems = [
 
 export function AppSidebar({ current, deckLabel, insight }: AppSidebarProps) {
   return (
-    <aside className={`hidden min-h-[calc(100vh-3rem)] p-3 lg:sticky lg:top-6 lg:block ${glassPanel}`}>
-      <div className="flex h-full flex-col">
+    <aside className={`hidden min-h-[calc(100vh-3rem)] p-3 lg:sticky lg:top-6 lg:block ${navRailPanel}`}>
+      <div className="relative flex h-full flex-col">
         <SixPrizerLogo {...logoOnDark} hideTextOnMobile={false} />
 
         {deckLabel ? (
-          <div className="mt-6 rounded-[18px] bg-[#07111F]/48 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.09)]">
+          <div className={`mt-6 p-3 ${premiumInset}`}>
             <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#94A3B8]/72">
               Active test
             </p>
@@ -58,11 +64,7 @@ export function AppSidebar({ current, deckLabel, insight }: AppSidebarProps) {
                 key={item.href}
                 href={item.href}
                 aria-current={active ? "page" : undefined}
-                className={`inline-flex h-11 items-center gap-3 rounded-[14px] px-3 text-sm font-medium transition ${
-                  active
-                    ? "bg-[#4F8CFF]/18 text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.30),0_10px_24px_rgba(79,140,255,0.08)]"
-                    : "text-[#94A3B8]/78 hover:bg-[#07111F]/58 hover:text-[#F8FAFC]"
-                }`}
+                className={active ? navItemActive : navItem}
               >
                 <Icon className="size-4 shrink-0" aria-hidden="true" />
                 {item.label}
@@ -72,7 +74,7 @@ export function AppSidebar({ current, deckLabel, insight }: AppSidebarProps) {
         </nav>
 
         {insight ? (
-          <div className="mt-auto rounded-[18px] bg-[#07111F]/48 p-3 shadow-[inset_0_0_0_1px_rgba(245,200,76,0.12)]">
+          <div className={`mt-auto p-3 ${premiumInset}`}>
             <div className="flex items-center gap-2 text-[#F5C84C]">
               <Target className="size-4" aria-hidden="true" />
               <p className="text-xs font-semibold uppercase tracking-[0.1em]">

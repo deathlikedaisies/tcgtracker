@@ -13,12 +13,14 @@ import {
   dangerButton,
   emptyCard,
   glassPanel,
+  interactiveTile,
   inputH10,
   label,
   logoOnDark,
   pageCopy,
   pageHeader,
   pageTitle,
+  premiumInset,
   primaryButton,
   secondaryButton,
   sectionCopy,
@@ -524,7 +526,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
               </Link>
             </div>
             {sessionCoach ? (
-              <label className="flex min-h-11 items-center gap-2 rounded-[14px] bg-[#0B1020]/36 px-3 text-sm font-medium text-[#F8FAFC] min-[430px]:col-span-2 xl:col-span-6">
+              <label className={`${premiumInset} flex min-h-11 items-center gap-2 px-3 text-sm font-medium text-[#F8FAFC] min-[430px]:col-span-2 xl:col-span-6`}>
                 <input
                   type="checkbox"
                   name="mission_only"
@@ -612,7 +614,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                 return (
                   <article
                     key={match.id}
-                    className="rounded-[16px] bg-[#0B1020]/40 p-4 transition hover:bg-[#0B1020]/56 hover:shadow-[0_14px_34px_rgba(0,0,0,0.16)]"
+                    className={`${interactiveTile} rounded-[16px] p-4`}
                   >
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                       <div className="min-w-0">
@@ -746,7 +748,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                         {metadata.cards_shined?.length || metadata.cards_failed?.length ? (
                           <div className="mt-3 grid gap-2 sm:grid-cols-2">
                             {metadata.cards_shined?.length ? (
-                              <div className="rounded-[14px] bg-[#07111F]/40 px-3 py-2 text-xs text-[#94A3B8]">
+                              <div className={`${premiumInset} rounded-[14px] px-3 py-2 text-xs text-[#94A3B8]`}>
                                 <span className="font-semibold text-[#F8FAFC]">
                                   Shined:
                                 </span>{" "}
@@ -754,7 +756,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                               </div>
                             ) : null}
                             {metadata.cards_failed?.length ? (
-                              <div className="rounded-[14px] bg-[#07111F]/40 px-3 py-2 text-xs text-[#94A3B8]">
+                              <div className={`${premiumInset} rounded-[14px] px-3 py-2 text-xs text-[#94A3B8]`}>
                                 <span className="font-semibold text-[#F8FAFC]">
                                   Failed:
                                 </span>{" "}

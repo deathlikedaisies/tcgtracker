@@ -13,8 +13,12 @@ import {
   appFrame,
   appMain,
   appShell,
-  glassPanel,
   logoOnDark,
+  navItem,
+  navItemActive,
+  navRailPanel,
+  premiumInset,
+  pageHeaderCard,
 } from "@/components/brand-styles";
 
 type DemoSection = "dashboard" | "decks" | "matches" | "log" | "matchups";
@@ -36,8 +40,8 @@ export function DemoShell({ current, children }: DemoShellProps) {
   return (
     <main className={appShell}>
       <div className={appFrame}>
-        <aside className={`hidden min-h-[calc(100vh-3rem)] p-3 lg:sticky lg:top-6 lg:block ${glassPanel}`}>
-          <div className="flex h-full flex-col">
+        <aside className={`hidden min-h-[calc(100vh-3rem)] p-3 lg:sticky lg:top-6 lg:block ${navRailPanel}`}>
+          <div className="relative flex h-full flex-col">
             <SixPrizerLogo {...logoOnDark} hideTextOnMobile={false} />
             <div className="mt-4">
               <DemoBadge />
@@ -56,11 +60,7 @@ export function DemoShell({ current, children }: DemoShellProps) {
                     key={item.href}
                     href={item.href}
                     aria-current={active ? "page" : undefined}
-                    className={`inline-flex h-11 items-center gap-3 rounded-[14px] px-3 text-sm font-medium transition ${
-                      active
-                        ? "bg-[#4F8CFF]/18 text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.30),0_10px_24px_rgba(79,140,255,0.08)]"
-                        : "text-[#94A3B8]/78 hover:bg-[#07111F]/58 hover:text-[#F8FAFC]"
-                    }`}
+                    className={active ? navItemActive : navItem}
                   >
                     <Icon className="size-4 shrink-0" aria-hidden="true" />
                     {item.label}
@@ -71,7 +71,7 @@ export function DemoShell({ current, children }: DemoShellProps) {
 
             <Link
               href="/"
-              className="mt-auto inline-flex h-10 items-center justify-center rounded-[14px] bg-[#07111F]/52 px-3 text-sm font-medium text-[#94A3B8] transition hover:bg-[#1A2238]/58 hover:text-[#F8FAFC]"
+              className="mt-auto inline-flex h-10 items-center justify-center rounded-[14px] bg-[linear-gradient(180deg,rgba(11,18,32,0.78),rgba(7,17,31,0.68))] px-3 text-sm font-medium text-[#94A3B8] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)] transition hover:bg-[#1A2238]/58 hover:text-[#F8FAFC]"
             >
               Exit demo
             </Link>
@@ -79,12 +79,12 @@ export function DemoShell({ current, children }: DemoShellProps) {
         </aside>
 
         <section className={appMain}>
-          <header className="flex flex-col gap-3 rounded-[26px] bg-[linear-gradient(180deg,rgba(15,26,45,0.94),rgba(7,17,31,0.86))] p-3 shadow-[0_16px_46px_rgba(0,0,0,0.22),inset_0_0_0_1px_rgba(148,163,184,0.10)] backdrop-blur sm:p-4 lg:hidden">
+          <header className={`${pageHeaderCard} p-3 sm:p-4 lg:hidden`}>
             <div className="flex items-center justify-between gap-3">
               <SixPrizerLogo {...logoOnDark} />
               <DemoBadge />
             </div>
-            <nav className="grid grid-cols-5 gap-1 rounded-[18px] bg-[#07111F]/52 p-1">
+            <nav className={`grid grid-cols-5 gap-1 p-1 ${premiumInset}`}>
               {navItems.map((item) => {
                 const active = item.section === current;
 
@@ -93,7 +93,9 @@ export function DemoShell({ current, children }: DemoShellProps) {
                     key={item.href}
                     href={item.href}
                     className={`inline-flex h-9 min-w-0 items-center justify-center rounded-[12px] px-1 text-[11px] font-semibold ${
-                      active ? "bg-[#4F8CFF]/22 text-[#F8FAFC]" : "text-[#94A3B8]/78"
+                      active
+                        ? "bg-[linear-gradient(180deg,rgba(79,140,255,0.20),rgba(31,67,138,0.18))] text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.28)]"
+                        : "text-[#94A3B8]/78"
                     }`}
                   >
                     <span className="truncate">{item.label.split(" ")[0]}</span>

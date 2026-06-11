@@ -8,10 +8,13 @@ import {
   appShell,
   emptyCard,
   glassPanel,
+  glassPanelStrong,
   logoOnDark,
   pageCopy,
   pageHeaderCard,
   pageTitle,
+  premiumInset,
+  premiumInsetStrong,
   primaryButton,
   secondaryButton,
   sectionCopy,
@@ -349,7 +352,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
               {/* Primary coach insight — the first thing the user sees */}
               {analysis.cards.length > 0 ? (
                 <section
-                  className={`rounded-[24px] bg-[linear-gradient(180deg,rgba(12,20,36,0.96),rgba(8,16,29,0.92))] p-5 sm:p-6 ${
+                  className={`${glassPanelStrong} p-5 sm:p-6 ${
                     analysis.cards[0].tone === "rose"
                       ? "shadow-[0_22px_52px_rgba(0,0,0,0.26),inset_0_0_0_1px_rgba(244,63,94,0.22)]"
                       : analysis.cards[0].tone === "emerald"
@@ -382,7 +385,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
                       </p>
                     </div>
                     <div className="flex shrink-0 flex-col gap-3 xl:w-72">
-                      <div className="rounded-[16px] bg-[#0B1020]/70 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                      <div className={`${premiumInsetStrong} p-4`}>
                         <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
                           Evidence
                         </p>
@@ -430,7 +433,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
                         Insight
                       </span>
                     </div>
-                    <div className="mt-4 rounded-[18px] bg-[#0B1020]/66 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                    <div className={`${premiumInset} mt-4 p-3`}>
                       <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
                         Evidence
                       </p>
@@ -453,7 +456,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
                     </section>
                     {hiddenCards.length > 0 ? (
                       <details className="group">
-                        <summary className="inline-flex cursor-pointer list-none items-center gap-2 rounded-xl bg-[#0B1020]/46 px-4 py-2.5 text-sm font-semibold text-[#B8D1FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.14)] transition hover:bg-[#0B1020]/62 marker:hidden">
+                        <summary className={`${premiumInset} inline-flex cursor-pointer list-none items-center gap-2 px-4 py-2.5 text-sm font-semibold text-[#B8D1FF] transition hover:text-[#F8FAFC] marker:hidden`}>
                           {hiddenCards.length} more insight{hiddenCards.length > 1 ? "s" : ""}
                         </summary>
                         <section className="mt-4 grid gap-4 xl:grid-cols-2">

@@ -20,13 +20,17 @@ import {
   dangerButton,
   emptyCard,
   glassPanelStrong,
+  interactiveTile,
   logoOnDark,
   pageCopy,
   pageTitle,
+  premiumInset,
+  premiumInsetStrong,
   primaryButton,
   secondaryButton,
   sectionCopy,
   sectionTitle,
+  statCard,
 } from "@/components/brand-styles";
 import { SixPrizerLogo } from "@/components/SixPrizerLogo";
 import { getArchetypeOptions } from "@/lib/archetypes";
@@ -495,10 +499,7 @@ export default async function DecksPage() {
                     "bg-[#4F8CFF]/10 text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.16)]",
                 },
               ].map((stat) => (
-                <div
-                  key={stat.label}
-                  className="rounded-[22px] bg-[linear-gradient(180deg,rgba(11,16,32,0.9),rgba(7,17,31,0.82))] p-4 shadow-[0_16px_40px_rgba(0,0,0,0.2),inset_0_0_0_1px_rgba(148,163,184,0.08)]"
-                >
+                <div key={stat.label} className={`${statCard} p-4`}>
                   <div className="flex items-center gap-2">
                     <span
                       className={`inline-flex size-9 items-center justify-center rounded-xl ${stat.tone}`}
@@ -522,7 +523,7 @@ export default async function DecksPage() {
 
           <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
             <section className="grid gap-4">
-              <div className="rounded-[24px] bg-[linear-gradient(180deg,rgba(15,26,45,0.92),rgba(7,17,31,0.88))] p-4 shadow-[0_18px_50px_rgba(0,0,0,0.24),inset_0_0_0_1px_rgba(148,163,184,0.09)] sm:p-5">
+              <div className={`${glassPanelStrong} p-4 sm:p-5`}>
                 <div className="flex items-start gap-3">
                   <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-2xl bg-[#4F8CFF]/10 text-[#B8D1FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.18)]">
                     <Layers3 className="size-5" aria-hidden="true" />
@@ -625,7 +626,7 @@ export default async function DecksPage() {
                               </div>
                             </div>
 
-                            <div className="mt-4 rounded-[22px] bg-[#07111F]/42 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                            <div className={`${premiumInset} mt-4 p-4`}>
                               <div className="flex flex-wrap items-center gap-2">
                                 <span
                                   className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${summary.trend.tone}`}
@@ -672,10 +673,7 @@ export default async function DecksPage() {
 
                         <div className="grid gap-3 min-[430px]:grid-cols-2 xl:grid-cols-4">
                           {statusItems.map((item) => (
-                            <div
-                              key={item.label}
-                              className="rounded-[22px] bg-[#07111F]/42 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]"
-                            >
+                            <div key={item.label} className={`${premiumInset} p-4`}>
                               <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
                                 {item.label}
                               </p>
@@ -689,7 +687,7 @@ export default async function DecksPage() {
                           ))}
                         </div>
 
-                        <div className="flex flex-col gap-3 rounded-[22px] bg-[#07111F]/34 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.07)] sm:flex-row sm:items-center sm:justify-between">
+                        <div className={`${premiumInsetStrong} flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between`}>
                           <div>
                             <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
                               Experiment status
@@ -726,7 +724,7 @@ export default async function DecksPage() {
 
             <aside className="lg:sticky lg:top-6">
               <div className="grid gap-4">
-                <div className="rounded-[24px] bg-[linear-gradient(180deg,rgba(15,26,45,0.92),rgba(7,17,31,0.88))] p-4 shadow-[0_18px_50px_rgba(0,0,0,0.22),inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                <div className={`${glassPanelStrong} p-4`}>
                   <div className="flex items-center gap-2">
                     <Sparkles className="size-5 text-[#F5C84C]" aria-hidden="true" />
                     <h2 className="text-lg font-semibold text-[#F8FAFC]">
@@ -743,7 +741,7 @@ export default async function DecksPage() {
                   hasDecks={Boolean(userDecks.length)}
                 />
 
-                <div className="rounded-[22px] bg-[#07111F]/42 p-4 shadow-[0_16px_40px_rgba(0,0,0,0.18),inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                <div className={`${interactiveTile} p-4`}>
                   <div className="flex items-start gap-3">
                     <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-2xl bg-[#4F8CFF]/10 text-[#B8D1FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.18)]">
                       <ShieldCheck className="size-5" aria-hidden="true" />

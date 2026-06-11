@@ -1,6 +1,13 @@
 import Link from "next/link";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
-import { missionHeroCard, statCard } from "@/components/brand-styles";
+import {
+  metallicBadge,
+  missionHeroCard,
+  premiumInset,
+  premiumTile,
+  primaryButton,
+  statCard,
+} from "@/components/brand-styles";
 import type { SessionCoachInsight } from "@/lib/session-coach";
 
 type SessionCoachPanelProps = {
@@ -49,7 +56,7 @@ export function SessionCoachPanel({
             <span className="rounded-full bg-[#4F8CFF]/10 px-2.5 py-1 text-xs font-semibold text-[#B8D1FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.14)]">
               {insight.missionStatusLabel}
             </span>
-            <span className="rounded-full bg-[#07111F]/52 px-2.5 py-1 text-xs font-semibold text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]">
+            <span className={`${metallicBadge} px-2.5 py-1 text-xs font-semibold text-[#DCE8FF]`}>
               {insight.missionGuidanceLabel}
             </span>
           </div>
@@ -60,7 +67,7 @@ export function SessionCoachPanel({
             {insight.whyThisMatters}
           </p>
           <div className="mt-2 flex flex-wrap items-center gap-2">
-            <div className="flex min-w-0 items-center gap-2 rounded-[14px] bg-[#0B1020]/46 px-2.5 py-1.5 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+            <div className={`${premiumTile} flex min-w-0 items-center gap-2 px-2.5 py-1.5`}>
               <ArchetypeSprites archetype={insight.archetype} className="shrink-0" />
               <p className="min-w-0 truncate text-sm font-medium text-[#94A3B8]/78">
                 {insight.missionContextLabel}
@@ -74,7 +81,7 @@ export function SessionCoachPanel({
         {showCta ? (
           <Link
             href={insight.continueHref}
-            className="inline-flex h-11 w-full shrink-0 items-center justify-center rounded-[14px] bg-[#F5C84C] px-5 text-sm font-bold text-[#0B1020] shadow-[0_14px_34px_rgba(245,200,76,0.22)] transition hover:-translate-y-0.5 hover:bg-[#ffd85f] active:translate-y-0 active:scale-[0.98] sm:w-fit"
+            className={`${primaryButton} w-full shrink-0 sm:w-fit`}
           >
             {actionLabel}
           </Link>
@@ -158,7 +165,7 @@ export function SessionCoachPanel({
         <summary className="inline-flex h-7 cursor-pointer list-none items-center rounded-md px-1.5 text-[11px] font-medium text-[#94A3B8]/62 transition hover:bg-[#0B1020]/30 hover:text-[#F8FAFC] marker:hidden">
           Why this mission
         </summary>
-        <div className={`${statCard} mt-2 grid gap-2 bg-[linear-gradient(180deg,rgba(11,18,32,0.72),rgba(8,14,26,0.66))] p-3 text-sm text-[#94A3B8] sm:grid-cols-2`}>
+        <div className={`${premiumInset} mt-2 grid gap-2 p-3 text-sm text-[#94A3B8] sm:grid-cols-2`}>
           <p>{insight.missionReason}</p>
           <p>{insight.evidence}</p>
           <p>{insight.criteria}</p>

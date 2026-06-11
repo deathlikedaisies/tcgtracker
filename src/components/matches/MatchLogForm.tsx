@@ -11,6 +11,8 @@ import {
   glassPanelStrong,
   inputH11,
   label,
+  premiumInset,
+  premiumTile,
   primaryButton,
   secondaryButton,
   textarea,
@@ -92,8 +94,7 @@ const sessionKeys = {
   sequencingQuality: "tcgtracker.matchLog.sequencingQuality",
 };
 
-const subCardClass =
-  "rounded-xl bg-[#0B1020]/46 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]";
+const subCardClass = `${premiumTile} p-3`;
 
 const largeToggleClass =
   "group relative flex min-h-14 w-full min-w-0 items-center justify-center overflow-hidden rounded-2xl border border-[#23314A] bg-[linear-gradient(180deg,rgba(11,16,32,0.96),rgba(7,17,31,0.88))] px-3 text-center text-base font-semibold text-[#D7E0EF] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-all duration-150 ease-out hover:-translate-y-0.5 hover:border-[#35507D] hover:bg-[#0D1830] hover:text-[#F8FAFC] hover:shadow-[0_12px_24px_rgba(0,0,0,0.18),inset_0_0_0_1px_rgba(79,140,255,0.12)] active:translate-y-0 active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C84C]/65 focus-visible:ring-offset-2 focus-visible:ring-offset-[#07111F]";
@@ -123,11 +124,9 @@ function parseWentFirstValue(value: string | null | undefined) {
   return parseWentFirstChoice(value);
 }
 
-const rewardStatCardClass =
-  "rounded-2xl bg-[#07111F]/62 px-3 py-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]";
+const rewardStatCardClass = `${premiumInset} px-3 py-3`;
 
-const rewardDetailChipClass =
-  "rounded-2xl bg-[#0B1020]/72 px-3 py-2.5 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]";
+const rewardDetailChipClass = `${premiumTile} px-3 py-2.5`;
 
 const stepOrder = [
   { label: "Match", shortLabel: "1" },
@@ -217,7 +216,7 @@ function getRewardStatusToneClass(status: string) {
     return "bg-[#F5C84C]/12 text-[#FFE28A] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]";
   }
 
-  return "bg-[#0B1020]/72 text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]";
+  return `${premiumTile} text-[#DCE8FF]`;
 }
 
 function getSelectedToneClass(tone: SelectionTone) {

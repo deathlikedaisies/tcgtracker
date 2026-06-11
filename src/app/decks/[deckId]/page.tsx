@@ -22,8 +22,11 @@ import {
   emptyCard,
   glassPanel,
   glassPanelStrong,
+  interactiveTile,
   logoOnDark,
   pageTitle,
+  premiumInset,
+  statCard,
   secondaryButton,
   sectionCopy,
   sectionTitle,
@@ -358,7 +361,7 @@ export default async function DeckDetailPage({
                 </div>
 
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-2xl bg-[#07111F]/42 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                  <div className={`${statCard} p-3`}>
                     <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
                       Versions
                     </p>
@@ -366,7 +369,7 @@ export default async function DeckDetailPage({
                       {deckVersions.length} saved
                     </p>
                   </div>
-                  <div className="rounded-2xl bg-[#07111F]/42 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                  <div className={`${statCard} p-3`}>
                     <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
                       Games logged
                     </p>
@@ -374,7 +377,7 @@ export default async function DeckDetailPage({
                       {totalRecord.total ? `${totalRecord.total} games` : "No games yet"}
                     </p>
                   </div>
-                  <div className="rounded-2xl bg-[#07111F]/42 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                  <div className={`${statCard} p-3`}>
                     <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
                       Active version
                     </p>
@@ -382,7 +385,7 @@ export default async function DeckDetailPage({
                       {activeVersion ? safeText(activeVersion.name, "Untitled version") : "No active version"}
                     </p>
                   </div>
-                  <div className="rounded-2xl bg-[#07111F]/42 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                  <div className={`${statCard} p-3`}>
                     <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
                       Best current read
                     </p>
@@ -564,7 +567,7 @@ export default async function DeckDetailPage({
                       </div>
 
                       <div className="mt-4 grid gap-4 xl:grid-cols-2">
-                        <div className="rounded-[22px] bg-[#07111F]/42 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                        <div className={`${premiumInset} p-4`}>
                           <div className="flex items-center gap-2">
                             <TrendingUp className="size-4 text-[#4F8CFF]" aria-hidden="true" />
                             <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
@@ -572,7 +575,7 @@ export default async function DeckDetailPage({
                             </p>
                           </div>
                           <div className="mt-4 grid gap-3 grid-cols-2 min-[430px]:grid-cols-3">
-                            <div className="rounded-2xl bg-[#0B1020]/66 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                            <div className={`${statCard} p-3`}>
                               <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
                                 Games
                               </p>
@@ -580,7 +583,7 @@ export default async function DeckDetailPage({
                                 {total}
                               </p>
                             </div>
-                            <div className="rounded-2xl bg-[#0B1020]/66 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                            <div className={`${statCard} p-3`}>
                               <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
                                 Win rate
                               </p>
@@ -588,7 +591,7 @@ export default async function DeckDetailPage({
                                 {total ? `${winRate}%` : "N/A"}
                               </p>
                             </div>
-                            <div className="rounded-2xl bg-[#0B1020]/66 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                            <div className={`${statCard} p-3`}>
                               <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
                                 Record
                               </p>
@@ -602,7 +605,7 @@ export default async function DeckDetailPage({
                           </p>
                         </div>
 
-                        <div className="rounded-[22px] bg-[#07111F]/42 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                        <div className={`${premiumInset} p-4`}>
                           <div className="flex items-center gap-2">
                             <Target className="size-4 text-[#F5C84C]" aria-hidden="true" />
                             <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#F5C84C]">
@@ -659,7 +662,7 @@ export default async function DeckDetailPage({
                           )}
                         </div>
 
-                        <div className="rounded-[22px] bg-[#07111F]/42 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                        <div className={`${premiumInset} p-4`}>
                           <div className="flex items-center gap-2">
                             <Layers3 className="size-4 text-[#4F8CFF]" aria-hidden="true" />
                             <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
@@ -676,7 +679,7 @@ export default async function DeckDetailPage({
                               ].map((stat) => (
                                 <div
                                   key={stat.label}
-                                  className="rounded-2xl bg-[#0B1020]/66 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]"
+                                  className={`${statCard} p-3`}
                                 >
                                   <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
                                     {stat.label}
@@ -698,7 +701,7 @@ export default async function DeckDetailPage({
                           )}
                         </div>
 
-                        <div className="rounded-[22px] bg-[#07111F]/42 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                        <div className={`${premiumInset} p-4`}>
                           <div className="flex items-center gap-2">
                             <ShieldCheck className="size-4 text-[#F5C84C]" aria-hidden="true" />
                             <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#F5C84C]">
@@ -718,7 +721,7 @@ export default async function DeckDetailPage({
                                 </span>
                               </div>
                               <div className="grid gap-3 grid-cols-2">
-                                <div className="rounded-2xl bg-[#0B1020]/66 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                                <div className={`${statCard} p-3`}>
                                   <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
                                     Parsed cards
                                   </p>
@@ -726,7 +729,7 @@ export default async function DeckDetailPage({
                                     {analysis.cards.length}
                                   </p>
                                 </div>
-                                <div className="rounded-2xl bg-[#0B1020]/66 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                                <div className={`${statCard} p-3`}>
                                   <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
                                     Unresolved
                                   </p>
@@ -759,7 +762,7 @@ export default async function DeckDetailPage({
                       </div>
 
                       {version.notes ? (
-                        <div className="mt-4 rounded-[22px] bg-[#07111F]/42 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                        <div className={`${premiumInset} mt-4 p-4`}>
                           <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
                             Version notes
                           </p>
@@ -770,7 +773,7 @@ export default async function DeckDetailPage({
                       ) : null}
 
                       {version.decklist ? (
-                        <details className="mt-4 rounded-[22px] bg-[#07111F]/42 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                        <details className={`${premiumInset} mt-4 p-4`}>
                           <summary className="cursor-pointer list-none text-sm font-semibold text-[#DCE8FF] marker:hidden">
                             View raw deck list
                           </summary>
@@ -844,7 +847,7 @@ export default async function DeckDetailPage({
                     submitLabel="Create version"
                   />
                 ) : (
-                  <div className="rounded-[22px] bg-[#07111F]/42 p-4 shadow-[0_16px_40px_rgba(0,0,0,0.18),inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                  <div className={`${interactiveTile} p-4`}>
                     <div className="flex items-start gap-3">
                       <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-2xl bg-[#F5C84C]/12 text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
                         <ArrowRight className="size-5" aria-hidden="true" />
