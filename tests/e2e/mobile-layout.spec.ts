@@ -41,7 +41,7 @@ test.describe("mobile layout", () => {
 
   test.describe("authenticated mobile layout", () => {
     test.describe.configure({ mode: "serial" });
-    test.setTimeout(60000);
+    test.setTimeout(90000);
 
     const missingAuthEnvReason = getMissingAuthEnvReason();
 

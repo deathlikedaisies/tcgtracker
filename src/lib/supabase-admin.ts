@@ -5,6 +5,13 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 let adminClient: SupabaseClient | undefined;
 
+export function hasAdminSupabaseConfig() {
+  return Boolean(
+    process.env.NEXT_PUBLIC_SUPABASE_URL &&
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+  );
+}
+
 export function createAdminSupabaseClient(): SupabaseClient {
   if (!adminClient) {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -25,4 +32,12 @@ export function createAdminSupabaseClient(): SupabaseClient {
   }
 
   return adminClient;
+}
+
+export function tryCreateAdminSupabaseClient() {
+  if (!hasAdminSupabaseConfig()) {
+    return null;
+  }
+
+  return createAdminSupabaseClient();
 }

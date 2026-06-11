@@ -8,7 +8,11 @@ import {
   type MatchOpeningHandQuality,
   type MatchResult,
 } from "@/lib/match-types";
-import { createAdminSupabaseClient } from "@/lib/supabase-admin";
+import {
+  createAdminSupabaseClient,
+  hasAdminSupabaseConfig,
+  tryCreateAdminSupabaseClient,
+} from "@/lib/supabase-admin";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 
 export const RESERVED_PROFILE_HANDLES = new Set([
@@ -324,6 +328,14 @@ async function getViewerUserId() {
   } = await supabase.auth.getUser();
 
   return user?.id ?? null;
+}
+
+function logAdminFallbackWarning(context: string) {
+  if (!hasAdminSupabaseConfig()) {
+    console.error(
+      `[community] Admin Supabase client unavailable for ${context}. Public routes can still serve owner/public data, but link-only fallbacks require SUPABASE_SERVICE_ROLE_KEY.`
+    );
+  }
 }
 
 function toProfileRecord(value: unknown): ProfileRecord | null {
@@ -670,6 +682,66 @@ async function getProfileByUserIdInternal(userId: string) {
   return toProfileRecord(data);
 }
 
+async function getProfileByUserIdForViewer(userId: string) {
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return toProfileRecord(data);
+}
+
+async function getProfileByHandleForViewer(handle: string) {
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("handle", normalizeHandle(handle))
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return toProfileRecord(data);
+}
+
+async function getProfileStatsForViewer(userId: string) {
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from("profile_public_stats")
+    .select("*")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return toStatsRecord(data);
+}
+
+async function getSharedReportBySlugForViewer(slug: string) {
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from("shared_reports")
+    .select("*")
+    .eq("slug", slugify(slug))
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return toSharedReportRecord(data);
+}
+
 async function getProfileByIdInternal(profileId: string) {
   const admin = createAdminSupabaseClient();
   const { data, error } = await admin
@@ -701,24 +773,32 @@ async function getSharedReportByIdInternal(reportId: string) {
 }
 
 export async function getOwnProfile(userId: string) {
-  return getProfileByUserIdInternal(userId);
+  return getProfileByUserIdForViewer(userId);
 }
 
 export async function getProfileByHandle(handle: string) {
-  const admin = createAdminSupabaseClient();
   const viewerUserId = await getViewerUserId();
-  const normalizedHandle = normalizeHandle(handle);
-  const { data, error } = await admin
-    .from("profiles")
-    .select("*")
-    .eq("handle", normalizedHandle)
-    .maybeSingle();
+  let profile = await getProfileByHandleForViewer(handle);
 
-  if (error) {
-    throw new Error(error.message);
+  if (!profile) {
+    const admin = tryCreateAdminSupabaseClient();
+    if (!admin) {
+      return null;
+    }
+
+    const { data, error } = await admin
+      .from("profiles")
+      .select("*")
+      .eq("handle", normalizeHandle(handle))
+      .maybeSingle();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    profile = toProfileRecord(data);
   }
 
-  const profile = toProfileRecord(data);
   if (!profile || !canViewProfile(profile, viewerUserId)) {
     return null;
   }
@@ -925,25 +1005,14 @@ export async function buildPublicProfileStats(userId: string) {
 }
 
 export async function getPublicProfileStats(userId: string) {
-  const admin = createAdminSupabaseClient();
   const viewerUserId = await getViewerUserId();
-  const profile = await getProfileByUserIdInternal(userId);
+  const profile = await getProfileByUserIdForViewer(userId);
 
   if (!profile || !canViewAnalytics(profile, viewerUserId)) {
     return null;
   }
 
-  const { data, error } = await admin
-    .from("profile_public_stats")
-    .select("*")
-    .eq("user_id", userId)
-    .maybeSingle();
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  return toStatsRecord(data);
+  return getProfileStatsForViewer(userId);
 }
 
 async function getPublicCounts(userId: string, profileId: string) {
@@ -1014,30 +1083,51 @@ async function getPublicCounts(userId: string, profileId: string) {
 }
 
 export async function getPublicProfilePageData(handle: string): Promise<PublicProfilePageData | null> {
-  const admin = createAdminSupabaseClient();
   const viewerUserId = await getViewerUserId();
-  const normalizedHandle = normalizeHandle(handle);
-  const { data, error } = await admin
-    .from("profiles")
-    .select("*")
-    .eq("handle", normalizedHandle)
-    .maybeSingle();
+  let profile = await getProfileByHandleForViewer(handle);
 
-  if (error) {
-    throw new Error(error.message);
+  if (!profile) {
+    const admin = tryCreateAdminSupabaseClient();
+    if (admin) {
+      const { data, error } = await admin
+        .from("profiles")
+        .select("*")
+        .eq("handle", normalizeHandle(handle))
+        .maybeSingle();
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      profile = toProfileRecord(data);
+    }
   }
 
-  const profile = toProfileRecord(data);
   if (!profile || !canViewProfile(profile, viewerUserId)) {
     return null;
   }
 
   const isOwner = viewerUserId === profile.user_id;
+  const supabase = await createServerSupabaseClient();
+  const admin = tryCreateAdminSupabaseClient();
   const [stats, counts, visibleReports, isFollowing, viewerReactions] = await Promise.all([
     getPublicProfileStats(profile.user_id),
-    getPublicCounts(profile.user_id, profile.id),
+    admin
+      ? getPublicCounts(profile.user_id, profile.id)
+      : Promise.resolve({
+          followerCount: 0,
+          followingCount: 0,
+          profileReactions: PROFILE_REACTION_TYPES.reduce(
+            (all, reactionType) => {
+              all[reactionType] = 0;
+              return all;
+            },
+            {} as Record<ProfileReactionType, number>
+          ),
+          reportReactions: 0,
+        }),
     (async () => {
-      const query = admin
+      const query = supabase
         .from("shared_reports")
         .select("*")
         .eq("user_id", profile.user_id)
@@ -1061,7 +1151,7 @@ export async function getPublicProfilePageData(handle: string): Promise<PublicPr
         return false;
       }
 
-      const { data: followRow, error: followError } = await admin
+      const { data: followRow, error: followError } = await supabase
         .from("follows")
         .select("follower_id")
         .eq("follower_id", viewerUserId)
@@ -1079,7 +1169,7 @@ export async function getPublicProfilePageData(handle: string): Promise<PublicPr
         return [] as ProfileReactionType[];
       }
 
-      const { data: reactions, error: reactionsError } = await admin
+      const { data: reactions, error: reactionsError } = await supabase
         .from("profile_reactions")
         .select("reaction_type")
         .eq("actor_id", viewerUserId)
@@ -1099,6 +1189,10 @@ export async function getPublicProfilePageData(handle: string): Promise<PublicPr
         .filter((reaction): reaction is ProfileReactionType => Boolean(reaction));
     })(),
   ]);
+
+  if (!admin && profile.profile_visibility === "link_only") {
+    logAdminFallbackWarning(`/u/${profile.handle}`);
+  }
 
   return {
     profile,
@@ -1162,35 +1256,42 @@ export async function createSharedReport(userId: string, input: CreateSharedRepo
 }
 
 export async function getSharedReportBySlug(slug: string): Promise<PublicReportPageData | null> {
-  const admin = createAdminSupabaseClient();
   const viewerUserId = await getViewerUserId();
-  const normalizedSlug = slugify(slug);
-  const { data, error } = await admin
-    .from("shared_reports")
-    .select("*")
-    .eq("slug", normalizedSlug)
-    .maybeSingle();
+  let report = await getSharedReportBySlugForViewer(slug);
 
-  if (error) {
-    throw new Error(error.message);
+  if (!report) {
+    const admin = tryCreateAdminSupabaseClient();
+    if (admin) {
+      const { data, error } = await admin
+        .from("shared_reports")
+        .select("*")
+        .eq("slug", slugify(slug))
+        .maybeSingle();
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      report = toSharedReportRecord(data);
+    }
   }
 
-  const report = toSharedReportRecord(data);
   if (!report || !canViewReport(report, viewerUserId)) {
     return null;
   }
 
-  const ownerProfile = await getProfileByUserIdInternal(report.user_id);
+  const ownerProfile = await getProfileByUserIdForViewer(report.user_id);
   const isOwner = viewerUserId === report.user_id;
+  const supabase = await createServerSupabaseClient();
   const [{ data: reactions, error: reactionsError }, { data: viewerRows, error: viewerError }] =
     await Promise.all([
-      admin
+      supabase
         .from("profile_reactions")
         .select("reaction_type")
         .eq("target_type", "shared_report")
         .eq("target_id", report.id),
       viewerUserId
-        ? admin
+        ? supabase
             .from("profile_reactions")
             .select("reaction_type")
             .eq("actor_id", viewerUserId)
