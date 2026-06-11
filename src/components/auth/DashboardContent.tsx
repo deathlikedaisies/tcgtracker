@@ -33,10 +33,17 @@ import {
   appMain,
   appShell,
   emptyCard,
+  glassPanel,
+  glassPanelStrong,
   insightCard,
+  interactiveTile,
+  metallicBadge,
   missionHeroCard,
   logoOnDark,
   pageCopy,
+  pageHeaderCard,
+  premiumInset,
+  premiumInsetStrong,
   primaryButton,
   secondaryPanel,
   sectionTitle,
@@ -197,7 +204,7 @@ function getMissionBadge(insight: SessionCoachInsight) {
 
 function ChartPlaceholder({ children }: { children: ReactNode }) {
   return (
-    <div className="mt-3 flex min-h-[220px] items-center justify-center rounded-2xl bg-[#07111F]/40 px-4 py-6 text-center text-sm leading-6 text-[#94A3B8]/76 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+    <div className={`${premiumInset} mt-3 flex min-h-[220px] items-center justify-center px-4 py-6 text-center text-sm leading-6 text-[#94A3B8]/76`}>
       {children}
     </div>
   );
@@ -364,7 +371,7 @@ function ChangeCard({
   tone: Tone;
 }) {
   return (
-    <div className={`${insightCard} bg-[#07111F]/42 p-4`}>
+    <div className={`${insightCard} p-4`}>
       <span
         className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${toneClass(
           tone
@@ -533,7 +540,7 @@ function MissionHeroCard({
           >
             {badge.label}
           </span>
-          <span className="rounded-full bg-[#07111F]/58 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]">
+          <span className={`${metallicBadge} px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#DCE8FF]`}>
             {insight.missionGuidanceLabel}
           </span>
         </div>
@@ -569,18 +576,18 @@ function MissionHeroCard({
         </div>
 
         <details className="mt-4">
-          <summary className="inline-flex cursor-pointer list-none items-center gap-1.5 rounded-xl bg-[#07111F]/42 px-3 py-2 text-sm font-semibold text-[#DCE8FF] transition hover:bg-[#07111F]/58 marker:hidden">
+          <summary className={`${premiumInset} inline-flex cursor-pointer list-none items-center gap-1.5 px-3 py-2 text-sm font-semibold text-[#DCE8FF] transition hover:text-[#F8FAFC] marker:hidden`}>
             Why this mission
             <ChevronDown className="size-4" aria-hidden="true" />
           </summary>
-          <div className="mt-3 grid gap-2 rounded-2xl bg-[#0B1020]/52 p-4 text-sm leading-6 text-[#94A3B8]/76 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)] lg:grid-cols-2">
+          <div className={`${premiumInset} mt-3 grid gap-2 p-4 text-sm leading-6 text-[#94A3B8]/76 lg:grid-cols-2`}>
             <p>{insight.missionReason}</p>
             <p>{insight.evidence}</p>
           </div>
         </details>
       </div>
 
-      <div className="flex flex-col rounded-[24px] bg-[linear-gradient(180deg,rgba(11,18,32,0.76),rgba(8,15,28,0.70))] p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.09)]">
+      <div className={`${premiumInsetStrong} flex flex-col p-4`}>
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
@@ -590,7 +597,7 @@ function MissionHeroCard({
               {insight.missionProgress}/{insight.missionTargetCount} games
             </p>
           </div>
-          <span className="rounded-full bg-[#0B1020]/72 px-3 py-1 text-xs font-semibold text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]">
+          <span className={`${metallicBadge} px-3 py-1 text-xs font-semibold text-[#DCE8FF]`}>
             {insight.missionStatusLabel}
           </span>
         </div>
@@ -617,7 +624,7 @@ function MissionHeroCard({
           {insight.progressFeedback}
         </p>
 
-        <div className="mt-3 rounded-2xl bg-[#0B1020]/60 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+        <div className={`${premiumInset} mt-3 p-3`}>
           <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
             Why this matters
           </p>
@@ -635,7 +642,7 @@ function MissionHeroCard({
           </span>
         </div>
 
-        <div className="mt-3 rounded-2xl bg-[#0B1020]/60 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+        <div className={`${premiumInset} mt-3 p-3`}>
           <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
             Next move
           </p>
@@ -670,7 +677,7 @@ function MissionHeroCard({
       </div>
 
       {deckCoachInsight ? (
-        <div className="xl:col-span-2 mt-0 rounded-[18px] bg-[#0B1020]/60 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+        <div className={`${premiumInsetStrong} xl:col-span-2 mt-0 p-4`}>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
             <div className="flex min-w-0 flex-1 items-center gap-3">
               <div className="flex shrink-0 items-center gap-1.5">
@@ -761,7 +768,7 @@ function SetupChecklist({
         variant="app-icon"
         showText={false}
         className="mb-5"
-        markClassName="size-12 bg-[#0B1020]/72 shadow-[0_0_28px_rgba(79,140,255,0.16),inset_0_0_0_1px_rgba(79,140,255,0.22)]"
+        markClassName="size-12 bg-[linear-gradient(180deg,rgba(11,18,32,0.84),rgba(8,14,26,0.74))] shadow-[0_0_28px_rgba(79,140,255,0.16),inset_0_0_0_1px_rgba(79,140,255,0.22)]"
       />
       <p className="text-sm font-semibold text-[#4F8CFF]">First setup</p>
       <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[#F8FAFC]">
@@ -775,7 +782,7 @@ function SetupChecklist({
         {steps.map((step) => (
           <div
             key={step.label}
-            className="rounded-[20px] bg-[#07111F]/42 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]"
+            className={`${premiumInset} rounded-[20px] p-4`}
           >
             <div className="flex items-center gap-2">
               <span
@@ -1027,7 +1034,7 @@ export function DashboardContent({
         />
 
         <div className={`${appMain} mx-auto w-full max-w-7xl`}>
-          <header className="rounded-[24px] bg-[linear-gradient(180deg,rgba(11,16,32,0.92),rgba(7,17,31,0.84))] p-4 shadow-[0_18px_46px_rgba(0,0,0,0.22),inset_0_0_0_1px_rgba(148,163,184,0.10)] sm:p-5">
+          <header className={`${pageHeaderCard} p-4 sm:p-5`}>
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div className="min-w-0">
                 <SixPrizerLogo {...logoOnDark} />
@@ -1072,7 +1079,7 @@ export function DashboardContent({
                   deckCoachInsight={deckCoachInsight}
                 />
               ) : deckCoachInsight ? (
-                <section className="rounded-[24px] bg-[linear-gradient(180deg,rgba(12,20,36,0.94),rgba(8,16,29,0.90))] p-5 shadow-[0_18px_46px_rgba(0,0,0,0.22),inset_0_0_0_1px_rgba(245,200,76,0.22)]">
+                <section className={`${glassPanelStrong} p-5 shadow-[0_18px_46px_rgba(0,0,0,0.22),inset_0_0_0_1px_rgba(245,200,76,0.22)]`}>
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="inline-flex size-8 items-center justify-center rounded-[12px] bg-[#F5C84C]/12 text-xs font-bold text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
                       TC
@@ -1127,7 +1134,7 @@ export function DashboardContent({
                 <button
                   type="button"
                   onClick={() => setInsightsOpen((value) => !value)}
-                  className="inline-flex h-10 items-center gap-2 rounded-xl border border-[#4F8CFF]/18 bg-[#0B1020]/42 px-3.5 text-sm font-semibold text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.10)] transition hover:-translate-y-0.5 hover:bg-[#10192B] active:translate-y-0 active:scale-[0.98]"
+                  className={`${secondaryButton} h-10 gap-2 px-3.5`}
                   aria-expanded={insightsOpen}
                 >
                   {insightsOpen ? "Hide insights" : "More insights"}
@@ -1153,7 +1160,7 @@ export function DashboardContent({
                 <div className="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
                   <div className="grid gap-4">
                     <div className="grid gap-4 lg:grid-cols-2">
-                      <div className="rounded-[22px] bg-[#07111F]/42 p-4 shadow-[0_14px_36px_rgba(0,0,0,0.16),inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                      <div className={`${glassPanel} p-4`}>
                         <div className="flex items-center justify-between gap-3">
                           <div>
                             <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
@@ -1185,14 +1192,14 @@ export function DashboardContent({
                               />
                             ))
                           ) : (
-                            <div className="rounded-2xl bg-[#07111F]/42 p-4 text-sm text-[#94A3B8]/72 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                            <div className={`${premiumInset} p-4 text-sm text-[#94A3B8]/72`}>
                               {getLowDataLabel(stats.totalMatches, 3, "Matchup signal ready")}
                             </div>
                           )}
                         </div>
                       </div>
 
-                      <div className="rounded-[22px] bg-[#07111F]/42 p-4 shadow-[0_14px_36px_rgba(0,0,0,0.16),inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                      <div className={`${glassPanel} p-4`}>
                         <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#F5C84C]">
                           Turn-order split
                         </p>
@@ -1215,7 +1222,7 @@ export function DashboardContent({
                       </div>
                     </div>
 
-                    <div className="rounded-[22px] bg-[#07111F]/42 p-4 shadow-[0_14px_36px_rgba(0,0,0,0.16),inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                    <div className={`${glassPanel} p-4`}>
                       <div className="flex items-center justify-between gap-3">
                         <div>
                           <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
@@ -1247,7 +1254,7 @@ export function DashboardContent({
                             />
                           ))
                         ) : (
-                          <div className="rounded-2xl bg-[#07111F]/42 p-4 text-sm text-[#94A3B8]/72 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)] sm:col-span-2">
+                          <div className={`${premiumInset} p-4 text-sm text-[#94A3B8]/72 sm:col-span-2`}>
                             Needs another version to compare.
                           </div>
                         )}
@@ -1256,7 +1263,7 @@ export function DashboardContent({
                   </div>
 
                   <div className="grid gap-4">
-                    <div className="rounded-[22px] bg-[#07111F]/42 p-4 shadow-[0_14px_36px_rgba(0,0,0,0.16),inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                    <div className={`${glassPanel} p-4`}>
                       <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#F5C84C]">
                         Current signal
                       </p>
@@ -1286,7 +1293,7 @@ export function DashboardContent({
                       </p>
                     </div>
 
-                    <div className="rounded-[22px] bg-[#07111F]/42 p-4 shadow-[0_14px_36px_rgba(0,0,0,0.16),inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                    <div className={`${glassPanel} p-4`}>
                       <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
                         Recent form
                       </p>
@@ -1298,7 +1305,7 @@ export function DashboardContent({
                       </div>
                     </div>
 
-                    <div className="rounded-[22px] bg-[#07111F]/42 p-4 shadow-[0_14px_36px_rgba(0,0,0,0.16),inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                    <div className={`${glassPanel} p-4`}>
                       <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#F5C84C]">
                         Next best action
                       </p>
@@ -1328,7 +1335,7 @@ export function DashboardContent({
                 }
               >
                 <div className="grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-                  <div className="rounded-[24px] bg-[linear-gradient(180deg,rgba(12,20,36,0.84),rgba(8,16,29,0.82))] p-4 shadow-[0_14px_34px_rgba(0,0,0,0.18),inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                  <div className={`${glassPanelStrong} p-4`}>
                     {activeDeck ? (
                       <div className="grid gap-4">
                         <div className="flex items-start gap-3">
@@ -1347,7 +1354,7 @@ export function DashboardContent({
                         </div>
 
                         <div className="grid gap-3 sm:grid-cols-2">
-                          <div className="rounded-2xl bg-[#07111F]/42 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                          <div className={`${premiumInset} p-3`}>
                             <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
                               Current version
                             </p>
@@ -1355,7 +1362,7 @@ export function DashboardContent({
                               {activeVersion?.name ?? "No active version set"}
                             </p>
                           </div>
-                          <div className="rounded-2xl bg-[#07111F]/42 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                          <div className={`${premiumInset} p-3`}>
                             <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
                               Current read
                             </p>
@@ -1391,7 +1398,7 @@ export function DashboardContent({
                         <Link
                           key={deck.id}
                           href={`/decks/${deck.id}`}
-                          className="rounded-[22px] bg-[#07111F]/42 p-4 shadow-[0_14px_36px_rgba(0,0,0,0.16),inset_0_0_0_1px_rgba(148,163,184,0.08)] transition hover:-translate-y-0.5 hover:bg-[#0B1020]/58"
+                          className={`${interactiveTile} p-4`}
                         >
                           <div className="flex items-center gap-3">
                             <ArchetypeSprites archetype={deck.archetype} />
@@ -1404,7 +1411,7 @@ export function DashboardContent({
                               </p>
                             </div>
                           </div>
-                          <div className="mt-3 rounded-2xl bg-[#0B1020]/66 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                          <div className={`${premiumInset} mt-3 p-3`}>
                             <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
                               Active version
                             </p>
@@ -1416,7 +1423,7 @@ export function DashboardContent({
                       );
                     })}
                     {!decks.length ? (
-                      <div className="rounded-[22px] bg-[#07111F]/42 p-4 text-sm text-[#94A3B8]/72 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                      <div className={`${premiumInset} p-4 text-sm text-[#94A3B8]/72`}>
                         Create your first deck to unlock experiment tracking.
                       </div>
                     ) : null}
@@ -1425,7 +1432,7 @@ export function DashboardContent({
               </SectionCard>
 
               <details
-                className={`rounded-[26px] bg-[linear-gradient(180deg,rgba(14,24,42,0.92),rgba(8,17,31,0.88))] p-4 shadow-[0_16px_38px_rgba(0,0,0,0.18),inset_0_0_0_1px_rgba(148,163,184,0.09)] ${insightsOpen ? "" : "hidden"}`}
+                className={`${glassPanelStrong} p-4 ${insightsOpen ? "" : "hidden"}`}
                 onToggle={(event) => setInsightsOpen(event.currentTarget.open)}
               >
                 <summary className="cursor-pointer list-none marker:hidden">
@@ -1466,7 +1473,7 @@ export function DashboardContent({
                     ].map((stat) => (
                       <div
                         key={stat.label}
-                        className="rounded-2xl bg-[#07111F]/42 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]"
+                        className={`${statCard} p-4`}
                       >
                         <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]/72">
                           {stat.label}
@@ -1479,7 +1486,7 @@ export function DashboardContent({
                   </section>
 
                   <section className="grid gap-4 lg:grid-cols-2">
-                    <div className="rounded-[22px] bg-[#07111F]/42 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                    <div className={`${glassPanel} p-4`}>
                       <h2 className={sectionTitle}>Result trend</h2>
                       <p className={pageCopy}>Daily wins, losses, and ties from your logged matches.</p>
                       {insightsOpen && trendData.length ? (
@@ -1523,7 +1530,7 @@ export function DashboardContent({
                       )}
                     </div>
 
-                    <div className="rounded-[22px] bg-[#07111F]/42 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                    <div className={`${glassPanel} p-4`}>
                       <h2 className={sectionTitle}>Deck comparison</h2>
                       <p className={pageCopy}>Win rate by deck version, sorted by matches played.</p>
                       {insightsOpen && deckPerformanceChart.length ? (
@@ -1570,7 +1577,7 @@ export function DashboardContent({
                   </section>
 
                   <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-                    <div className="rounded-[22px] bg-[#07111F]/42 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                    <div className={`${glassPanel} p-4`}>
                       <div className="flex items-center justify-between gap-3">
                         <h2 className={sectionTitle}>Recent matches</h2>
                         <Link href="/matches" className="text-sm font-semibold text-[#B8D1FF]">
@@ -1582,7 +1589,7 @@ export function DashboardContent({
                           recentMatches.map((match) => (
                             <div
                               key={match.id}
-                              className="rounded-2xl bg-[#0B1020]/66 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]"
+                              className={`${premiumInset} p-3`}
                             >
                               <div className="flex items-center justify-between gap-3">
                                 <div className="min-w-0">
@@ -1598,7 +1605,7 @@ export function DashboardContent({
                             </div>
                           ))
                         ) : (
-                          <div className="rounded-2xl bg-[#0B1020]/66 p-3 text-sm text-[#94A3B8]/72 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                          <div className={`${premiumInset} p-3 text-sm text-[#94A3B8]/72`}>
                             No logged matches yet.
                           </div>
                         )}
@@ -1606,7 +1613,7 @@ export function DashboardContent({
                     </div>
 
                     <div className="grid gap-4">
-                      <div className="rounded-[22px] bg-[#07111F]/42 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                      <div className={`${glassPanel} p-4`}>
                         <div className="flex items-center justify-between gap-3">
                           <h2 className={sectionTitle}>Matchups</h2>
                           <Link href="/matchups" className="text-sm font-semibold text-[#B8D1FF]">
@@ -1631,21 +1638,21 @@ export function DashboardContent({
                               />
                             ))
                           ) : (
-                            <div className="rounded-2xl bg-[#0B1020]/66 p-3 text-sm text-[#94A3B8]/72 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                            <div className={`${premiumInset} p-3 text-sm text-[#94A3B8]/72`}>
                               {getLowDataLabel(stats.totalMatches, 3, "Matchup summary ready")}
                             </div>
                           )}
                         </div>
                       </div>
 
-                      <div className="rounded-[22px] bg-[#07111F]/42 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                      <div className={`${glassPanel} p-4`}>
                         <h2 className={sectionTitle}>Deck performance</h2>
                         <div className="mt-4 grid gap-3">
                           {deckPerformance.slice(0, 6).length ? (
                             deckPerformance.slice(0, 6).map((deckVersion) => (
                               <div
                                 key={deckVersion.deckVersionId}
-                                className="rounded-2xl bg-[#0B1020]/66 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]"
+                                className={`${premiumInset} p-3`}
                               >
                                 <div className="flex items-center justify-between gap-3">
                                   <p className="truncate text-sm font-semibold text-[#F8FAFC]">
@@ -1661,7 +1668,7 @@ export function DashboardContent({
                               </div>
                             ))
                           ) : (
-                            <div className="rounded-2xl bg-[#0B1020]/66 p-3 text-sm text-[#94A3B8]/72 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                          <div className={`${premiumInset} p-3 text-sm text-[#94A3B8]/72`}>
                               Needs another version to compare.
                             </div>
                           )}

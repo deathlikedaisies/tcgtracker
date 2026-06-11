@@ -119,3 +119,14 @@ export const navItem =
   "inline-flex h-11 items-center gap-3 rounded-[14px] px-3 text-sm font-medium text-[#94A3B8]/78 transition hover:bg-[#07111F]/58 hover:text-[#F8FAFC]";
 export const navItemActive =
   "inline-flex h-11 items-center gap-3 rounded-[14px] px-3 text-sm font-medium bg-[linear-gradient(180deg,rgba(79,140,255,0.20),rgba(31,67,138,0.18))] text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.28),inset_0_1px_0_rgba(255,255,255,0.05),0_12px_26px_rgba(79,140,255,0.10)]";
+export const premiumPageSurface = pageHeaderCard;
+export const premiumPanel = glassPanel;
+export const premiumPanelStrong = glassPanelStrong;
+export const premiumCard = card;
+export const premiumStatCard = statCard;
+export const premiumHeroCard = missionHeroCard;
+export const premiumSidebar = navRailPanel;
+export const premiumChip = compactChip;
+export const premiumBadge = metallicBadge;
+export const primaryGoldButton = primaryButton;
+export const secondaryGlassButton = secondaryButton;

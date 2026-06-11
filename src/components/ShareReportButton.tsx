@@ -2,6 +2,13 @@
 
 import { useMemo, useState } from "react";
 import { SixPrizerLogo } from "@/components/SixPrizerLogo";
+import {
+  glassPanelStrong,
+  premiumInset,
+  premiumInsetStrong,
+  primaryButton,
+  secondaryButton,
+} from "@/components/brand-styles";
 
 export type ShareReport = {
   title: string;
@@ -50,14 +57,14 @@ export function ShareReportButton({ report }: ShareReportButtonProps) {
           setIsOpen(true);
           setMessage("");
         }}
-        className="inline-flex h-10 items-center justify-center rounded-md bg-[#4F8CFF]/12 px-4 text-sm font-medium text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.3)] transition hover:bg-[#4F8CFF]/18"
+        className={`${secondaryButton} h-10 px-4`}
       >
         Share report
       </button>
 
       {isOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0B1020]/85 px-4 py-8 backdrop-blur-sm">
-          <div className="w-full max-w-3xl rounded-md bg-[#10182E] p-4 shadow-[0_30px_100px_rgba(0,0,0,0.45)] sm:p-6">
+          <div className={`w-full max-w-3xl p-4 sm:p-6 ${glassPanelStrong}`}>
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <h2 className="text-2xl font-semibold tracking-tight text-[#F8FAFC]">
@@ -70,13 +77,13 @@ export function ShareReportButton({ report }: ShareReportButtonProps) {
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="h-10 rounded-md bg-[#0B1020]/60 px-4 text-sm font-medium text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(248,250,252,0.08)]"
+                className={`${secondaryButton} h-10 px-4`}
               >
                 Close
               </button>
             </div>
 
-            <div className="mt-5 rounded-md bg-[#0B1020] p-5 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.06)]">
+            <div className={`${premiumInsetStrong} mt-5 p-5`}>
               <div className="flex items-center justify-between gap-4">
                 <SixPrizerLogo
                   markClassName="size-8 bg-[#1A2238]"
@@ -98,7 +105,7 @@ export function ShareReportButton({ report }: ShareReportButtonProps) {
               </div>
 
               <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                <div className="rounded-md bg-[#1A2238]/75 p-4">
+                <div className={`${premiumInset} p-4`}>
                   <p className="text-xs font-medium uppercase text-[#94A3B8]">
                     Win rate
                   </p>
@@ -106,7 +113,7 @@ export function ShareReportButton({ report }: ShareReportButtonProps) {
                     {report.winRate}
                   </p>
                 </div>
-                <div className="rounded-md bg-[#1A2238]/75 p-4">
+                <div className={`${premiumInset} p-4`}>
                   <p className="text-xs font-medium uppercase text-[#94A3B8]">
                     Matches
                   </p>
@@ -114,7 +121,7 @@ export function ShareReportButton({ report }: ShareReportButtonProps) {
                     {report.totalMatches}
                   </p>
                 </div>
-                <div className="rounded-md bg-emerald-500/10 p-4">
+                <div className="rounded-[22px] bg-emerald-500/10 p-4 shadow-[inset_0_0_0_1px_rgba(34,197,94,0.16)]">
                   <p className="text-xs font-medium uppercase text-emerald-300">
                     Best
                   </p>
@@ -122,7 +129,7 @@ export function ShareReportButton({ report }: ShareReportButtonProps) {
                     {report.bestMatchup}
                   </p>
                 </div>
-                <div className="rounded-md bg-[#F43F5E]/10 p-4">
+                <div className="rounded-[22px] bg-[#F43F5E]/10 p-4 shadow-[inset_0_0_0_1px_rgba(244,63,94,0.16)]">
                   <p className="text-xs font-medium uppercase text-rose-200">
                     Worst
                   </p>
@@ -137,14 +144,14 @@ export function ShareReportButton({ report }: ShareReportButtonProps) {
               <button
                 type="button"
                 onClick={copyText}
-                className="h-10 rounded-md bg-[#4F8CFF]/12 px-4 text-sm font-medium text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.3)] transition hover:bg-[#4F8CFF]/18"
+                className={`${primaryButton} h-10 px-4`}
               >
                 Copy text summary
               </button>
               <button
                 type="button"
                 onClick={copyLink}
-                className="h-10 rounded-md bg-[#4F8CFF]/12 px-4 text-sm font-medium text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.3)] transition hover:bg-[#4F8CFF]/18"
+                className={`${secondaryButton} h-10 px-4`}
               >
                 Copy page link
               </button>
