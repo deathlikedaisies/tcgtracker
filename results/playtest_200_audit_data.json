@@ -1,0 +1,331 @@
+{
+  "desktopPublic": [
+    {
+      "route": "/",
+      "heading": "From testing games to\nsix-prize turns.",
+      "overflow": false,
+      "loadMs": 1300,
+      "errorText": false
+    },
+    {
+      "route": "/demo",
+      "heading": "SixPrizer demo workspace",
+      "overflow": false,
+      "loadMs": 1136,
+      "errorText": false
+    },
+    {
+      "route": "/demo/matches/new",
+      "heading": "Log a demo game",
+      "overflow": false,
+      "loadMs": 875,
+      "errorText": false
+    },
+    {
+      "route": "/login",
+      "heading": "Log in to SixPrizer",
+      "overflow": false,
+      "loadMs": 817,
+      "errorText": false
+    },
+    {
+      "route": "/signup",
+      "heading": "Create your SixPrizer account",
+      "overflow": false,
+      "loadMs": 707,
+      "errorText": false
+    }
+  ],
+  "desktopAuth": [
+    {
+      "route": "/dashboard",
+      "heading": "Overview",
+      "overflow": false,
+      "loadMs": 1432,
+      "errorText": false
+    },
+    {
+      "route": "/review",
+      "heading": "Review",
+      "overflow": false,
+      "loadMs": 1142,
+      "errorText": false
+    },
+    {
+      "route": "/matchups",
+      "heading": "Matchup Intelligence",
+      "overflow": false,
+      "loadMs": 3535,
+      "errorText": false
+    },
+    {
+      "route": "/decks",
+      "heading": "Deck Experiments",
+      "overflow": false,
+      "loadMs": 3258,
+      "errorText": false
+    },
+    {
+      "route": "/decks/f0d790b1-e410-438c-b64e-27f072a52a19",
+      "heading": "Playtest 200 - Raging Bolt Lab",
+      "overflow": false,
+      "loadMs": 4831,
+      "errorText": false
+    },
+    {
+      "route": "/matches",
+      "heading": "Matches",
+      "overflow": false,
+      "loadMs": 3891,
+      "errorText": false
+    },
+    {
+      "route": "/matches?page=2",
+      "heading": "Matches",
+      "overflow": false,
+      "loadMs": 1509,
+      "errorText": false
+    },
+    {
+      "route": "/matches/new",
+      "heading": "Log a game",
+      "overflow": false,
+      "loadMs": 4567,
+      "errorText": false
+    }
+  ],
+  "mobileRoutes": [
+    {
+      "route": "/",
+      "heading": "From testing games to\nsix-prize turns.",
+      "overflow": false,
+      "loadMs": 1079,
+      "errorText": false
+    },
+    {
+      "route": "/demo",
+      "heading": "SixPrizer demo workspace",
+      "overflow": false,
+      "loadMs": 842,
+      "errorText": false
+    },
+    {
+      "route": "/demo/matches/new",
+      "heading": "Log a demo game",
+      "overflow": false,
+      "loadMs": 744,
+      "errorText": false
+    },
+    {
+      "route": "/dashboard",
+      "heading": "Overview",
+      "overflow": false,
+      "loadMs": 1095,
+      "errorText": false
+    },
+    {
+      "route": "/review",
+      "heading": "Review",
+      "overflow": false,
+      "loadMs": 980,
+      "errorText": false
+    },
+    {
+      "route": "/matchups",
+      "heading": "Matchup Intelligence",
+      "overflow": false,
+      "loadMs": 1465,
+      "errorText": false
+    },
+    {
+      "route": "/decks",
+      "heading": "Deck Experiments",
+      "overflow": false,
+      "loadMs": 1151,
+      "errorText": false
+    },
+    {
+      "route": "/matches",
+      "heading": "Matches",
+      "overflow": false,
+      "loadMs": 1609,
+      "errorText": false
+    },
+    {
+      "route": "/matches/new",
+      "heading": "Log a game",
+      "overflow": false,
+      "loadMs": 2661,
+      "errorText": false
+    },
+    {
+      "route": "/decks/f0d790b1-e410-438c-b64e-27f072a52a19",
+      "heading": "Playtest 200 - Raging Bolt Lab",
+      "overflow": false,
+      "loadMs": 1242,
+      "errorText": false
+    }
+  ],
+  "dashboardMissionWindow": "CURRENT MISSION\nStrong enough to review\nPriority watchlist\nMega Greninja is your priority watchlist.\nYou are 19-32-8 vs Mega Greninja. Missed setup shows up in 30 of those losses.\nWatchlist games\nUnlock matchup read\nMISSION PROGRESS\n5/5 games\nWatchlist games: 5 games\nMega Greninja is ready for review. Start with missed setup.\nREAD UNLOCKED\nYou now have a 59-game watchlist read on Mega Greninja. Open Review to see the full breakdown.\nMega Greninja is ready for review. Start with missed setup.\nWhy this mission",
+  "dashboardCoach": null,
+  "reviewCoach": "COACH SAYS\nACTIONABLE REVIEW\nPoor starts are costing you games\nYou lose 56% of games when your start is Bad or Okay in your recent games. Compare that to 34 of 121 games with a Good or Great start. Before changing tech cards, check whether this pattern holds across the full sample.\nEVIDENCE\n44 of 79 games with a bad or okay start were losses.\nLog next game\n\"missed setup\" is your most common loss tag\nYou tagged \"missed setup\" in 40 of 78 losses with your recent games. It rarely shows up in wins. That is the clearest issue signal in your current data.\nINSIGHT\nEVIDENCE\n40 of 78 losses tagged with \"missed setup\".\nReview losses\nMega Greninja is your priority watchlist\nMega Greninja has your worst win rate in your recent games. Keep logging normally — when this matchup appears, tag what breaks first instead of changing the list based on feel. \"missed setup\" is the most common loss tag — you tagged it 30 times in those losses.\nINSIGHT\nEVIDENCE\n19-32-8 across 59 games.\nView matching games\n\"key tech mattered\" appears often in your wins\nYou marked \"key tech mattered\" in 42 of 98 wins with your recent games. That usually signals a tech or line that is worth keeping while you test other changes. Do not cut it before logging more games.\nINSIGHT\nEVIDENCE\n42 of 98 wins tagged with \"key tech mattered\".\nLog next game",
+  "reviewArticles": [
+    "\"missed setup\" is your most common loss tagYou tagged \"missed setup\" in 40 of 78 losses with your recent games. It rarely shows up in wins. That is the clearest issue signal in your current data.InsightEvidence40 of 78 losses tagged with \"missed setup\".Review losses",
+    "Mega Greninja is your priority watchlistMega Greninja has your worst win rate in your recent games. Keep logging normally — when this matchup appears, tag what breaks first instead of changing the list based on feel. \"missed setup\" is the most common loss tag — you tagged it 30 times in those losses.InsightEvidence19-32-8 across 59 games.View matching games",
+    "\"key tech mattered\" appears often in your winsYou marked \"key tech mattered\" in 42 of 98 wins with your recent games. That usually signals a tech or line that is worth keeping while you test other changes. Do not cut it before logging more games.InsightEvidence42 of 98 wins tagged with \"key tech mattered\".Log next game",
+    "What to test nextKeep logging normally. When Mega Greninja appears, tag the first thing that goes wrong instead of changing the list on feel. Use the watchlist to capture one more clean review game.InsightEvidenceOne more structured game against this matchup sharpens the read.Log next game"
+  ],
+  "matchupHero": "ACTIONABLE LEAK\nMega Greninja\n32%\nSamples\n59\nRecord\n19-32-8\nAction\nKeep logging\nWhat to test next\n1\nMega Greninja is your priority watchlist.\nOpen review\n2\nTag every loss vs Mega Greninja\nLog a game\n3\nCompare going first vs second in your recent losses\nOpen review\nDeck\nAll decks\nPlaytest 200 - Charizard Pressure\nPlaytest 200 - Control Counterlab\nPlaytest 200 - Dragapult Dusknoir\nPlaytest 200 - Mega Greninja Tempo\nPlaytest 200 - Raging Bolt Lab\nPlaytest 200 - Rogue Box\nDeck version\nAll versions\nPlaytest 200 - Charizard Pressure - v2 Item Lock Prep (active)\nPlaytest 200 - Charizard Pressure - v1 Straight\nPlaytest 200 - Control Counterlab - v2 Ladder Tech (active)\nPlaytest 200 - Control Counterlab - v1 Counter Package\nPlaytest 200 - Dragapult Dusknoir - v2 Consistency (active)\nPlaytest 200 - Dragapult Dusknoir - v1 Bare Bones\nPlaytest 200 - Dragapult Dusknoir - v3 Prize Mapping\nPlaytest 200 - Mega Greninja Tempo - v2 Cleaner Counts (active)\nPlaytest 200 - Mega Greninja Tempo - v1 Raw Tempo\nPlaytest 200 - Raging Bolt Lab - v3 Anti-Bench (active)\nPlaytest 200 - Raging Bolt Lab - v1 Turbo\nPlaytest 200 - Raging Bolt Lab - v2 Vessel Package\nPlaytest 200 - Rogue Box - v2 Trimmed Soup (active)\nPlaytest 200 - Rogue Box - v1 Meta Soup\nFrom\nTo\nSort\nMost played\nHighest win rate\nLowest win rate\nOpponent A-Z\nOpponent archetype\nDragapult ex\nMega Greninja\nOgerpon Meganium\nMega Lucario\nMega Starmie\nApply filters\nClear",
+  "matchupActions": [
+    "Log a game"
+  ],
+  "deckDetailActive": "ACTIVE VERSION\nv3 Anti-Bench\nBEST CURRENT READ\nv3 Anti-Bench 47%\nTC",
+  "deckDetailSignal": "LIST STATUS\nNEEDS REVIEW\n3 UNRESOLVED LINES\nPARSED CARDS\n25\nUNRESOLVED\n3\n3 lines could not be parsed. You can still save, but archetype detection may be less accurate.\nUse Edit decklist to resolve the lines blocking a clean parse.",
+  "matchesCountLine": "Showing 1-25 of 200 matches. Page 1 of 8.",
+  "postSaveAudit": {
+    "marker": "playtest-200-audit-temp-1781188612058",
+    "summary": null,
+    "rewardBadge": null,
+    "deletedMatches": 1
+  },
+  "patternSummary": {
+    "versionLookup": {},
+    "ragingBoltVsGreninja": {
+      "games": 32,
+      "results": {
+        "win": 7,
+        "loss": 21,
+        "tie": 4
+      },
+      "record": "7W / 21L / 4T",
+      "topLossIssues": [
+        [
+          "bench pressure",
+          21
+        ],
+        [
+          "missed setup",
+          21
+        ],
+        [
+          "poor prize trade",
+          8
+        ]
+      ]
+    },
+    "dragapultSequencing": {
+      "totalLosses": 15,
+      "sequencingLeakCount": 10,
+      "rate": 67
+    },
+    "controlItemLock": {
+      "totalLosses": 9,
+      "itemLockLosses": 9,
+      "rate": 100
+    },
+    "charizardTurns": {
+      "first": {
+        "win": 13,
+        "loss": 4,
+        "tie": 0
+      },
+      "second": {
+        "win": 5,
+        "loss": 3,
+        "tie": 3
+      },
+      "unknown": {
+        "win": 1,
+        "loss": 3,
+        "tie": 0
+      }
+    },
+    "ragingBoltVersions": [
+      {
+        "label": "Playtest 200 - Raging Bolt Lab | v1 Turbo",
+        "games": 18,
+        "results": {
+          "win": 5,
+          "loss": 11,
+          "tie": 2
+        },
+        "record": "5W / 11L / 2T",
+        "openingGoodOrGreat": 8,
+        "openingRate": 44
+      },
+      {
+        "label": "Playtest 200 - Raging Bolt Lab | v2 Vessel Package",
+        "games": 16,
+        "results": {
+          "win": 7,
+          "loss": 7,
+          "tie": 2
+        },
+        "record": "7W / 7L / 2T",
+        "openingGoodOrGreat": 9,
+        "openingRate": 56
+      },
+      {
+        "label": "Playtest 200 - Raging Bolt Lab | v3 Anti-Bench",
+        "games": 38,
+        "results": {
+          "win": 18,
+          "loss": 15,
+          "tie": 5
+        },
+        "record": "18W / 15L / 5T",
+        "openingGoodOrGreat": 24,
+        "openingRate": 63
+      }
+    ],
+    "dragapultVersions": [
+      {
+        "label": "Playtest 200 - Dragapult Dusknoir | v1 Bare Bones",
+        "games": 12,
+        "results": {
+          "win": 5,
+          "loss": 6,
+          "tie": 1
+        },
+        "record": "5W / 6L / 1T",
+        "openingGoodOrGreat": 8,
+        "openingRate": 67
+      },
+      {
+        "label": "Playtest 200 - Dragapult Dusknoir | v2 Consistency",
+        "games": 18,
+        "results": {
+          "win": 10,
+          "loss": 6,
+          "tie": 2
+        },
+        "record": "10W / 6L / 2T",
+        "openingGoodOrGreat": 8,
+        "openingRate": 44
+      },
+      {
+        "label": "Playtest 200 - Dragapult Dusknoir | v3 Prize Mapping",
+        "games": 10,
+        "results": {
+          "win": 6,
+          "loss": 3,
+          "tie": 1
+        },
+        "record": "6W / 3L / 1T",
+        "openingGoodOrGreat": 8,
+        "openingRate": 80
+      }
+    ],
+    "rogueBox": {
+      "games": 10,
+      "results": {
+        "win": 3,
+        "loss": 4,
+        "tie": 3
+      },
+      "record": "3W / 4L / 3T"
+    }
+  },
+  "consoleErrors": [],
+  "errors": []
+}

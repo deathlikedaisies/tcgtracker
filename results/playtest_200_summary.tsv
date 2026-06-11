@@ -1,0 +1,67 @@
+section	label	detail	value
+overview	total_decks		6
+overview	total_versions		14
+overview	total_matches		200
+overview	total_tags		381
+results	wins		98
+results	losses		78
+results	ties		24
+turn_order	first		70
+turn_order	second		87
+turn_order	unknown		43
+matches_per_deck	Playtest 200 - Raging Bolt Lab		72
+matches_per_deck	Playtest 200 - Dragapult Dusknoir		40
+matches_per_deck	Playtest 200 - Charizard Pressure		32
+matches_per_deck	Playtest 200 - Mega Greninja Tempo		32
+matches_per_deck	Playtest 200 - Control Counterlab		14
+matches_per_deck	Playtest 200 - Rogue Box		10
+matches_per_version	Playtest 200 - Raging Bolt Lab | v3 Anti-Bench		38
+matches_per_version	Playtest 200 - Charizard Pressure | v2 Item Lock Prep		20
+matches_per_version	Playtest 200 - Dragapult Dusknoir | v2 Consistency		18
+matches_per_version	Playtest 200 - Mega Greninja Tempo | v2 Cleaner Counts		18
+matches_per_version	Playtest 200 - Raging Bolt Lab | v1 Turbo		18
+matches_per_version	Playtest 200 - Raging Bolt Lab | v2 Vessel Package		16
+matches_per_version	Playtest 200 - Mega Greninja Tempo | v1 Raw Tempo		14
+matches_per_version	Playtest 200 - Charizard Pressure | v1 Straight		12
+matches_per_version	Playtest 200 - Dragapult Dusknoir | v1 Bare Bones		12
+matches_per_version	Playtest 200 - Dragapult Dusknoir | v3 Prize Mapping		10
+matches_per_version	Playtest 200 - Control Counterlab | v1 Counter Package		8
+matches_per_version	Playtest 200 - Control Counterlab | v2 Ladder Tech		6
+matches_per_version	Playtest 200 - Rogue Box | v1 Meta Soup		5
+matches_per_version	Playtest 200 - Rogue Box | v2 Trimmed Soup		5
+issue_tags	missed setup		40
+issue_tags	tempo loss		30
+issue_tags	bench pressure		21
+issue_tags	poor prize trade		20
+issue_tags	supporter drought		20
+issue_tags	Item Lock		17
+issue_tags	bad sequencing		10
+issue_tags	prize map error		7
+issue_tags	matchup knowledge		4
+issue_tags	stadium lock		4
+positive_tags	strong recovery		48
+positive_tags	key tech mattered		42
+positive_tags	Good Tech		34
+positive_tags	favorable matchup		30
+positive_tags	strong setup		25
+positive_tags	good prize plan		21
+positive_tags	clean sequencing		8
+matchups	Mega Greninja		59
+matchups	Raging Bolt		48
+matchups	Charizard ex		37
+matchups	Dragapult Dusknoir		32
+matchups	Rogue decks		24
+version_timeline	Playtest 200 - Charizard Pressure	v1 Straight | active=false | first=2026-05-20T10:12:00+00:00 | last=2026-05-31T10:35:00+00:00	12
+version_timeline	Playtest 200 - Charizard Pressure	v2 Item Lock Prep | active=true | first=2026-04-18T12:24:00+00:00 | last=2026-06-12T11:11:00+00:00	20
+version_timeline	Playtest 200 - Control Counterlab	v1 Counter Package | active=false | first=2026-05-06T19:18:00+00:00 | last=2026-05-13T15:49:00+00:00	8
+version_timeline	Playtest 200 - Control Counterlab	v2 Ladder Tech | active=true | first=2026-05-14T16:02:00+00:00 | last=2026-05-19T10:07:00+00:00	6
+version_timeline	Playtest 200 - Dragapult Dusknoir	v1 Bare Bones | active=false | first=2026-05-04T15:36:00+00:00 | last=2026-05-15T15:59:00+00:00	12
+version_timeline	Playtest 200 - Dragapult Dusknoir	v2 Consistency | active=true | first=2026-05-16T16:12:00+00:00 | last=2026-06-02T11:53:00+00:00	18
+version_timeline	Playtest 200 - Dragapult Dusknoir	v3 Prize Mapping | active=false | first=2026-06-03T12:06:00+00:00 | last=2026-06-12T10:03:00+00:00	10
+version_timeline	Playtest 200 - Mega Greninja Tempo	v1 Raw Tempo | active=false | first=2026-04-18T11:16:00+00:00 | last=2026-05-01T13:05:00+00:00	14
+version_timeline	Playtest 200 - Mega Greninja Tempo	v2 Cleaner Counts | active=true | first=2026-05-02T14:18:00+00:00 | last=2026-05-19T09:59:00+00:00	18
+version_timeline	Playtest 200 - Raging Bolt Lab	v1 Turbo | active=false | first=2026-04-18T09:00:00+00:00 | last=2026-05-21T09:09:00+00:00	18
+version_timeline	Playtest 200 - Raging Bolt Lab	v2 Vessel Package | active=false | first=2026-04-28T19:10:00+00:00 | last=2026-05-29T17:53:00+00:00	16
+version_timeline	Playtest 200 - Raging Bolt Lab	v3 Anti-Bench | active=true | first=2026-04-18T10:08:00+00:00 | last=2026-06-12T09:55:00+00:00	38
+version_timeline	Playtest 200 - Rogue Box	v1 Meta Soup | active=false | first=2026-04-26T09:08:00+00:00 | last=2026-04-30T13:00:00+00:00	5
+version_timeline	Playtest 200 - Rogue Box	v2 Trimmed Soup | active=true | first=2026-05-01T14:13:00+00:00 | last=2026-05-05T18:05:00+00:00	5
