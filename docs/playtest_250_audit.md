@@ -8,14 +8,15 @@ User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 - Decks: 8
 - Versions: 18
 - Matches: 250
-- Shared reports after audit: 16
+- Shared reports after audit: 35
 
 ## Core product highlights
 
 - dashboard: Correct - Primary mission
 - review: Correct - Primary insight
 - matchups: Correct - Weakest actionable matchup
-- decks: Needs follow-up - Version improvement signal
+- decks: Correct - Version improvement signal
+- dashboard: Correct - Onboarding / next-step prompt
 - matches: Correct - Pagination at 250 logs
 
 ## Profile/community highlights
@@ -32,11 +33,11 @@ User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 
 ## Performance summary
 
-- /decks/4b741cf6-8f28-4b2b-afea-45d085fffd83: 5694ms
-- /matches/new: 2923ms
-- /matches/new: 2923ms
-- /matchups: 2476ms
-- /matchups: 2142ms
+- /matchups: 15096ms
+- /matches/new: 4647ms
+- /matches/new: 2885ms
+- /matches: 2532ms
+- /matchups: 2063ms
 
 ## Production validation
 

@@ -421,6 +421,43 @@ export default async function DeckDetailPage({
                 : "Early signal only. Add more games before calling the test settled.",
           }
         : null;
+  const bestCurrentVersionHint = strongestOpeningVersion
+    ? `Best current signal: ${strongestOpeningVersion.versionName}`
+    : activeVersion
+      ? "Current active version needs more games"
+      : "No clear version winner yet";
+  const versionEvidenceCaution =
+    versionEvidenceRows.filter((row) => row.total >= 5).length >= 2
+      ? "Matchup spread may still explain part of the gap, so keep the versions in rotation until the cleaner read holds."
+      : "Most versions still need more controlled games before this turns into a confident recommendation.";
+  const versionEvidenceRowsWithInterpretation = versionEvidenceRows.map((row) => {
+    const openingGap =
+      strongestOpeningVersion && row.openingRate !== null && strongestOpeningVersion.openingRate !== null
+        ? row.openingRate - strongestOpeningVersion.openingRate
+        : null;
+    const sequencingNote =
+      row.sequencingRate !== null
+        ? `${row.sequencingRate}% good or great sequencing`
+        : "Sequencing read still thin";
+
+    let interpretation = "Needs more games before this version has a trustworthy read.";
+
+    if (row.total >= 8 && openingGap !== null && openingGap >= 0) {
+      interpretation = `${row.versionName} is showing the cleanest starts so far. ${sequencingNote}.`;
+    } else if (row.total >= 5 && row.openingRate !== null) {
+      interpretation =
+        openingGap !== null && openingGap <= -10
+          ? `${row.versionName} is trailing the cleanest opener so far. Keep it in the pool until you know whether matchup spread explains the gap.`
+          : `${row.versionName} is building a usable signal. ${sequencingNote}.`;
+    } else if (row.total > 0) {
+      interpretation = `${row.versionName} is still early. Log at least 5 games before treating this version as better.`;
+    }
+
+    return {
+      ...row,
+      interpretation,
+    };
+  });
 
   return (
     <main className={appShell}>
@@ -566,10 +603,33 @@ export default async function DeckDetailPage({
                       {versionEvidenceSummary?.evidence ??
                         "Once each version has a real sample, the strongest signal should separate itself here."}
                     </p>
+                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                      <div className={`${statCard} p-3`}>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                          Best current signal
+                        </p>
+                        <p className="mt-2 text-sm font-semibold text-[#F8FAFC]">
+                          {bestCurrentVersionHint}
+                        </p>
+                      </div>
+                      <div className={`${statCard} p-3`}>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                          Sample honesty
+                        </p>
+                        <p className="mt-2 text-sm font-semibold text-[#F8FAFC]">
+                          {versionEvidenceRows.filter((row) => row.total >= 5).length >= 2
+                            ? "Controlled signal is building"
+                            : "Needs more games"}
+                        </p>
+                      </div>
+                    </div>
+                    <p className="mt-3 text-sm leading-6 text-[#94A3B8]/72">
+                      {versionEvidenceCaution}
+                    </p>
                   </div>
 
                   <div className="grid gap-3">
-                    {versionEvidenceRows.map((row) => (
+                    {versionEvidenceRowsWithInterpretation.map((row) => (
                       <div
                         key={row.versionId}
                         className={`${premiumInset} grid gap-3 p-4 lg:grid-cols-[minmax(0,1fr)_repeat(4,minmax(0,140px))]`}
@@ -591,6 +651,9 @@ export default async function DeckDetailPage({
                               : row.total
                                 ? "No repeated loss tag yet."
                                 : "No games logged yet for this version."}
+                          </p>
+                          <p className="mt-2 text-sm leading-6 text-[#D6E0F0]/82">
+                            {row.interpretation}
                           </p>
                         </div>
                         <div className={`${statCard} p-3`}>

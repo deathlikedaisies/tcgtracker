@@ -34,6 +34,8 @@ export type ReviewInsightCard = {
   title: string;
   explanation: string;
   evidence: string;
+  recommendation: string;
+  confidenceLabel: "Strong signal" | "Building signal" | "Early signal" | "Needs more games";
   tone: ReviewInsightTone;
   ctaLabel: string;
   ctaHref: string;
@@ -147,6 +149,28 @@ function getEarlySignalSuffix(total: number) {
   return total < 10 ? " Early signal only." : "";
 }
 
+function getConfidenceLabel({
+  sampleSize,
+  concentration,
+}: {
+  sampleSize: number;
+  concentration?: number;
+}): ReviewInsightCard["confidenceLabel"] {
+  if (sampleSize >= 12 && (concentration ?? 0.5) >= 0.6) {
+    return "Strong signal";
+  }
+
+  if (sampleSize >= 8 && (concentration ?? 0.35) >= 0.45) {
+    return "Building signal";
+  }
+
+  if (sampleSize >= 4) {
+    return "Early signal";
+  }
+
+  return "Needs more games";
+}
+
 function getQualityFieldLabel(field: QualityField): string {
   if (field === "start_quality") return "start";
   if (field === "opening_hand_quality") return "opening hand";
@@ -245,9 +269,9 @@ function buildMatchupLeakCard(
   return {
     key: "matchup-leak",
     title: `${topLeak.opponent} is your priority watchlist`,
-    explanation: `${topLeak.opponent} has your worst win rate in ${getContextLabel(
+    explanation: `${topLeak.opponent} is the clearest matchup problem in ${getContextLabel(
       context
-    )}. Keep logging normally, and when this matchup appears, tag what breaks first instead of changing the list on feel.${issueLine}`,
+    )}.${issueLine}`,
     evidence: `${formatMatchRecord(
       topLeak.record.wins,
       topLeak.record.losses,
@@ -255,6 +279,14 @@ function buildMatchupLeakCard(
     )} across ${topLeak.record.total} games.${getEarlySignalSuffix(
       topLeak.record.total
     )}`,
+    recommendation:
+      topLeak.commonIssue && topLeak.commonIssue[1] >= 2
+        ? `Next test: keep the list stable and tag whether ${topLeak.commonIssue[0]} or raw matchup pressure breaks the game first.`
+        : "Next test: keep the list stable and tag whether setup, bench pressure, or prize race breaks first.",
+    confidenceLabel: getConfidenceLabel({
+      sampleSize: topLeak.record.total,
+      concentration: 1 - topLeak.winRate / 100,
+    }),
     tone: "rose",
     ctaLabel: "View matching games",
     ctaHref: buildBaseMatchesHref(context, {
@@ -325,27 +357,31 @@ function buildQualityPatternCard(
   }
 
   const fieldLabel = getQualityFieldLabel(strongest.field);
-  const lossRatePct = Math.round(strongest.lowRate * 100);
   const comparisonLine =
     strongest.high.length >= 2
       ? ` Compare that to ${strongest.highLosses} of ${strongest.high.length} games with a Good or Great ${fieldLabel}.`
       : "";
   const nextTestLine =
     strongest.field === "sequencing_quality"
-      ? " Next test: review your turn-two setup and midgame prize-map decisions across the next few games."
+      ? "Review your turn-two setup and midgame prize-map decisions across the next few games."
       : strongest.field === "opening_hand_quality"
-        ? " Next test: tag whether the bad hands came from missing basics, draw, or early search."
-        : " Next test: log the next few games with extra focus on what makes the first two turns unstable.";
+        ? "Tag whether the bad hands came from missing basics, draw, or early search."
+        : "Log the next few games with extra focus on what makes the first two turns unstable.";
 
   return {
     key: "quality-pattern",
     title: getQualityInsightTitle(strongest.field),
-    explanation: `You lose ${lossRatePct}% of games when your ${fieldLabel} is Bad or Okay in ${getContextLabel(
+    explanation: `${fieldLabel === "sequencing" ? "Sequencing" : fieldLabel === "opening hand" ? "Opening hands" : "Starts"} are dragging results down in ${getContextLabel(
       context
-    )}.${comparisonLine}${nextTestLine}`,
+    )}.${comparisonLine}`,
     evidence: `${strongest.lowLosses} of ${strongest.low.length} games with a bad or okay ${fieldLabel} were losses.${getEarlySignalSuffix(
       strongest.known.length
     )}`,
+    recommendation: `Next test: ${nextTestLine}`,
+    confidenceLabel: getConfidenceLabel({
+      sampleSize: strongest.low.length,
+      concentration: strongest.lowRate,
+    }),
     tone: "gold",
     ctaLabel: "Log next game",
     ctaHref: context.deckVersionId
@@ -390,20 +426,22 @@ function buildIssueTagCard(
     : focusedDeckLabel
       ? ` It is concentrated in ${focusedDeckLabel} losses.`
       : "";
-  const nextTestLine =
-    tagLossShare >= 0.65
-      ? ` Next test: play a short focused block and tag what you lose first once ${tag} starts to matter.`
-      : " Next test: keep tagging when it shows up so you can separate a real pattern from normal variance.";
-
   return {
     key: "issue-tag",
     title: focusedDeckLabel
       ? `${tag} is your clearest leak with ${focusedDeckLabel}`
       : `"${tag}" is your most common loss tag`,
-    explanation: `You tagged "${tag}" in ${count} of ${losses.length} losses with ${contextLabel}.${comparisonLine}${focusLine}${nextTestLine}`,
+    explanation: `${focusedDeckLabel ? focusedDeckLabel : "This pattern"} keeps losing through ${tag} in ${contextLabel}.${comparisonLine}${focusLine}`,
     evidence: `${count} of ${losses.length} losses tagged with "${tag}".${getEarlySignalSuffix(
       losses.length
     )}`,
+    recommendation: `Next test: ${tagLossShare >= 0.65
+      ? `play a short focused block and tag what you lose first once ${tag} starts to matter`
+      : "keep tagging when it shows up so you can separate a real pattern from normal variance"}.`,
+    confidenceLabel: getConfidenceLabel({
+      sampleSize: count,
+      concentration: tagLossShare,
+    }),
     tone: "rose",
     ctaLabel: "Review losses",
     ctaHref: buildBaseMatchesHref(context, {
@@ -437,10 +475,16 @@ function buildPositiveTagCard(
   return {
     key: "positive-tag",
     title: `"${tag}" appears often in your wins`,
-    explanation: `You marked "${tag}" in ${count} of ${wins.length} wins with ${contextLabel}. That usually signals a tech or line worth keeping while you test other changes. Do not cut it before logging more games.`,
+    explanation: `"${tag}" is showing up in the games you actually convert with ${contextLabel}. That usually means the line is helping more than it is costing you.`,
     evidence: `${count} of ${wins.length} wins tagged with "${tag}".${getEarlySignalSuffix(
       wins.length
     )}`,
+    recommendation:
+      "Next test: keep this line in the list for one more sample block before cutting it on feel.",
+    confidenceLabel: getConfidenceLabel({
+      sampleSize: count,
+      concentration: wins.length ? count / wins.length : 0,
+    }),
     tone: "emerald",
     ctaLabel: context.deckId ? "Open deck" : "Log next game",
     ctaHref: context.deckId ? `/decks/${context.deckId}` : "/matches/new",
@@ -501,7 +545,7 @@ function buildVersionSignalCard(
   return {
     key: "version-signal",
     title: `${best.name} is outperforming ${worst.name}`,
-    explanation: `There is a ${delta}-point win-rate gap between your two most tested versions. Review whether the stronger list is actually cleaner to pilot or just running hot on a small sample before committing to it.`,
+    explanation: `${best.name} is outperforming ${worst.name} so far, but version reads only matter if the cleaner list keeps holding up as the sample grows.`,
     evidence: `${best.name}: ${formatMatchRecord(
       best.record.wins,
       best.record.losses,
@@ -511,6 +555,12 @@ function buildVersionSignalCard(
       worst.record.losses,
       worst.record.ties
     )}.${getEarlySignalSuffix(best.matches.length + worst.matches.length)}`,
+    recommendation:
+      "Next test: keep both versions in the pool a little longer and compare whether starts, sequencing, or matchup spread explain the gap.",
+    confidenceLabel: getConfidenceLabel({
+      sampleSize: best.matches.length + worst.matches.length,
+      concentration: delta / 100,
+    }),
     tone: "blue",
     ctaLabel: "Review deck versions",
     ctaHref: `/decks/${context.deckId}#versions`,
@@ -533,9 +583,12 @@ function buildNextActionCard(
     return {
       key: "next-action",
       title: "What to test next",
-      explanation: `Keep logging normally. When ${matchup} appears, tag the first thing that goes wrong instead of changing the list on feel. Use the watchlist to capture one more clean review game.`,
+      explanation: `Turn ${matchup} into a focused test block instead of a vague frustration point.`,
       evidence:
         "One more structured game against this matchup sharpens the read.",
+      recommendation:
+        "Next test: log one more clean review game into this matchup and tag the first break point before changing the list.",
+      confidenceLabel: "Building signal",
       tone: "blue",
       ctaLabel: "Log next game",
       ctaHref: context.deckVersionId
@@ -549,9 +602,12 @@ function buildNextActionCard(
       key: "next-action",
       title: "What to test next",
       explanation:
-        "Keep the next block clean and keep tagging the repeated issue honestly. That is what turns a suspicion into a real coaching read, not changing the list early.",
+        "Use the repeated issue tag as the center of the next test block.",
       evidence:
         "Another small structured sample is more valuable than an instant deck change.",
+      recommendation:
+        "Next test: keep the next block clean and keep tagging the repeated issue honestly before touching the list.",
+      confidenceLabel: "Building signal",
       tone: "blue",
       ctaLabel: "Log next game",
       ctaHref: context.deckVersionId
@@ -565,9 +621,12 @@ function buildNextActionCard(
       key: "next-action",
       title: "What to test next",
       explanation:
-        "Log the next few games with the same quality tags and one concrete checkpoint in mind. You want to learn whether the pattern is fixable through piloting, mulligan decisions, or list slots.",
+        "Use the next few games to separate a piloting issue from a real list issue.",
       evidence:
         "Consistent quality tagging is what makes this signal trustworthy.",
+      recommendation:
+        "Next test: keep the same quality tags and one concrete checkpoint in mind for the next few games.",
+      confidenceLabel: "Building signal",
       tone: "blue",
       ctaLabel: "Log next game",
       ctaHref: context.deckVersionId
@@ -581,9 +640,12 @@ function buildNextActionCard(
       key: "next-action",
       title: "What to test next",
       explanation:
-        "Keep comparing versions through logged games instead of memory. If the gap persists after 10 more games, then commit to the cleaner build.",
+        "Version comparisons only become real when the cleaner build keeps holding up after more games.",
       evidence:
         "Version comparisons are only useful when the sample keeps growing.",
+      recommendation:
+        "Next test: keep comparing versions through logged games instead of memory for another short block.",
+      confidenceLabel: "Early signal",
       tone: "blue",
       ctaLabel: "Review deck versions",
       ctaHref: versionCard.ctaHref,
@@ -594,9 +656,12 @@ function buildNextActionCard(
     key: "next-action",
     title: "What to test next",
     explanation:
-      "No single leak is dominant yet. Keep logging normal games with clean tags and quality ratings until one pattern separates itself. Every log should answer a testing question.",
+      "No single leak is dominant yet, so the next job is to keep the logging clean enough for one to separate itself.",
     evidence:
       "A five-game block with consistent tagging is the fastest path to a real coaching read.",
+    recommendation:
+      "Next test: log a five-game block with clean tags and quality ratings before changing the list.",
+    confidenceLabel: "Needs more games",
     tone: "blue",
     ctaLabel: "Log next game",
     ctaHref: context.deckVersionId

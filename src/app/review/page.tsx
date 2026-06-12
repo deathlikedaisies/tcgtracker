@@ -383,6 +383,14 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
                       <p className="mt-3 text-base leading-7 text-[#D6E0F0]/84">
                         {analysis.cards[0].explanation}
                       </p>
+                      <div className={`${premiumInset} mt-4 p-4`}>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                          Next test
+                        </p>
+                        <p className="mt-2 text-sm leading-6 text-[#F8FAFC]">
+                          {analysis.cards[0].recommendation}
+                        </p>
+                      </div>
                     </div>
                     <div className="flex shrink-0 flex-col gap-3 xl:w-72">
                       <div className={`${premiumInsetStrong} p-4`}>
@@ -399,6 +407,14 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
                                 : "text-[#B8D1FF]"
                         }`}>
                           {analysis.cards[0].evidence}
+                        </p>
+                      </div>
+                      <div className={`${premiumInset} p-4`}>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                          Confidence
+                        </p>
+                        <p className="mt-2 text-sm font-semibold text-[#DCE8FF]">
+                          {analysis.cards[0].confidenceLabel}
                         </p>
                       </div>
                       <Link
@@ -430,7 +446,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
                       <span
                         className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${getToneClass(card.tone)}`}
                       >
-                        Insight
+                        {card.confidenceLabel}
                       </span>
                     </div>
                     <div className={`${premiumInset} mt-4 p-3`}>
@@ -439,6 +455,14 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
                       </p>
                       <p className="mt-2 text-sm font-medium text-[#F8FAFC]">
                         {card.evidence}
+                      </p>
+                    </div>
+                    <div className={`${premiumInset} mt-3 p-3`}>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                        Next test
+                      </p>
+                      <p className="mt-2 text-sm leading-6 text-[#D6E0F0]/82">
+                        {card.recommendation}
                       </p>
                     </div>
                     <div className="mt-4">

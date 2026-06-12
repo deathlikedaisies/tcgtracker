@@ -437,7 +437,17 @@ function stripWhitespace(value) {
   return value.replace(/\s+/g, " ").trim();
 }
 
-function buildCoachFindingsRows({ dashboardMission, reviewHero, matchupHero, deckSignal, matchesLine, patterns }) {
+function buildCoachFindingsRows({
+  dashboardMission,
+  dashboardPrompt,
+  reviewHero,
+  reviewHasNextTest,
+  reviewHasConfidenceCue,
+  matchupHero,
+  deckSignal,
+  matchesLine,
+  patterns,
+}) {
   return [
     {
       surface: "dashboard",
@@ -457,11 +467,14 @@ function buildCoachFindingsRows({ dashboardMission, reviewHero, matchupHero, dec
       actualCopy: reviewHero,
       evidence: `Dragapult sequencing issue in ${patterns.dragapultSequencing.sequencingLosses} of ${patterns.dragapultSequencing.totalLosses} losses; Item Lock in ${patterns.controlItemLock.itemLockLosses} of ${patterns.controlItemLock.totalLosses} control losses`,
       verdict:
-        reviewHero && /Item Lock|sequencing|Mega Greninja/i.test(reviewHero)
+        reviewHero &&
+        /Item Lock|sequencing|Mega Greninja/i.test(reviewHero) &&
+        reviewHasNextTest &&
+        reviewHasConfidenceCue
           ? "Correct"
           : "Needs follow-up",
       action: "Use the filtered review surfaces to decide what to re-test next.",
-      notes: "Review should surface both repeated tag issues and matchup pressure.",
+      notes: "Review should surface specific patterns, an evidence line, a next-test prompt, and a confidence cue.",
     },
     {
       surface: "matchups",
@@ -483,11 +496,26 @@ function buildCoachFindingsRows({ dashboardMission, reviewHero, matchupHero, dec
         .map((version) => `${version.label}: ${version.recordLine}, opening ${version.openingRate}%`)
         .join("; "),
       verdict:
-        deckSignal && /active|used when logging|version/i.test(deckSignal)
+        deckSignal &&
+        /cleanest starts|best current signal|good or great openings|version/i.test(
+          deckSignal
+        )
           ? "Correct"
           : "Needs follow-up",
       action: "Deck detail should keep highlighting the active experiment and the healthier opener.",
       notes: "Raging Bolt and Gardevoir both have visible version movement.",
+    },
+    {
+      surface: "dashboard",
+      finding: "Onboarding / next-step prompt",
+      actualCopy: dashboardPrompt,
+      evidence: "The seeded account ends the audit on private/private profile settings, so a compact sharing/setup prompt is valid.",
+      verdict:
+        dashboardPrompt && /private|profile|signal/i.test(dashboardPrompt)
+          ? "Correct"
+          : "Needs follow-up",
+      action: "Keep a single next-step card visible instead of stacking multiple prompts.",
+      notes: "The dashboard should coach the next product step without feeling like admin setup.",
     },
     {
       surface: "matches",
@@ -540,12 +568,14 @@ Date: ${isoDate(new Date())}
 ## Dashboard
 
 - Current mission text: ${coachFindings[0].actualCopy || "Not found"}
+- Next setup prompt: ${coachFindings.find((finding) => finding.finding === "Onboarding / next-step prompt")?.actualCopy || "Not found"}
 - Coach says uses aggregate wording and should stay explicit about scope.
 - Dashboard body sample: ${stripWhitespace(dashboardBody).slice(0, 320)}
 
 ## Review
 
 - Review hero text: ${coachFindings[1].actualCopy || "Not found"}
+- Review includes explicit next-test language and a confidence cue: ${coachFindings[1].verdict === "Correct" ? "yes" : "needs follow-up"}
 - Review should continue surfacing repeated loss tags and positive keep signals without overclaiming on Rogue Box.
 - Review body sample: ${stripWhitespace(reviewBody).slice(0, 320)}
 
@@ -562,7 +592,7 @@ Date: ${isoDate(new Date())}
 
 ## Decks / Versions
 
-- Version signal sample: ${coachFindings[3].actualCopy || "Not found"}
+- Version signal sample: ${coachFindings.find((finding) => finding.finding === "Version improvement signal")?.actualCopy || "Not found"}
 - Raging Bolt and Gardevoir versions both present meaningful improvement signals.
 `;
 }
@@ -778,13 +808,23 @@ async function main() {
   const matchesRoute = desktopRoutes.find((route) => route.route === "/matches");
   const settingsRoute = desktopRoutes.find((route) => route.route === "/settings/profile");
 
-  const dashboardMission = stripWhitespace(dashboardRoute?.bodyText || "")
+  const normalizedDashboardBody = stripWhitespace(dashboardRoute?.bodyText || "");
+  const normalizedReviewBody = stripWhitespace(reviewRoute?.bodyText || "");
+  const normalizedMatchupBody = stripWhitespace(matchupRoute?.bodyText || "");
+  const normalizedDeckBody = stripWhitespace(deckRoute?.bodyText || "");
+  const dashboardMission = normalizedDashboardBody
     .match(/Current mission([\s\S]{0,280})Why this mission/i)?.[1]?.trim() || null;
-  const reviewHero = stripWhitespace(reviewRoute?.bodyText || "")
+  const dashboardPrompt = normalizedDashboardBody
+    .match(/(Start here|Next setup step|Build your testing signal|Optional sharing)([\s\S]{0,280})(Current mission|Recent form|Biggest actionable matchup)/i)?.[0]?.trim() || null;
+  const reviewHero = normalizedReviewBody
     .match(/REVIEW MODE([\s\S]{0,180})\d+-\d+-\d+ across/i)?.[1]?.trim() || null;
-  const matchupHero = stripWhitespace(matchupRoute?.bodyText || "")
+  const reviewHasNextTest = /What to test next|Next test/i.test(normalizedReviewBody);
+  const reviewHasConfidenceCue = /Strong signal|Building signal|Early signal|Needs more games/i.test(
+    normalizedReviewBody
+  );
+  const matchupHero = normalizedMatchupBody
     .match(/Actionable leak([\s\S]{0,260})(Matchup breakdown|Deck All decks|Deck version All versions)/i)?.[1]?.trim() || null;
-  const deckSignal = stripWhitespace(deckRoute?.bodyText || "")
+  const deckSignal = normalizedDeckBody
     .match(/Version evidence([\s\S]{0,320})(Add your first test version|Set up an active test version|Untitled version|v1|v2|v3)/i)?.[1]?.trim() || null;
   const matchesLine = matchesRoute?.bodyText
     ?.split("\n")
@@ -793,7 +833,10 @@ async function main() {
 
   const coachFindings = buildCoachFindingsRows({
     dashboardMission,
+    dashboardPrompt,
     reviewHero,
+    reviewHasNextTest,
+    reviewHasConfidenceCue,
     matchupHero,
     deckSignal,
     matchesLine,

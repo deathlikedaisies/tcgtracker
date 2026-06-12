@@ -15,12 +15,14 @@ Date: 2026-06-12
 ## Dashboard
 
 - Current mission text: ACTIONABLE SIGNAL PRIORITY WATCHLIST Mega Greninja is your priority watchlist. You have enough watchlist evidence to start reviewing the pattern. MISSION MODE Priority watchlist EVIDENCE 5/5 watchlist games SIGNAL STATE Strong enough to review
+- Next setup prompt: OPTIONAL SHARING Your profile is private Keep it private if you want. When you are ready, you can share a public identity or aggregate testing summary without exposing raw logs or notes. Review profile settings CURRENT MISSION
 - Coach says uses aggregate wording and should stay explicit about scope.
-- Dashboard body sample: SixPrizer Overview Log game Review Logs Decks Matchups Profile NEXT ACTION Mega Greninja is your priority watchlist. 5/5 games SixPrizer Overview See what improved, what is hurting you, and what to test next. pokeleaguenl@gmail.com Sign out CURRENT MISSION ACTIONABLE SIGNAL PRIORITY WATCHLIST Mega Greninja is your prio
+- Dashboard body sample: SixPrizer Overview Log game Review Logs Decks Matchups Profile NEXT ACTION Mega Greninja is your priority watchlist. 5/5 games SixPrizer Overview See what improved, what is hurting you, and what to test next. pokeleaguenl@gmail.com Sign out OPTIONAL SHARING Your profile is private Keep it private if you want. When you
 
 ## Review
 
 - Review hero text: Mega Greninja is your priority watchlist 10
+- Review includes explicit next-test language and a confidence cue: yes
 - Review should continue surfacing repeated loss tags and positive keep signals without overclaiming on Rogue Box.
 - Review body sample: SixPrizer Overview Log game Review Logs Decks Matchups Profile REVIEW MODE Mega Greninja is your priority watchlist 108-111-31 across 250 logged games SixPrizer Analysis mode Review Turn saved games, tags, and deck versions into actual coaching reads. Deck All decks Playtest 250 - Charizard Pressure Playtest 250 - Cont
 
@@ -37,5 +39,5 @@ Date: 2026-06-12
 
 ## Decks / Versions
 
-- Version signal sample: v2 Vessel Package is showing the cleanest starts so far 71% good or great openings versus 43% on v1 Turbo. This is a meaningful opening-quality gap, not just a tiny sample.
+- Version signal sample: v2 Vessel Package is showing the cleanest starts so far 71% good or great openings versus 43% on v1 Turbo. This is a meaningful opening-quality gap, not just a tiny sample. BEST CURRENT SIGNAL Best current signal:
 - Raging Bolt and Gardevoir versions both present meaningful improvement signals.

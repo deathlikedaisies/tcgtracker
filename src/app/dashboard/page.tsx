@@ -4,6 +4,7 @@ import {
   buildTrainingProgressSummary,
 } from "@/lib/session-coach";
 import { buildPrimaryDeckInsight } from "@/lib/coach-insights";
+import { getOwnProfile } from "@/lib/community";
 import {
   countMatchResults,
   parseMatchMetadata,
@@ -138,6 +139,7 @@ export default async function DashboardPage() {
 
   const matchRows = (matches ?? []) as unknown as MatchRow[];
   const deckRows = (decks ?? []) as unknown as DeckRow[];
+  const ownProfile = await getOwnProfile(user.id);
   const hasAnyDeckVersions = deckRows.some(
     (deck) => (deck.deck_versions ?? []).length > 0
   );
@@ -260,6 +262,8 @@ export default async function DashboardPage() {
       sessionCoach={sessionCoach}
       trainingProgress={trainingProgress}
       deckCoachInsight={deckCoachInsight}
+      hasProfile={Boolean(ownProfile)}
+      profileIsPrivate={ownProfile?.profile_visibility === "private"}
     />
   );
 }

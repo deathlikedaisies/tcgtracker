@@ -131,6 +131,8 @@ type DashboardContentProps = {
   decks: DeckSummary[];
   hasAnyMatches: boolean;
   hasAnyDeckVersions: boolean;
+  hasProfile: boolean;
+  profileIsPrivate: boolean;
   firstDeckId?: string;
   stats: DashboardStats;
   recentMatches: RecentMatch[];
@@ -716,15 +718,22 @@ function MissionHeroCard({
 }
 
 function SetupChecklist({
+  hasProfile,
   hasDecks,
   hasAnyDeckVersions,
   firstDeckId,
 }: {
+  hasProfile: boolean;
   hasDecks: boolean;
   hasAnyDeckVersions: boolean;
   firstDeckId?: string;
 }) {
   const steps = [
+    {
+      label: "Create your SixPrizer profile",
+      complete: hasProfile,
+      helper: "It can stay private until you want to share a summary.",
+    },
     {
       label: "Create your first deck",
       complete: hasDecks,
@@ -747,7 +756,12 @@ function SetupChecklist({
     },
   ];
 
-  const cta = !hasDecks
+  const cta = !hasProfile
+    ? {
+        label: "Create your profile",
+        href: "/profile/setup",
+      }
+    : !hasDecks
     ? {
         label: "Create your first deck",
         href: "/decks",
@@ -811,11 +825,49 @@ function SetupChecklist({
   );
 }
 
+function NextSetupStepCard({
+  title,
+  copy,
+  href,
+  ctaLabel,
+  eyebrow = "Next setup step",
+}: {
+  title: string;
+  copy: string;
+  href: string;
+  ctaLabel: string;
+  eyebrow?: string;
+}) {
+  return (
+    <section className={`${glassPanel} p-4 sm:p-5`}>
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="min-w-0">
+          <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]/86">
+            {eyebrow}
+          </p>
+          <h2 className="mt-1 text-xl font-bold tracking-tight text-[#F8FAFC]">
+            {title}
+          </h2>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-[#94A3B8]/76">
+            {copy}
+          </p>
+        </div>
+        <Link href={href} className={`${primaryButton} h-11 shrink-0`}>
+          {ctaLabel}
+          <ArrowRight className="ml-2 size-4" aria-hidden="true" />
+        </Link>
+      </div>
+    </section>
+  );
+}
+
 export function DashboardContent({
   email,
   decks,
   hasAnyMatches,
   hasAnyDeckVersions,
+  hasProfile,
+  profileIsPrivate,
   firstDeckId,
   stats,
   recentMatches,
@@ -918,6 +970,55 @@ export function DashboardContent({
     : "No games yet";
   const lossPatternValue =
     trainingProgress.lossPatternTrend ?? "No repeated issue yet";
+  const nextSetupStep = !hasProfile
+    ? {
+        title: "Create your SixPrizer profile",
+        copy: "Set your player identity now. It can stay private until you are ready to share a testing summary or matchup report.",
+        href: "/profile/setup",
+        ctaLabel: "Create profile",
+        eyebrow: "Start here",
+      }
+    : decks.length === 0
+      ? {
+          title: "Add your first deck",
+          copy: "Version tracking starts with one real deck family. Add the list you want to test first, then log games against it.",
+          href: "/decks",
+          ctaLabel: "Open decks",
+          eyebrow: "Next setup step",
+        }
+      : !hasAnyDeckVersions
+        ? {
+            title: "Add a test version",
+            copy: "A version gives SixPrizer something concrete to compare. Paste the build you actually want to log games with first.",
+            href: firstDeckId ? `/decks/${firstDeckId}` : "/decks",
+            ctaLabel: "Add version",
+            eyebrow: "Next setup step",
+          }
+        : !hasAnyMatches
+          ? {
+              title: "Log your first game",
+              copy: "One clean log starts the coaching loop. Use matchup, quality, and issue tags so the first signal is useful.",
+              href: "/matches/new",
+              ctaLabel: "Log a game",
+              eyebrow: "Next setup step",
+            }
+          : stats.totalMatches < 5
+            ? {
+                title: "Build your first signal",
+                copy: "Five to ten games is usually enough for the first useful read. Keep logging cleanly before you change the list.",
+                href: "/matches/new",
+                ctaLabel: "Log another game",
+                eyebrow: "Build your testing signal",
+              }
+            : profileIsPrivate
+              ? {
+                  title: "Your profile is private",
+                  copy: "Keep it private if you want. When you are ready, you can share a public identity or aggregate testing summary without exposing raw logs or notes.",
+                  href: "/settings/profile",
+                  ctaLabel: "Review profile settings",
+                  eyebrow: "Optional sharing",
+                }
+              : null;
   const turnOrderDelta =
     stats.wentFirstWinRate === "N/A" || stats.wentSecondWinRate === "N/A"
       ? null
@@ -1065,12 +1166,14 @@ export function DashboardContent({
 
           {!hasAnyMatches ? (
             <SetupChecklist
+              hasProfile={hasProfile}
               hasDecks={decks.length > 0}
               hasAnyDeckVersions={hasAnyDeckVersions}
               firstDeckId={firstDeckId}
             />
           ) : (
             <div className="grid gap-6">
+              {nextSetupStep ? <NextSetupStepCard {...nextSetupStep} /> : null}
               {sessionCoach ? (
                 <MissionHeroCard
                   insight={sessionCoach}
