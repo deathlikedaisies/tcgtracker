@@ -1,28 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useState, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import {
   Activity,
   ArrowRight,
-  BarChart3,
   ChevronDown,
   ShieldAlert,
   Target,
   type LucideIcon,
 } from "lucide-react";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Legend,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
 import { AuthenticatedPageHeader } from "@/components/AuthenticatedPageHeader";
 import { AppSidebar } from "@/components/AppSidebar";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
@@ -34,23 +21,17 @@ import {
   glassPanel,
   glassPanelStrong,
   insightCard,
-  interactiveTile,
   metallicBadge,
   missionHeroCard,
-  pageCopy,
   premiumInset,
   premiumInsetStrong,
   primaryButton,
-  secondaryPanel,
-  sectionTitle,
   secondaryButton,
   statCard,
 } from "@/components/brand-styles";
-import { ShareReportButton, type ShareReport } from "@/components/ShareReportButton";
 import { SixPrizerLogo } from "@/components/SixPrizerLogo";
 import {
   formatMatchRecord,
-  getMatchResultLabel,
   type MatchResult,
 } from "@/lib/match-types";
 import type {
@@ -102,25 +83,6 @@ type MatchupSummary = SummaryRow & {
   opponentArchetype: string;
 };
 
-type DeckPerformance = SummaryRow & {
-  deckVersionId: string;
-  deckVersionName: string;
-};
-
-type TrendPoint = {
-  date: string;
-  label: string;
-  wins: number;
-  losses: number;
-  ties: number;
-};
-
-type DeckPerformanceChartPoint = {
-  name: string;
-  matches: number;
-  winRate: number;
-};
-
 type DashboardContentProps = {
   email: string;
   decks: DeckSummary[];
@@ -132,23 +94,12 @@ type DashboardContentProps = {
   stats: DashboardStats;
   recentMatches: RecentMatch[];
   matchupSummary: MatchupSummary[];
-  deckPerformance: DeckPerformance[];
-  trendData: TrendPoint[];
-  deckPerformanceChart: DeckPerformanceChartPoint[];
   sessionCoach: SessionCoachInsight | null;
   trainingProgress: TrainingProgressSummary;
   deckCoachInsight?: ReviewInsightCard | null;
 };
 
 type Tone = "blue" | "gold" | "green" | "rose";
-
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(value));
-}
 
 function parseRate(value: string) {
   return Number.parseInt(value.replace("%", ""), 10) || 0;
@@ -199,31 +150,6 @@ function getMissionBadge(insight: SessionCoachInsight) {
   return { label: "Needs more games", tone: "gold" as const };
 }
 
-function ChartPlaceholder({ children }: { children: ReactNode }) {
-  return (
-    <div className={`${premiumInset} mt-3 flex min-h-[220px] items-center justify-center px-4 py-6 text-center text-sm leading-6 text-[#94A3B8]/76`}>
-      {children}
-    </div>
-  );
-}
-
-function RecordPill({ result }: { result: MatchResult }) {
-  const className =
-    result === "win"
-      ? "bg-emerald-500/14 text-emerald-200"
-      : result === "loss"
-        ? "bg-[#F43F5E]/14 text-rose-200"
-        : "bg-[#F5C84C]/12 text-[#FFE28A]";
-
-  return (
-    <span
-      className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${className}`}
-    >
-      {getMatchResultLabel(result)}
-    </span>
-  );
-}
-
 function RecentFormDots({ matches }: { matches: RecentMatch[] }) {
   const recent = matches.slice(0, 6);
   const dots = recent.length
@@ -250,46 +176,6 @@ function RecentFormDots({ matches }: { matches: RecentMatch[] }) {
         />
       ))}
     </div>
-  );
-}
-
-function SectionCard({
-  eyebrow,
-  title,
-  copy,
-  action,
-  children,
-  className = "",
-}: {
-  eyebrow?: string;
-  title: string;
-  copy?: string;
-  action?: ReactNode;
-  children?: ReactNode;
-  className?: string;
-}) {
-  return (
-    <section className={`${secondaryPanel} p-4 sm:p-5 ${className}`}>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0">
-          {eyebrow ? (
-            <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]/86">
-              {eyebrow}
-            </p>
-          ) : null}
-          <h2 className="mt-1 text-xl font-bold tracking-tight text-[#F8FAFC] sm:text-2xl">
-            {title}
-          </h2>
-          {copy ? (
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-[#94A3B8]/76">
-              {copy}
-            </p>
-          ) : null}
-        </div>
-        {action ? <div className="shrink-0">{action}</div> : null}
-      </div>
-      {children ? <div className="mt-4">{children}</div> : null}
-    </section>
   );
 }
 
@@ -384,122 +270,6 @@ function ChangeCard({
       </span>
       <p className="mt-3 text-base font-semibold text-[#F8FAFC]">{title}</p>
       <p className="mt-1 text-sm leading-6 text-[#94A3B8]/72">{detail}</p>
-    </div>
-  );
-}
-
-function MetricBar({
-  label,
-  value,
-  detail,
-  tone,
-}: {
-  label: string;
-  value: number;
-  detail: string;
-  tone: Tone;
-}) {
-  return (
-    <div className={statCard}>
-      <div className="flex items-center justify-between gap-3">
-        <p className="truncate text-sm font-semibold text-[#F8FAFC]">{label}</p>
-        <p className="shrink-0 text-sm font-bold text-[#F8FAFC]">{value}%</p>
-      </div>
-      <div className="mt-2 h-2 rounded-full bg-[#10192B]">
-        <div
-          className={`h-2 rounded-full ${
-            tone === "green"
-              ? "bg-emerald-400"
-              : tone === "rose"
-                ? "bg-[#F43F5E]"
-                : tone === "gold"
-                  ? "bg-[#F5C84C]"
-                  : "bg-[#4F8CFF]"
-          }`}
-          style={{ width: `${Math.max(value, value > 0 ? 6 : 0)}%` }}
-        />
-      </div>
-      <p className="mt-2 text-xs leading-5 text-[#94A3B8]/72">{detail}</p>
-    </div>
-  );
-}
-
-function RecentFormPanel({ matches }: { matches: RecentMatch[] }) {
-  const preview = matches.slice(0, 4);
-
-  if (!preview.length) {
-    return (
-      <div className={`${statCard} p-4 text-sm text-[#94A3B8]/72`}>
-        First test in progress. Log 3 more games to unlock a real trend.
-      </div>
-    );
-  }
-
-  return (
-    <div className="grid gap-3">
-      <div className="flex items-center justify-between gap-3">
-        <RecentFormDots matches={matches} />
-        <p className="text-xs font-medium text-[#94A3B8]/72">
-          Last {Math.min(matches.length, 6)} logged
-        </p>
-      </div>
-      {preview.map((match) => (
-        <div key={match.id} className={statCard}>
-          <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-[#F8FAFC]">
-                vs {match.opponentArchetype}
-              </p>
-              <p className="mt-1 truncate text-xs text-[#94A3B8]/72">
-                {match.deckVersionName} / {formatDate(match.playedAt)}
-              </p>
-            </div>
-            <RecordPill result={match.result} />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function TurnOrderPanel({
-  firstRate,
-  secondRate,
-}: {
-  firstRate: string;
-  secondRate: string;
-}) {
-  const rows = [
-    {
-      label: "First",
-      value: firstRate,
-      width: parseRate(firstRate),
-      tone: "bg-[#4F8CFF]",
-    },
-    {
-      label: "Second",
-      value: secondRate,
-      width: parseRate(secondRate),
-      tone: "bg-[#F5C84C]",
-    },
-  ];
-
-  return (
-    <div className="grid gap-3">
-      {rows.map((row) => (
-        <div key={row.label} className={statCard}>
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-sm font-semibold text-[#F8FAFC]">{row.label}</p>
-            <p className="text-sm font-bold text-[#F8FAFC]">{row.value}</p>
-          </div>
-          <div className="mt-2 h-2 rounded-full bg-[#10192B]">
-            <div
-              className={`h-2 rounded-full ${row.tone}`}
-              style={{ width: `${Math.max(row.width, row.width > 0 ? 8 : 0)}%` }}
-            />
-          </div>
-        </div>
-      ))}
     </div>
   );
 }
@@ -873,15 +643,10 @@ export function DashboardContent({
   stats,
   recentMatches,
   matchupSummary,
-  deckPerformance,
-  trendData,
-  deckPerformanceChart,
   sessionCoach,
   trainingProgress,
   deckCoachInsight,
 }: DashboardContentProps) {
-  const [insightsOpen, setInsightsOpen] = useState(false);
-
   const sampledMatchups = matchupSummary.filter((matchup) => matchup.matches >= 3);
   const worstMatchup = sampledMatchups.reduce<MatchupSummary | null>(
     (currentWorst, matchup) => {
@@ -920,28 +685,6 @@ export function DashboardContent({
 
       if (matchupRate === bestRate && matchup.matches > currentBest.matches) {
         return matchup;
-      }
-
-      return currentBest;
-    },
-    null
-  );
-
-  const bestDeckVersion = deckPerformance.reduce<DeckPerformance | null>(
-    (currentBest, deckVersion) => {
-      if (!currentBest) {
-        return deckVersion;
-      }
-
-      const deckRate = parseRate(deckVersion.winRate);
-      const bestRate = parseRate(currentBest.winRate);
-
-      if (deckRate > bestRate) {
-        return deckVersion;
-      }
-
-      if (deckRate === bestRate && deckVersion.matches > currentBest.matches) {
-        return deckVersion;
       }
 
       return currentBest;
@@ -1018,30 +761,12 @@ export function DashboardContent({
                   eyebrow: "Optional sharing",
                 }
               : null;
-  const turnOrderDelta =
-    stats.wentFirstWinRate === "N/A" || stats.wentSecondWinRate === "N/A"
-      ? null
-      : parseRate(stats.wentFirstWinRate) - parseRate(stats.wentSecondWinRate);
-  const activeDeck =
-    decks.find((deck) => deck.deck_versions?.some((version) => version.is_active)) ??
-    decks[0] ??
-    null;
-  const activeVersion =
-    activeDeck?.deck_versions?.find((version) => version.is_active) ??
-    activeDeck?.deck_versions?.[0] ??
-    null;
   const focusMatchup = sessionCoach?.missionFocusOpponent
     ? matchupSummary.find(
         (matchup) => matchup.opponentArchetype === sessionCoach.missionFocusOpponent
       ) ??
       worstMatchup
     : worstMatchup;
-  const matchupPreview = matchupSummary.slice(0, 5);
-  const deckPreview = deckPerformance.slice(0, 4);
-  const issueChips = [
-    sessionCoach?.commonIssue?.tag,
-    trainingProgress.lossPatternTrend,
-  ].filter((value, index, values): value is string => Boolean(value) && values.indexOf(value) === index);
   const actionableMatchupTitle =
     sessionCoach?.missionFocusOpponent ?? focusMatchup?.opponentArchetype ?? "No clear leak yet";
   const actionableMatchupDetail = focusMatchup
@@ -1102,16 +827,6 @@ export function DashboardContent({
         copy: "A few more games will unlock a real coaching loop.",
         href: "/matches/new",
       };
-
-  const shareReport: ShareReport = {
-    title: "Matchup Report",
-    deckName: bestDeckVersion?.deckVersionName ?? "All decks",
-    winRate: stats.overallWinRate,
-    worstMatchup: worstMatchup?.opponentArchetype ?? "No 3-game sample",
-    bestMatchup: bestMatchup?.opponentArchetype ?? "No 3-game sample",
-    totalMatches: stats.totalMatches,
-    context: "Your testing",
-  };
 
   return (
     <main className={appShell}>
@@ -1205,554 +920,30 @@ export function DashboardContent({
                 />
               </section>
 
-              <div className="flex justify-end">
-                <button
-                  type="button"
-                  onClick={() => setInsightsOpen((value) => !value)}
-                  className={`${secondaryButton} h-10 gap-2 px-3.5`}
-                  aria-expanded={insightsOpen}
-                >
-                  {insightsOpen ? "Hide insights" : "More insights"}
-                  <ChevronDown
-                    className={`size-4 transition-transform ${insightsOpen ? "rotate-180" : ""}`}
-                    aria-hidden="true"
-                  />
-                </button>
-              </div>
-
-              <SectionCard
-                eyebrow="Analytics overview"
-                title="Visible coaching signal"
-                copy="Useful analytics stay on the page. Deep charts stay below."
-                className={insightsOpen ? "" : "hidden"}
-                action={
-                  <Link href={nextAction.href} className={`${primaryButton} h-11`}>
-                    {nextAction.title}
-                    <ArrowRight className="ml-2 size-4" aria-hidden="true" />
-                  </Link>
-                }
-              >
-                <div className="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
-                  <div className="grid gap-4">
-                    <div className="grid gap-4 lg:grid-cols-2">
-                      <div className={`${glassPanel} p-4`}>
-                        <div className="flex items-center justify-between gap-3">
-                          <div>
-                            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
-                              Matchup pressure
-                            </p>
-                            <h3 className="mt-1 text-lg font-semibold text-[#F8FAFC]">
-                              Top matchup samples
-                            </h3>
-                          </div>
-                          <Link href="/matchups" className="text-sm font-semibold text-[#B8D1FF]">
-                            Review
-                          </Link>
-                        </div>
-                        <div className="mt-4 grid gap-3">
-                          {matchupPreview.length ? (
-                            matchupPreview.map((matchup) => (
-                              <MetricBar
-                                key={matchup.opponentArchetype}
-                                label={matchup.opponentArchetype}
-                                value={parseRate(matchup.winRate)}
-                                detail={`${matchup.matches} games / ${matchup.wins}W ${matchup.losses}L ${matchup.ties}T`}
-                                tone={
-                                  parseRate(matchup.winRate) >= 55
-                                    ? "green"
-                                    : parseRate(matchup.winRate) <= 45
-                                      ? "rose"
-                                      : "blue"
-                                }
-                              />
-                            ))
-                          ) : (
-                            <div className={`${premiumInset} p-4 text-sm text-[#94A3B8]/72`}>
-                              {getLowDataLabel(stats.totalMatches, 3, "Matchup signal ready")}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className={`${glassPanel} p-4`}>
-                        <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#F5C84C]">
-                          Turn-order split
-                        </p>
-                        <h3 className="mt-1 text-lg font-semibold text-[#F8FAFC]">
-                          First vs second
-                        </h3>
-                        <p className="mt-2 text-sm leading-6 text-[#94A3B8]/72">
-                          {turnOrderDelta === null
-                            ? "No meaningful split yet. Keep logging clean first and second samples."
-                            : turnOrderDelta >= 0
-                              ? "You are currently performing better going first."
-                              : "Going second is currently holding up better."}
-                        </p>
-                        <div className="mt-4">
-                          <TurnOrderPanel
-                            firstRate={stats.wentFirstWinRate}
-                            secondRate={stats.wentSecondWinRate}
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className={`${glassPanel} p-4`}>
-                      <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
-                            Deck version trend
-                          </p>
-                          <h3 className="mt-1 text-lg font-semibold text-[#F8FAFC]">
-                            Current experiment read
-                          </h3>
-                        </div>
-                        <Link href="/decks" className="text-sm font-semibold text-[#B8D1FF]">
-                          Manage
-                        </Link>
-                      </div>
-                      <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                        {deckPreview.length ? (
-                          deckPreview.map((deckVersion) => (
-                            <MetricBar
-                              key={deckVersion.deckVersionId}
-                              label={deckVersion.deckVersionName}
-                              value={parseRate(deckVersion.winRate)}
-                              detail={`${deckVersion.matches} games / ${deckVersion.wins}W ${deckVersion.losses}L ${deckVersion.ties}T`}
-                              tone={
-                                parseRate(deckVersion.winRate) >= 55
-                                  ? "green"
-                                  : parseRate(deckVersion.winRate) <= 45
-                                    ? "rose"
-                                    : "blue"
-                              }
-                            />
-                          ))
-                        ) : (
-                          <div className={`${premiumInset} p-4 text-sm text-[#94A3B8]/72 sm:col-span-2`}>
-                            Needs another version to compare.
-                          </div>
-                        )}
-                      </div>
-                    </div>
+              <section className={`${glassPanel} p-4 sm:p-5`}>
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
+                      Review details
+                    </p>
+                    <h2 className="mt-1 text-lg font-semibold text-[#F8FAFC]">
+                      Use Review for supporting evidence
+                    </h2>
+                    <p className="mt-2 text-sm leading-6 text-[#94A3B8]/72">
+                      Overview stays focused on what to do now. Open Review to inspect matchup pressure, repeated tags, and other supporting patterns from your logs.
+                    </p>
                   </div>
-
-                  <div className="grid gap-4">
-                    <div className={`${glassPanel} p-4`}>
-                      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#F5C84C]">
-                        Current signal
-                      </p>
-                      <h3 className="mt-1 text-lg font-semibold text-[#F8FAFC]">
-                        What is hurting you
-                      </h3>
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        {issueChips.length ? (
-                          issueChips.map((chip) => (
-                            <span
-                              key={chip}
-                              className="rounded-full bg-[#F43F5E]/10 px-3 py-1.5 text-xs font-semibold text-rose-200 shadow-[inset_0_0_0_1px_rgba(244,63,94,0.14)]"
-                            >
-                              {chip}
-                            </span>
-                          ))
-                        ) : (
-                          <span className="rounded-full bg-[#4F8CFF]/10 px-3 py-1.5 text-xs font-semibold text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.14)]">
-                            No repeated issue yet
-                          </span>
-                        )}
-                      </div>
-                      <p className="mt-3 text-sm leading-6 text-[#94A3B8]/72">
-                        {sessionCoach?.commonIssue
-                          ? `${sessionCoach.commonIssue.count} recent losses point to the clearest repeatable leak.`
-                          : "Keep using tags after matches to sharpen recurring issue detection."}
-                      </p>
-                    </div>
-
-                    <div className={`${glassPanel} p-4`}>
-                      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
-                        Recent form
-                      </p>
-                      <h3 className="mt-1 text-lg font-semibold text-[#F8FAFC]">
-                        Last logged games
-                      </h3>
-                      <div className="mt-4">
-                        <RecentFormPanel matches={recentMatches} />
-                      </div>
-                    </div>
-
-                    <div className={`${glassPanel} p-4`}>
-                      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#F5C84C]">
-                        Next best action
-                      </p>
-                      <h3 className="mt-1 text-lg font-semibold text-[#F8FAFC]">
-                        {nextAction.title}
-                      </h3>
-                      <p className="mt-2 text-sm leading-6 text-[#94A3B8]/72">
-                        {nextAction.copy}
-                      </p>
-                      <Link href={nextAction.href} className={`${secondaryButton} mt-4 h-11`}>
-                        Open next step
-                      </Link>
-                    </div>
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    <Link href={nextAction.href} className={`${primaryButton} h-11`}>
+                      {nextAction.title}
+                      <ArrowRight className="ml-2 size-4" aria-hidden="true" />
+                    </Link>
+                    <Link href="/review" className={`${secondaryButton} h-11`}>
+                      Review all insights
+                    </Link>
                   </div>
                 </div>
-              </SectionCard>
-
-              <SectionCard
-                eyebrow="Active experiment"
-                title="Decks and versions"
-                copy="Keep the current list visible, then manage deeper deck records below."
-                className={insightsOpen ? "" : "hidden"}
-                action={
-                  <Link href="/decks" className={`${secondaryButton} h-11`}>
-                    Manage decks
-                  </Link>
-                }
-              >
-                <div className="grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-                  <div className={`${glassPanelStrong} p-4`}>
-                    {activeDeck ? (
-                      <div className="grid gap-4">
-                        <div className="flex items-start gap-3">
-                          <ArchetypeSprites archetype={activeDeck.archetype} size="md" className="shrink-0" />
-                          <div className="min-w-0">
-                            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
-                              Active deck
-                            </p>
-                            <h3 className="mt-1 truncate text-xl font-semibold text-[#F8FAFC]">
-                              {activeDeck.name}
-                            </h3>
-                            <p className="mt-1 text-sm text-[#94A3B8]/72">
-                              {activeDeck.archetype}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="grid gap-3 sm:grid-cols-2">
-                          <div className={`${premiumInset} p-3`}>
-                            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
-                              Current version
-                            </p>
-                            <p className="mt-2 text-sm font-semibold text-[#F8FAFC]">
-                              {activeVersion?.name ?? "No active version set"}
-                            </p>
-                          </div>
-                          <div className={`${premiumInset} p-3`}>
-                            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
-                              Current read
-                            </p>
-                            <p className="mt-2 text-sm font-semibold text-[#F8FAFC]">
-                              {bestDeckVersion?.deckVersionName === activeVersion?.name
-                                ? "Leading version"
-                                : activeVersion
-                                  ? "Under active test"
-                                  : "Needs version setup"}
-                            </p>
-                          </div>
-                        </div>
-
-                        <Link href={`/decks/${activeDeck.id}`} className={`${primaryButton} h-11 w-full sm:w-auto`}>
-                          Manage active deck
-                        </Link>
-                      </div>
-                    ) : (
-                      <div className="text-sm text-[#94A3B8]/72">
-                        No decks yet. Create one to start version testing.
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    {decks.slice(0, 6).map((deck) => {
-                      const deckActiveVersion =
-                        deck.deck_versions?.find((version) => version.is_active) ??
-                        deck.deck_versions?.[0] ??
-                        null;
-
-                      return (
-                        <Link
-                          key={deck.id}
-                          href={`/decks/${deck.id}`}
-                          className={`${interactiveTile} p-4`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <ArchetypeSprites archetype={deck.archetype} />
-                            <div className="min-w-0">
-                              <p className="truncate text-sm font-semibold text-[#F8FAFC]">
-                                {deck.name}
-                              </p>
-                              <p className="truncate text-xs text-[#94A3B8]/72">
-                                {deck.archetype}
-                              </p>
-                            </div>
-                          </div>
-                          <div className={`${premiumInset} mt-3 p-3`}>
-                            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
-                              Active version
-                            </p>
-                            <p className="mt-1 truncate text-sm font-semibold text-[#F8FAFC]">
-                              {deckActiveVersion?.name ?? "No active version set"}
-                            </p>
-                          </div>
-                        </Link>
-                      );
-                    })}
-                    {!decks.length ? (
-                      <div className={`${premiumInset} p-4 text-sm text-[#94A3B8]/72`}>
-                        Create your first deck to unlock experiment tracking.
-                      </div>
-                    ) : null}
-                  </div>
-                </div>
-              </SectionCard>
-
-              <details
-                className={`${glassPanelStrong} p-4 ${insightsOpen ? "" : "hidden"}`}
-                onToggle={(event) => setInsightsOpen(event.currentTarget.open)}
-              >
-                <summary className="cursor-pointer list-none marker:hidden">
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="flex min-w-0 items-center gap-3">
-                      <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-2xl bg-[#4F8CFF]/10 text-[#B8D1FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.14)]">
-                        <BarChart3 className="size-5" aria-hidden="true" />
-                      </span>
-                      <div className="min-w-0">
-                        <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]/86">
-                          Deep records
-                        </p>
-                        <h2 className="truncate text-lg font-bold tracking-tight text-[#F8FAFC]">
-                          Full charts and tables
-                        </h2>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <ShareReportButton report={shareReport} />
-                      <span className="inline-flex items-center gap-1 text-xs font-medium text-[#94A3B8]/68">
-                        More
-                        <ChevronDown className="size-3.5" aria-hidden="true" />
-                      </span>
-                    </div>
-                  </div>
-                </summary>
-
-                <div className="mt-5 grid gap-4">
-                  <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-7">
-                    {[
-                      { label: "Matches", value: stats.totalMatches },
-                      { label: "Wins", value: stats.totalWins },
-                      { label: "Losses", value: stats.totalLosses },
-                      { label: "Ties", value: stats.totalTies },
-                      { label: "Win rate", value: stats.overallWinRate },
-                      { label: "Went first", value: stats.wentFirstWinRate },
-                      { label: "Went second", value: stats.wentSecondWinRate },
-                    ].map((stat) => (
-                      <div
-                        key={stat.label}
-                        className={`${statCard} p-4`}
-                      >
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]/72">
-                          {stat.label}
-                        </p>
-                        <p className="mt-2 text-2xl font-bold tracking-tight text-[#F8FAFC]">
-                          {stat.value}
-                        </p>
-                      </div>
-                    ))}
-                  </section>
-
-                  <section className="grid gap-4 lg:grid-cols-2">
-                    <div className={`${glassPanel} p-4`}>
-                      <h2 className={sectionTitle}>Result trend</h2>
-                      <p className={pageCopy}>Daily wins, losses, and ties from your logged matches.</p>
-                      {insightsOpen && trendData.length ? (
-                        <div className="mt-4 h-64 min-h-[256px] min-w-0">
-                          <ResponsiveContainer width="100%" height="100%" minHeight={220}>
-                            <LineChart data={trendData}>
-                              <CartesianGrid stroke="rgba(148,163,184,0.22)" vertical={false} />
-                              <XAxis
-                                dataKey="label"
-                                tick={{ fill: "#94A3B8", fontSize: 12 }}
-                                tickLine={false}
-                                axisLine={false}
-                              />
-                              <YAxis
-                                allowDecimals={false}
-                                tick={{ fill: "#94A3B8", fontSize: 12 }}
-                                tickLine={false}
-                                axisLine={false}
-                              />
-                              <Tooltip
-                                contentStyle={{
-                                  background: "#0B1020",
-                                  border: "1px solid rgba(148,163,184,0.18)",
-                                  borderRadius: 12,
-                                  color: "#F8FAFC",
-                                }}
-                              />
-                              <Legend />
-                              <Line type="monotone" dataKey="wins" stroke="#22C55E" strokeWidth={2} dot={false} />
-                              <Line type="monotone" dataKey="losses" stroke="#F43F5E" strokeWidth={2} dot={false} />
-                              <Line type="monotone" dataKey="ties" stroke="#F5C84C" strokeWidth={2} dot={false} />
-                            </LineChart>
-                          </ResponsiveContainer>
-                        </div>
-                      ) : (
-                        <ChartPlaceholder>
-                          {insightsOpen
-                            ? "Log more games to build a result trend."
-                            : "Open this section to view charts."}
-                        </ChartPlaceholder>
-                      )}
-                    </div>
-
-                    <div className={`${glassPanel} p-4`}>
-                      <h2 className={sectionTitle}>Deck comparison</h2>
-                      <p className={pageCopy}>Win rate by deck version, sorted by matches played.</p>
-                      {insightsOpen && deckPerformanceChart.length ? (
-                        <div className="mt-4 h-64 min-h-[256px] min-w-0">
-                          <ResponsiveContainer width="100%" height="100%" minHeight={220}>
-                            <BarChart data={deckPerformanceChart} layout="vertical">
-                              <CartesianGrid stroke="rgba(148,163,184,0.22)" horizontal={false} />
-                              <XAxis
-                                type="number"
-                                domain={[0, 100]}
-                                tickFormatter={(value) => `${value}%`}
-                                tick={{ fill: "#94A3B8", fontSize: 12 }}
-                                tickLine={false}
-                                axisLine={false}
-                              />
-                              <YAxis
-                                type="category"
-                                dataKey="name"
-                                width={120}
-                                tick={{ fill: "#94A3B8", fontSize: 12 }}
-                                tickLine={false}
-                                axisLine={false}
-                              />
-                              <Tooltip
-                                contentStyle={{
-                                  background: "#0B1020",
-                                  border: "1px solid rgba(148,163,184,0.18)",
-                                  borderRadius: 12,
-                                  color: "#F8FAFC",
-                                }}
-                              />
-                              <Bar dataKey="winRate" fill="#4F8CFF" radius={[0, 10, 10, 0]} />
-                            </BarChart>
-                          </ResponsiveContainer>
-                        </div>
-                      ) : (
-                        <ChartPlaceholder>
-                          {insightsOpen
-                            ? "Add another deck version to compare testing results."
-                            : "Open this section to view charts."}
-                        </ChartPlaceholder>
-                      )}
-                    </div>
-                  </section>
-
-                  <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-                    <div className={`${glassPanel} p-4`}>
-                      <div className="flex items-center justify-between gap-3">
-                        <h2 className={sectionTitle}>Recent matches</h2>
-                        <Link href="/matches" className="text-sm font-semibold text-[#B8D1FF]">
-                          All matches
-                        </Link>
-                      </div>
-                      <div className="mt-4 grid gap-3">
-                        {recentMatches.length ? (
-                          recentMatches.map((match) => (
-                            <div
-                              key={match.id}
-                              className={`${premiumInset} p-3`}
-                            >
-                              <div className="flex items-center justify-between gap-3">
-                                <div className="min-w-0">
-                                  <p className="truncate text-sm font-semibold text-[#F8FAFC]">
-                                    {match.deckVersionName}
-                                  </p>
-                                  <p className="mt-1 truncate text-xs text-[#94A3B8]/72">
-                                    vs {match.opponentArchetype} / {formatDate(match.playedAt)}
-                                  </p>
-                                </div>
-                                <RecordPill result={match.result} />
-                              </div>
-                            </div>
-                          ))
-                        ) : (
-                          <div className={`${premiumInset} p-3 text-sm text-[#94A3B8]/72`}>
-                            No logged matches yet.
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="grid gap-4">
-                      <div className={`${glassPanel} p-4`}>
-                        <div className="flex items-center justify-between gap-3">
-                          <h2 className={sectionTitle}>Matchups</h2>
-                          <Link href="/matchups" className="text-sm font-semibold text-[#B8D1FF]">
-                            Analyze
-                          </Link>
-                        </div>
-                        <div className="mt-4 grid gap-3">
-                          {matchupSummary.slice(0, 6).length ? (
-                            matchupSummary.slice(0, 6).map((matchup) => (
-                              <MetricBar
-                                key={matchup.opponentArchetype}
-                                label={matchup.opponentArchetype}
-                                value={parseRate(matchup.winRate)}
-                                detail={`${matchup.matches} games / ${matchup.wins}W ${matchup.losses}L ${matchup.ties}T`}
-                                tone={
-                                  parseRate(matchup.winRate) >= 55
-                                    ? "green"
-                                    : parseRate(matchup.winRate) <= 45
-                                      ? "rose"
-                                      : "blue"
-                                }
-                              />
-                            ))
-                          ) : (
-                            <div className={`${premiumInset} p-3 text-sm text-[#94A3B8]/72`}>
-                              {getLowDataLabel(stats.totalMatches, 3, "Matchup summary ready")}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className={`${glassPanel} p-4`}>
-                        <h2 className={sectionTitle}>Deck performance</h2>
-                        <div className="mt-4 grid gap-3">
-                          {deckPerformance.slice(0, 6).length ? (
-                            deckPerformance.slice(0, 6).map((deckVersion) => (
-                              <div
-                                key={deckVersion.deckVersionId}
-                                className={`${premiumInset} p-3`}
-                              >
-                                <div className="flex items-center justify-between gap-3">
-                                  <p className="truncate text-sm font-semibold text-[#F8FAFC]">
-                                    {deckVersion.deckVersionName}
-                                  </p>
-                                  <p className="text-sm font-bold text-[#F8FAFC]">
-                                    {deckVersion.winRate}
-                                  </p>
-                                </div>
-                                <p className="mt-1 text-xs text-[#94A3B8]/72">
-                                  {deckVersion.matches} games / {deckVersion.wins}W {deckVersion.losses}L {deckVersion.ties}T
-                                </p>
-                              </div>
-                            ))
-                          ) : (
-                          <div className={`${premiumInset} p-3 text-sm text-[#94A3B8]/72`}>
-                              Needs another version to compare.
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </section>
-                </div>
-              </details>
+              </section>
             </div>
           )}
         </div>

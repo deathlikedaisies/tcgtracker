@@ -82,13 +82,6 @@ function getDeckVersionName(match: MatchRow) {
   return deckVersion?.name ?? "Unknown version";
 }
 
-function formatChartDate(value: string) {
-  return new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-  }).format(new Date(value));
-}
-
 function toReviewMatch(match: MatchRow): ReviewMatch {
   return {
     id: match.id,
@@ -174,28 +167,6 @@ export default async function DashboardPage() {
     }))
     .sort((first, second) => second.matches - first.matches);
 
-  const deckPerformance = Array.from(
-    filteredMatches
-      .reduce((summary, match) => {
-        const current = summary.get(match.deck_version_id) ?? {
-          deckVersionId: match.deck_version_id,
-          deckVersionName: getDeckVersionName(match),
-          matches: [] as MatchRow[],
-        };
-
-        current.matches.push(match);
-        summary.set(match.deck_version_id, current);
-        return summary;
-      }, new Map<string, { deckVersionId: string; deckVersionName: string; matches: MatchRow[] }>())
-      .values()
-  )
-    .map((deckVersion) => ({
-      deckVersionId: deckVersion.deckVersionId,
-      deckVersionName: deckVersion.deckVersionName,
-      ...getRecord(deckVersion.matches),
-    }))
-    .sort((first, second) => second.matches - first.matches);
-
   const recentMatches = filteredMatches.slice(0, 10).map((match) => ({
     id: match.id,
     playedAt: match.played_at,
@@ -203,39 +174,6 @@ export default async function DashboardPage() {
     opponentArchetype: match.opponent_archetype,
     result: match.result,
     eventType: match.event_type,
-  }));
-  const trendData = Array.from(
-    filteredMatches
-      .reduce((summary, match) => {
-        const dateKey = match.played_at.slice(0, 10);
-        const current = summary.get(dateKey) ?? {
-          date: dateKey,
-          label: formatChartDate(dateKey),
-          wins: 0,
-          losses: 0,
-          ties: 0,
-        };
-
-        if (match.result === "win") {
-          current.wins += 1;
-        } else if (match.result === "loss") {
-          current.losses += 1;
-        } else {
-          current.ties += 1;
-        }
-
-        summary.set(dateKey, current);
-        return summary;
-      }, new Map<string, { date: string; label: string; wins: number; losses: number; ties: number }>())
-      .values()
-  ).sort((first, second) => first.date.localeCompare(second.date));
-  const deckPerformanceChart = deckPerformance.slice(0, 8).map((deckVersion) => ({
-    name: deckVersion.deckVersionName,
-    matches: deckVersion.matches,
-    winRate:
-      deckVersion.matches === 0
-        ? 0
-        : Math.round((deckVersion.wins / deckVersion.matches) * 100),
   }));
 
   return (
@@ -256,9 +194,6 @@ export default async function DashboardPage() {
       }}
       recentMatches={recentMatches}
       matchupSummary={matchupSummary}
-      deckPerformance={deckPerformance}
-      trendData={trendData}
-      deckPerformanceChart={deckPerformanceChart}
       sessionCoach={sessionCoach}
       trainingProgress={trainingProgress}
       deckCoachInsight={deckCoachInsight}
