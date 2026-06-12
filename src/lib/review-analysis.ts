@@ -642,98 +642,37 @@ function buildVersionSignalCard(
 }
 
 function buildNextActionCard(
-  matches: ReviewMatch[],
+  totalMatches: number,
   context: ReviewFilterContext,
-  rankedCards: ReviewInsightCard[]
+  hasPrimaryActionableCard: boolean
 ): ReviewInsightCard {
-  const primaryCard = rankedCards[0];
-  const matchupCard = rankedCards.find((card) => card.key === "matchup-leak");
-  const versionCard = rankedCards.find((card) => card.key === "version-signal");
-
-  if (primaryCard?.key === "matchup-leak" && matchupCard) {
-    const matchup = matchupCard.title.replace(" is your priority watchlist", "");
-
+  if (hasPrimaryActionableCard) {
     return {
-      key: "next-action",
-      title: "What to test next",
-      explanation: `Turn ${matchup} into a focused test block instead of a vague frustration point.`,
-      evidence:
-        "One more structured game against this matchup sharpens the read.",
-      recommendation:
-        "Next test: log one more clean review game into this matchup and tag the first break point before changing the list.",
-      confidenceLabel: "Building signal",
+      key: "next-action-hidden",
+      title: "",
+      explanation: "",
+      evidence: "",
+      recommendation: "",
+      confidenceLabel: "Needs more games",
       tone: "blue",
-      ctaLabel: "Log next game",
-      ctaHref: context.deckVersionId
-        ? `/matches/new?deck_version_id=${context.deckVersionId}`
-        : "/matches/new",
-    };
-  }
-
-  if (primaryCard?.key === "issue-tag") {
-    return {
-      key: "next-action",
-      title: "What to test next",
-      explanation:
-        "Use the repeated issue tag as the center of the next test block.",
-      evidence:
-        "Another small structured sample is more valuable than an instant deck change.",
-      recommendation:
-        "Next test: keep the next block clean and keep tagging the repeated issue honestly before touching the list.",
-      confidenceLabel: "Building signal",
-      tone: "blue",
-      ctaLabel: "Log next game",
-      ctaHref: context.deckVersionId
-        ? `/matches/new?deck_version_id=${context.deckVersionId}`
-        : "/matches/new",
-    };
-  }
-
-  if (primaryCard?.key === "quality-pattern") {
-    return {
-      key: "next-action",
-      title: "What to test next",
-      explanation:
-        "Use the next few games to separate a piloting issue from a real list issue.",
-      evidence:
-        "Consistent quality tagging is what makes this signal trustworthy.",
-      recommendation:
-        "Next test: keep the same quality tags and one concrete checkpoint in mind for the next few games.",
-      confidenceLabel: "Building signal",
-      tone: "blue",
-      ctaLabel: "Log next game",
-      ctaHref: context.deckVersionId
-        ? `/matches/new?deck_version_id=${context.deckVersionId}`
-        : "/matches/new",
-    };
-  }
-
-  if (versionCard) {
-    return {
-      key: "next-action",
-      title: "What to test next",
-      explanation:
-        "Version comparisons only become real when the cleaner build keeps holding up after more games.",
-      evidence:
-        "Version comparisons are only useful when the sample keeps growing.",
-      recommendation:
-        "Next test: keep comparing versions through logged games instead of memory for another short block.",
-      confidenceLabel: "Early signal",
-      tone: "blue",
-      ctaLabel: "Review deck versions",
-      ctaHref: versionCard.ctaHref,
+      ctaLabel: "",
+      ctaHref: "",
     };
   }
 
   return {
     key: "next-action",
-    title: "What to test next",
+    title: "Build your next useful sample",
     explanation:
-      "No single leak is dominant yet, so the next job is to keep the logging clean enough for one to separate itself.",
+      totalMatches < 5
+        ? "There is not enough signal yet for a strong review read."
+        : "No single leak is separating cleanly yet, so the next goal is a tighter sample.",
     evidence:
-      "A five-game block with consistent tagging is the fastest path to a real coaching read.",
+      totalMatches < 5
+        ? "Five clean games is usually enough for the first real coaching pattern."
+        : "Another five-game block with consistent tagging is the fastest path to a clearer review read.",
     recommendation:
-      "Next test: log a five-game block with clean tags and quality ratings before changing the list.",
+      "What to do next: log the next 5 games with clean issue tags, positive tags, and quality ratings before changing the list.",
     confidenceLabel: "Needs more games",
     tone: "blue",
     ctaLabel: "Log next game",
@@ -765,7 +704,17 @@ export function buildReviewAnalysis(
       return nextCard;
     });
 
-  const cards = [...rankedCards, buildNextActionCard(matches, context, rankedCards)];
+  const nextActionCard = buildNextActionCard(
+    record.total,
+    context,
+    rankedCards.length > 0
+  );
+  const cards =
+    rankedCards.length > 0
+      ? rankedCards
+      : nextActionCard.key === "next-action"
+        ? [nextActionCard]
+        : [];
 
   return {
     sampleStatusLabel: sampleStatus.label,
