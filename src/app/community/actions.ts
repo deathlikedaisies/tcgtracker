@@ -20,6 +20,7 @@ import { createServerSupabaseClient } from "@/lib/supabase-server";
 export type ProfileFormState = {
   error: string | null;
   success: string | null;
+  warning: string | null;
   publicUrl: string | null;
   handle: string | null;
 };
@@ -83,6 +84,7 @@ export async function saveProfileAction(
     return {
       error: result.error ?? "Profile could not be saved.",
       success: null,
+      warning: null,
       publicUrl: null,
       handle: null,
     };
@@ -95,6 +97,7 @@ export async function saveProfileAction(
   return {
     error: null,
     success: "Profile saved.",
+    warning: "warning" in result ? result.warning ?? null : null,
     publicUrl:
       result.profile.profile_visibility === "private"
         ? null

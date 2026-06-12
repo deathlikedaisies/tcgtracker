@@ -800,7 +800,7 @@ export async function getProfileByHandle(handle: string) {
 }
 
 export async function createOrUpdateProfile(userId: string, input: ProfileInput) {
-  const admin = createAdminSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   const handleError = validateHandle(input.handle);
 
   if (handleError) {
@@ -850,7 +850,7 @@ export async function createOrUpdateProfile(userId: string, input: ProfileInput)
     analytics_visibility: input.analyticsVisibility,
   };
 
-  const { data, error } = await admin
+  const { data, error } = await supabase
     .from("profiles")
     .upsert(payload, {
       onConflict: "user_id",
@@ -859,6 +859,13 @@ export async function createOrUpdateProfile(userId: string, input: ProfileInput)
     .single();
 
   if (error) {
+    console.error("[community] profile save failed", {
+      userId,
+      profileVisibility: input.profileVisibility,
+      analyticsVisibility: input.analyticsVisibility,
+      code: "code" in error ? error.code : undefined,
+      message: error.message,
+    });
     const message = error.message.toLowerCase();
     if (message.includes("profiles_handle_key") || message.includes("duplicate")) {
       return {
@@ -884,29 +891,49 @@ export async function createOrUpdateProfile(userId: string, input: ProfileInput)
     };
   }
 
-  await buildPublicProfileStats(userId);
+  let warning: string | null = null;
+
+  try {
+    await buildPublicProfileStats(userId);
+  } catch (statsError) {
+    const message =
+      statsError instanceof Error ? statsError.message : String(statsError);
+    console.error("[community] profile stats refresh failed after save", {
+      userId,
+      profileVisibility: input.profileVisibility,
+      analyticsVisibility: input.analyticsVisibility,
+      message,
+      adminConfigAvailable: hasAdminSupabaseConfig(),
+    });
+    warning = "Profile saved, but public stats could not refresh yet.";
+  }
 
   return {
     ok: true as const,
     error: null,
     profile,
+    warning,
   };
 }
 
 export async function buildPublicProfileStats(userId: string) {
-  const admin = createAdminSupabaseClient();
-  const profile = await getProfileByUserIdInternal(userId);
+  const supabase = await createServerSupabaseClient();
+  const profile = await getProfileByUserIdForViewer(userId);
+
+  if (!profile) {
+    throw new Error("Profile not found for stats refresh.");
+  }
 
   const [
     { data: decks, error: decksError },
     { data: matches, error: matchesError },
   ] = await Promise.all([
-    admin
+    supabase
       .from("decks")
       .select("id, name, archetype")
       .eq("user_id", userId)
       .order("created_at", { ascending: false }),
-    admin
+    supabase
       .from("matches")
       .select(
         "id, deck_version_id, opponent_archetype, result, went_first, played_at, metadata, deck_versions(id, name, deck_id, decks(id, name))"
@@ -923,10 +950,10 @@ export async function buildPublicProfileStats(userId: string) {
   const deckIds = deckRows.map((deck) => deck.id);
 
   const versionsResponse = deckIds.length
-    ? await admin
+    ? await supabase
         .from("deck_versions")
         .select("id, deck_id, name, is_active")
-    .in("deck_id", deckIds)
+        .in("deck_id", deckIds)
     : { data: [], error: null };
 
   if (versionsResponse.error) {
@@ -982,7 +1009,7 @@ export async function buildPublicProfileStats(userId: string) {
     best_improvement: bestImprovement,
   };
 
-  const { data, error } = await admin
+  const { data, error } = await supabase
     .from("profile_public_stats")
     .upsert(payload, {
       onConflict: "user_id",

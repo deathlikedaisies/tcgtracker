@@ -236,6 +236,7 @@ export function ProfileSettingsForm({
   const initialProfileFormState: ProfileFormState = {
     error: null,
     success: null,
+    warning: null,
     publicUrl: null,
     handle: null,
   };
@@ -546,6 +547,12 @@ export function ProfileSettingsForm({
                 The profile is still private. You can share it later when you are ready.
               </p>
             )}
+          </div>
+        ) : null}
+
+        {state.warning ? (
+          <div className="rounded-[18px] bg-[#F5C84C]/10 px-4 py-3 text-sm text-[#FFE28A] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
+            {state.warning}
           </div>
         ) : null}
 
