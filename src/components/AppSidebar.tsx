@@ -9,6 +9,7 @@ import {
   Target,
 } from "lucide-react";
 import { SixPrizerLogo } from "@/components/SixPrizerLogo";
+import { SignOutButton } from "@/components/SignOutButton";
 import {
   logoOnDark,
   navItem,
@@ -82,24 +83,28 @@ export function AppSidebar({ current, deckLabel, insight }: AppSidebarProps) {
           })}
         </nav>
 
-        {insight ? (
-          <div className={`mt-auto p-3 ${premiumInset}`}>
-            <div className="flex items-center gap-2 text-[#F5C84C]">
-              <Target className="size-4" aria-hidden="true" />
-              <p className="text-xs font-semibold uppercase tracking-[0.1em]">
-                {insight.label}
+        <div className="mt-auto grid gap-3">
+          {insight ? (
+            <div className={`p-3 ${premiumInset}`}>
+              <div className="flex items-center gap-2 text-[#F5C84C]">
+                <Target className="size-4" aria-hidden="true" />
+                <p className="text-xs font-semibold uppercase tracking-[0.1em]">
+                  {insight.label}
+                </p>
+              </div>
+              <p className="mt-2 text-sm font-semibold leading-5 text-[#F8FAFC]">
+                {insight.value}
               </p>
+              {insight.helper ? (
+                <p className="mt-1 text-xs leading-5 text-[#94A3B8]/72">
+                  {insight.helper}
+                </p>
+              ) : null}
             </div>
-            <p className="mt-2 text-sm font-semibold leading-5 text-[#F8FAFC]">
-              {insight.value}
-            </p>
-            {insight.helper ? (
-              <p className="mt-1 text-xs leading-5 text-[#94A3B8]/72">
-                {insight.helper}
-              </p>
-            ) : null}
-          </div>
-        ) : null}
+          ) : null}
+
+          <SignOutButton className="justify-center" />
+        </div>
       </div>
     </aside>
   );
