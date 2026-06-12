@@ -64,7 +64,10 @@ test.describe("authenticated routes", () => {
     await page.waitForURL(/\/r\//, { timeout: 30000 });
     await expect(page.getByRole("heading").first()).toBeVisible();
     await expect(page.locator("body")).toContainText("Shared from SixPrizer");
-    await expect(page.locator("body")).toContainText(/What this means|Current recommendation/i);
+    await expect(page.locator("body")).toContainText(/Record/i);
+    await expect(page.locator("body")).toContainText(/Win rate/i);
+    await expect(page.locator("body")).toContainText(/Summary/i);
+    await expect(page.locator("body")).toContainText(/Recommendation/i);
     await expect(page.locator("body")).not.toContainText(/match_id|4 Nest Ball|4 Professor's Research/i);
     await expect(page.locator("body")).not.toContainText(
       /c9c7565b-9587-4e54-9d0b-a0c32e568d36|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i
