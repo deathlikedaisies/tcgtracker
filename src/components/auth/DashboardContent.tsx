@@ -1140,33 +1140,41 @@ export function DashboardContent({
           }}
         />
 
-      <div className={`${appMain} mx-auto w-full max-w-7xl`}>
-          <header className={`${pageHeaderCard} p-4 sm:p-5`}>
+        <div className={`${appMain} mx-auto w-full max-w-7xl`}>
+          <header className={`${pageHeaderCard} p-4 sm:p-5 lg:p-6`}>
             <div className="flex flex-col gap-4">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <SixPrizerLogo {...logoOnDark} />
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/6 pb-4">
+                <SixPrizerLogo
+                  {...logoOnDark}
+                  size="sm"
+                  hideTextOnMobile
+                  className="min-w-0"
+                />
                 <button
                   type="button"
                   onClick={handleSignOut}
-                  className="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-xl px-3 text-xs font-medium text-[#94A3B8]/72 transition hover:bg-white/5 hover:text-[#F8FAFC]"
+                  className="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-white/8 bg-white/[0.03] px-3 text-xs font-medium text-[#C7D3E7] transition hover:bg-white/8 hover:text-[#F8FAFC]"
                 >
                   <LogOut className="size-3.5" aria-hidden="true" />
                   Sign out
                 </button>
               </div>
 
-              <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                <div className="min-w-0 flex-1">
-                  <h1 className="text-3xl font-bold tracking-tight text-[#F8FAFC] sm:text-4xl">
+              <div className="flex flex-col gap-3">
+                <div className="min-w-0 max-w-3xl">
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#4F8CFF]/86">
+                    Testing overview
+                  </p>
+                  <h1 className="mt-2 text-3xl font-bold tracking-tight text-[#F8FAFC] sm:text-4xl">
                     Overview
                   </h1>
-                  <p className="mt-2 max-w-2xl text-sm leading-6 text-[#94A3B8]/72">
+                  <p className="mt-2 text-sm leading-6 text-[#94A3B8]/72">
                     See what improved, what is hurting you, and what to test next.
                   </p>
-                  <p className="mt-1 truncate text-xs text-[#94A3B8]/62">{email}</p>
+                  <p className="mt-2 truncate text-xs text-[#94A3B8]/62">{email}</p>
                 </div>
 
-                <div className="lg:hidden self-start">
+                <div className="lg:hidden">
                   <AppNav current="dashboard" />
                 </div>
               </div>
