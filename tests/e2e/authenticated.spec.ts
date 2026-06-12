@@ -83,10 +83,12 @@ test.describe("authenticated routes", () => {
       .locator("xpath=ancestor::section[1]");
 
     await expect(coachHero).toContainText(/Item Lock|Sequencing|Mega Greninja/i);
-    await expect(page.locator("body")).toContainText(/What to test next|Next test/i);
+    await expect(page.locator("body")).toContainText(/What to do next/i);
+    await expect(page.locator("body")).toContainText(/wins tagged.*losses tagged|wins and .* losses/i);
     await expect(page.locator("body")).toContainText(
       /Strong signal|Building signal|Early signal|Needs more games/i
     );
+    await expect(page.locator("body")).not.toContainText(/this line|sample block|converts with/i);
     await expectNoAppError(page);
   });
 

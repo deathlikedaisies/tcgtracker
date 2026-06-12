@@ -374,7 +374,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
                       </p>
                       <div className={`${premiumInset} mt-4 p-4`}>
                         <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
-                          Next test
+                          What to do next
                         </p>
                         <p className="mt-2 text-sm leading-6 text-[#F8FAFC]">
                           {analysis.cards[0].recommendation}
@@ -448,7 +448,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
                     </div>
                     <div className={`${premiumInset} mt-3 p-3`}>
                       <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
-                        Next test
+                        What to do next
                       </p>
                       <p className="mt-2 text-sm leading-6 text-[#D6E0F0]/82">
                         {card.recommendation}

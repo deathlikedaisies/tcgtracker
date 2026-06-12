@@ -215,6 +215,48 @@ function getDominantGroupLabel(
   };
 }
 
+function formatTaggedFraction(count: number, total: number) {
+  if (total === 0) {
+    return `0 of ${total}`;
+  }
+
+  return `${count} of ${total}`;
+}
+
+function formatTaggedComparison(
+  tag: string,
+  winsWithTag: number,
+  totalWins: number,
+  lossesWithTag: number,
+  totalLosses: number
+) {
+  return `"${tag}" was tagged in ${formatTaggedFraction(
+    winsWithTag,
+    totalWins
+  )} wins and ${formatTaggedFraction(lossesWithTag, totalLosses)} losses.`;
+}
+
+function getRateDifferenceLabel(
+  higherRate: number,
+  lowerRate: number
+): "Strong signal" | "Building signal" | "Early signal" | "Needs more games" {
+  const gap = higherRate - lowerRate;
+
+  if (higherRate >= 0.55 && gap >= 0.25) {
+    return "Strong signal";
+  }
+
+  if (higherRate >= 0.4 && gap >= 0.15) {
+    return "Building signal";
+  }
+
+  if (higherRate > 0 || lowerRate > 0) {
+    return "Early signal";
+  }
+
+  return "Needs more games";
+}
+
 function buildMatchupLeakCard(
   matches: ReviewMatch[],
   context: ReviewFilterContext
@@ -408,6 +450,7 @@ function buildIssueTagCard(
   const contextLabel = getContextLabel(context);
   const lossesWithTag = losses.filter((match) => getIssueTags(match).includes(tag));
   const tagLossShare = losses.length ? count / losses.length : 0;
+  const tagWinShare = wins.length ? winsWithTag / wins.length : 0;
   const deckFocus = getDominantGroupLabel(lossesWithTag, (match) => match.deckName);
   const matchupFocus = getDominantGroupLabel(
     lossesWithTag,
@@ -417,31 +460,33 @@ function buildIssueTagCard(
     !context.deckId && deckFocus && deckFocus.share >= 0.55 ? deckFocus.label : null;
   const focusedMatchupLabel =
     matchupFocus && matchupFocus.share >= 0.5 ? matchupFocus.label : null;
-
-  const comparisonLine = winsWithTag
-    ? ` It appears in only ${winsWithTag} win${winsWithTag === 1 ? "" : "s"}, so the gap is real.`
-    : " It rarely shows up in wins.";
+  const tagEvidence = formatTaggedComparison(
+    tag,
+    winsWithTag,
+    wins.length,
+    count,
+    losses.length
+  );
   const focusLine = focusedMatchupLabel
-    ? ` It is concentrated in losses into ${focusedMatchupLabel}.`
+    ? ` Most of those losses are into ${focusedMatchupLabel}.`
     : focusedDeckLabel
-      ? ` It is concentrated in ${focusedDeckLabel} losses.`
+      ? ` Most of those losses are with ${focusedDeckLabel}.`
       : "";
+  const confidenceLabel = getRateDifferenceLabel(tagLossShare, tagWinShare);
+
   return {
     key: "issue-tag",
     title: focusedDeckLabel
-      ? `${tag} is your clearest leak with ${focusedDeckLabel}`
-      : `"${tag}" is your most common loss tag`,
-    explanation: `${focusedDeckLabel ? focusedDeckLabel : "This pattern"} keeps losing through ${tag} in ${contextLabel}.${comparisonLine}${focusLine}`,
-    evidence: `${count} of ${losses.length} losses tagged with "${tag}".${getEarlySignalSuffix(
-      losses.length
-    )}`,
-    recommendation: `Next test: ${tagLossShare >= 0.65
-      ? `play a short focused block and tag what you lose first once ${tag} starts to matter`
-      : "keep tagging when it shows up so you can separate a real pattern from normal variance"}.`,
-    confidenceLabel: getConfidenceLabel({
-      sampleSize: count,
-      concentration: tagLossShare,
-    }),
+      ? `"${tag}" is showing up in ${focusedDeckLabel} losses`
+      : `"${tag}" is showing up in your losses`,
+    explanation: `${tagEvidence} In ${contextLabel}, that points to a possible failure pattern rather than a solved deck change.${focusLine}`,
+    evidence: `${formatTaggedFraction(count, losses.length)} losses tagged, ${formatTaggedFraction(
+      winsWithTag,
+      wins.length
+    )} wins tagged.${getEarlySignalSuffix(losses.length + wins.length)}`,
+    recommendation:
+      `What to do next: in the next 5 games where "${tag}" happens, add one note saying what caused it and whether it was matchup pressure, a deck issue, sequencing, or an opening-hand problem.`,
+    confidenceLabel,
     tone: "rose",
     ctaLabel: "Review losses",
     ctaHref: buildBaseMatchesHref(context, {
@@ -470,25 +515,53 @@ function buildPositiveTagCard(
   }
 
   const [tag, count] = mostCommon;
+  const losses = matches.filter((match) => match.result === "loss");
+  const lossesWithTag = losses.filter((match) =>
+    getPositiveTags(match).includes(tag)
+  ).length;
   const contextLabel = getContextLabel(context);
+  const winShare = wins.length ? count / wins.length : 0;
+  const lossShare = losses.length ? lossesWithTag / losses.length : 0;
+  const strongSignal = count >= 3 && winShare >= lossShare + 0.15;
+  const confidenceLabel = strongSignal
+    ? getRateDifferenceLabel(winShare, lossShare)
+    : getConfidenceLabel({
+        sampleSize: count + lossesWithTag,
+        concentration: Math.max(winShare, lossShare),
+      });
+  const evidence = formatTaggedComparison(
+    tag,
+    count,
+    wins.length,
+    lossesWithTag,
+    losses.length
+  );
 
   return {
     key: "positive-tag",
-    title: `"${tag}" appears often in your wins`,
-    explanation: `"${tag}" is showing up in the games you actually convert with ${contextLabel}. That usually means the line is helping more than it is costing you.`,
-    evidence: `${count} of ${wins.length} wins tagged with "${tag}".${getEarlySignalSuffix(
-      wins.length
-    )}`,
+    title: strongSignal
+      ? `"${tag}" is showing a positive pattern`
+      : `"${tag}" is linked to some of your wins`,
+    explanation: strongSignal
+      ? `${evidence} In ${contextLabel}, that makes "${tag}" worth tracking as part of your winning setup, but it is still not proof by itself.`
+      : `${evidence} In ${contextLabel}, "${tag}" is showing up in some wins, but the sample is not strong enough to treat it as a real edge yet.`,
+    evidence: `${formatTaggedFraction(count, wins.length)} wins tagged, ${formatTaggedFraction(
+      lossesWithTag,
+      losses.length
+    )} losses tagged.${getEarlySignalSuffix(wins.length + losses.length)}`,
     recommendation:
-      "Next test: keep this line in the list for one more sample block before cutting it on feel.",
-    confidenceLabel: getConfidenceLabel({
-      sampleSize: count,
-      concentration: wins.length ? count / wins.length : 0,
-    }),
+      `What to do next: for your next 5 games, keep tagging "${tag}" and add a short note saying what made it happen, for example prize map, tech card, setup turn, or opponent mistake.`,
+    confidenceLabel,
     tone: "emerald",
-    ctaLabel: context.deckId ? "Open deck" : "Log next game",
-    ctaHref: context.deckId ? `/decks/${context.deckId}` : "/matches/new",
-    score: count * 1.5 + (wins.length ? (count / wins.length) * 18 : 0),
+    ctaLabel: "Log next game",
+    ctaHref: context.deckVersionId
+      ? `/matches/new?deck_version_id=${context.deckVersionId}`
+      : "/matches/new",
+    score:
+      count * 1.4 +
+      winShare * 16 -
+      lossShare * 12 +
+      (strongSignal ? 12 : 0),
   };
 }
 
