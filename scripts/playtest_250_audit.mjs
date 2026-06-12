@@ -785,7 +785,7 @@ async function main() {
   const matchupHero = stripWhitespace(matchupRoute?.bodyText || "")
     .match(/Actionable leak([\s\S]{0,260})(Matchup breakdown|Deck All decks|Deck version All versions)/i)?.[1]?.trim() || null;
   const deckSignal = stripWhitespace(deckRoute?.bodyText || "")
-    .match(/Active version([\s\S]{0,220})(Current mission|List status|Version notes)/i)?.[1]?.trim() || null;
+    .match(/Version evidence([\s\S]{0,320})(Add your first test version|Set up an active test version|Untitled version|v1|v2|v3)/i)?.[1]?.trim() || null;
   const matchesLine = matchesRoute?.bodyText
     ?.split("\n")
     .map((line) => line.trim())
@@ -869,10 +869,10 @@ async function main() {
   const aggregateBody = await publicPage.locator("body").innerText();
   const aggregateProfile = {
     aggregateVisible:
-      aggregateBody.includes("GAMES LOGGED") &&
-      aggregateBody.includes("RECORD") &&
-      aggregateBody.includes("WIN RATE") &&
-      !aggregateBody.includes("Analytics are private on this profile."),
+      /games logged/i.test(aggregateBody) &&
+      /record/i.test(aggregateBody) &&
+      /win rate/i.test(aggregateBody) &&
+      !/Analytics are private on this profile\./i.test(aggregateBody),
   };
   await screenshot(publicPage, "profile_public_aggregate");
 

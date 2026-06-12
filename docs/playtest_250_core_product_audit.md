@@ -20,9 +20,9 @@ Date: 2026-06-12
 
 ## Review
 
-- Review hero text: Opening hands are hurting your results 10
+- Review hero text: Mega Greninja is your priority watchlist 10
 - Review should continue surfacing repeated loss tags and positive keep signals without overclaiming on Rogue Box.
-- Review body sample: SixPrizer Overview Log game Review Logs Decks Matchups Profile REVIEW MODE Opening hands are hurting your results 108-111-31 across 250 logged games SixPrizer Analysis mode Review Turn saved games, tags, and deck versions into actual coaching reads. Deck All decks Playtest 250 - Charizard Pressure Playtest 250 - Contro
+- Review body sample: SixPrizer Overview Log game Review Logs Decks Matchups Profile REVIEW MODE Mega Greninja is your priority watchlist 108-111-31 across 250 logged games SixPrizer Analysis mode Review Turn saved games, tags, and deck versions into actual coaching reads. Deck All decks Playtest 250 - Charizard Pressure Playtest 250 - Cont
 
 ## Matchups
 
@@ -37,5 +37,5 @@ Date: 2026-06-12
 
 ## Decks / Versions
 
-- Version signal sample: v3 Anti-Bench BEST CURRENT READ v2 Vessel Package 47% TC
+- Version signal sample: v2 Vessel Package is showing the cleanest starts so far 71% good or great openings versus 43% on v1 Turbo. This is a meaningful opening-quality gap, not just a tiny sample.
 - Raging Bolt and Gardevoir versions both present meaningful improvement signals.

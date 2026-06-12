@@ -46,6 +46,10 @@ export type ReviewAnalysis = {
   cards: ReviewInsightCard[];
 };
 
+type ScoredReviewInsightCard = ReviewInsightCard & {
+  score: number;
+};
+
 type QualityField =
   | "start_quality"
   | "opening_hand_quality"
@@ -65,13 +69,15 @@ function getSampleStatus(total: number) {
   if (total < 10) {
     return {
       label: "Early signal",
-      reason: "Patterns are starting to show, but counts still matter more than percentages.",
+      reason:
+        "Patterns are starting to show, but counts still matter more than percentages.",
     };
   }
 
   return {
     label: "Actionable review",
-    reason: "There is enough logged signal here to review before changing the list.",
+    reason:
+      "There is enough logged signal here to review before changing the list.",
   };
 }
 
@@ -83,7 +89,10 @@ function getPositiveTags(match: ReviewMatch) {
   return match.metadata.positive_tags ?? [];
 }
 
-function getMostCommonTag(matches: ReviewMatch[], selector: (match: ReviewMatch) => string[]) {
+function getMostCommonTag(
+  matches: ReviewMatch[],
+  selector: (match: ReviewMatch) => string[]
+) {
   const counts = new Map<string, number>();
 
   matches.forEach((match) => {
@@ -92,8 +101,10 @@ function getMostCommonTag(matches: ReviewMatch[], selector: (match: ReviewMatch)
     });
   });
 
-  return Array.from(counts.entries())
-    .sort((left, right) => right[1] - left[1])[0] ?? null;
+  return (
+    Array.from(counts.entries()).sort((left, right) => right[1] - left[1])[0] ??
+    null
+  );
 }
 
 function buildBaseMatchesHref(
@@ -144,14 +155,46 @@ function getQualityFieldLabel(field: QualityField): string {
 
 function getQualityInsightTitle(field: QualityField): string {
   if (field === "start_quality") return "Poor starts are costing you games";
-  if (field === "opening_hand_quality") return "Opening hands are hurting your results";
-  return "Sequencing issues are costing you games";
+  if (field === "opening_hand_quality")
+    return "Opening hands are hurting your results";
+  return "Sequencing is costing games";
+}
+
+function getDominantGroupLabel(
+  matches: ReviewMatch[],
+  selector: (match: ReviewMatch) => string
+) {
+  const counts = new Map<string, number>();
+
+  matches.forEach((match) => {
+    const key = selector(match).trim();
+    if (!key) return;
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  });
+
+  const topGroup = Array.from(counts.entries()).sort((left, right) => {
+    if (right[1] !== left[1]) {
+      return right[1] - left[1];
+    }
+
+    return left[0].localeCompare(right[0]);
+  })[0];
+
+  if (!topGroup) {
+    return null;
+  }
+
+  return {
+    label: topGroup[0],
+    count: topGroup[1],
+    share: matches.length ? topGroup[1] / matches.length : 0,
+  };
 }
 
 function buildMatchupLeakCard(
   matches: ReviewMatch[],
   context: ReviewFilterContext
-): ReviewInsightCard | null {
+): ScoredReviewInsightCard | null {
   const grouped = new Map<string, ReviewMatch[]>();
 
   matches.forEach((match) => {
@@ -163,7 +206,9 @@ function buildMatchupLeakCard(
   const candidates = Array.from(grouped.entries())
     .map(([opponent, groupedMatches]) => {
       const record = countMatchResults(groupedMatches);
-      const winRate = record.total ? Math.round((record.wins / record.total) * 100) : 0;
+      const winRate = record.total
+        ? Math.round((record.wins / record.total) * 100)
+        : 0;
       const commonIssue = getMostCommonTag(
         groupedMatches.filter((match) => match.result === "loss"),
         getIssueTags
@@ -194,30 +239,38 @@ function buildMatchupLeakCard(
 
   const issueLine =
     topLeak.commonIssue && topLeak.commonIssue[1] >= 2
-      ? ` "${topLeak.commonIssue[0]}" is the most common loss tag — you tagged it ${topLeak.commonIssue[1]} times in those losses.`
+      ? ` "${topLeak.commonIssue[0]}" is the most common loss tag, and you logged it ${topLeak.commonIssue[1]} times in those losses.`
       : "";
 
   return {
     key: "matchup-leak",
     title: `${topLeak.opponent} is your priority watchlist`,
-    explanation: `${topLeak.opponent} has your worst win rate in ${getContextLabel(context)}. Keep logging normally — when this matchup appears, tag what breaks first instead of changing the list based on feel.${issueLine}`,
+    explanation: `${topLeak.opponent} has your worst win rate in ${getContextLabel(
+      context
+    )}. Keep logging normally, and when this matchup appears, tag what breaks first instead of changing the list on feel.${issueLine}`,
     evidence: `${formatMatchRecord(
       topLeak.record.wins,
       topLeak.record.losses,
       topLeak.record.ties
-    )} across ${topLeak.record.total} games.${getEarlySignalSuffix(topLeak.record.total)}`,
+    )} across ${topLeak.record.total} games.${getEarlySignalSuffix(
+      topLeak.record.total
+    )}`,
     tone: "rose",
     ctaLabel: "View matching games",
     ctaHref: buildBaseMatchesHref(context, {
       opponent_archetype: topLeak.opponent,
     }),
+    score:
+      topLeak.record.total * 1.6 +
+      (1 - topLeak.winRate / 100) * 40 +
+      (topLeak.commonIssue?.[1] ?? 0) * 2,
   };
 }
 
 function buildQualityPatternCard(
   matches: ReviewMatch[],
   context: ReviewFilterContext
-): ReviewInsightCard | null {
+): ScoredReviewInsightCard | null {
   const fields: QualityField[] = [
     "start_quality",
     "opening_hand_quality",
@@ -248,6 +301,15 @@ function buildQualityPatternCard(
         lowRate,
         highRate,
         delta: lowRate - highRate,
+        score:
+          low.length * 0.15 +
+          lowLosses * 0.45 +
+          (lowRate - highRate) * 35 +
+          (field === "sequencing_quality"
+            ? 7
+            : field === "start_quality"
+              ? 2
+              : 0),
       };
     })
     .filter(
@@ -256,7 +318,7 @@ function buildQualityPatternCard(
         candidate.lowLosses >= 2 &&
         (candidate.delta >= 0.15 || candidate.lowRate >= 0.6)
     )
-    .sort((left, right) => right.delta - left.delta)[0];
+    .sort((left, right) => right.score - left.score)[0];
 
   if (!strongest) {
     return null;
@@ -264,28 +326,39 @@ function buildQualityPatternCard(
 
   const fieldLabel = getQualityFieldLabel(strongest.field);
   const lossRatePct = Math.round(strongest.lowRate * 100);
-  const comparisonLine = strongest.high.length >= 2
-    ? ` Compare that to ${strongest.highLosses} of ${strongest.high.length} games with a Good or Great ${fieldLabel}.`
-    : "";
+  const comparisonLine =
+    strongest.high.length >= 2
+      ? ` Compare that to ${strongest.highLosses} of ${strongest.high.length} games with a Good or Great ${fieldLabel}.`
+      : "";
+  const nextTestLine =
+    strongest.field === "sequencing_quality"
+      ? " Next test: review your turn-two setup and midgame prize-map decisions across the next few games."
+      : strongest.field === "opening_hand_quality"
+        ? " Next test: tag whether the bad hands came from missing basics, draw, or early search."
+        : " Next test: log the next few games with extra focus on what makes the first two turns unstable.";
 
   return {
     key: "quality-pattern",
     title: getQualityInsightTitle(strongest.field),
-    explanation: `You lose ${lossRatePct}% of games when your ${fieldLabel} is Bad or Okay in ${getContextLabel(context)}.${comparisonLine} Before changing tech cards, check whether this pattern holds across the full sample.`,
-    evidence: `${strongest.lowLosses} of ${strongest.low.length} games with a bad or okay ${fieldLabel} were losses.${getEarlySignalSuffix(strongest.known.length)}`,
+    explanation: `You lose ${lossRatePct}% of games when your ${fieldLabel} is Bad or Okay in ${getContextLabel(
+      context
+    )}.${comparisonLine}${nextTestLine}`,
+    evidence: `${strongest.lowLosses} of ${strongest.low.length} games with a bad or okay ${fieldLabel} were losses.${getEarlySignalSuffix(
+      strongest.known.length
+    )}`,
     tone: "gold",
     ctaLabel: "Log next game",
-    ctaHref:
-      context.deckVersionId
-        ? `/matches/new?deck_version_id=${context.deckVersionId}`
-        : "/matches/new",
+    ctaHref: context.deckVersionId
+      ? `/matches/new?deck_version_id=${context.deckVersionId}`
+      : "/matches/new",
+    score: strongest.score,
   };
 }
 
 function buildIssueTagCard(
   matches: ReviewMatch[],
   context: ReviewFilterContext
-): ReviewInsightCard | null {
+): ScoredReviewInsightCard | null {
   const losses = matches.filter((match) => match.result === "loss");
   const mostCommon = getMostCommonTag(losses, getIssueTags);
 
@@ -297,28 +370,60 @@ function buildIssueTagCard(
   const wins = matches.filter((match) => match.result === "win");
   const winsWithTag = wins.filter((match) => getIssueTags(match).includes(tag)).length;
   const contextLabel = getContextLabel(context);
+  const lossesWithTag = losses.filter((match) => getIssueTags(match).includes(tag));
+  const tagLossShare = losses.length ? count / losses.length : 0;
+  const deckFocus = getDominantGroupLabel(lossesWithTag, (match) => match.deckName);
+  const matchupFocus = getDominantGroupLabel(
+    lossesWithTag,
+    (match) => match.opponentArchetype
+  );
+  const focusedDeckLabel =
+    !context.deckId && deckFocus && deckFocus.share >= 0.55 ? deckFocus.label : null;
+  const focusedMatchupLabel =
+    matchupFocus && matchupFocus.share >= 0.5 ? matchupFocus.label : null;
 
   const comparisonLine = winsWithTag
     ? ` It appears in only ${winsWithTag} win${winsWithTag === 1 ? "" : "s"}, so the gap is real.`
     : " It rarely shows up in wins.";
+  const focusLine = focusedMatchupLabel
+    ? ` It is concentrated in losses into ${focusedMatchupLabel}.`
+    : focusedDeckLabel
+      ? ` It is concentrated in ${focusedDeckLabel} losses.`
+      : "";
+  const nextTestLine =
+    tagLossShare >= 0.65
+      ? ` Next test: play a short focused block and tag what you lose first once ${tag} starts to matter.`
+      : " Next test: keep tagging when it shows up so you can separate a real pattern from normal variance.";
 
   return {
     key: "issue-tag",
-    title: `"${tag}" is your most common loss tag`,
-    explanation: `You tagged "${tag}" in ${count} of ${losses.length} losses with ${contextLabel}.${comparisonLine} That is the clearest issue signal in your current data.`,
-    evidence: `${count} of ${losses.length} losses tagged with "${tag}".${getEarlySignalSuffix(losses.length)}`,
+    title: focusedDeckLabel
+      ? `${tag} is your clearest leak with ${focusedDeckLabel}`
+      : `"${tag}" is your most common loss tag`,
+    explanation: `You tagged "${tag}" in ${count} of ${losses.length} losses with ${contextLabel}.${comparisonLine}${focusLine}${nextTestLine}`,
+    evidence: `${count} of ${losses.length} losses tagged with "${tag}".${getEarlySignalSuffix(
+      losses.length
+    )}`,
     tone: "rose",
     ctaLabel: "Review losses",
     ctaHref: buildBaseMatchesHref(context, {
       result: "loss",
     }),
+    score:
+      count * 2 +
+      tagLossShare * 18 +
+      (focusedDeckLabel ? 18 : 0) +
+      (focusedMatchupLabel ? 8 : 0) +
+      (deckFocus && deckFocus.count >= 6 ? 12 : 0) +
+      (winsWithTag === 0 ? 8 : 0) -
+      winsWithTag,
   };
 }
 
 function buildPositiveTagCard(
   matches: ReviewMatch[],
   context: ReviewFilterContext
-): ReviewInsightCard | null {
+): ScoredReviewInsightCard | null {
   const wins = matches.filter((match) => match.result === "win");
   const mostCommon = getMostCommonTag(wins, getPositiveTags);
 
@@ -332,18 +437,21 @@ function buildPositiveTagCard(
   return {
     key: "positive-tag",
     title: `"${tag}" appears often in your wins`,
-    explanation: `You marked "${tag}" in ${count} of ${wins.length} wins with ${contextLabel}. That usually signals a tech or line that is worth keeping while you test other changes. Do not cut it before logging more games.`,
-    evidence: `${count} of ${wins.length} wins tagged with "${tag}".${getEarlySignalSuffix(wins.length)}`,
+    explanation: `You marked "${tag}" in ${count} of ${wins.length} wins with ${contextLabel}. That usually signals a tech or line worth keeping while you test other changes. Do not cut it before logging more games.`,
+    evidence: `${count} of ${wins.length} wins tagged with "${tag}".${getEarlySignalSuffix(
+      wins.length
+    )}`,
     tone: "emerald",
     ctaLabel: context.deckId ? "Open deck" : "Log next game",
     ctaHref: context.deckId ? `/decks/${context.deckId}` : "/matches/new",
+    score: count * 1.5 + (wins.length ? (count / wins.length) * 18 : 0),
   };
 }
 
 function buildVersionSignalCard(
   matches: ReviewMatch[],
   context: ReviewFilterContext
-): ReviewInsightCard | null {
+): ScoredReviewInsightCard | null {
   if (!context.deckId || context.deckVersionId) {
     return null;
   }
@@ -406,46 +514,65 @@ function buildVersionSignalCard(
     tone: "blue",
     ctaLabel: "Review deck versions",
     ctaHref: `/decks/${context.deckId}#versions`,
+    score: delta + best.matches.length + worst.matches.length,
   };
 }
 
 function buildNextActionCard(
   matches: ReviewMatch[],
-  context: ReviewFilterContext
+  context: ReviewFilterContext,
+  rankedCards: ReviewInsightCard[]
 ): ReviewInsightCard {
-  const worstMatchup = buildMatchupLeakCard(matches, context);
-  const issueCard = buildIssueTagCard(matches, context);
-  const versionCard = buildVersionSignalCard(matches, context);
+  const primaryCard = rankedCards[0];
+  const matchupCard = rankedCards.find((card) => card.key === "matchup-leak");
+  const versionCard = rankedCards.find((card) => card.key === "version-signal");
 
-  if (worstMatchup) {
-    const matchup = worstMatchup.title.replace(" is your priority watchlist", "");
+  if (primaryCard?.key === "matchup-leak" && matchupCard) {
+    const matchup = matchupCard.title.replace(" is your priority watchlist", "");
 
     return {
       key: "next-action",
       title: "What to test next",
       explanation: `Keep logging normally. When ${matchup} appears, tag the first thing that goes wrong instead of changing the list on feel. Use the watchlist to capture one more clean review game.`,
-      evidence: "One more structured game against this matchup sharpens the read.",
+      evidence:
+        "One more structured game against this matchup sharpens the read.",
       tone: "blue",
       ctaLabel: "Log next game",
-      ctaHref:
-        context.deckVersionId
-          ? `/matches/new?deck_version_id=${context.deckVersionId}`
-          : "/matches/new",
+      ctaHref: context.deckVersionId
+        ? `/matches/new?deck_version_id=${context.deckVersionId}`
+        : "/matches/new",
     };
   }
 
-  if (issueCard) {
+  if (primaryCard?.key === "issue-tag") {
     return {
       key: "next-action",
       title: "What to test next",
-      explanation: "Keep the next block clean and keep tagging the repeated issue honestly. That is what turns a suspicion into a real coaching read — not changing the list early.",
-      evidence: "Another small structured sample is more valuable than an instant deck change.",
+      explanation:
+        "Keep the next block clean and keep tagging the repeated issue honestly. That is what turns a suspicion into a real coaching read, not changing the list early.",
+      evidence:
+        "Another small structured sample is more valuable than an instant deck change.",
       tone: "blue",
       ctaLabel: "Log next game",
-      ctaHref:
-        context.deckVersionId
-          ? `/matches/new?deck_version_id=${context.deckVersionId}`
-          : "/matches/new",
+      ctaHref: context.deckVersionId
+        ? `/matches/new?deck_version_id=${context.deckVersionId}`
+        : "/matches/new",
+    };
+  }
+
+  if (primaryCard?.key === "quality-pattern") {
+    return {
+      key: "next-action",
+      title: "What to test next",
+      explanation:
+        "Log the next few games with the same quality tags and one concrete checkpoint in mind. You want to learn whether the pattern is fixable through piloting, mulligan decisions, or list slots.",
+      evidence:
+        "Consistent quality tagging is what makes this signal trustworthy.",
+      tone: "blue",
+      ctaLabel: "Log next game",
+      ctaHref: context.deckVersionId
+        ? `/matches/new?deck_version_id=${context.deckVersionId}`
+        : "/matches/new",
     };
   }
 
@@ -453,8 +580,10 @@ function buildNextActionCard(
     return {
       key: "next-action",
       title: "What to test next",
-      explanation: "Keep comparing versions through logged games instead of memory. If the gap persists after 10 more games, then commit to the cleaner build.",
-      evidence: "Version comparisons are only useful when the sample keeps growing.",
+      explanation:
+        "Keep comparing versions through logged games instead of memory. If the gap persists after 10 more games, then commit to the cleaner build.",
+      evidence:
+        "Version comparisons are only useful when the sample keeps growing.",
       tone: "blue",
       ctaLabel: "Review deck versions",
       ctaHref: versionCard.ctaHref,
@@ -464,14 +593,15 @@ function buildNextActionCard(
   return {
     key: "next-action",
     title: "What to test next",
-    explanation: "No single leak is dominant yet. Keep logging normal games with clean tags and quality ratings until one pattern separates itself. Every log should answer a testing question.",
-    evidence: "A five-game block with consistent tagging is the fastest path to a real coaching read.",
+    explanation:
+      "No single leak is dominant yet. Keep logging normal games with clean tags and quality ratings until one pattern separates itself. Every log should answer a testing question.",
+    evidence:
+      "A five-game block with consistent tagging is the fastest path to a real coaching read.",
     tone: "blue",
     ctaLabel: "Log next game",
-    ctaHref:
-      context.deckVersionId
-        ? `/matches/new?deck_version_id=${context.deckVersionId}`
-        : "/matches/new",
+    ctaHref: context.deckVersionId
+      ? `/matches/new?deck_version_id=${context.deckVersionId}`
+      : "/matches/new",
   };
 }
 
@@ -482,27 +612,31 @@ export function buildReviewAnalysis(
   const record = countMatchResults(matches);
   const sampleStatus = getSampleStatus(record.total);
 
-  // Priority: deck quality → issue tags → matchup → positive tags → version → next action
-  const qualityCard = buildQualityPatternCard(matches, context);
-  const issueTagCard = buildIssueTagCard(matches, context);
-  const matchupCard = buildMatchupLeakCard(matches, context);
-  const positiveCard = buildPositiveTagCard(matches, context);
-  const versionCard = buildVersionSignalCard(matches, context);
-  const nextActionCard = buildNextActionCard(matches, context);
+  const rankedCards = [
+    buildIssueTagCard(matches, context),
+    buildQualityPatternCard(matches, context),
+    buildMatchupLeakCard(matches, context),
+    buildPositiveTagCard(matches, context),
+    buildVersionSignalCard(matches, context),
+  ]
+    .filter((card): card is ScoredReviewInsightCard => Boolean(card))
+    .sort((left, right) => right.score - left.score)
+    .map((card) => {
+      const { score, ...nextCard } = card;
+      void score;
+      return nextCard;
+    });
 
-  const cards = [
-    qualityCard,
-    issueTagCard,
-    matchupCard,
-    positiveCard,
-    versionCard,
-    nextActionCard,
-  ].filter((card): card is ReviewInsightCard => Boolean(card));
+  const cards = [...rankedCards, buildNextActionCard(matches, context, rankedCards)];
 
   return {
     sampleStatusLabel: sampleStatus.label,
     sampleStatusReason: sampleStatus.reason,
-    sampleSummary: `${formatMatchRecord(record.wins, record.losses, record.ties)} across ${record.total} logged games`,
+    sampleSummary: `${formatMatchRecord(
+      record.wins,
+      record.losses,
+      record.ties
+    )} across ${record.total} logged games`,
     cards,
   };
 }

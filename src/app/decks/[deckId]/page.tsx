@@ -44,6 +44,8 @@ import { LATEST_FORMAT } from "@/lib/formats";
 import { buildSessionCoachInsight } from "@/lib/session-coach";
 import {
   countMatchResults,
+  parseMatchMetadata,
+  type MatchMetadata,
   type MatchResult,
 } from "@/lib/match-types";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
@@ -181,6 +183,37 @@ function getVersionTestStatus(matches: { result: MatchResult }[]) {
   };
 }
 
+function getQualityRate(
+  matches: { metadata: MatchMetadata }[],
+  field: "opening_hand_quality" | "sequencing_quality"
+) {
+  const known = matches.filter((match) => Boolean(match.metadata[field]));
+  const strong = known.filter((match) => {
+    const value = match.metadata[field];
+    return value === "good" || value === "great";
+  }).length;
+
+  return {
+    known: known.length,
+    strong,
+    percent: known.length ? Math.round((strong / known.length) * 100) : null,
+  };
+}
+
+function getMostCommonLossTag(matches: { result: MatchResult; match_tags: { tag: string }[] | null }[]) {
+  const counts = new Map<string, number>();
+
+  matches
+    .filter((match) => match.result === "loss")
+    .forEach((match) => {
+      match.match_tags?.forEach((tag) => {
+        counts.set(tag.tag, (counts.get(tag.tag) ?? 0) + 1);
+      });
+    });
+
+  return Array.from(counts.entries()).sort((left, right) => right[1] - left[1])[0] ?? null;
+}
+
 function getSuggestionBadgeTone(confidence: "high" | "medium" | "low" | "none") {
   return confidence === "high"
     ? "bg-emerald-500/14 text-emerald-200"
@@ -230,7 +263,7 @@ export default async function DeckDetailPage({
   const { data: matches, error: matchesError } = await supabase
     .from("matches")
     .select(
-      "deck_version_id, opponent_archetype, result, went_first, event_type, played_at, match_tags(tag)"
+      "deck_version_id, opponent_archetype, result, went_first, event_type, played_at, metadata, match_tags(tag)"
     )
     .eq("user_id", user.id)
     .order("played_at", { ascending: false });
@@ -246,6 +279,7 @@ export default async function DeckDetailPage({
     went_first: boolean | null;
     event_type: string | null;
     played_at: string;
+    metadata: MatchMetadata | Record<string, unknown> | null;
     match_tags: { tag: string }[] | null;
   }[];
 
@@ -255,14 +289,30 @@ export default async function DeckDetailPage({
       const versionMatches = matchRows.filter(
         (match) => match.deck_version_id === version.id
       );
+      const normalizedMatches = versionMatches.map((match) => ({
+        ...match,
+        metadata: parseMatchMetadata(match.metadata),
+      }));
       const performance = countMatchResults(versionMatches);
+      const openingQuality = getQualityRate(
+        normalizedMatches,
+        "opening_hand_quality"
+      );
+      const sequencingQuality = getQualityRate(
+        normalizedMatches,
+        "sequencing_quality"
+      );
+      const topLossTag = getMostCommonLossTag(versionMatches);
 
       return {
         versionId: version.id,
         analysis,
         parseError,
-        versionMatches,
+        versionMatches: normalizedMatches,
         performance,
+        openingQuality,
+        sequencingQuality,
+        topLossTag,
       };
     });
 
@@ -310,6 +360,67 @@ export default async function DeckDetailPage({
 
       return right.performance.total - left.performance.total;
     })[0];
+  const versionEvidenceRows = deckVersions.map((version) => {
+    const insight = versionInsightById.get(version.id);
+    if (!insight) {
+      return null;
+    }
+
+    const openingRate = insight.openingQuality.percent;
+    const sequencingRate = insight.sequencingQuality.percent;
+    const total = insight.performance.total;
+    const winRate = total
+      ? Math.round((insight.performance.wins / total) * 100)
+      : null;
+
+    return {
+      versionId: version.id,
+      versionName: safeText(version.name, "Untitled version"),
+      isActive: version.is_active,
+      total,
+      winRate,
+      openingRate,
+      openingKnown: insight.openingQuality.known,
+      sequencingRate,
+      sequencingKnown: insight.sequencingQuality.known,
+      topLossTag: insight.topLossTag,
+    };
+  }).filter((row): row is NonNullable<typeof row> => Boolean(row));
+  const versionsWithOpeningSignal = versionEvidenceRows
+    .filter((row) => row.openingRate !== null && row.openingKnown >= 4)
+    .sort((left, right) => (right.openingRate ?? 0) - (left.openingRate ?? 0));
+  const strongestOpeningVersion = versionsWithOpeningSignal[0] ?? null;
+  const weakestOpeningVersion =
+    versionsWithOpeningSignal.length > 1
+      ? versionsWithOpeningSignal[versionsWithOpeningSignal.length - 1]
+      : null;
+  const versionEvidenceSummary =
+    strongestOpeningVersion &&
+    weakestOpeningVersion &&
+    strongestOpeningVersion.versionId !== weakestOpeningVersion.versionId &&
+    (strongestOpeningVersion.openingRate ?? 0) - (weakestOpeningVersion.openingRate ?? 0) >= 10
+      ? {
+          title: `${strongestOpeningVersion.versionName} is showing the cleanest starts so far`,
+          detail: `${strongestOpeningVersion.openingRate}% good or great openings versus ${weakestOpeningVersion.openingRate}% on ${weakestOpeningVersion.versionName}.`,
+          evidence: strongestOpeningVersion.total >= 8 && weakestOpeningVersion.total >= 8
+            ? "This is a meaningful opening-quality gap, not just a tiny sample."
+            : "Useful early signal, but keep logging before you lock the list.",
+        }
+      : bestVersion
+        ? {
+            title: `${safeText(
+              deckVersions.find((version) => version.id === bestVersion.versionId)?.name,
+              "Version"
+            )} is stronger so far`,
+            detail: `${Math.round(
+              (bestVersion.performance.wins / bestVersion.performance.total) * 100
+            )}% win rate across ${bestVersion.performance.total} games.`,
+            evidence:
+              bestVersion.performance.total >= 8
+                ? "Use this as the current benchmark while you keep comparing versions."
+                : "Early signal only. Add more games before calling the test settled.",
+          }
+        : null;
 
   return (
     <main className={appShell}>
@@ -434,6 +545,98 @@ export default async function DeckDetailPage({
                         ? "Versions are what you log games with. Start by adding the build you actually want to test."
                         : "Manual archetype sets deck identity. Auto-detection below shows version-specific parser evidence."}
                     </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className={`p-5 ${glassPanelStrong}`}>
+                <div className="flex flex-col gap-4">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
+                      Version evidence
+                    </p>
+                    <h3 className="mt-2 text-lg font-semibold text-[#F8FAFC]">
+                      {versionEvidenceSummary?.title ?? "Version signal is still early"}
+                    </h3>
+                    <p className="mt-2 text-sm leading-6 text-[#94A3B8]/74">
+                      {versionEvidenceSummary?.detail ??
+                        "This panel compares opening quality, sequencing quality, and recurring loss tags so you can tell whether a version is actually cleaner or just running hot."}
+                    </p>
+                    <p className="mt-2 text-sm font-medium text-[#DCE8FF]">
+                      {versionEvidenceSummary?.evidence ??
+                        "Once each version has a real sample, the strongest signal should separate itself here."}
+                    </p>
+                  </div>
+
+                  <div className="grid gap-3">
+                    {versionEvidenceRows.map((row) => (
+                      <div
+                        key={row.versionId}
+                        className={`${premiumInset} grid gap-3 p-4 lg:grid-cols-[minmax(0,1fr)_repeat(4,minmax(0,140px))]`}
+                      >
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <p className="text-sm font-semibold text-[#F8FAFC]">
+                              {row.versionName}
+                            </p>
+                            {row.isActive ? (
+                              <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-emerald-200 shadow-[inset_0_0_0_1px_rgba(34,197,94,0.16)]">
+                                Active
+                              </span>
+                            ) : null}
+                          </div>
+                          <p className="mt-2 text-sm leading-6 text-[#94A3B8]/72">
+                            {row.topLossTag
+                              ? `Most common loss tag: ${row.topLossTag[0]} (${row.topLossTag[1]} losses)`
+                              : row.total
+                                ? "No repeated loss tag yet."
+                                : "No games logged yet for this version."}
+                          </p>
+                        </div>
+                        <div className={`${statCard} p-3`}>
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                            Games
+                          </p>
+                          <p className="mt-2 text-lg font-semibold text-[#F8FAFC]">
+                            {row.total}
+                          </p>
+                        </div>
+                        <div className={`${statCard} p-3`}>
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                            Win rate
+                          </p>
+                          <p className="mt-2 text-lg font-semibold text-[#F8FAFC]">
+                            {row.winRate !== null ? `${row.winRate}%` : "N/A"}
+                          </p>
+                        </div>
+                        <div className={`${statCard} p-3`}>
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                            Opening quality
+                          </p>
+                          <p className="mt-2 text-lg font-semibold text-[#F8FAFC]">
+                            {row.openingRate !== null ? `${row.openingRate}%` : "N/A"}
+                          </p>
+                          <p className="mt-1 text-[11px] text-[#94A3B8]/72">
+                            {row.openingKnown
+                              ? `${row.openingKnown} rated games`
+                              : "No opening ratings"}
+                          </p>
+                        </div>
+                        <div className={`${statCard} p-3`}>
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                            Sequencing quality
+                          </p>
+                          <p className="mt-2 text-lg font-semibold text-[#F8FAFC]">
+                            {row.sequencingRate !== null ? `${row.sequencingRate}%` : "N/A"}
+                          </p>
+                          <p className="mt-1 text-[11px] text-[#94A3B8]/72">
+                            {row.sequencingKnown
+                              ? `${row.sequencingKnown} rated games`
+                              : "No sequencing ratings"}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>

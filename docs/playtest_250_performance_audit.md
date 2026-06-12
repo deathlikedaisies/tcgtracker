@@ -4,22 +4,22 @@ Date: 2026-06-12
 
 ## Route timings
 
-- /matches/new: 3562ms
-- /matches/new: 3171ms
-- /matchups: 3108ms
-- /matchups: 2391ms
-- /matches: 1662ms
-- /matches: 1557ms
-- /decks: 1480ms
-- /decks/4b741cf6-8f28-4b2b-afea-45d085fffd83: 1371ms
-- /dashboard: 1187ms
-- /: 1136ms
-- /review: 1103ms
-- /demo: 1071ms
-- /dashboard: 1061ms
-- /settings/profile: 1040ms
-- /review: 1014ms
-- /settings/profile: 931ms
+- /decks/4b741cf6-8f28-4b2b-afea-45d085fffd83: 5694ms
+- /matches/new: 2923ms
+- /matches/new: 2923ms
+- /matchups: 2476ms
+- /matchups: 2142ms
+- /matches: 1596ms
+- /matches: 1442ms
+- /decks: 1404ms
+- /: 1196ms
+- /review: 1108ms
+- /dashboard: 1087ms
+- /settings/profile: 1050ms
+- /dashboard: 1041ms
+- /review: 981ms
+- /settings/profile: 935ms
+- /demo: 927ms
 - /u/domz_test: 0ms
 
 ## Notes

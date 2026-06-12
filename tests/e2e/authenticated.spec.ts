@@ -12,6 +12,25 @@ const authRoutes = [
   { path: "/settings/profile", heading: /Profile|Create your profile/i },
 ];
 
+async function setProfileVisibility(
+  page: import("@playwright/test").Page,
+  profileVisibility: "private" | "public" | "link_only",
+  analyticsVisibility: "private" | "aggregate_only" | "detailed"
+) {
+  await page.goto("/settings/profile");
+  await expectHeadingVisible(page, /Profile|Create your profile/i);
+  await page
+    .locator(`input[name="profile_visibility"][value="${profileVisibility}"]`)
+    .check({ force: true });
+  await page
+    .locator(
+      `input[name="analytics_visibility"][value="${analyticsVisibility}"]`
+    )
+    .check({ force: true });
+  await page.getByRole("button", { name: /Save profile/i }).click();
+  await expect(page.locator("body")).toContainText("Profile saved.");
+}
+
 test.describe("authenticated routes", () => {
   test.describe.configure({ mode: "serial" });
   test.setTimeout(90000);
@@ -45,6 +64,64 @@ test.describe("authenticated routes", () => {
     await page.waitForURL(/\/r\//, { timeout: 30000 });
     await expect(page.getByRole("heading").first()).toBeVisible();
     await expect(page.locator("body")).toContainText("Shared from SixPrizer");
+    await expect(page.locator("body")).not.toContainText(/match_id|Decklist/i);
     await expectNoAppError(page);
+  });
+
+  test("/review surfaces a specific seeded coaching signal", async ({ page }) => {
+    await page.goto("/review");
+
+    const coachHero = page
+      .getByText("Coach says")
+      .locator("xpath=ancestor::section[1]");
+
+    await expect(coachHero).toContainText(/Item Lock|Sequencing|Mega Greninja/i);
+    await expect(page.locator("body")).toContainText(/What to test next|Next test/i);
+    await expectNoAppError(page);
+  });
+
+  test("/decks detail shows version evidence for seeded deck versions", async ({
+    page,
+  }) => {
+    await page.goto("/decks");
+    await page
+      .locator('a[href^="/decks/"]:not([href="/decks"])')
+      .first()
+      .click();
+    await page.waitForURL(/\/decks\//, { timeout: 20000 });
+
+    await expect(page.locator("body")).toContainText(/Version evidence|Version signal/i);
+    await expect(page.locator("body")).toContainText(/v1|v2|v3/i);
+    await expect(page.locator("body")).toContainText(/Opening quality|Sequencing quality/i);
+    await expectNoAppError(page);
+  });
+
+  test("public aggregate-only profile shows safe summary stats", async ({
+    page,
+    browser,
+  }) => {
+    const handle = "domz_test";
+
+    await setProfileVisibility(page, "public", "aggregate_only");
+
+    try {
+      const anonymousContext = await browser.newContext();
+      const anonymousPage = await anonymousContext.newPage();
+
+      await anonymousPage.goto(`/u/${handle}`);
+      await expectHeadingVisible(anonymousPage, "Dom Zimmerman Test");
+      await expect(anonymousPage.locator("body")).toContainText(/games logged/i);
+      await expect(anonymousPage.locator("body")).toContainText(/record/i);
+      await expect(anonymousPage.locator("body")).toContainText(/win rate/i);
+      await expect(anonymousPage.locator("body")).not.toContainText(/match_id|decklist/i);
+      await expect(anonymousPage.locator("body")).not.toContainText(
+        /c9c7565b-9587-4e54-9d0b-a0c32e568d36/i
+      );
+      await expectNoAppError(anonymousPage);
+
+      await anonymousContext.close();
+    } finally {
+      await setProfileVisibility(page, "private", "private");
+    }
   });
 });
