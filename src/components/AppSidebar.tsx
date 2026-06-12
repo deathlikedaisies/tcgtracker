@@ -43,6 +43,7 @@ const navItems = [
   { href: "/matches", label: "Logs", section: "matches" as const, icon: ClipboardList },
   { href: "/decks", label: "Decks", section: "decks" as const, icon: Layers3 },
   { href: "/matchups", label: "Matchups", section: "matchups" as const, icon: BarChart3 },
+  { href: "/settings/profile", label: "Profile", section: "settings" as const, icon: Settings2 },
 ];
 
 export function AppSidebar({ current, deckLabel, insight }: AppSidebarProps) {
@@ -99,17 +100,6 @@ export function AppSidebar({ current, deckLabel, insight }: AppSidebarProps) {
             ) : null}
           </div>
         ) : null}
-
-        <div className={`${insight ? "mt-3" : "mt-auto"} pt-3`}>
-          <Link
-            href="/settings/profile"
-            aria-current={current === "settings" ? "page" : undefined}
-            className={current === "settings" ? navItemActive : navItem}
-          >
-            <Settings2 className="size-4 shrink-0" aria-hidden="true" />
-            Profile
-          </Link>
-        </div>
       </div>
     </aside>
   );

@@ -26,6 +26,7 @@ const navItems: {
   { href: "/matches", label: "Logs", shortLabel: "Logs", section: "matches" },
   { href: "/decks", label: "Decks", shortLabel: "Decks", section: "decks" },
   { href: "/matchups", label: "Matchups", shortLabel: "Match", section: "matchups" },
+  { href: "/settings/profile", label: "Profile", shortLabel: "Profile", section: "settings" },
 ];
 
 export function AppNav({ current }: AppNavProps) {
@@ -33,7 +34,7 @@ export function AppNav({ current }: AppNavProps) {
     <div className="grid gap-2">
       <nav
         aria-label="Primary"
-        className="grid w-full max-w-full grid-cols-6 gap-1.5 overflow-x-hidden rounded-[18px] bg-[linear-gradient(180deg,rgba(11,18,32,0.78),rgba(7,17,31,0.70))] p-1.5 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10),inset_0_1px_0_rgba(255,255,255,0.03)] backdrop-blur sm:w-auto sm:flex sm:flex-wrap sm:justify-end"
+        className="grid w-full max-w-full grid-cols-7 gap-1.5 overflow-x-hidden rounded-[18px] bg-[linear-gradient(180deg,rgba(11,18,32,0.78),rgba(7,17,31,0.70))] p-1.5 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10),inset_0_1px_0_rgba(255,255,255,0.03)] backdrop-blur sm:w-auto sm:flex sm:flex-wrap sm:justify-end"
       >
         {navItems.map((item) => {
           const isCurrent = item.section === current;
@@ -57,19 +58,6 @@ export function AppNav({ current }: AppNavProps) {
           );
         })}
       </nav>
-      <div className="flex justify-end">
-        <Link
-          href="/settings/profile"
-          aria-current={current === "settings" ? "page" : undefined}
-          className={
-            current === "settings"
-              ? "rounded-full bg-[#4F8CFF]/12 px-3 py-1 text-xs font-semibold text-[#DCE8FF]"
-              : "rounded-full px-3 py-1 text-xs font-semibold text-[#94A3B8] transition hover:text-[#F8FAFC]"
-          }
-        >
-          Profile
-        </Link>
-      </div>
     </div>
   );
 }
