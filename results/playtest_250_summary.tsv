@@ -1,0 +1,79 @@
+section	label	detail	value
+overview	total_decks		8
+overview	total_versions		18
+overview	total_matches		250
+overview	total_tags		459
+results	wins		108
+results	losses		111
+results	ties		31
+turn_order	first		88
+turn_order	second		112
+turn_order	unknown		50
+matches_per_deck	Playtest 250 - Raging Bolt Lab		80
+matches_per_deck	Playtest 250 - Dragapult Dusknoir		45
+matches_per_deck	Playtest 250 - Charizard Pressure		35
+matches_per_deck	Playtest 250 - Gardevoir Refinement		30
+matches_per_deck	Playtest 250 - Mega Greninja Tempo		20
+matches_per_deck	Playtest 250 - Control Counterlab		15
+matches_per_deck	Playtest 250 - Experimental Turbo		15
+matches_per_deck	Playtest 250 - Rogue Box		10
+matches_per_version	Playtest 250 - Raging Bolt Lab | v2 Vessel Package		34
+matches_per_version	Playtest 250 - Raging Bolt Lab | v3 Anti-Bench		32
+matches_per_version	Playtest 250 - Charizard Pressure | v2 Item Lock Prep		23
+matches_per_version	Playtest 250 - Dragapult Dusknoir | v2 Consistency		20
+matches_per_version	Playtest 250 - Gardevoir Refinement | v2 Recovery		18
+matches_per_version	Playtest 250 - Dragapult Dusknoir | v1 Bare Bones		15
+matches_per_version	Playtest 250 - Raging Bolt Lab | v1 Turbo		14
+matches_per_version	Playtest 250 - Charizard Pressure | v1 Straight		12
+matches_per_version	Playtest 250 - Gardevoir Refinement | v1 Baseline		12
+matches_per_version	Playtest 250 - Dragapult Dusknoir | v3 Prize Mapping		10
+matches_per_version	Playtest 250 - Mega Greninja Tempo | v1 Raw Tempo		10
+matches_per_version	Playtest 250 - Mega Greninja Tempo | v2 Cleaner Counts		10
+matches_per_version	Playtest 250 - Control Counterlab | v1 Counter Package		9
+matches_per_version	Playtest 250 - Experimental Turbo | v1 Full Send		8
+matches_per_version	Playtest 250 - Experimental Turbo | v2 Trimmed		7
+matches_per_version	Playtest 250 - Control Counterlab | v2 Ladder Tech		6
+matches_per_version	Playtest 250 - Rogue Box | v1 Meta Soup		5
+matches_per_version	Playtest 250 - Rogue Box | v2 Trimmed Soup		5
+issue_tags	missed setup		56
+issue_tags	supporter drought		35
+issue_tags	tempo loss		35
+issue_tags	poor prize trade		32
+issue_tags	bench pressure		29
+issue_tags	Item Lock		23
+issue_tags	bad sequencing		15
+issue_tags	matchup knowledge		7
+issue_tags	prize map error		7
+issue_tags	stadium lock		2
+positive_tags	key tech mattered		60
+positive_tags	strong recovery		58
+positive_tags	good prize plan		29
+positive_tags	Good Tech		27
+positive_tags	favorable matchup		22
+positive_tags	strong setup		17
+positive_tags	clean sequencing		5
+matchups	Mega Greninja		84
+matchups	Charizard ex		64
+matchups	Raging Bolt		43
+matchups	Dragapult Dusknoir		24
+matchups	Gardevoir		20
+matchups	Control / Item Lock		11
+matchups	Rogue decks		4
+version_timeline	Playtest 250 - Charizard Pressure	v1 Straight | active=false | first=2026-05-21T11:25:00+00:00 | last=2026-06-01T11:48:00+00:00	12
+version_timeline	Playtest 250 - Charizard Pressure	v2 Item Lock Prep | active=true | first=2026-04-18T12:24:00+00:00 | last=2026-06-12T11:11:00+00:00	23
+version_timeline	Playtest 250 - Control Counterlab	v1 Counter Package | active=false | first=2026-05-10T12:10:00+00:00 | last=2026-05-18T09:54:00+00:00	9
+version_timeline	Playtest 250 - Control Counterlab	v2 Ladder Tech | active=true | first=2026-05-19T10:07:00+00:00 | last=2026-05-24T15:12:00+00:00	6
+version_timeline	Playtest 250 - Dragapult Dusknoir	v1 Bare Bones | active=false | first=2026-05-12T12:20:00+00:00 | last=2026-05-26T15:22:00+00:00	15
+version_timeline	Playtest 250 - Dragapult Dusknoir	v2 Consistency | active=true | first=2026-04-18T11:16:00+00:00 | last=2026-06-12T10:03:00+00:00	20
+version_timeline	Playtest 250 - Dragapult Dusknoir	v3 Prize Mapping | active=false | first=2026-04-21T14:55:00+00:00 | last=2026-04-30T12:52:00+00:00	10
+version_timeline	Playtest 250 - Experimental Turbo	v1 Full Send | active=false | first=2026-04-29T13:55:00+00:00 | last=2026-05-06T09:26:00+00:00	8
+version_timeline	Playtest 250 - Experimental Turbo	v2 Trimmed | active=true | first=2026-05-07T10:39:00+00:00 | last=2026-05-13T16:57:00+00:00	7
+version_timeline	Playtest 250 - Gardevoir Refinement	v1 Baseline | active=false | first=2026-05-25T16:25:00+00:00 | last=2026-06-05T16:48:00+00:00	12
+version_timeline	Playtest 250 - Gardevoir Refinement	v2 Recovery | active=true | first=2026-04-18T13:32:00+00:00 | last=2026-06-12T12:19:00+00:00	18
+version_timeline	Playtest 250 - Mega Greninja Tempo	v1 Raw Tempo | active=false | first=2026-05-01T13:05:00+00:00 | last=2026-05-10T11:02:00+00:00	10
+version_timeline	Playtest 250 - Mega Greninja Tempo	v2 Cleaner Counts | active=true | first=2026-05-11T12:15:00+00:00 | last=2026-05-20T10:12:00+00:00	10
+version_timeline	Playtest 250 - Raging Bolt Lab	v1 Turbo | active=false | first=2026-04-18T09:00:00+00:00 | last=2026-05-01T11:49:00+00:00	14
+version_timeline	Playtest 250 - Raging Bolt Lab	v2 Vessel Package | active=false | first=2026-04-18T10:08:00+00:00 | last=2026-06-12T09:55:00+00:00	34
+version_timeline	Playtest 250 - Raging Bolt Lab	v3 Anti-Bench | active=true | first=2026-04-24T16:26:00+00:00 | last=2026-05-27T15:27:00+00:00	32
+version_timeline	Playtest 250 - Rogue Box	v1 Meta Soup | active=false | first=2026-04-30T13:00:00+00:00 | last=2026-05-04T17:52:00+00:00	5
+version_timeline	Playtest 250 - Rogue Box	v2 Trimmed Soup | active=true | first=2026-05-05T18:05:00+00:00 | last=2026-05-09T11:57:00+00:00	5
