@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { AppNav } from "@/components/AppNav";
+import { AuthenticatedPageHeader } from "@/components/AuthenticatedPageHeader";
 import { AppSidebar } from "@/components/AppSidebar";
 import { ArchetypePicker } from "@/components/ArchetypePicker";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
@@ -16,10 +16,6 @@ import {
   interactiveTile,
   inputH10,
   label,
-  logoOnDark,
-  pageCopy,
-  pageHeader,
-  pageTitle,
   premiumInset,
   primaryButton,
   secondaryButton,
@@ -27,7 +23,6 @@ import {
   sectionTitle,
   subtlePill,
 } from "@/components/brand-styles";
-import { SixPrizerLogo } from "@/components/SixPrizerLogo";
 import { SessionCoachPanel } from "@/components/SessionCoachPanel";
 import { getArchetypeOptions } from "@/lib/archetypes";
 import {
@@ -389,20 +384,12 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
           }}
         />
         <div className={`${appMain} mx-auto w-full max-w-7xl`}>
-        <header className={pageHeader}>
-          <div>
-            <SixPrizerLogo {...logoOnDark} />
-            <h1 className={pageTitle}>
-              Matches
-            </h1>
-            <p className={pageCopy}>
-              Browse, filter, edit, and remove logged matches.
-            </p>
-          </div>
-          <div className="lg:hidden">
-            <AppNav current="matches" />
-          </div>
-        </header>
+        <AuthenticatedPageHeader
+          current="matches"
+          title="Matches"
+          subtitle="Browse, filter, edit, and remove logged matches."
+          userEmail={user.email ?? "Unknown email"}
+        />
 
         {sessionCoach ? (
           <SessionCoachPanel insight={sessionCoach} />

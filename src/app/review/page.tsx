@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { AppNav } from "@/components/AppNav";
+import { AuthenticatedPageHeader } from "@/components/AuthenticatedPageHeader";
 import { AppSidebar } from "@/components/AppSidebar";
 import {
   appFrame,
@@ -9,10 +9,6 @@ import {
   emptyCard,
   glassPanel,
   glassPanelStrong,
-  logoOnDark,
-  pageCopy,
-  pageHeaderCard,
-  pageTitle,
   premiumInset,
   premiumInsetStrong,
   primaryButton,
@@ -23,7 +19,6 @@ import {
   inputH10,
   label,
 } from "@/components/brand-styles";
-import { SixPrizerLogo } from "@/components/SixPrizerLogo";
 import {
   buildReviewAnalysis,
   type ReviewMatch,
@@ -242,19 +237,13 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
         />
 
         <div className={`${appMain} mx-auto w-full max-w-7xl`}>
-          <header className={pageHeaderCard}>
-            <div>
-              <SixPrizerLogo {...logoOnDark} />
-              <p className="mt-4 text-sm font-medium text-[#4F8CFF]">Analysis mode</p>
-              <h1 className={pageTitle}>Review</h1>
-              <p className={pageCopy}>
-                Turn saved games, tags, and deck versions into actual coaching reads.
-              </p>
-            </div>
-            <div className="lg:hidden">
-              <AppNav current="review" />
-            </div>
-          </header>
+          <AuthenticatedPageHeader
+            current="review"
+            eyebrow="Analysis mode"
+            title="Review"
+            subtitle="Turn saved games, tags, and deck versions into actual coaching reads."
+            userEmail={user.email ?? "Unknown email"}
+          />
 
           <form action="/review" className={`p-4 ${glassPanel}`}>
             <div className="grid gap-3 min-[430px]:grid-cols-2 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_auto]">

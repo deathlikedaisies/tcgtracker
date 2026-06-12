@@ -8,7 +8,7 @@ import {
   Sparkles,
   TrendingUp,
 } from "lucide-react";
-import { AppNav } from "@/components/AppNav";
+import { AuthenticatedPageHeader } from "@/components/AuthenticatedPageHeader";
 import { AppSidebar } from "@/components/AppSidebar";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
 import { ConfirmSubmitButton } from "@/components/ConfirmSubmitButton";
@@ -21,9 +21,6 @@ import {
   emptyCard,
   glassPanelStrong,
   interactiveTile,
-  logoOnDark,
-  pageCopy,
-  pageTitle,
   premiumInset,
   premiumInsetStrong,
   primaryButton,
@@ -32,7 +29,6 @@ import {
   sectionTitle,
   statCard,
 } from "@/components/brand-styles";
-import { SixPrizerLogo } from "@/components/SixPrizerLogo";
 import { getArchetypeOptions } from "@/lib/archetypes";
 import {
   analyzeDeckList,
@@ -440,21 +436,15 @@ export default async function DecksPage() {
         />
 
         <div className={`${appMain} mx-auto w-full max-w-7xl`}>
-          <header className={glassPanelStrong}>
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-              <div className="min-w-0">
-                <SixPrizerLogo {...logoOnDark} />
-                <h1 className={pageTitle}>Deck Experiments</h1>
-                <p className={pageCopy}>
-                  Track each deck as a testable hypothesis.
-                </p>
-              </div>
-              <div className="lg:hidden">
-                <AppNav current="decks" />
-              </div>
-            </div>
+          <AuthenticatedPageHeader
+            current="decks"
+            title="Deck Experiments"
+            subtitle="Track each deck as a testable hypothesis."
+            userEmail={user.email ?? "Unknown email"}
+          />
 
-            <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <section className={`${glassPanelStrong} mt-5`}>
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               {[
                 {
                   icon: Layers3,
@@ -519,7 +509,7 @@ export default async function DecksPage() {
                 </div>
               ))}
             </div>
-          </header>
+          </section>
 
           <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
             <section className="grid gap-4">

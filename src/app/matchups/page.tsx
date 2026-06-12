@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AlertTriangle, Zap } from "lucide-react";
-import { AppNav } from "@/components/AppNav";
+import { AuthenticatedPageHeader } from "@/components/AuthenticatedPageHeader";
 import { AppSidebar } from "@/components/AppSidebar";
 import { ArchetypePicker } from "@/components/ArchetypePicker";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
@@ -17,10 +17,6 @@ import {
   interactiveTile,
   inputH10,
   label,
-  logoOnDark,
-  pageCopy,
-  pageHeader,
-  pageTitle,
   premiumInset,
   premiumInsetStrong,
   primaryButton,
@@ -29,7 +25,6 @@ import {
   sectionTitle,
   textarea,
 } from "@/components/brand-styles";
-import { SixPrizerLogo } from "@/components/SixPrizerLogo";
 import { SessionCoachPanel } from "@/components/SessionCoachPanel";
 import { ShareReportButton, type ShareReport } from "@/components/ShareReportButton";
 import { createMatchupSharedReportAction } from "@/app/community/actions";
@@ -487,21 +482,13 @@ export default async function MatchupsPage({
           }}
         />
         <div className={`${appMain} mx-auto w-full max-w-7xl`}>
-        <header className={pageHeader}>
-          <div>
-            <SixPrizerLogo {...logoOnDark} />
-            <h1 className={pageTitle}>
-              Matchup Intelligence
-            </h1>
-            <p className={pageCopy}>
-              Understand what is really happening and where to focus next.
-            </p>
-          </div>
-          <div className="flex flex-col gap-3 lg:items-end">
-            <div className="lg:hidden">
-              <AppNav current="matchups" />
-            </div>
-            {hasFilteredMatches ? (
+        <AuthenticatedPageHeader
+          current="matchups"
+          title="Matchup Intelligence"
+          subtitle="Understand what is really happening and where to focus next."
+          userEmail={user.email ?? "Unknown email"}
+          actions={
+            hasFilteredMatches ? (
               <div className="flex flex-wrap gap-2 lg:justify-end">
                 <ShareReportButton report={shareReport} />
                 {worstMatchup ? (
@@ -520,9 +507,9 @@ export default async function MatchupsPage({
                   </form>
                 ) : null}
               </div>
-            ) : null}
-          </div>
-        </header>
+            ) : null
+          }
+        />
 
         {params.share_error ? (
           <section className="rounded-[18px] border border-rose-400/18 bg-[linear-gradient(180deg,rgba(68,12,26,0.74),rgba(20,10,18,0.82))] px-4 py-3 text-sm font-medium text-rose-100 shadow-[0_18px_38px_rgba(0,0,0,0.24)]">

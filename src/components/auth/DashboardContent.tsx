@@ -1,14 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import {
   Activity,
   ArrowRight,
   BarChart3,
   ChevronDown,
-  LogOut,
   ShieldAlert,
   Target,
   type LucideIcon,
@@ -25,7 +23,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { AppNav } from "@/components/AppNav";
+import { AuthenticatedPageHeader } from "@/components/AuthenticatedPageHeader";
 import { AppSidebar } from "@/components/AppSidebar";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
 import {
@@ -39,9 +37,7 @@ import {
   interactiveTile,
   metallicBadge,
   missionHeroCard,
-  logoOnDark,
   pageCopy,
-  pageHeaderCard,
   premiumInset,
   premiumInsetStrong,
   primaryButton,
@@ -62,7 +58,6 @@ import type {
   TrainingProgressSummary,
 } from "@/lib/session-coach";
 import type { ReviewInsightCard } from "@/lib/review-analysis";
-import { createClient } from "@/lib/supabase";
 
 type DeckSummary = {
   id: string;
@@ -885,8 +880,6 @@ export function DashboardContent({
   trainingProgress,
   deckCoachInsight,
 }: DashboardContentProps) {
-  const router = useRouter();
-  const supabase = createClient();
   const [insightsOpen, setInsightsOpen] = useState(false);
 
   const sampledMatchups = matchupSummary.filter((matchup) => matchup.matches >= 3);
@@ -1120,12 +1113,6 @@ export function DashboardContent({
     context: "Your testing",
   };
 
-  async function handleSignOut() {
-    await supabase.auth.signOut();
-    router.replace("/login");
-    router.refresh();
-  }
-
   return (
     <main className={appShell}>
       <section className={`${appFrame} sixprizer-fade-in`}>
@@ -1141,45 +1128,13 @@ export function DashboardContent({
         />
 
         <div className={`${appMain} mx-auto w-full max-w-7xl`}>
-          <header className={`${pageHeaderCard} p-4 sm:p-5 lg:p-6`}>
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/6 pb-4">
-                <SixPrizerLogo
-                  {...logoOnDark}
-                  size="sm"
-                  hideTextOnMobile
-                  className="min-w-0"
-                />
-                <button
-                  type="button"
-                  onClick={handleSignOut}
-                  className="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-white/8 bg-white/[0.03] px-3 text-xs font-medium text-[#C7D3E7] transition hover:bg-white/8 hover:text-[#F8FAFC]"
-                >
-                  <LogOut className="size-3.5" aria-hidden="true" />
-                  Sign out
-                </button>
-              </div>
-
-              <div className="flex flex-col gap-3">
-                <div className="min-w-0 max-w-3xl">
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#4F8CFF]/86">
-                    Testing overview
-                  </p>
-                  <h1 className="mt-2 text-3xl font-bold tracking-tight text-[#F8FAFC] sm:text-4xl">
-                    Overview
-                  </h1>
-                  <p className="mt-2 text-sm leading-6 text-[#94A3B8]/72">
-                    See what improved, what is hurting you, and what to test next.
-                  </p>
-                  <p className="mt-2 truncate text-xs text-[#94A3B8]/62">{email}</p>
-                </div>
-
-                <div className="lg:hidden">
-                  <AppNav current="dashboard" />
-                </div>
-              </div>
-            </div>
-          </header>
+          <AuthenticatedPageHeader
+            current="dashboard"
+            eyebrow="Testing overview"
+            title="Overview"
+            subtitle="See what improved, what is hurting you, and what to test next."
+            userEmail={email}
+          />
 
           {!hasAnyMatches ? (
             <SetupChecklist
