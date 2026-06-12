@@ -308,13 +308,19 @@ function StatusChip({
   tone: Tone;
 }) {
   return (
-    <div className={statCard}>
+    <div className={`${statCard} min-w-0 p-3`}>
       <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
         {label}
       </p>
-      <p className={`mt-2 text-sm font-semibold ${toneClass(tone)}`}>
-        <span className="inline-flex rounded-full px-2.5 py-1">{value}</span>
-      </p>
+      <div className="mt-2">
+        <span
+          className={`inline-flex max-w-full rounded-full px-2.5 py-1 text-sm font-semibold leading-5 whitespace-normal ${toneClass(
+            tone
+          )}`}
+        >
+          {value}
+        </span>
+      </div>
     </div>
   );
 }
@@ -528,7 +534,7 @@ function MissionHeroCard({
   return (
     <section className={`grid gap-4 p-5 sm:p-6 xl:grid-cols-[minmax(0,1.5fr)_360px] ${missionHeroCard} bg-[linear-gradient(180deg,rgba(14,24,42,0.96),rgba(8,17,31,0.91))] shadow-[0_22px_52px_rgba(0,0,0,0.26),inset_0_0_0_1px_rgba(148,163,184,0.12)]`}>
       <div className="min-w-0">
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-start gap-2">
           <span className="inline-flex size-10 items-center justify-center rounded-2xl bg-[#F5C84C]/12 text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.18)]">
             <Target className="size-5" aria-hidden="true" />
           </span>
@@ -536,13 +542,13 @@ function MissionHeroCard({
             Current mission
           </span>
           <span
-            className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${toneClass(
+            className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] leading-5 whitespace-normal ${toneClass(
               badge.tone
             )}`}
           >
             {badge.label}
           </span>
-          <span className={`${metallicBadge} px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#DCE8FF]`}>
+          <span className={`${metallicBadge} px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] leading-5 text-[#DCE8FF] whitespace-normal`}>
             {insight.missionGuidanceLabel}
           </span>
         </div>
@@ -559,7 +565,7 @@ function MissionHeroCard({
           </div>
         </div>
 
-          <div className="mt-5 grid gap-3 sm:grid-cols-3">
+        <div className="mt-5 grid gap-3 sm:grid-cols-3">
           <StatusChip
             label="Mission mode"
             value={insight.missionGuidanceLabel}
@@ -590,7 +596,7 @@ function MissionHeroCard({
       </div>
 
       <div className={`${premiumInsetStrong} flex flex-col p-4`}>
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
               Progress
@@ -599,7 +605,7 @@ function MissionHeroCard({
               {insight.missionProgress}/{insight.missionTargetCount} games
             </p>
           </div>
-          <span className={`${metallicBadge} px-3 py-1 text-xs font-semibold text-[#DCE8FF]`}>
+          <span className={`${metallicBadge} px-3 py-1 text-xs font-semibold leading-5 text-[#DCE8FF] whitespace-normal`}>
             {insight.missionStatusLabel}
           </span>
         </div>
@@ -635,7 +641,7 @@ function MissionHeroCard({
           </p>
         </div>
 
-        <div className="mt-2 flex items-center gap-2 rounded-xl bg-[#F5C84C]/8 px-3 py-2 shadow-[inset_0_0_0_1px_rgba(245,200,76,0.14)]">
+        <div className="mt-2 flex flex-wrap items-center gap-2 rounded-xl bg-[#F5C84C]/8 px-3 py-2 shadow-[inset_0_0_0_1px_rgba(245,200,76,0.14)]">
           <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[#F5C84C]/72">
             Reward
           </span>
@@ -1134,32 +1140,35 @@ export function DashboardContent({
           }}
         />
 
-        <div className={`${appMain} mx-auto w-full max-w-7xl`}>
+      <div className={`${appMain} mx-auto w-full max-w-7xl`}>
           <header className={`${pageHeaderCard} p-4 sm:p-5`}>
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-              <div className="min-w-0">
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
                 <SixPrizerLogo {...logoOnDark} />
-                <h1 className="mt-3 text-3xl font-bold tracking-tight text-[#F8FAFC] sm:text-4xl">
-                  Overview
-                </h1>
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-[#94A3B8]/72">
-                  See what improved, what is hurting you, and what to test next.
-                </p>
-                <p className="mt-1 truncate text-xs text-[#94A3B8]/62">{email}</p>
-              </div>
-
-              <div className="flex min-w-0 flex-col gap-2 lg:items-end">
-                <div className="lg:hidden">
-                  <AppNav current="dashboard" />
-                </div>
                 <button
                   type="button"
                   onClick={handleSignOut}
-                  className="inline-flex h-9 items-center justify-center gap-1.5 rounded-xl px-3 text-xs font-medium text-[#94A3B8]/72 transition hover:bg-white/5 hover:text-[#F8FAFC] lg:w-fit"
+                  className="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-xl px-3 text-xs font-medium text-[#94A3B8]/72 transition hover:bg-white/5 hover:text-[#F8FAFC]"
                 >
                   <LogOut className="size-3.5" aria-hidden="true" />
                   Sign out
                 </button>
+              </div>
+
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                <div className="min-w-0 flex-1">
+                  <h1 className="text-3xl font-bold tracking-tight text-[#F8FAFC] sm:text-4xl">
+                    Overview
+                  </h1>
+                  <p className="mt-2 max-w-2xl text-sm leading-6 text-[#94A3B8]/72">
+                    See what improved, what is hurting you, and what to test next.
+                  </p>
+                  <p className="mt-1 truncate text-xs text-[#94A3B8]/62">{email}</p>
+                </div>
+
+                <div className="lg:hidden self-start">
+                  <AppNav current="dashboard" />
+                </div>
               </div>
             </div>
           </header>
