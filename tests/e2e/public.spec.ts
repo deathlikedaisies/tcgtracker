@@ -40,6 +40,7 @@ test.describe("public routes", () => {
     await page.goto("/u/sixprizer-missing-profile");
 
     await expectHeadingVisible(page, "Profile unavailable");
+    await expect(page.locator("body")).not.toContainText(/match_id|decklist|private notes/i);
     await expectNoAppError(page);
   });
 });

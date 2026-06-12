@@ -64,7 +64,11 @@ test.describe("authenticated routes", () => {
     await page.waitForURL(/\/r\//, { timeout: 30000 });
     await expect(page.getByRole("heading").first()).toBeVisible();
     await expect(page.locator("body")).toContainText("Shared from SixPrizer");
-    await expect(page.locator("body")).not.toContainText(/match_id|Decklist/i);
+    await expect(page.locator("body")).toContainText(/What this means|Current recommendation/i);
+    await expect(page.locator("body")).not.toContainText(/match_id|4 Nest Ball|4 Professor's Research/i);
+    await expect(page.locator("body")).not.toContainText(
+      /c9c7565b-9587-4e54-9d0b-a0c32e568d36|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i
+    );
     await expectNoAppError(page);
   });
 
@@ -77,6 +81,9 @@ test.describe("authenticated routes", () => {
 
     await expect(coachHero).toContainText(/Item Lock|Sequencing|Mega Greninja/i);
     await expect(page.locator("body")).toContainText(/What to test next|Next test/i);
+    await expect(page.locator("body")).toContainText(
+      /Strong signal|Building signal|Early signal|Needs more games/i
+    );
     await expectNoAppError(page);
   });
 
@@ -92,7 +99,9 @@ test.describe("authenticated routes", () => {
 
     await expect(page.locator("body")).toContainText(/Version evidence|Version signal/i);
     await expect(page.locator("body")).toContainText(/v1|v2|v3/i);
-    await expect(page.locator("body")).toContainText(/Opening quality|Sequencing quality/i);
+    await expect(page.locator("body")).toContainText(
+      /Opening quality|Sequencing quality|Best current signal/i
+    );
     await expectNoAppError(page);
   });
 
@@ -113,9 +122,12 @@ test.describe("authenticated routes", () => {
       await expect(anonymousPage.locator("body")).toContainText(/games logged/i);
       await expect(anonymousPage.locator("body")).toContainText(/record/i);
       await expect(anonymousPage.locator("body")).toContainText(/win rate/i);
-      await expect(anonymousPage.locator("body")).not.toContainText(/match_id|decklist/i);
+      await expect(anonymousPage.locator("body")).toContainText(/summary only|aggregate/i);
       await expect(anonymousPage.locator("body")).not.toContainText(
-        /c9c7565b-9587-4e54-9d0b-a0c32e568d36/i
+        /4 Nest Ball|4 Professor's Research|match_id/i
+      );
+      await expect(anonymousPage.locator("body")).not.toContainText(
+        /c9c7565b-9587-4e54-9d0b-a0c32e568d36|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i
       );
       await expectNoAppError(anonymousPage);
 
