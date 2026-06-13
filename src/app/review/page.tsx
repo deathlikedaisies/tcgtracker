@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { type ReactNode } from "react";
 import { AuthenticatedPageHeader } from "@/components/AuthenticatedPageHeader";
 import { AppSidebar } from "@/components/AppSidebar";
+import { ReviewDetailedAnalytics } from "@/components/review/ReviewDetailedAnalytics";
 import {
   appFrame,
   appMain,
@@ -139,6 +140,37 @@ function getMostCommonTag(
   return (
     Array.from(counts.entries()).sort((left, right) => right[1] - left[1])[0] ?? null
   );
+}
+
+function formatShortDate(value: string) {
+  return new Intl.DateTimeFormat("en", {
+    month: "short",
+    day: "numeric",
+  }).format(new Date(value));
+}
+
+function getTopTags(
+  matches: ReviewMatch[],
+  selector: (match: ReviewMatch) => string[]
+) {
+  const total = matches.length;
+  const counts = new Map<string, number>();
+
+  matches.forEach((match) => {
+    selector(match).forEach((tag) => {
+      counts.set(tag, (counts.get(tag) ?? 0) + 1);
+    });
+  });
+
+  return Array.from(counts.entries())
+    .sort((left, right) => right[1] - left[1])
+    .slice(0, 4)
+    .map(([tag, count]) => ({
+      tag,
+      count,
+      total,
+      rate: total ? Math.round((count / total) * 100) : 0,
+    }));
 }
 
 export default async function ReviewPage({ searchParams }: ReviewPageProps) {
@@ -278,6 +310,154 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
     filteredMatches.filter((match) => match.result === "win"),
     (match) => match.metadata.positive_tags ?? []
   );
+  const recentMatches = filteredMatches.slice(0, 10).map((match) => ({
+    id: match.id,
+    deckVersionName: match.deckVersionName,
+    opponentArchetype: match.opponentArchetype,
+    playedAtLabel: formatShortDate(match.playedAt),
+    result: match.result,
+  }));
+  const trendData = Array.from(
+    filteredMatches.reduce((summary, match) => {
+      const dateKey = match.playedAt.slice(0, 10);
+      const current = summary.get(dateKey) ?? {
+        date: dateKey,
+        label: formatShortDate(dateKey),
+        wins: 0,
+        losses: 0,
+        ties: 0,
+      };
+
+      if (match.result === "win") {
+        current.wins += 1;
+      } else if (match.result === "loss") {
+        current.losses += 1;
+      } else {
+        current.ties += 1;
+      }
+
+      summary.set(dateKey, current);
+      return summary;
+    }, new Map<string, { date: string; label: string; wins: number; losses: number; ties: number }>())
+  )
+    .map(([, value]) => value)
+    .sort((left, right) => left.date.localeCompare(right.date))
+    .slice(-8)
+    .map(({ label, wins, losses, ties }) => ({ label, wins, losses, ties }));
+  const unknownTurnOrderCount = filteredMatches.filter(
+    (match) => match.wentFirst === null
+  ).length;
+  const turnOrderRows = [
+    firstRecord.total
+      ? {
+          label: "Going first",
+          matches: firstRecord.total,
+          record: formatMatchRecord(
+            firstRecord.wins,
+            firstRecord.losses,
+            firstRecord.ties
+          ),
+          winRate: Math.round((firstRecord.wins / firstRecord.total) * 100),
+        }
+      : null,
+    secondRecord.total
+      ? {
+          label: "Going second",
+          matches: secondRecord.total,
+          record: formatMatchRecord(
+            secondRecord.wins,
+            secondRecord.losses,
+            secondRecord.ties
+          ),
+          winRate: Math.round((secondRecord.wins / secondRecord.total) * 100),
+        }
+      : null,
+  ].filter(Boolean) as {
+    label: string;
+    matches: number;
+    record: string;
+    winRate: number;
+  }[];
+  const winTags = getTopTags(
+    filteredMatches.filter((match) => match.result === "win"),
+    (match) => match.metadata.positive_tags ?? []
+  );
+  const lossTags = getTopTags(
+    filteredMatches.filter((match) => match.result === "loss"),
+    (match) => match.metadata.issue_tags ?? []
+  );
+  const versionRows = Array.from(
+    filteredMatches.reduce((summary, match) => {
+      const current = summary.get(match.deckVersionId) ?? [];
+      current.push(match);
+      summary.set(match.deckVersionId, current);
+      return summary;
+    }, new Map<string, ReviewMatch[]>())
+  )
+    .map(([id, matchesForVersion]) => {
+      const record = countMatchResults(matchesForVersion);
+      const openingTagged = matchesForVersion.filter((match) => {
+        const quality =
+          match.metadata.start_quality ?? match.metadata.opening_hand_quality;
+        return quality === "good" || quality === "great";
+      });
+      const openingObserved = matchesForVersion.filter((match) =>
+        Boolean(match.metadata.start_quality ?? match.metadata.opening_hand_quality)
+      );
+      const sequencingTagged = matchesForVersion.filter((match) => {
+        const quality = match.metadata.sequencing_quality;
+        return quality === "good" || quality === "great";
+      });
+      const sequencingObserved = matchesForVersion.filter((match) =>
+        Boolean(match.metadata.sequencing_quality)
+      );
+      const commonLossTag = getMostCommonTag(
+        matchesForVersion.filter((match) => match.result === "loss"),
+        (match) => match.metadata.issue_tags ?? []
+      );
+
+      return {
+        id,
+        name: matchesForVersion[0]?.deckVersionName ?? "Unknown version",
+        matches: record.total,
+        record: formatMatchRecord(record.wins, record.losses, record.ties),
+        winRate: record.total ? Math.round((record.wins / record.total) * 100) : 0,
+        openingRate: openingObserved.length
+          ? Math.round((openingTagged.length / openingObserved.length) * 100)
+          : null,
+        sequencingRate: sequencingObserved.length
+          ? Math.round((sequencingTagged.length / sequencingObserved.length) * 100)
+          : null,
+        commonLossTag: commonLossTag?.[0] ?? null,
+      };
+    })
+    .sort((left, right) => right.matches - left.matches);
+  const versionSummary =
+    versionRows.length > 1
+      ? (() => {
+          const sortedByOpening = [...versionRows]
+            .filter((row) => row.openingRate !== null)
+            .sort(
+              (left, right) =>
+                (right.openingRate ?? -1) - (left.openingRate ?? -1) ||
+                right.matches - left.matches
+            );
+          const leader = sortedByOpening[0] ?? versionRows[0];
+          const runnerUp = sortedByOpening[1] ?? null;
+
+          if (!leader) {
+            return null;
+          }
+
+          return {
+            bestLabel: leader.name,
+            explanation:
+              leader.openingRate !== null && runnerUp?.openingRate !== null
+                ? `${leader.name} is showing the cleanest starts so far at ${leader.openingRate}% good or great openings versus ${runnerUp.openingRate}% on ${runnerUp.name}. Matchup spread may still explain part of the difference.`
+                : `${leader.name} has the strongest sample so far, but keep logging before treating it as the clear winner.`,
+          };
+        })()
+      : null;
   const supportingCards = [
     matchupSummary.length
       ? {
@@ -617,6 +797,18 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
                   </div>
                 </section>
               ) : null}
+
+              <ReviewDetailedAnalytics
+                recentMatches={recentMatches}
+                trendData={trendData}
+                matchupRows={matchupSummary}
+                turnOrderRows={turnOrderRows}
+                unknownTurnOrderCount={unknownTurnOrderCount}
+                winTags={winTags}
+                lossTags={lossTags}
+                versionRows={versionRows}
+                versionSummary={versionSummary}
+              />
 
               {analysis.cards.length > 1 ? (() => {
                 const secondaryCards = analysis.cards.slice(1);
