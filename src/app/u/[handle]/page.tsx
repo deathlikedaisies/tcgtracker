@@ -13,13 +13,8 @@ import {
 import {
   buildProfileSummaryText,
   getPublicProfilePageData,
-  type ProfileReactionType,
 } from "@/lib/community";
-import {
-  refreshProfileStatsAction,
-  toggleFollowAction,
-  toggleProfileReactionAction,
-} from "@/app/community/actions";
+import { refreshProfileStatsAction } from "@/app/community/actions";
 
 function getInitial(value: string) {
   return value.trim().charAt(0).toUpperCase() || "S";
@@ -52,13 +47,6 @@ function formatUpdatedAt(value: string | null | undefined) {
     year: "numeric",
   }).format(new Date(value));
 }
-
-const REACTION_LABELS: Record<ProfileReactionType, string> = {
-  kudos: "Kudos",
-  useful: "Useful",
-  testing_this_too: "Testing this too",
-  good_tech: "Good tech",
-};
 
 export default async function PublicProfilePage({
   params,
@@ -101,7 +89,7 @@ export default async function PublicProfilePage({
     );
   }
 
-  const { profile, stats, counts, isOwner, isFollowing, viewerReactions, sharedReports } = data;
+  const { profile, stats, isOwner } = data;
   const profileUrl = `${
     process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
   }/u/${profile.handle}`;
@@ -219,36 +207,29 @@ export default async function PublicProfilePage({
             </div>
 
             <div className="grid gap-3 xl:w-[320px] xl:justify-items-end">
-              {isOwner ? (
-                <div className="flex flex-wrap gap-2 xl:justify-end">
-                  <Link href="/settings/profile" className={secondaryButton}>
-                    Edit profile
-                  </Link>
-                  <form action={refreshAction}>
-                    <button type="submit" className={secondaryButton}>
-                      Refresh public stats
-                    </button>
-                  </form>
-                  <Link href="/matchups" className={primaryButton}>
-                    Share matchup report
-                  </Link>
-                </div>
-              ) : (
-                <div className="flex flex-wrap gap-2 xl:justify-end">
-                  <form
-                    action={toggleFollowAction.bind(
-                      null,
-                      profile.user_id,
-                      profile.handle,
-                      isFollowing
-                    )}
-                  >
-                    <button type="submit" className={primaryButton}>
-                      {isFollowing ? "Following" : "Follow"}
-                    </button>
-                  </form>
-                </div>
-              )}
+              <div className="flex flex-wrap gap-2 xl:justify-end">
+                {isOwner ? (
+                  <>
+                    <Link href="/profile" className={secondaryButton}>
+                      Edit profile
+                    </Link>
+                    <form action={refreshAction}>
+                      <button type="submit" className={secondaryButton}>
+                        Refresh public stats
+                      </button>
+                    </form>
+                  </>
+                ) : (
+                  <>
+                    <Link href="/signup" className={primaryButton}>
+                      Create your profile
+                    </Link>
+                    <Link href="/demo" className={secondaryButton}>
+                      Preview demo
+                    </Link>
+                  </>
+                )}
+              </div>
 
               <CopySummaryButtons
                 link={profileUrl}
@@ -316,162 +297,66 @@ export default async function PublicProfilePage({
           </section>
         )}
 
-        <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
-          <div className="grid gap-4">
-            <article className={`grid gap-4 p-5 ${cardLarge}`}>
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
-                  Current testing
-                </p>
-                <h2 className={`mt-2 ${sectionTitle}`}>
-                  {profile.current_testing_focus ?? stats?.current_focus ?? "No public focus set"}
-                </h2>
-                <p className={pageCopy}>
-                  {analyticsVisible
-                    ? "This is a summary-only coaching view. It is meant to show what the player is testing, not expose their raw preparation work."
-                    : "Identity is public here, but the player has kept testing analytics private for now."}
-                </p>
-              </div>
-
-              {publicStats ? (
-                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                  {[
-                    { label: "Most played deck", value: publicStats.most_played_deck ?? "Not enough games" },
-                    { label: "Weakest matchup", value: publicStats.weakest_matchup ?? "Needs 5 games" },
-                    { label: "Strongest matchup", value: publicStats.strongest_matchup ?? "Needs 5 games" },
-                    { label: "Best improvement", value: publicStats.best_improvement ?? "No clear version gap yet" },
-                  ].map((item) => (
-                    <div
-                      key={item.label}
-                      className="rounded-[18px] bg-[#07111F]/54 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]"
-                    >
-                      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
-                        {item.label}
-                      </p>
-                      <p className="mt-2 text-sm font-semibold leading-6 text-[#F8FAFC]">
-                        {item.value}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              ) : null}
-            </article>
-
-            <article className={`grid gap-4 p-5 ${cardLarge}`}>
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
-                    Shared reports
-                  </p>
-                  <h2 className={`mt-2 ${sectionTitle}`}>Shareable analytics</h2>
-                </div>
-                {isOwner ? (
-                  <Link href="/matchups" className={secondaryButton}>
-                    Create report
-                  </Link>
-                ) : null}
-              </div>
-
-              {sharedReports.length ? (
-                <div className="grid gap-3">
-                  {sharedReports.map((report) => (
-                    <Link
-                      key={report.id}
-                      href={`/r/${report.slug}`}
-                      className="rounded-[18px] bg-[#07111F]/54 p-4 transition hover:bg-[#0B1730]/72"
-                    >
-                      <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
-                            {report.report_type.replaceAll("_", " ")}
-                          </p>
-                          <p className="mt-2 text-lg font-semibold text-[#F8FAFC]">
-                            {report.title}
-                          </p>
-                        </div>
-                        {isOwner ? (
-                          <span className="rounded-full bg-[#07111F]/72 px-3 py-1 text-xs font-semibold text-[#94A3B8]">
-                            {formatVisibility(report.visibility)}
-                          </span>
-                        ) : null}
-                      </div>
-                      <p className="mt-3 text-sm leading-6 text-[#94A3B8]/74">
-                        Shared reports stay aggregate-only in this MVP. They highlight matchup or testing signal without exposing raw game history.
-                      </p>
-                    </Link>
-                  ))}
-                </div>
-              ) : (
-                <div className="rounded-[20px] bg-[#07111F]/54 p-4 text-sm leading-6 text-[#94A3B8] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
-                  No public reports yet.
-                </div>
-              )}
-            </article>
-          </div>
-
-          <aside className="grid gap-4">
-            <div className={`grid gap-4 p-5 ${cardLarge}`}>
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
-                  Community
-                </p>
-                <h2 className={`mt-2 ${sectionTitle}`}>Testing reputation</h2>
-                <p className={pageCopy}>
-                  Lightweight signals only. No comments, no feed, no raw logs.
-                </p>
-              </div>
-
-              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
-                <div className="rounded-[18px] bg-[#07111F]/54 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
-                    Followers
-                  </p>
-                  <p className="mt-2 text-2xl font-semibold text-[#F8FAFC]">
-                    {counts.followerCount}
-                  </p>
-                </div>
-                <div className="rounded-[18px] bg-[#07111F]/54 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
-                    Following
-                  </p>
-                  <p className="mt-2 text-2xl font-semibold text-[#F8FAFC]">
-                    {counts.followingCount}
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid gap-2">
-                {(Object.keys(REACTION_LABELS) as ProfileReactionType[]).map((reactionType) => {
-                  const hasReacted = viewerReactions.includes(reactionType);
-                  return (
-                    <form
-                      key={reactionType}
-                      action={toggleProfileReactionAction.bind(
-                        null,
-                        profile.user_id,
-                        profile.id,
-                        profile.handle,
-                        reactionType,
-                        hasReacted
-                      )}
-                    >
-                      <button
-                        type="submit"
-                        className={`flex w-full items-center justify-between rounded-[16px] px-4 py-3 text-sm font-medium transition ${
-                          hasReacted
-                            ? "bg-[#4F8CFF]/16 text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.18)]"
-                            : "bg-[#07111F]/54 text-[#D6E0F0] hover:bg-[#0B1730]/72"
-                        }`}
-                      >
-                        <span>{REACTION_LABELS[reactionType]}</span>
-                        <span>{counts.profileReactions[reactionType] ?? 0}</span>
-                      </button>
-                    </form>
-                  );
-                })}
-              </div>
+        <section className="grid gap-4">
+          <article className={`grid gap-4 p-5 ${cardLarge}`}>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
+                Current testing
+              </p>
+              <h2 className={`mt-2 ${sectionTitle}`}>
+                {profile.current_testing_focus ?? stats?.current_focus ?? "No public focus set"}
+              </h2>
+              <p className={pageCopy}>
+                {analyticsVisible
+                  ? "This public profile is summary-only. It shows what the player is testing without exposing raw preparation work."
+                  : "This player shares identity here, but has kept testing analytics private for now."}
+              </p>
             </div>
-          </aside>
+
+            {publicStats ? (
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                {[
+                  { label: "Most played deck", value: publicStats.most_played_deck ?? "Not enough games" },
+                  { label: "Weakest matchup", value: publicStats.weakest_matchup ?? "Needs 5 games" },
+                  { label: "Strongest matchup", value: publicStats.strongest_matchup ?? "Needs 5 games" },
+                  { label: "Best improvement", value: publicStats.best_improvement ?? "No clear version gap yet" },
+                ].map((item) => (
+                  <div
+                    key={item.label}
+                    className="rounded-[18px] bg-[#07111F]/54 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]"
+                  >
+                    <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                      {item.label}
+                    </p>
+                    <p className="mt-2 text-sm font-semibold leading-6 text-[#F8FAFC]">
+                      {item.value}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+          </article>
+
+          <article className={`grid gap-4 p-5 ${cardLarge}`}>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
+                Start your own profile
+              </p>
+              <h2 className={`mt-2 ${sectionTitle}`}>Track games and share safely</h2>
+              <p className={pageCopy}>
+                SixPrizer profiles are built for competitive testing. Share your identity and aggregate signal without exposing emails, raw logs, private notes, or decklists.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              <Link href="/signup" className={primaryButton}>
+                Create your SixPrizer profile
+              </Link>
+              <Link href="/demo" className={secondaryButton}>
+                Preview demo
+              </Link>
+            </div>
+          </article>
         </section>
       </div>
     </main>

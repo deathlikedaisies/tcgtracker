@@ -3,7 +3,7 @@ import { ProfileSettingsPageContent } from "@/components/community/ProfileSettin
 import { getOwnProfile } from "@/lib/community";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 
-export default async function ProfileSettingsPage({
+export default async function ProfilePage({
   searchParams,
 }: {
   searchParams: Promise<{ refreshed?: string }>;

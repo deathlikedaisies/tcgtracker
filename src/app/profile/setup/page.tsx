@@ -27,7 +27,7 @@ export default async function ProfileSetupPage() {
   const profile = await getOwnProfile(user.id);
 
   if (profile) {
-    redirect("/settings/profile");
+    redirect("/profile");
   }
 
   return (

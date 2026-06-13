@@ -714,9 +714,9 @@ export function DashboardContent({
               ? {
                   title: "Your profile is private",
                   copy: "Keep it private if you want. When you are ready, you can share a public identity or aggregate testing summary without exposing raw logs or notes.",
-                  href: "/settings/profile",
-                  ctaLabel: "Review profile settings",
-                  eyebrow: "Optional sharing",
+                    href: "/profile",
+                    ctaLabel: "Review profile settings",
+                    eyebrow: "Optional sharing",
                 }
               : null;
   const focusMatchup = sessionCoach?.missionFocusOpponent

@@ -22,7 +22,7 @@ const authenticatedRoutes = [
   { path: "/matches", heading: "Matches" },
   { path: "/decks", heading: "Deck Experiments" },
   { path: "/matchups", heading: "Matchup Intelligence" },
-  { path: "/settings/profile", heading: /Profile|Create your profile/i },
+  { path: "/profile", heading: /Profile|Create your profile/i },
 ];
 
 test.describe("mobile layout", () => {

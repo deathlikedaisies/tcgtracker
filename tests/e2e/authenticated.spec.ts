@@ -9,7 +9,7 @@ const authRoutes = [
   { path: "/matches", heading: "Matches" },
   { path: "/decks", heading: "Deck Experiments" },
   { path: "/matchups", heading: "Matchup Intelligence" },
-  { path: "/settings/profile", heading: /Profile|Create your profile/i },
+  { path: "/profile", heading: /Profile|Create your profile/i },
 ];
 
 async function setProfileVisibility(
@@ -17,7 +17,7 @@ async function setProfileVisibility(
   profileVisibility: "private" | "public" | "link_only",
   analyticsVisibility: "private" | "aggregate_only" | "detailed"
 ) {
-  await page.goto("/settings/profile");
+  await page.goto("/profile");
   await expectHeadingVisible(page, /Profile|Create your profile/i);
   await page
     .locator(`input[name="profile_visibility"][value="${profileVisibility}"]`)
@@ -72,6 +72,22 @@ test.describe("authenticated routes", () => {
     await expect(page.locator("body")).not.toContainText(
       /c9c7565b-9587-4e54-9d0b-a0c32e568d36|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i
     );
+    await expectNoAppError(page);
+  });
+
+  test("/profile shows the public profile controls", async ({ page }) => {
+    await page.goto("/profile");
+
+    await expectHeadingVisible(page, /Profile|Create your profile/i);
+    await expect(page.locator("body")).toContainText(/Public profile URL/i);
+    const viewProfileLink = page.getByRole("link", { name: /View public profile/i });
+    await expect(viewProfileLink).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: /Copy profile link/i })
+    ).toBeVisible();
+    await viewProfileLink.click();
+    await page.waitForURL(/\/u\//, { timeout: 20000 });
+    await expect(page.locator("body")).toContainText(/@domz_test/i);
     await expectNoAppError(page);
   });
 
@@ -144,6 +160,7 @@ test.describe("authenticated routes", () => {
       await expect(anonymousPage.locator("body")).toContainText(/record/i);
       await expect(anonymousPage.locator("body")).toContainText(/win rate/i);
       await expect(anonymousPage.locator("body")).toContainText(/summary only|aggregate/i);
+      await expect(anonymousPage.locator("body")).not.toContainText(/@gmail\.com/i);
       await expect(anonymousPage.locator("body")).not.toContainText(
         /4 Nest Ball|4 Professor's Research|match_id/i
       );

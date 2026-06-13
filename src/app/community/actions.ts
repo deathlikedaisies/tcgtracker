@@ -90,6 +90,7 @@ export async function saveProfileAction(
     };
   }
 
+  revalidatePath("/profile");
   revalidatePath("/settings/profile");
   revalidatePath("/profile/setup");
   revalidatePath(`/u/${result.profile.handle}`);
@@ -109,6 +110,7 @@ export async function saveProfileAction(
 export async function refreshProfileStatsAction(handle: string, redirectPath: string) {
   const user = await requireUser();
   await buildPublicProfileStats(user.id);
+  revalidatePath("/profile");
   revalidatePath("/settings/profile");
   revalidatePath(`/u/${handle}`);
   redirect(`${redirectPath}${redirectPath.includes("?") ? "&" : "?"}refreshed=1`);

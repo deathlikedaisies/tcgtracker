@@ -44,7 +44,7 @@ const navItems = [
   { href: "/matches", label: "Logs", section: "matches" as const, icon: ClipboardList },
   { href: "/decks", label: "Decks", section: "decks" as const, icon: Layers3 },
   { href: "/matchups", label: "Matchups", section: "matchups" as const, icon: BarChart3 },
-  { href: "/settings/profile", label: "Profile", section: "settings" as const, icon: Settings2 },
+  { href: "/profile", label: "Profile", section: "settings" as const, icon: Settings2 },
 ];
 
 export function AppSidebar({ current, deckLabel, insight }: AppSidebarProps) {

@@ -26,7 +26,7 @@ const navItems: {
   { href: "/matches", label: "Logs", mobileLabel: "Logs", section: "matches" },
   { href: "/decks", label: "Decks", mobileLabel: "Decks", section: "decks" },
   { href: "/matchups", label: "Matchups", mobileLabel: "Matchups", section: "matchups" },
-  { href: "/settings/profile", label: "Profile", mobileLabel: "Profile", section: "settings" },
+  { href: "/profile", label: "Profile", mobileLabel: "Profile", section: "settings" },
 ];
 
 export function AppNav({ current }: AppNavProps) {
