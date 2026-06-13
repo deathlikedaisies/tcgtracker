@@ -51,7 +51,7 @@ export function SessionCoachPanel({
               TC
             </span>
             <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#94A3B8]/58">
-              Current mission
+              Current focus
             </span>
             <span className="rounded-full bg-[#4F8CFF]/10 px-2.5 py-1 text-xs font-semibold text-[#B8D1FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.14)]">
               {insight.missionStatusLabel}
@@ -91,7 +91,7 @@ export function SessionCoachPanel({
       <div className="mt-2.5 grid gap-1.5">
         <div className="min-w-0">
           <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#94A3B8]/52">
-            Mission progress
+            Sample progress
           </p>
           <div className="flex flex-wrap items-center gap-2">
             <div
@@ -163,7 +163,7 @@ export function SessionCoachPanel({
 
       <details className="mt-2">
         <summary className="inline-flex h-7 cursor-pointer list-none items-center rounded-md px-1.5 text-[11px] font-medium text-[#94A3B8]/62 transition hover:bg-[#0B1020]/30 hover:text-[#F8FAFC] marker:hidden">
-          Why this mission
+          Why this?
         </summary>
         <div className={`${premiumInset} mt-2 grid gap-2 p-3 text-sm text-[#94A3B8] sm:grid-cols-2`}>
           <p>{insight.missionReason}</p>

@@ -6,7 +6,6 @@ import { useFormStatus } from "react-dom";
 import { ArrowRight, CheckCircle2, Sparkles } from "lucide-react";
 import { ArchetypePicker } from "@/components/ArchetypePicker";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
-import { SessionCoachPanel } from "@/components/SessionCoachPanel";
 import {
   glassPanelStrong,
   inputH11,
@@ -130,10 +129,10 @@ const rewardDetailChipClass = `${premiumTile} px-3 py-2.5`;
 
 const stepOrder = [
   { label: "Match", shortLabel: "1" },
-  { label: "Turn order", shortLabel: "2" },
-  { label: "Result", shortLabel: "3" },
-  { label: "Game quality", shortLabel: "4" },
-  { label: "What mattered?", shortLabel: "5" },
+  { label: "Result", shortLabel: "2" },
+  { label: "Turn order", shortLabel: "3" },
+  { label: "Reason", shortLabel: "4" },
+  { label: "Quality", shortLabel: "5" },
   { label: "More context", shortLabel: "6" },
 ] as const;
 
@@ -532,6 +531,10 @@ export function MatchLogForm({
       return initialResult;
     }
 
+    if (typeof window === "undefined") {
+      return "";
+    }
+
     const stored = sessionStorage.getItem(sessionKeys.result);
     return stored === "win" || stored === "loss" || stored === "tie"
       ? stored
@@ -544,6 +547,10 @@ export function MatchLogForm({
       initialWentFirst === "unknown"
     ) {
       return initialWentFirst;
+    }
+
+    if (typeof window === "undefined") {
+      return "";
     }
 
     const stored = sessionStorage.getItem(sessionKeys.wentFirst);
@@ -774,12 +781,6 @@ export function MatchLogForm({
       : result === "tie"
         ? "What defined the game?"
         : "What cost you the game?";
-  const primaryTagHint =
-    result === "win"
-      ? "Lock the clearest edge first."
-      : result === "tie"
-        ? "Mark the biggest swings before you add detail."
-        : "Mark the clearest leak before you queue again.";
   const secondaryTagTitle = "Anything else matter?";
   const secondaryTagHint =
     result === "win"
@@ -832,7 +833,7 @@ export function MatchLogForm({
     : 0;
   const postSaveMissionCopy = sessionCoach
     ? !countedTowardMission
-      ? "This game is outside the current mission, but it still updates your wider history."
+      ? "This game is outside the current focus, but it still updates your wider history."
       : sessionCoach.completionLesson
         ? sessionCoach.completionLesson
         : sessionCoach.missionGuidanceMode === "investigation"
@@ -933,52 +934,52 @@ export function MatchLogForm({
       if (issueTags.length) {
         const topTag = issueTags[0];
         return {
-          line: `This adds to your "${topTag}" pattern.`,
-          detail: "Keep tagging consistently to sharpen the read.",
+          line: `Logged. "${topTag}" was the clearest issue.`,
+          detail: "Keep tagging it the same way if it happens again.",
         };
       }
       if (startQuality === "bad" || startQuality === "okay") {
         return {
-          line: "Another game with a bad or okay start.",
-          detail: "The start quality signal is growing in your loss data.",
+          line: "Logged. The start quality issue is building.",
+          detail: "Tag what failed first next time if you can.",
         };
       }
       if (openingHandQuality === "bad" || openingHandQuality === "okay") {
         return {
-          line: "Another game where the opening hand was weak.",
-          detail: "This strengthens the opening hand pattern in your losses.",
+          line: "Logged. The weak opening-hand signal is building.",
+          detail: "Note whether it was basics, draw, or search next time.",
         };
       }
       if (sequencingQuality === "bad" || sequencingQuality === "okay") {
         return {
-          line: "Another sequencing issue logged.",
-          detail: "Check Review to see if this is becoming a pattern.",
+          line: "Logged. The sequencing signal is building.",
+          detail: "Use Review once you have a few more of these.",
         };
       }
       return {
         line: countedTowardMission
-          ? `This loss counts toward your current mission.`
-          : "Loss added to your matchup history.",
-        detail: "Add issue tags next time to help the coach find patterns.",
+          ? "Logged. This loss counts toward your current focus."
+          : "Logged. Loss added to your matchup history.",
+        detail: "Add one issue tag next time to sharpen the review read.",
       };
     }
     if (result === "win") {
       if (positiveTags.length) {
         return {
-          line: `"${positiveTags[0]}" came through in this win.`,
-          detail: "Each tagged win helps identify what to keep in the list.",
+          line: `Logged. "${positiveTags[0]}" showed up in this win.`,
+          detail: "Keep tagging it if it keeps appearing.",
         };
       }
       return {
         line: countedTowardMission
-          ? "This win counts toward your current mission."
-          : "Win added to your matchup history.",
-        detail: "Add positive tags next time to track what worked.",
+          ? "Logged. This win counts toward your current focus."
+          : "Logged. Win added to your matchup history.",
+        detail: "Add one positive tag next time to track what worked.",
       };
     }
     return {
-      line: "Tie logged and added to your history.",
-      detail: "Ties count toward your sample but not win rate.",
+      line: "Logged. Tie added to your history.",
+      detail: "It still counts toward the sample.",
     };
   })();
 
@@ -1047,13 +1048,15 @@ export function MatchLogForm({
   const canAdvanceFromTurnOrder =
     wentFirst === "true" || wentFirst === "false" || wentFirst === "unknown";
   const canAdvanceFromResult = result === "win" || result === "loss" || result === "tie";
+  const canQuickSave =
+    canAdvanceFromMatch && canAdvanceFromResult && canAdvanceFromTurnOrder;
   const blockedNextMessage =
     currentStep === 0 && !canAdvanceFromMatch
       ? "Choose an opponent deck to continue."
-      : currentStep === 1 && !canAdvanceFromTurnOrder
-        ? "Choose whether you went first, second, or can't remember."
-        : currentStep === 2 && !canAdvanceFromResult
-          ? "Choose win, loss, or tie."
+      : currentStep === 1 && !canAdvanceFromResult
+        ? "Choose win, loss, or tie."
+        : currentStep === 2 && !canAdvanceFromTurnOrder
+          ? "Choose whether you went first, second, or can't remember."
           : null;
   const summaryChipClass =
     "inline-flex items-center rounded-full bg-[#0B1020]/72 px-2.5 py-1 text-[11px] font-semibold text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]";
@@ -1098,12 +1101,25 @@ export function MatchLogForm({
 
   return (
     <div className="mt-5 grid gap-4">
-      {sessionCoach ? (
-        <SessionCoachPanel
-          insight={sessionCoach}
-          isPostSave={wasSuccessful}
-          showCta={false}
-        />
+      {sessionCoach && !wasSuccessful ? (
+        <section className="rounded-[20px] bg-[#07111F]/40 p-3.5 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.12)] sm:rounded-[24px] sm:p-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0">
+              <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
+                Current focus
+              </p>
+              <p className="mt-1 text-lg font-semibold text-[#F8FAFC]">
+                {sessionCoach.missionTitle}
+              </p>
+              <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
+                {sessionCoach.nextAction}
+              </p>
+            </div>
+            <div className="rounded-xl bg-[#0B1020]/52 px-3 py-2 text-xs font-semibold text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+              {sessionCoach.missionProgress}/{sessionCoach.missionTargetCount} games
+            </div>
+          </div>
+        </section>
       ) : null}
 
       <form
@@ -1248,7 +1264,7 @@ export function MatchLogForm({
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
-                        Mission
+                        Current focus
                       </p>
                       <p className="mt-1 text-lg font-semibold text-[#F8FAFC]">
                         {sessionCoach.missionTitle}
@@ -1451,7 +1467,7 @@ export function MatchLogForm({
                           Who did you play against?
                         </h2>
                         <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
-                          Pick the matchup first. Everything else follows from that.
+                          Start with the matchup. You can fill the rest in fast.
                         </p>
                       </div>
 
@@ -1532,7 +1548,7 @@ export function MatchLogForm({
                     </div>
                   ) : null}
 
-                  {currentStep === 1 ? (
+                  {currentStep === 2 ? (
                     <div className="grid gap-3.5 sm:gap-4">
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
@@ -1542,7 +1558,7 @@ export function MatchLogForm({
                           Did you go first, second, or can&apos;t remember?
                         </h2>
                         <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
-                          Choose turn order, or mark unknown if you can&apos;t remember.
+                          Choose turn order, or tap unknown and keep going.
                         </p>
                       </div>
                       <div className="grid gap-3 sm:grid-cols-3">
@@ -1576,7 +1592,7 @@ export function MatchLogForm({
                     </div>
                   ) : null}
 
-                  {currentStep === 2 ? (
+                  {currentStep === 1 ? (
                     <div className="grid gap-3.5 sm:gap-4">
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
@@ -1586,7 +1602,7 @@ export function MatchLogForm({
                           What was the result?
                         </h2>
                         <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
-                          Log the outcome before you think about why it happened.
+                          Win, loss, or tie. Keep it moving.
                         </p>
                       </div>
                       <div className="grid gap-3 sm:grid-cols-3">
@@ -1617,17 +1633,17 @@ export function MatchLogForm({
                     </div>
                   ) : null}
 
-                  {currentStep === 3 ? (
+                  {currentStep === 4 ? (
                     <div className="grid gap-3.5 sm:gap-4">
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
-                          Game quality
+                          Quick quality
                         </p>
                         <h2 className="mt-2 text-[1.35rem] font-semibold leading-tight text-[#F8FAFC] sm:text-2xl">
-                          How did the game feel?
+                          Add quality if you remember it
                         </h2>
                         <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
-                          Capture the quick quality read while the game is still fresh.
+                          This is optional. Add it now if the game is still fresh, or save without it.
                         </p>
                       </div>
                       <div className="grid gap-2.5 sm:gap-3">
@@ -1735,7 +1751,7 @@ export function MatchLogForm({
                     </div>
                   ) : null}
 
-                  {currentStep === 4 ? (
+                  {currentStep === 3 ? (
                     <div className="grid gap-3.5 sm:gap-4">
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
@@ -1745,7 +1761,7 @@ export function MatchLogForm({
                           {primaryTagTitle}
                         </h2>
                         <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
-                          {primaryTagHint}
+                          Add one reason, or skip and save.
                         </p>
                       </div>
                       <fieldset className={subCardClass}>
@@ -1905,7 +1921,7 @@ export function MatchLogForm({
                           Anything worth remembering?
                         </h2>
                         <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
-                          Add context only if it helps future review. You can skip and save.
+                          Everything here is optional. Save as soon as you have enough.
                         </p>
                       </div>
 
@@ -2095,10 +2111,12 @@ export function MatchLogForm({
                   </p>
                   <p className="mt-1.5 text-sm font-medium leading-5 text-[#F8FAFC] sm:mt-2 sm:leading-6">
                     {readySummary ||
-                      "Choose a matchup, result, and turn order to start the quick log."}
+                      "Choose matchup, result, and turn order to save quickly."}
                   </p>
                   <p className="mt-1.5 text-sm text-[#94A3B8]/76 sm:mt-2">
-                    This will update your matchup trends.
+                    {canQuickSave
+                      ? "You can save now, or add optional detail first."
+                      : "This will update your matchup trends."}
                   </p>
                 </div>
 
@@ -2122,7 +2140,7 @@ export function MatchLogForm({
                     ) : null}
                   </div>
 
-                  {currentStep < stepOrder.length - 1 ? (
+                  {currentStep < 3 ? (
                     <button
                       type="button"
                       onClick={() =>
@@ -2132,23 +2150,38 @@ export function MatchLogForm({
                       }
                       disabled={
                         (currentStep === 0 && !canAdvanceFromMatch) ||
-                        (currentStep === 1 && !canAdvanceFromTurnOrder) ||
-                        (currentStep === 2 && !canAdvanceFromResult)
+                        (currentStep === 1 && !canAdvanceFromResult) ||
+                        (currentStep === 2 && !canAdvanceFromTurnOrder)
                       }
                       className={`${primaryButton} h-12 w-full sm:w-auto ${
                         ((currentStep === 0 && !canAdvanceFromMatch) ||
-                          (currentStep === 1 && !canAdvanceFromTurnOrder) ||
-                          (currentStep === 2 && !canAdvanceFromResult))
+                          (currentStep === 1 && !canAdvanceFromResult) ||
+                          (currentStep === 2 && !canAdvanceFromTurnOrder))
                           ? "cursor-not-allowed opacity-60"
                           : ""
                       }`}
                     >
                       Next
                     </button>
+                  ) : currentStep < stepOrder.length - 1 ? (
+                    <div className="grid w-full gap-2 sm:w-auto sm:grid-cols-2">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setCurrentStep((step) =>
+                            Math.min(step + 1, stepOrder.length - 1)
+                          )
+                        }
+                        className={secondaryButton}
+                      >
+                        {currentStep === 3 ? "Optional quality" : "More context"}
+                      </button>
+                      <SubmitButton label="Save now" />
+                    </div>
                   ) : (
                     <div className="grid w-full gap-2 sm:w-auto sm:grid-cols-2">
                       <button type="submit" className={secondaryButton}>
-                        Skip and save
+                        Save now
                       </button>
                       <SubmitButton label={submitLabel} />
                     </div>

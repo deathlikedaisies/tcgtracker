@@ -292,14 +292,14 @@ function MissionHeroCard({
   const primaryLabel = insight.ctaLabel;
 
   return (
-    <section className={`grid gap-3 p-3.5 sm:gap-4 sm:p-6 xl:grid-cols-[minmax(0,1.5fr)_360px] ${missionHeroCard} bg-[linear-gradient(180deg,rgba(14,24,42,0.96),rgba(8,17,31,0.91))]`}>
+    <section className={`grid gap-3 p-3.5 sm:gap-4 sm:p-5 xl:grid-cols-[minmax(0,1.35fr)_320px] ${missionHeroCard} bg-[linear-gradient(180deg,rgba(14,24,42,0.94),rgba(8,17,31,0.90))]`}>
       <div className="min-w-0">
         <div className="flex flex-wrap items-start gap-1.5 sm:gap-2">
           <span className="inline-flex size-8 items-center justify-center rounded-xl bg-[#F5C84C]/12 text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.18)] sm:size-10 sm:rounded-2xl">
             <Target className="size-4 sm:size-5" aria-hidden="true" />
           </span>
           <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#94A3B8]/76">
-            Current mission
+            Next best action
           </span>
           <span
             className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] leading-5 whitespace-normal ${toneClass(
@@ -316,7 +316,7 @@ function MissionHeroCard({
         <div className="mt-3 flex flex-wrap items-center gap-2.5 sm:mt-4 sm:gap-3">
           <ArchetypeSprites archetype={insight.archetype} size="md" className="shrink-0" />
           <div className="min-w-0">
-            <h1 className="text-[1.75rem] font-bold tracking-tight text-[#F8FAFC] sm:text-4xl">
+            <h1 className="text-[1.55rem] font-bold tracking-tight text-[#F8FAFC] sm:text-3xl">
               {insight.missionTitle}
             </h1>
             <p className="mt-1.5 text-sm leading-5 text-[#D6E0F0]/82 sm:mt-2 sm:text-base sm:leading-6">
@@ -327,8 +327,8 @@ function MissionHeroCard({
 
         <div className="mt-4 grid gap-2 sm:mt-5 sm:gap-3 sm:grid-cols-3">
           <StatusChip
-            label="Mission mode"
-            value={insight.missionGuidanceLabel}
+            label="Current focus"
+            value={insight.missionContextLabel}
             tone="blue"
           />
           <StatusChip
@@ -337,15 +337,15 @@ function MissionHeroCard({
             tone="gold"
           />
           <StatusChip
-            label="Signal state"
-            value={insight.missionStatusLabel}
+            label="Signal"
+            value={badge.label}
             tone="green"
           />
         </div>
 
         <details className="mt-3 sm:mt-4">
           <summary className={`${premiumInset} inline-flex cursor-pointer list-none items-center gap-1.5 px-3 py-2 text-sm font-semibold text-[#DCE8FF] transition-colors hover:text-[#F8FAFC] marker:hidden`}>
-            Why this mission
+            Why this?
             <ChevronDown className="size-4" aria-hidden="true" />
           </summary>
           <div className={`${premiumInset} mt-2.5 grid gap-2 p-3 text-sm leading-5 text-[#94A3B8]/76 sm:mt-3 sm:p-4 sm:leading-6 lg:grid-cols-2`}>
@@ -359,7 +359,7 @@ function MissionHeroCard({
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
-              Progress
+              Sample progress
             </p>
             <p className="mt-1 text-base font-semibold text-[#F8FAFC] sm:text-lg">
               {insight.missionProgress}/{insight.missionTargetCount} games
@@ -370,7 +370,7 @@ function MissionHeroCard({
           </span>
         </div>
 
-        <div className="mt-3 flex items-center gap-1.5 sm:mt-4 sm:gap-2" aria-label="Mission progress">
+        <div className="mt-3 flex items-center gap-1.5 sm:mt-4 sm:gap-2" aria-label="Focus progress">
           {progressDots.map((complete, index) => (
             <span
               key={index}
@@ -792,7 +792,7 @@ export function DashboardContent({
         <AppSidebar
           current="dashboard"
           insight={{
-            label: "Next action",
+            label: "Current focus",
             value: sessionCoach?.missionTitle ?? "Log games to unlock coaching",
             helper: sessionCoach
               ? `${sessionCoach.missionProgress}/${sessionCoach.missionTargetCount} games`

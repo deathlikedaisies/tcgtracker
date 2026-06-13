@@ -35,7 +35,11 @@ export type ReviewInsightCard = {
   explanation: string;
   evidence: string;
   recommendation: string;
-  confidenceLabel: "Strong signal" | "Building signal" | "Early signal" | "Needs more games";
+  confidenceLabel:
+    | "Strong enough to review"
+    | "Worth testing next"
+    | "Early signal"
+    | "Needs more games";
   tone: ReviewInsightTone;
   ctaLabel: string;
   ctaHref: string;
@@ -156,15 +160,15 @@ function getConfidenceLabel({
   sampleSize: number;
   concentration?: number;
 }): ReviewInsightCard["confidenceLabel"] {
-  if (sampleSize >= 12 && (concentration ?? 0.5) >= 0.6) {
-    return "Strong signal";
+  if (sampleSize >= 10 && (concentration ?? 0.5) >= 0.6) {
+    return "Strong enough to review";
   }
 
-  if (sampleSize >= 8 && (concentration ?? 0.35) >= 0.45) {
-    return "Building signal";
+  if (sampleSize >= 5 && (concentration ?? 0.35) >= 0.45) {
+    return "Worth testing next";
   }
 
-  if (sampleSize >= 4) {
+  if (sampleSize >= 3) {
     return "Early signal";
   }
 
@@ -237,17 +241,22 @@ function formatTaggedComparison(
 }
 
 function getRateDifferenceLabel(
+  occurrences: number,
   higherRate: number,
   lowerRate: number
-): "Strong signal" | "Building signal" | "Early signal" | "Needs more games" {
+): ReviewInsightCard["confidenceLabel"] {
   const gap = higherRate - lowerRate;
 
-  if (higherRate >= 0.55 && gap >= 0.25) {
-    return "Strong signal";
+  if (occurrences < 3) {
+    return "Needs more games";
   }
 
-  if (higherRate >= 0.4 && gap >= 0.15) {
-    return "Building signal";
+  if (occurrences >= 5 && gap >= 0.2) {
+    return "Strong enough to review";
+  }
+
+  if (gap >= 0.15) {
+    return "Worth testing next";
   }
 
   if (higherRate > 0 || lowerRate > 0) {
@@ -255,6 +264,20 @@ function getRateDifferenceLabel(
   }
 
   return "Needs more games";
+}
+
+function getTopTagSummary(matches: ReviewMatch[]) {
+  const counts = new Map<string, number>();
+
+  matches.forEach((match) => {
+    getIssueTags(match).forEach((tag) => {
+      counts.set(tag, (counts.get(tag) ?? 0) + 1);
+    });
+  });
+
+  return Array.from(counts.entries())
+    .sort((left, right) => right[1] - left[1])
+    .slice(0, 2);
 }
 
 function buildMatchupLeakCard(
@@ -303,9 +326,20 @@ function buildMatchupLeakCard(
     return null;
   }
 
+  const topLossTags = getTopTagSummary(
+    topLeak.groupedMatches.filter((match) => match.result === "loss")
+  );
   const issueLine =
-    topLeak.commonIssue && topLeak.commonIssue[1] >= 2
-      ? ` "${topLeak.commonIssue[0]}" is the most common loss tag, and you logged it ${topLeak.commonIssue[1]} times in those losses.`
+    topLossTags.length > 0
+      ? ` Losses here are most often tagged ${topLossTags
+          .map(([tag]) => `"${tag}"`)
+          .join(" and ")}.`
+      : "";
+  const issueEvidence =
+    topLossTags.length > 0
+      ? ` Most common loss tags: ${topLossTags
+          .map(([tag, count]) => `${tag} (${count})`)
+          .join(", ")}.`
       : "";
 
   return {
@@ -318,13 +352,15 @@ function buildMatchupLeakCard(
       topLeak.record.wins,
       topLeak.record.losses,
       topLeak.record.ties
-    )} across ${topLeak.record.total} games.${getEarlySignalSuffix(
+    )} across ${topLeak.record.total} games.${issueEvidence}${getEarlySignalSuffix(
       topLeak.record.total
     )}`,
     recommendation:
-      topLeak.commonIssue && topLeak.commonIssue[1] >= 2
-        ? `Next test: keep the list stable and tag whether ${topLeak.commonIssue[0]} or raw matchup pressure breaks the game first.`
-        : "Next test: keep the list stable and tag whether setup, bench pressure, or prize race breaks first.",
+      topLossTags.length > 0
+        ? `What to do next: in your next 5 ${topLeak.opponent} games, tag the first thing that breaks: ${topLossTags
+            .map(([tag]) => tag)
+            .join(", ")}, setup, or prize trade.`
+        : `What to do next: in your next 5 ${topLeak.opponent} games, tag the first thing that breaks: setup, bench pressure, sequencing, or prize trade.`,
     confidenceLabel: getConfidenceLabel({
       sampleSize: topLeak.record.total,
       concentration: 1 - topLeak.winRate / 100,
@@ -405,21 +441,21 @@ function buildQualityPatternCard(
       : "";
   const nextTestLine =
     strongest.field === "sequencing_quality"
-      ? "Review your turn-two setup and midgame prize-map decisions across the next few games."
+      ? "In the next 5 games with bad sequencing, add one note saying whether it came from opening hand, search order, prize map, or matchup pressure."
       : strongest.field === "opening_hand_quality"
-        ? "Tag whether the bad hands came from missing basics, draw, or early search."
-        : "Log the next few games with extra focus on what makes the first two turns unstable.";
+        ? "In the next 5 games with bad hands, tag whether the miss was basics, draw, or early search."
+        : "In the next 5 rough starts, tag what failed first: basics, draw, energy, or early search.";
 
   return {
     key: "quality-pattern",
     title: getQualityInsightTitle(strongest.field),
-    explanation: `${fieldLabel === "sequencing" ? "Sequencing" : fieldLabel === "opening hand" ? "Opening hands" : "Starts"} are dragging results down in ${getContextLabel(
+    explanation: `${fieldLabel === "sequencing" ? "Sequencing" : fieldLabel === "opening hand" ? "Opening hands" : "Starts"} are underperforming in ${getContextLabel(
       context
-    )}.${comparisonLine}`,
-    evidence: `${strongest.lowLosses} of ${strongest.low.length} games with a bad or okay ${fieldLabel} were losses.${getEarlySignalSuffix(
+    )}. ${strongest.lowLosses} of ${strongest.low.length} games with a bad or okay ${fieldLabel} became losses.${comparisonLine}`,
+    evidence: `${strongest.lowLosses} of ${strongest.low.length} low-quality ${fieldLabel} games were losses.${getEarlySignalSuffix(
       strongest.known.length
     )}`,
-    recommendation: `Next test: ${nextTestLine}`,
+    recommendation: `What to do next: ${nextTestLine}`,
     confidenceLabel: getConfidenceLabel({
       sampleSize: strongest.low.length,
       concentration: strongest.lowRate,
@@ -472,7 +508,11 @@ function buildIssueTagCard(
     : focusedDeckLabel
       ? ` Most of those losses are with ${focusedDeckLabel}.`
       : "";
-  const confidenceLabel = getRateDifferenceLabel(tagLossShare, tagWinShare);
+  const confidenceLabel = getRateDifferenceLabel(
+    count,
+    tagLossShare,
+    tagWinShare
+  );
 
   return {
     key: "issue-tag",
@@ -524,7 +564,7 @@ function buildPositiveTagCard(
   const lossShare = losses.length ? lossesWithTag / losses.length : 0;
   const strongSignal = count >= 3 && winShare >= lossShare + 0.15;
   const confidenceLabel = strongSignal
-    ? getRateDifferenceLabel(winShare, lossShare)
+    ? getRateDifferenceLabel(count, winShare, lossShare)
     : getConfidenceLabel({
         sampleSize: count + lossesWithTag,
         concentration: Math.max(winShare, lossShare),
@@ -550,7 +590,7 @@ function buildPositiveTagCard(
       losses.length
     )} losses tagged.${getEarlySignalSuffix(wins.length + losses.length)}`,
     recommendation:
-      `What to do next: for your next 5 games, keep tagging "${tag}" and add a short note saying what made it happen, for example prize map, tech card, setup turn, or opponent mistake.`,
+      `What to do next: for your next 5 games, keep tagging "${tag}" and add one short note saying what made it happen, for example prize map, setup turn, tech card, or opponent mistake.`,
     confidenceLabel,
     tone: "emerald",
     ctaLabel: "Log next game",
@@ -617,8 +657,8 @@ function buildVersionSignalCard(
 
   return {
     key: "version-signal",
-    title: `${best.name} is outperforming ${worst.name}`,
-    explanation: `${best.name} is outperforming ${worst.name} so far, but version reads only matter if the cleaner list keeps holding up as the sample grows.`,
+    title: `${best.name} is stronger so far than ${worst.name}`,
+    explanation: `${best.name} is stronger so far than ${worst.name}, but the sample is still version testing, not proof. Keep comparing starts, sequencing, and matchup spread before locking the list.`,
     evidence: `${best.name}: ${formatMatchRecord(
       best.record.wins,
       best.record.losses,
@@ -629,7 +669,9 @@ function buildVersionSignalCard(
       worst.record.ties
     )}.${getEarlySignalSuffix(best.matches.length + worst.matches.length)}`,
     recommendation:
-      "Next test: keep both versions in the pool a little longer and compare whether starts, sequencing, or matchup spread explain the gap.",
+      best.matches.length < 10 || worst.matches.length < 10
+        ? `What to do next: this version test is still early. Keep logging until both versions have around 10 games, or at least 5 into the matchup they were built for.`
+        : "What to do next: keep both versions in the pool a little longer and compare whether starts, sequencing, or matchup spread explain the gap.",
     confidenceLabel: getConfidenceLabel({
       sampleSize: best.matches.length + worst.matches.length,
       concentration: delta / 100,

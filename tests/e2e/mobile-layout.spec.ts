@@ -57,7 +57,7 @@ test.describe("mobile layout", () => {
         await expectHeadingVisible(page, route.heading);
         if (route.path === "/dashboard") {
           await expect(page.getByRole("button", { name: "Sign out" })).toBeVisible();
-          await expect(page.locator("body")).toContainText(/Current mission/i);
+          await expect(page.locator("body")).toContainText(/Next best action|Current focus/i);
         }
         await expect(page.getByLabel("Email")).toHaveCount(0);
         await expectNoAppError(page);

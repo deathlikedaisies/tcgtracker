@@ -577,7 +577,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
         <AppSidebar
           current="review"
           insight={{
-            label: "Review mode",
+            label: "Review focus",
             value: analysis.cards[0]?.title ?? "Find the next testing question",
             helper: analysis.sampleSummary,
           }}
@@ -588,7 +588,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
             current="review"
             eyebrow="Analysis mode"
             title="Review"
-            subtitle="Turn saved games, tags, and deck versions into actual coaching reads."
+            subtitle="See what your recent games are actually telling you, then decide the next test."
             userEmail={user.email ?? "Unknown email"}
           />
 
@@ -705,7 +705,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
                           TC
                         </span>
                         <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#94A3B8]/58">
-                          Coach says
+                          Top coach read
                         </span>
                         <span
                           className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${getToneClass(analysis.cards[0].tone)}`}
@@ -773,7 +773,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
                     </p>
                     <h2 className={sectionTitle}>Other patterns found</h2>
                     <p className="text-sm leading-6 text-[#94A3B8]/72">
-                      These are secondary patterns from your logs. Use them after reviewing the main coach recommendation.
+                      These are the clearest supporting patterns behind the main read. Check them after the top recommendation.
                     </p>
                   </div>
 
@@ -798,22 +798,8 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
                 </section>
               ) : null}
 
-              <ReviewDetailedAnalytics
-                recentMatches={recentMatches}
-                trendData={trendData}
-                matchupRows={matchupSummary}
-                turnOrderRows={turnOrderRows}
-                unknownTurnOrderCount={unknownTurnOrderCount}
-                winTags={winTags}
-                lossTags={lossTags}
-                versionRows={versionRows}
-                versionSummary={versionSummary}
-              />
-
               {analysis.cards.length > 1 ? (() => {
                 const secondaryCards = analysis.cards.slice(1);
-                const visibleCards = secondaryCards.slice(0, 3);
-                const hiddenCards = secondaryCards.slice(3);
 
                 const renderCard = (card: typeof secondaryCards[0]) => (
                   <article key={card.key} className={`p-5 ${glassPanel}`}>
@@ -855,23 +841,31 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
                 );
 
                 return (
-                  <>
-                    <section className="grid gap-4 xl:grid-cols-2">
-                      {visibleCards.map(renderCard)}
+                  <details className="group">
+                    <summary className={`${premiumInset} inline-flex cursor-pointer list-none items-center gap-2 px-4 py-2.5 text-sm font-semibold text-[#B8D1FF] transition hover:text-[#F8FAFC] marker:hidden`}>
+                      More review signals
+                    </summary>
+                    <p className="mt-3 text-sm leading-6 text-[#94A3B8]/72">
+                      These are secondary reads. Use them after the top coach recommendation and supporting evidence.
+                    </p>
+                    <section className="mt-4 grid gap-4 xl:grid-cols-2">
+                      {secondaryCards.slice(0, 3).map(renderCard)}
                     </section>
-                    {hiddenCards.length > 0 ? (
-                      <details className="group">
-                        <summary className={`${premiumInset} inline-flex cursor-pointer list-none items-center gap-2 px-4 py-2.5 text-sm font-semibold text-[#B8D1FF] transition hover:text-[#F8FAFC] marker:hidden`}>
-                          {hiddenCards.length} more insight{hiddenCards.length > 1 ? "s" : ""}
-                        </summary>
-                        <section className="mt-4 grid gap-4 xl:grid-cols-2">
-                          {hiddenCards.map(renderCard)}
-                        </section>
-                      </details>
-                    ) : null}
-                  </>
+                  </details>
                 );
               })() : null}
+
+              <ReviewDetailedAnalytics
+                recentMatches={recentMatches}
+                trendData={trendData}
+                matchupRows={matchupSummary}
+                turnOrderRows={turnOrderRows}
+                unknownTurnOrderCount={unknownTurnOrderCount}
+                winTags={winTags}
+                lossTags={lossTags}
+                versionRows={versionRows}
+                versionSummary={versionSummary}
+              />
             </>
           )}
         </div>

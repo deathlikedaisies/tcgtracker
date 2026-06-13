@@ -73,10 +73,10 @@ const rewardDetailChipClass =
 
 const stepOrder = [
   { label: "Match", shortLabel: "1" },
-  { label: "Turn order", shortLabel: "2" },
-  { label: "Result", shortLabel: "3" },
-  { label: "Game quality", shortLabel: "4" },
-  { label: "What mattered?", shortLabel: "5" },
+  { label: "Result", shortLabel: "2" },
+  { label: "Turn order", shortLabel: "3" },
+  { label: "Reason", shortLabel: "4" },
+  { label: "Quality", shortLabel: "5" },
   { label: "More context", shortLabel: "6" },
 ] as const;
 
@@ -460,12 +460,6 @@ export function DemoMatchLogForm() {
       : result === "tie"
         ? "What defined the game?"
         : "What cost you the game?";
-  const primaryTagHint =
-    result === "win"
-      ? "Lock the clearest edge first."
-      : result === "tie"
-        ? "Mark the biggest swings before you add detail."
-        : "Mark the clearest leak before you queue again.";
   const secondaryTagHint =
     result === "win"
       ? "Add any leak that still shaped the game."
@@ -492,13 +486,15 @@ export function DemoMatchLogForm() {
   const canAdvanceFromMatch = Boolean(opponent.trim());
   const canAdvanceFromTurnOrder = wentFirst !== null;
   const canAdvanceFromResult = result === "win" || result === "loss" || result === "tie";
+  const canQuickSave =
+    canAdvanceFromMatch && canAdvanceFromTurnOrder && canAdvanceFromResult;
   const blockedNextMessage =
     currentStep === 0 && !canAdvanceFromMatch
       ? "Choose an opponent deck to continue."
-      : currentStep === 1 && !canAdvanceFromTurnOrder
-        ? "Choose whether you went first, second, or can't remember."
-        : currentStep === 2 && !canAdvanceFromResult
-          ? "Choose win, loss, or tie."
+      : currentStep === 1 && !canAdvanceFromResult
+        ? "Choose win, loss, or tie."
+        : currentStep === 2 && !canAdvanceFromTurnOrder
+          ? "Choose whether you went first, second, or can't remember."
           : null;
   const finalizedResult: MatchResult =
     result === "win" || result === "loss" || result === "tie" ? result : "loss";
@@ -980,13 +976,54 @@ export function DemoMatchLogForm() {
                 <div className="grid gap-4">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
+                      Result
+                    </p>
+                    <h2 className="mt-2 text-2xl font-semibold text-[#F8FAFC]">
+                      What was the result?
+                    </h2>
+                    <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
+                      Win, loss, or tie. Keep it moving.
+                    </p>
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    {(["win", "loss", "tie"] as const).map((value) => (
+                      (() => {
+                        const isSelected = result === value;
+                        const tone = getResultTone(value);
+
+                        return (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => setResult(value)}
+                        aria-pressed={isSelected}
+                        className={`${largeToggleClass} ${
+                          isSelected ? getSelectedToneClass(tone) : ""
+                        }`}
+                      >
+                        <span className="flex items-center gap-2">
+                          {isSelected ? <SelectionMark tone={tone} /> : null}
+                          <span>{getMatchResultLabel(value)}</span>
+                        </span>
+                      </button>
+                        );
+                      })()
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+
+              {currentStep === 2 ? (
+                <div className="grid gap-4">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
                       Turn order
                     </p>
                     <h2 className="mt-2 text-2xl font-semibold text-[#F8FAFC]">
                       Did you go first or second?
                     </h2>
                     <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
-                      Choose turn order, or mark unknown if you can&apos;t remember.
+                      Choose turn order, or tap unknown and keep going.
                     </p>
                   </div>
                   <div className="grid gap-3 sm:grid-cols-3">
@@ -1020,162 +1057,7 @@ export function DemoMatchLogForm() {
                 </div>
               ) : null}
 
-              {currentStep === 2 ? (
-                <div className="grid gap-4">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
-                      Result
-                    </p>
-                    <h2 className="mt-2 text-2xl font-semibold text-[#F8FAFC]">
-                      What was the result?
-                    </h2>
-                    <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
-                      Log the outcome before you think about why it happened.
-                    </p>
-                  </div>
-                  <div className="grid gap-3 sm:grid-cols-3">
-                    {(["win", "loss", "tie"] as const).map((value) => (
-                      (() => {
-                        const isSelected = result === value;
-                        const tone = getResultTone(value);
-
-                        return (
-                      <button
-                        key={value}
-                        type="button"
-                        onClick={() => setResult(value)}
-                        aria-pressed={isSelected}
-                        className={`${largeToggleClass} ${
-                          isSelected ? getSelectedToneClass(tone) : ""
-                        }`}
-                      >
-                        <span className="flex items-center gap-2">
-                          {isSelected ? <SelectionMark tone={tone} /> : null}
-                          <span>{getMatchResultLabel(value)}</span>
-                        </span>
-                      </button>
-                        );
-                      })()
-                    ))}
-                  </div>
-                </div>
-              ) : null}
-
               {currentStep === 3 ? (
-                <div className="grid gap-4">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
-                      Game quality
-                    </p>
-                    <h2 className="mt-2 text-2xl font-semibold text-[#F8FAFC]">
-                      How did the game feel?
-                    </h2>
-                    <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
-                      Capture the quick quality read while the game is still fresh.
-                    </p>
-                  </div>
-                  <div className="grid gap-3">
-                    <fieldset className={subCardClass}>
-                      <legend className={label}>Start</legend>
-                      <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                        {MATCH_START_QUALITY_OPTIONS.map((value) => (
-                          (() => {
-                            const isSelected = startQuality === value;
-                            const tone = getQualityTone(value);
-
-                            return (
-                          <button
-                            key={value}
-                            type="button"
-                            onClick={() =>
-                              setStartQuality(
-                                startQuality === value ? undefined : value
-                              )
-                            }
-                            aria-pressed={isSelected}
-                            className={`${mediumToggleClass} ${
-                              isSelected ? getSelectedToneClass(tone) : ""
-                            }`}
-                          >
-                            <span className="flex items-center gap-2">
-                              {isSelected ? <SelectionMark tone={tone} /> : null}
-                              <span>{getQualityLabel(value)}</span>
-                            </span>
-                          </button>
-                            );
-                          })()
-                        ))}
-                      </div>
-                    </fieldset>
-                    <fieldset className={subCardClass}>
-                      <legend className={label}>Opening hand</legend>
-                      <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                        {MATCH_OPENING_HAND_OPTIONS.map((value) => (
-                          (() => {
-                            const isSelected = openingHandQuality === value;
-                            const tone = getQualityTone(value);
-
-                            return (
-                          <button
-                            key={value}
-                            type="button"
-                            onClick={() =>
-                              setOpeningHandQuality(
-                                openingHandQuality === value ? undefined : value
-                              )
-                            }
-                            aria-pressed={isSelected}
-                            className={`${mediumToggleClass} ${
-                              isSelected ? getSelectedToneClass(tone) : ""
-                            }`}
-                          >
-                            <span className="flex items-center gap-2">
-                              {isSelected ? <SelectionMark tone={tone} /> : null}
-                              <span>{getQualityLabel(value)}</span>
-                            </span>
-                          </button>
-                            );
-                          })()
-                        ))}
-                      </div>
-                    </fieldset>
-                    <fieldset className={subCardClass}>
-                      <legend className={label}>Sequencing</legend>
-                      <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                        {MATCH_SEQUENCING_OPTIONS.map((value) => (
-                          (() => {
-                            const isSelected = sequencingQuality === value;
-                            const tone = getQualityTone(value);
-
-                            return (
-                          <button
-                            key={value}
-                            type="button"
-                            onClick={() =>
-                              setSequencingQuality(
-                                sequencingQuality === value ? undefined : value
-                              )
-                            }
-                            aria-pressed={isSelected}
-                            className={`${mediumToggleClass} ${
-                              isSelected ? getSelectedToneClass(tone) : ""
-                            }`}
-                          >
-                            <span className="flex items-center gap-2">
-                              {isSelected ? <SelectionMark tone={tone} /> : null}
-                              <span>{getQualityLabel(value)}</span>
-                            </span>
-                          </button>
-                            );
-                          })()
-                        ))}
-                      </div>
-                    </fieldset>
-                  </div>
-                </div>
-              ) : null}
-
-              {currentStep === 4 ? (
                 <div className="grid gap-4">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
@@ -1185,7 +1067,7 @@ export function DemoMatchLogForm() {
                       {primaryTagTitle}
                     </h2>
                     <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
-                      {primaryTagHint}
+                      Add one reason, or skip and save.
                     </p>
                   </div>
                   <fieldset className={subCardClass}>
@@ -1325,6 +1207,120 @@ export function DemoMatchLogForm() {
                 </div>
               ) : null}
 
+              {currentStep === 4 ? (
+                <div className="grid gap-4">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
+                      Quick quality
+                    </p>
+                    <h2 className="mt-2 text-2xl font-semibold text-[#F8FAFC]">
+                      Add quality if you remember it
+                    </h2>
+                    <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
+                      This is optional. Add it now if the game is still fresh, or save without it.
+                    </p>
+                  </div>
+                  <div className="grid gap-3">
+                    <fieldset className={subCardClass}>
+                      <legend className={label}>Start</legend>
+                      <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                        {MATCH_START_QUALITY_OPTIONS.map((value) => (
+                          (() => {
+                            const isSelected = startQuality === value;
+                            const tone = getQualityTone(value);
+
+                            return (
+                          <button
+                            key={value}
+                            type="button"
+                            onClick={() =>
+                              setStartQuality(
+                                startQuality === value ? undefined : value
+                              )
+                            }
+                            aria-pressed={isSelected}
+                            className={`${mediumToggleClass} ${
+                              isSelected ? getSelectedToneClass(tone) : ""
+                            }`}
+                          >
+                            <span className="flex items-center gap-2">
+                              {isSelected ? <SelectionMark tone={tone} /> : null}
+                              <span>{getQualityLabel(value)}</span>
+                            </span>
+                          </button>
+                            );
+                          })()
+                        ))}
+                      </div>
+                    </fieldset>
+                    <fieldset className={subCardClass}>
+                      <legend className={label}>Opening hand</legend>
+                      <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                        {MATCH_OPENING_HAND_OPTIONS.map((value) => (
+                          (() => {
+                            const isSelected = openingHandQuality === value;
+                            const tone = getQualityTone(value);
+
+                            return (
+                          <button
+                            key={value}
+                            type="button"
+                            onClick={() =>
+                              setOpeningHandQuality(
+                                openingHandQuality === value ? undefined : value
+                              )
+                            }
+                            aria-pressed={isSelected}
+                            className={`${mediumToggleClass} ${
+                              isSelected ? getSelectedToneClass(tone) : ""
+                            }`}
+                          >
+                            <span className="flex items-center gap-2">
+                              {isSelected ? <SelectionMark tone={tone} /> : null}
+                              <span>{getQualityLabel(value)}</span>
+                            </span>
+                          </button>
+                            );
+                          })()
+                        ))}
+                      </div>
+                    </fieldset>
+                    <fieldset className={subCardClass}>
+                      <legend className={label}>Sequencing</legend>
+                      <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                        {MATCH_SEQUENCING_OPTIONS.map((value) => (
+                          (() => {
+                            const isSelected = sequencingQuality === value;
+                            const tone = getQualityTone(value);
+
+                            return (
+                          <button
+                            key={value}
+                            type="button"
+                            onClick={() =>
+                              setSequencingQuality(
+                                sequencingQuality === value ? undefined : value
+                              )
+                            }
+                            aria-pressed={isSelected}
+                            className={`${mediumToggleClass} ${
+                              isSelected ? getSelectedToneClass(tone) : ""
+                            }`}
+                          >
+                            <span className="flex items-center gap-2">
+                              {isSelected ? <SelectionMark tone={tone} /> : null}
+                              <span>{getQualityLabel(value)}</span>
+                            </span>
+                          </button>
+                            );
+                          })()
+                        ))}
+                      </div>
+                    </fieldset>
+                  </div>
+                </div>
+              ) : null}
+
               {currentStep === 5 ? (
                 <div className="grid gap-4">
                   <div>
@@ -1335,7 +1331,7 @@ export function DemoMatchLogForm() {
                       Anything worth remembering?
                     </h2>
                     <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
-                      Add context only if it helps future review. You can skip and save.
+                      Everything here is optional. Save as soon as you have enough.
                     </p>
                   </div>
                   <div className={subCardClass}>
@@ -1462,10 +1458,12 @@ export function DemoMatchLogForm() {
                 Ready to save
               </p>
               <p className="mt-2 text-sm font-medium leading-6 text-[#F8FAFC]">
-                {readySummary}
+                {readySummary || "Choose matchup, result, and turn order to save quickly."}
               </p>
               <p className="mt-2 text-sm text-[#94A3B8]/76">
-                This will update your matchup trends.
+                {canQuickSave
+                  ? "You can save now, or add optional detail first."
+                  : "This will update your matchup trends."}
               </p>
             </div>
 
@@ -1487,7 +1485,7 @@ export function DemoMatchLogForm() {
                 ) : null}
               </div>
 
-              {currentStep < stepOrder.length - 1 ? (
+              {currentStep < 3 ? (
                 <button
                   type="button"
                   onClick={() =>
@@ -1495,23 +1493,41 @@ export function DemoMatchLogForm() {
                   }
                   disabled={
                     (currentStep === 0 && !canAdvanceFromMatch) ||
-                    (currentStep === 1 && !canAdvanceFromTurnOrder) ||
-                    (currentStep === 2 && !canAdvanceFromResult)
+                    (currentStep === 1 && !canAdvanceFromResult) ||
+                    (currentStep === 2 && !canAdvanceFromTurnOrder)
                   }
                   className={`${primaryButton} h-12 w-full sm:w-auto ${
                     ((currentStep === 0 && !canAdvanceFromMatch) ||
-                      (currentStep === 1 && !canAdvanceFromTurnOrder) ||
-                      (currentStep === 2 && !canAdvanceFromResult))
+                      (currentStep === 1 && !canAdvanceFromResult) ||
+                      (currentStep === 2 && !canAdvanceFromTurnOrder))
                       ? "cursor-not-allowed opacity-60"
                       : ""
                   }`}
                 >
                   Next
                 </button>
+              ) : currentStep < stepOrder.length - 1 ? (
+                <div className="grid w-full gap-2 sm:w-auto sm:grid-cols-2">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setCurrentStep((step) => Math.min(step + 1, stepOrder.length - 1))
+                    }
+                    className={secondaryButton}
+                  >
+                    {currentStep === 3 ? "Optional quality" : "More context"}
+                  </button>
+                  <button
+                    type="submit"
+                    className={`${primaryButton} h-12 w-full text-base`}
+                  >
+                    Save now
+                  </button>
+                </div>
               ) : (
                 <div className="grid w-full gap-2 sm:w-auto sm:grid-cols-2">
                   <button type="submit" className={secondaryButton}>
-                    Skip and save
+                    Save now
                   </button>
                   <button
                     type="submit"

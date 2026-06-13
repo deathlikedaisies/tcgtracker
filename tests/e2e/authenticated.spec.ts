@@ -116,14 +116,15 @@ test.describe("authenticated routes", () => {
     await page.goto("/review");
 
     const coachHero = page
-      .getByText("Coach says")
+      .getByText(/Top coach read|What to do next/i)
+      .first()
       .locator("xpath=ancestor::section[1]");
 
     await expect(coachHero).toContainText(/Item Lock|Sequencing|Mega Greninja/i);
     await expect(coachHero).toContainText(/What to do next/i);
     await expect(page.locator("body")).toContainText(/wins tagged.*losses tagged|wins and .* losses/i);
     await expect(page.locator("body")).toContainText(
-      /Strong signal|Building signal|Early signal|Needs more games/i
+      /Strong enough to review|Worth testing next|Early signal|Needs more games/i
     );
     await expect(page.locator("body")).toContainText(/Supporting insights|Other patterns found/i);
     await expect(page.locator("body")).toContainText(/Matchup samples|Turn-order split|Tag pressure/i);
@@ -134,10 +135,10 @@ test.describe("authenticated routes", () => {
     await expectNoAppError(page);
   });
 
-  test("/dashboard stays focused on mission and review CTA", async ({ page }) => {
+  test("/dashboard stays focused on next action and review CTA", async ({ page }) => {
     await page.goto("/dashboard");
 
-    await expect(page.locator("body")).toContainText(/Current mission/i);
+    await expect(page.locator("body")).toContainText(/Next best action|Current focus/i);
     await expect(page.locator("body")).toContainText(/Review details|Review all insights/i);
     await expect(page.locator("body")).not.toContainText(/good prize plan.*positive pattern/i);
     await expect(page.locator("body")).not.toContainText(/wins tagged.*losses tagged|3 of 14 wins tagged/i);

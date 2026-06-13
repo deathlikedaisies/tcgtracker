@@ -140,7 +140,7 @@ export default async function NewMatchPage({
           insight={
             sessionCoach
               ? {
-                  label: "Current mission",
+                  label: "Current focus",
                   value: sessionCoach.missionTitle,
                   helper: `${sessionCoach.missionProgress}/${sessionCoach.missionTargetCount} games`,
                 }
