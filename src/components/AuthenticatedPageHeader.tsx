@@ -33,9 +33,9 @@ export function AuthenticatedPageHeader({
   className = "",
 }: AuthenticatedPageHeaderProps) {
   return (
-    <header className={`${pageHeaderCard} p-4 sm:p-5 lg:px-6 lg:py-5 ${className}`}>
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/6 pb-4 lg:hidden">
+    <header className={`${pageHeaderCard} p-3.5 sm:p-5 lg:px-6 lg:py-5 ${className}`}>
+      <div className="flex flex-col gap-3 sm:gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/6 pb-3 lg:hidden">
           <SixPrizerLogo
             {...logoOnDark}
             size="sm"
@@ -45,23 +45,23 @@ export function AuthenticatedPageHeader({
           <SignOutButton compact />
         </div>
 
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between lg:gap-6">
+        <div className="flex flex-col gap-2.5 lg:flex-row lg:items-end lg:justify-between lg:gap-6">
           <div className="min-w-0 max-w-3xl">
             {eyebrow ? (
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#4F8CFF]/86">
                 {eyebrow}
               </p>
             ) : null}
-            <h1 className="mt-2 text-3xl font-bold tracking-tight text-[#F8FAFC] sm:text-4xl lg:text-[2rem]">
+            <h1 className="mt-1.5 text-[1.75rem] font-bold tracking-tight text-[#F8FAFC] sm:mt-2 sm:text-4xl lg:text-[2rem]">
               {title}
             </h1>
             {subtitle ? (
-              <p className="mt-2 text-sm leading-6 text-[#94A3B8]/72">
+              <p className="mt-1.5 text-sm leading-5 text-[#94A3B8]/72 sm:mt-2 sm:leading-6">
                 {subtitle}
               </p>
             ) : null}
             {userEmail ? (
-              <p className="mt-2 truncate text-xs text-[#94A3B8]/62">{userEmail}</p>
+              <p className="mt-1.5 truncate text-[11px] text-[#94A3B8]/62 sm:mt-2 sm:text-xs">{userEmail}</p>
             ) : null}
           </div>
 

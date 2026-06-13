@@ -43,7 +43,7 @@ export function SessionCoachPanel({
     ctaLabel ?? insight.ctaLabel;
 
   return (
-    <section className={`${missionHeroCard} p-3 shadow-[0_18px_42px_rgba(0,0,0,0.24),inset_0_0_0_1px_rgba(148,163,184,0.11)] sm:p-4`}>
+    <section className={`${missionHeroCard} p-3 shadow-[0_14px_28px_rgba(0,0,0,0.18),inset_0_0_0_1px_rgba(148,163,184,0.11)] sm:p-4 sm:shadow-[0_18px_42px_rgba(0,0,0,0.24),inset_0_0_0_1px_rgba(148,163,184,0.11)]`}>
       <div className="flex flex-col gap-2.5 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
@@ -60,7 +60,7 @@ export function SessionCoachPanel({
               {insight.missionGuidanceLabel}
             </span>
           </div>
-          <h2 className="mt-2 truncate text-2xl font-bold leading-tight tracking-tight text-[#F8FAFC] sm:text-3xl">
+          <h2 className="mt-1.5 text-[1.65rem] font-bold leading-tight tracking-tight text-[#F8FAFC] sm:mt-2 sm:text-3xl">
             {insight.missionTitle}
           </h2>
           <p className="mt-1 text-sm leading-5 text-[#D6E0F0]/78">
@@ -101,7 +101,7 @@ export function SessionCoachPanel({
               {progressDots.map((complete, index) => (
                 <span
                   key={index}
-                  className={`size-2.5 rounded-full transition-colors duration-500 ${
+                  className={`size-2.5 rounded-full transition-colors ${
                     complete ? "bg-[#F5C84C]" : "bg-[#1A2238]/84"
                   } ${isPostSave && complete ? "animate-pulse" : ""}`}
                 />
@@ -116,7 +116,7 @@ export function SessionCoachPanel({
           </div>
           <div className="mt-1.5 h-0.5 overflow-hidden rounded-full bg-[#1A2238]/54">
             <div
-              className={`h-0.5 rounded-full bg-[#F5C84C]/58 transition-all duration-500 ${
+              className={`h-0.5 rounded-full bg-[#F5C84C]/58 transition-[width,background-color] duration-500 ${
                 isPostSave ? "animate-pulse" : ""
               }`}
               style={{ width: `${progressPercent}%` }}

@@ -133,10 +133,10 @@ function MetricBar({
   detail: string;
 }) {
   return (
-    <div className={`${premiumInset} p-3`}>
+    <div className={`${premiumInset} p-2.5 sm:p-3`}>
       <div className="flex items-center justify-between gap-3">
-        <p className="truncate text-sm font-semibold text-[#F8FAFC]">{label}</p>
-        <p className="text-sm font-bold text-[#F8FAFC]">{value}%</p>
+        <p className="truncate text-[13px] font-semibold text-[#F8FAFC] sm:text-sm">{label}</p>
+        <p className="text-[13px] font-bold text-[#F8FAFC] sm:text-sm">{value}%</p>
       </div>
       <div className="mt-2 h-2 rounded-full bg-[#10192B]">
         <div
@@ -144,7 +144,7 @@ function MetricBar({
           style={{ width: `${Math.max(value, value > 0 ? 6 : 0)}%` }}
         />
       </div>
-      <p className="mt-2 text-xs leading-5 text-[#94A3B8]/72">{detail}</p>
+      <p className="mt-2 text-[11px] leading-[1.125rem] text-[#94A3B8]/72 sm:text-xs sm:leading-5">{detail}</p>
     </div>
   );
 }
@@ -159,12 +159,12 @@ function SectionFrame({
   children: ReactNode;
 }) {
   return (
-    <section className={`${glassPanel} p-5`}>
+    <section className={`${glassPanel} p-4 sm:p-5`}>
       <div className="flex flex-col gap-2">
         <h3 className={sectionTitle}>{title}</h3>
-        <p className="text-sm leading-6 text-[#94A3B8]/72">{copy}</p>
+        <p className="text-sm leading-5 text-[#94A3B8]/72 sm:leading-6">{copy}</p>
       </div>
-      <div className="mt-4">{children}</div>
+      <div className="mt-3.5 sm:mt-4">{children}</div>
     </section>
   );
 }
@@ -213,8 +213,8 @@ export function ReviewDetailedAnalytics({
           title="Recent form"
           copy="Use this after reading the main coach recommendation. The last games tell you whether the pattern is holding or changing."
         >
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
-            <div className={`${premiumInsetStrong} p-4`}>
+          <div className="grid gap-3.5 sm:gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+            <div className={`${premiumInsetStrong} p-3.5 sm:p-4`}>
               <div className="flex items-center justify-between gap-3">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
                   Last 10 games
@@ -226,11 +226,11 @@ export function ReviewDetailedAnalytics({
               <div className="mt-3">
                 <RecentFormDots matches={recentMatches} />
               </div>
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <div className="mt-3 grid gap-2.5 sm:mt-4 sm:gap-3 sm:grid-cols-2">
                 {recentMatches.slice(0, 4).map((match) => (
                   <div
                     key={match.id}
-                    className="rounded-[16px] bg-white/[0.03] p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]"
+                    className="rounded-[14px] bg-white/[0.03] p-2.5 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)] sm:rounded-[16px] sm:p-3"
                   >
                     <div className="flex items-center justify-between gap-3">
                       <p className="truncate text-sm font-semibold text-[#F8FAFC]">
@@ -248,7 +248,7 @@ export function ReviewDetailedAnalytics({
                         {match.result}
                       </span>
                     </div>
-                    <p className="mt-1 text-xs text-[#94A3B8]/72">
+                    <p className="mt-1 text-[11px] text-[#94A3B8]/72 sm:text-xs">
                       {match.deckVersionName} / {match.playedAtLabel}
                     </p>
                   </div>
@@ -256,12 +256,12 @@ export function ReviewDetailedAnalytics({
               </div>
             </div>
 
-            <div className={`${premiumInsetStrong} min-h-[280px] p-4`}>
+            <div className={`${premiumInsetStrong} min-h-[220px] p-3.5 sm:min-h-[280px] sm:p-4`}>
               <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
                 Result trend
               </p>
-              <div className="mt-4 h-64 min-h-[256px] min-w-0">
-                <ResponsiveContainer width="100%" height="100%" minHeight={220}>
+              <div className="mt-3 h-52 min-h-[208px] min-w-0 sm:mt-4 sm:h-64 sm:min-h-[256px]">
+                <ResponsiveContainer width="100%" height="100%" minHeight={180}>
                   <LineChart data={trendData}>
                     <CartesianGrid
                       stroke="rgba(148,163,184,0.22)"
@@ -323,7 +323,7 @@ export function ReviewDetailedAnalytics({
           title="Matchup analytics"
           copy="This is the broader matchup evidence behind the current coach read. Use sample size before changing your list."
         >
-          <div className="grid gap-3 xl:grid-cols-2">
+          <div className="grid gap-2.5 sm:gap-3 xl:grid-cols-2">
             {matchupRows.map((matchup) => (
               <MetricBar
                 key={matchup.opponent}
@@ -343,8 +343,8 @@ export function ReviewDetailedAnalytics({
           title="Turn-order analytics"
           copy="Compare the known first and second games. Unknown turn order stays out of the split."
         >
-          <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_260px]">
-            <div className="grid gap-3">
+          <div className="grid gap-2.5 sm:gap-3 xl:grid-cols-[minmax(0,1fr)_260px]">
+            <div className="grid gap-2.5 sm:gap-3">
               {turnOrderRows.map((row) => (
                 <MetricBar
                   key={row.label}
@@ -354,14 +354,14 @@ export function ReviewDetailedAnalytics({
                 />
               ))}
             </div>
-            <div className={`${premiumInsetStrong} p-4`}>
+            <div className={`${premiumInsetStrong} p-3.5 sm:p-4`}>
               <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
                 Unknown turn order
               </p>
-              <p className="mt-2 text-3xl font-bold tracking-tight text-[#F8FAFC]">
+              <p className="mt-2 text-[1.75rem] font-bold tracking-tight text-[#F8FAFC] sm:text-3xl">
                 {unknownTurnOrderCount}
               </p>
-              <p className="mt-2 text-sm leading-6 text-[#94A3B8]/72">
+              <p className="mt-2 text-sm leading-5 text-[#94A3B8]/72 sm:leading-6">
                 These games are excluded from the split until turn order is logged.
               </p>
             </div>
@@ -376,12 +376,12 @@ export function ReviewDetailedAnalytics({
           title="Tag pressure"
           copy="These bars show where tags cluster most often. They support the coach read, but they do not prove causality by themselves."
         >
-          <div className="grid gap-4 xl:grid-cols-2">
-            <div className={`${premiumInsetStrong} p-4`}>
+          <div className="grid gap-3.5 sm:gap-4 xl:grid-cols-2">
+            <div className={`${premiumInsetStrong} p-3.5 sm:p-4`}>
               <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#F43F5E]">
                 Leading loss tags
               </p>
-              <div className="mt-3 grid gap-3">
+              <div className="mt-3 grid gap-2.5 sm:gap-3">
                 {lossTags.map((tag) => (
                   <MetricBar
                     key={`loss-${tag.tag}`}
@@ -392,11 +392,11 @@ export function ReviewDetailedAnalytics({
                 ))}
               </div>
             </div>
-            <div className={`${premiumInsetStrong} p-4`}>
+            <div className={`${premiumInsetStrong} p-3.5 sm:p-4`}>
               <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-emerald-300">
                 Leading win tags
               </p>
-              <div className="mt-3 grid gap-3">
+              <div className="mt-3 grid gap-2.5 sm:gap-3">
                 {winTags.map((tag) => (
                   <MetricBar
                     key={`win-${tag.tag}`}
@@ -417,9 +417,9 @@ export function ReviewDetailedAnalytics({
         title="Deck-version analytics"
         copy="Compare versions carefully. Stronger so far is useful; definitive better still needs enough games."
       >
-        <div className="grid gap-4">
+        <div className="grid gap-3.5 sm:gap-4">
           {versionSummary ? (
-            <div className={`${premiumInsetStrong} p-4`}>
+            <div className={`${premiumInsetStrong} p-3.5 sm:p-4`}>
               <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#F5C84C]">
                 Best current signal
               </p>
@@ -432,9 +432,9 @@ export function ReviewDetailedAnalytics({
             </div>
           ) : null}
 
-          <div className="grid gap-3">
+          <div className="grid gap-2.5 sm:gap-3">
             {versionRows.map((row) => (
-              <div key={row.id} className={`${premiumInset} p-4`}>
+              <div key={row.id} className={`${premiumInset} p-3.5 sm:p-4`}>
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0">
                     <p className="truncate text-base font-semibold text-[#F8FAFC]">
@@ -448,7 +448,7 @@ export function ReviewDetailedAnalytics({
                     {row.winRate}% win rate
                   </span>
                 </div>
-                <div className="mt-4 grid gap-3 xl:grid-cols-3">
+                <div className="mt-3 grid gap-2.5 sm:mt-4 sm:gap-3 xl:grid-cols-3">
                   <MetricBar
                     label="Win rate"
                     value={row.winRate}
@@ -487,13 +487,13 @@ export function ReviewDetailedAnalytics({
   };
 
   return (
-    <section className={`${glassPanel} p-5`}>
+    <section className={`${glassPanel} p-4 sm:p-5`}>
       <div className="flex flex-col gap-2">
         <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
           Detailed analytics
         </p>
         <h2 className={sectionTitle}>Detailed analytics</h2>
-        <p className="text-sm leading-6 text-[#94A3B8]/72">
+        <p className="text-sm leading-5 text-[#94A3B8]/72 sm:leading-6">
           Use these charts after reading the main coach recommendation.
         </p>
       </div>
@@ -505,7 +505,7 @@ export function ReviewDetailedAnalytics({
               key={panel.key}
               type="button"
               onClick={() => setActivePanel(panel.key)}
-              className={`rounded-full px-3 py-1.5 text-sm font-semibold transition ${
+              className={`rounded-full px-3 py-1.5 text-sm font-semibold transition-colors ${
                 activePanel === panel.key
                   ? "bg-[#4F8CFF]/16 text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.24)]"
                   : "bg-[#0B1020]/70 text-[#94A3B8]/82 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)] hover:text-[#F8FAFC]"
@@ -518,13 +518,13 @@ export function ReviewDetailedAnalytics({
         <div className="mt-4">{renderPanel(activePanel)}</div>
       </div>
 
-      <div className="mt-4 grid gap-3 lg:hidden">
+      <div className="mt-3.5 grid gap-2.5 lg:hidden sm:mt-4 sm:gap-3">
         {availablePanels.map((panel) => (
-          <details key={panel.key} className={`${premiumInsetStrong} group p-4`}>
+          <details key={panel.key} className={`${premiumInsetStrong} group p-3 sm:p-4`}>
             <summary className="cursor-pointer list-none text-sm font-semibold text-[#F8FAFC] marker:hidden">
               {panel.label}
             </summary>
-            <div className="mt-4">{renderPanel(panel.key)}</div>
+            <div className="mt-3.5 sm:mt-4">{renderPanel(panel.key)}</div>
           </details>
         ))}
       </div>

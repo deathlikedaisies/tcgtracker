@@ -219,7 +219,7 @@ function KpiCard({
   children?: ReactNode;
 }) {
   return (
-    <div className={`${statCard} p-4`}>
+    <div className={`${statCard} p-3 sm:p-4`}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
@@ -232,10 +232,10 @@ function KpiCard({
               {label}
             </p>
           </div>
-          <p className="mt-3 text-xl font-bold tracking-tight text-[#F8FAFC] sm:text-2xl">
+          <p className="mt-2.5 text-lg font-bold tracking-tight text-[#F8FAFC] sm:mt-3 sm:text-2xl">
             {value}
           </p>
-          <p className="mt-1 text-xs leading-5 text-[#94A3B8]/72 sm:text-sm">
+          <p className="mt-1 text-xs leading-4 text-[#94A3B8]/72 sm:text-sm sm:leading-5">
             {helper}
           </p>
         </div>
@@ -257,7 +257,7 @@ function ChangeCard({
   tone: Tone;
 }) {
   return (
-    <div className={`${insightCard} p-4`}>
+    <div className={`${insightCard} p-3 sm:p-4`}>
       <span
         className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${toneClass(
           tone
@@ -265,8 +265,8 @@ function ChangeCard({
       >
         {label}
       </span>
-      <p className="mt-3 text-base font-semibold text-[#F8FAFC]">{title}</p>
-      <p className="mt-1 text-sm leading-6 text-[#94A3B8]/72">{detail}</p>
+      <p className="mt-2.5 text-base font-semibold text-[#F8FAFC]">{title}</p>
+      <p className="mt-1 text-sm leading-5 text-[#94A3B8]/72 sm:leading-6">{detail}</p>
     </div>
   );
 }
@@ -292,11 +292,11 @@ function MissionHeroCard({
   const primaryLabel = insight.ctaLabel;
 
   return (
-    <section className={`grid gap-4 p-5 sm:p-6 xl:grid-cols-[minmax(0,1.5fr)_360px] ${missionHeroCard} bg-[linear-gradient(180deg,rgba(14,24,42,0.96),rgba(8,17,31,0.91))] shadow-[0_22px_52px_rgba(0,0,0,0.26),inset_0_0_0_1px_rgba(148,163,184,0.12)]`}>
+    <section className={`grid gap-3 p-3.5 sm:gap-4 sm:p-6 xl:grid-cols-[minmax(0,1.5fr)_360px] ${missionHeroCard} bg-[linear-gradient(180deg,rgba(14,24,42,0.96),rgba(8,17,31,0.91))]`}>
       <div className="min-w-0">
-        <div className="flex flex-wrap items-start gap-2">
-          <span className="inline-flex size-10 items-center justify-center rounded-2xl bg-[#F5C84C]/12 text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.18)]">
-            <Target className="size-5" aria-hidden="true" />
+        <div className="flex flex-wrap items-start gap-1.5 sm:gap-2">
+          <span className="inline-flex size-8 items-center justify-center rounded-xl bg-[#F5C84C]/12 text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.18)] sm:size-10 sm:rounded-2xl">
+            <Target className="size-4 sm:size-5" aria-hidden="true" />
           </span>
           <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#94A3B8]/76">
             Current mission
@@ -313,19 +313,19 @@ function MissionHeroCard({
           </span>
         </div>
 
-        <div className="mt-4 flex flex-wrap items-center gap-3">
+        <div className="mt-3 flex flex-wrap items-center gap-2.5 sm:mt-4 sm:gap-3">
           <ArchetypeSprites archetype={insight.archetype} size="md" className="shrink-0" />
           <div className="min-w-0">
-            <h1 className="text-3xl font-bold tracking-tight text-[#F8FAFC] sm:text-4xl">
+            <h1 className="text-[1.75rem] font-bold tracking-tight text-[#F8FAFC] sm:text-4xl">
               {insight.missionTitle}
             </h1>
-            <p className="mt-2 text-sm leading-6 text-[#D6E0F0]/82 sm:text-base">
+            <p className="mt-1.5 text-sm leading-5 text-[#D6E0F0]/82 sm:mt-2 sm:text-base sm:leading-6">
               {insight.missionStatusReason}
             </p>
           </div>
         </div>
 
-        <div className="mt-5 grid gap-3 sm:grid-cols-3">
+        <div className="mt-4 grid gap-2 sm:mt-5 sm:gap-3 sm:grid-cols-3">
           <StatusChip
             label="Mission mode"
             value={insight.missionGuidanceLabel}
@@ -343,25 +343,25 @@ function MissionHeroCard({
           />
         </div>
 
-        <details className="mt-4">
-          <summary className={`${premiumInset} inline-flex cursor-pointer list-none items-center gap-1.5 px-3 py-2 text-sm font-semibold text-[#DCE8FF] transition hover:text-[#F8FAFC] marker:hidden`}>
+        <details className="mt-3 sm:mt-4">
+          <summary className={`${premiumInset} inline-flex cursor-pointer list-none items-center gap-1.5 px-3 py-2 text-sm font-semibold text-[#DCE8FF] transition-colors hover:text-[#F8FAFC] marker:hidden`}>
             Why this mission
             <ChevronDown className="size-4" aria-hidden="true" />
           </summary>
-          <div className={`${premiumInset} mt-3 grid gap-2 p-4 text-sm leading-6 text-[#94A3B8]/76 lg:grid-cols-2`}>
+          <div className={`${premiumInset} mt-2.5 grid gap-2 p-3 text-sm leading-5 text-[#94A3B8]/76 sm:mt-3 sm:p-4 sm:leading-6 lg:grid-cols-2`}>
             <p>{insight.missionReason}</p>
             <p>{insight.evidence}</p>
           </div>
         </details>
       </div>
 
-      <div className={`${premiumInsetStrong} flex flex-col p-4`}>
+      <div className={`${premiumInsetStrong} flex flex-col p-3 sm:p-4`}>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
               Progress
             </p>
-            <p className="mt-1 text-lg font-semibold text-[#F8FAFC]">
+            <p className="mt-1 text-base font-semibold text-[#F8FAFC] sm:text-lg">
               {insight.missionProgress}/{insight.missionTargetCount} games
             </p>
           </div>
@@ -370,7 +370,7 @@ function MissionHeroCard({
           </span>
         </div>
 
-        <div className="mt-4 flex items-center gap-2" aria-label="Mission progress">
+        <div className="mt-3 flex items-center gap-1.5 sm:mt-4 sm:gap-2" aria-label="Mission progress">
           {progressDots.map((complete, index) => (
             <span
               key={index}
@@ -388,11 +388,11 @@ function MissionHeroCard({
           />
         </div>
 
-        <p className="mt-3 text-sm font-medium text-[#D6E0F0]">
+        <p className="mt-2.5 text-sm font-medium leading-5 text-[#D6E0F0] sm:mt-3">
           {insight.progressFeedback}
         </p>
 
-        <div className={`${premiumInset} mt-3 p-3`}>
+        <div className={`${premiumInset} mt-2.5 p-3`}>
           <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
             Why this matters
           </p>
@@ -410,14 +410,14 @@ function MissionHeroCard({
           </span>
         </div>
 
-        <div className={`${premiumInset} mt-3 p-3`}>
+        <div className={`${premiumInset} mt-2.5 p-3`}>
           <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
             Next move
           </p>
-          <p className="mt-2 text-base font-semibold text-[#F8FAFC]">
+          <p className="mt-1.5 text-base font-semibold text-[#F8FAFC]">
             {nextActionTitle}
           </p>
-          <p className="mt-1 text-sm leading-6 text-[#94A3B8]/72">
+          <p className="mt-1 text-sm leading-5 text-[#94A3B8]/72 sm:leading-6">
             {nextActionCopy}
           </p>
         </div>
@@ -433,7 +433,7 @@ function MissionHeroCard({
           </div>
         ) : null}
 
-        <div className="mt-5 grid gap-2">
+        <div className="mt-4 grid gap-2 sm:mt-5">
           <Link href={primaryHref} className={`${primaryButton} h-12`}>
             {primaryLabel}
             <ArrowRight className="ml-2 size-4" aria-hidden="true" />
@@ -522,11 +522,11 @@ function SetupChecklist({
         Start with one deck, one version, and a few logged games. The dashboard gets useful quickly once signal starts forming.
       </p>
 
-      <div className="mt-6 grid gap-3 sm:grid-cols-2">
+      <div className="mt-4 grid gap-2.5 sm:mt-6 sm:gap-3 sm:grid-cols-2">
         {steps.map((step) => (
           <div
             key={step.label}
-            className={`${premiumInset} rounded-[20px] p-4`}
+            className={`${premiumInset} rounded-[18px] p-3 sm:rounded-[20px] sm:p-4`}
           >
             <div className="flex items-center gap-2">
               <span
@@ -539,13 +539,13 @@ function SetupChecklist({
                 {step.complete ? "Done" : "Next"}
               </span>
             </div>
-            <p className="mt-3 text-base font-semibold text-[#F8FAFC]">{step.label}</p>
-            <p className="mt-1 text-sm leading-6 text-[#94A3B8]/72">{step.helper}</p>
+            <p className="mt-2.5 text-base font-semibold text-[#F8FAFC]">{step.label}</p>
+            <p className="mt-1 text-sm leading-5 text-[#94A3B8]/72 sm:leading-6">{step.helper}</p>
           </div>
         ))}
       </div>
 
-      <div className="mt-6">
+      <div className="mt-4 sm:mt-6">
         <Link href={cta.href} className={`${primaryButton} h-12 w-full sm:w-auto`}>
           {cta.label}
           <ArrowRight className="ml-2 size-4" aria-hidden="true" />
@@ -569,16 +569,16 @@ function NextSetupStepCard({
   eyebrow?: string;
 }) {
   return (
-    <section className={`${glassPanel} p-4 sm:p-5`}>
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+    <section className={`${glassPanel} p-3.5 sm:p-5`}>
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between sm:gap-4">
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]/86">
             {eyebrow}
           </p>
-          <h2 className="mt-1 text-xl font-bold tracking-tight text-[#F8FAFC]">
+          <h2 className="mt-1 text-lg font-bold tracking-tight text-[#F8FAFC] sm:text-xl">
             {title}
           </h2>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-[#94A3B8]/76">
+          <p className="mt-1.5 max-w-3xl text-sm leading-5 text-[#94A3B8]/76 sm:mt-2 sm:leading-6">
             {copy}
           </p>
         </div>
@@ -817,8 +817,7 @@ export function DashboardContent({
               firstDeckId={firstDeckId}
             />
           ) : (
-            <div className="grid gap-6">
-              {nextSetupStep ? <NextSetupStepCard {...nextSetupStep} /> : null}
+            <div className="grid gap-4 sm:gap-6">
               {sessionCoach ? (
                 <MissionHeroCard
                   insight={sessionCoach}
@@ -826,8 +825,9 @@ export function DashboardContent({
                   nextActionCopy={nextAction.copy}
                 />
               ) : null}
+              {nextSetupStep ? <NextSetupStepCard {...nextSetupStep} /> : null}
 
-              <section className="grid gap-3 lg:grid-cols-3">
+              <section className="grid gap-2.5 sm:gap-3 lg:grid-cols-3">
                 <KpiCard
                   icon={Activity}
                   label="Recent form"
@@ -852,8 +852,8 @@ export function DashboardContent({
                 />
               </section>
 
-              <section className={`${glassPanel} p-4 sm:p-5`}>
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <section className={`${glassPanel} p-3.5 sm:p-5`}>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
                   <div className="min-w-0">
                     <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
                       Review details
@@ -861,7 +861,7 @@ export function DashboardContent({
                     <h2 className="mt-1 text-lg font-semibold text-[#F8FAFC]">
                       Use Review for supporting evidence
                     </h2>
-                    <p className="mt-2 text-sm leading-6 text-[#94A3B8]/72">
+                    <p className="mt-1.5 text-sm leading-5 text-[#94A3B8]/72 sm:mt-2 sm:leading-6">
                       Overview stays focused on what to do now. Open Review to inspect matchup pressure, repeated tags, and other supporting patterns from your logs.
                     </p>
                   </div>

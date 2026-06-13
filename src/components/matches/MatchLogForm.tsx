@@ -94,16 +94,16 @@ const sessionKeys = {
   sequencingQuality: "tcgtracker.matchLog.sequencingQuality",
 };
 
-const subCardClass = `${premiumTile} p-3`;
+const subCardClass = `${premiumTile} p-2.5 sm:p-3`;
 
 const largeToggleClass =
-  "group relative flex min-h-14 w-full min-w-0 items-center justify-center overflow-hidden rounded-2xl border border-[#23314A] bg-[linear-gradient(180deg,rgba(11,16,32,0.96),rgba(7,17,31,0.88))] px-3 text-center text-base font-semibold text-[#D7E0EF] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-all duration-150 ease-out hover:-translate-y-0.5 hover:border-[#35507D] hover:bg-[#0D1830] hover:text-[#F8FAFC] hover:shadow-[0_12px_24px_rgba(0,0,0,0.18),inset_0_0_0_1px_rgba(79,140,255,0.12)] active:translate-y-0 active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C84C]/65 focus-visible:ring-offset-2 focus-visible:ring-offset-[#07111F]";
+  "group relative flex min-h-12 w-full min-w-0 items-center justify-center overflow-hidden rounded-xl border border-[#23314A] bg-[linear-gradient(180deg,rgba(11,16,32,0.96),rgba(7,17,31,0.88))] px-3 text-center text-sm font-semibold text-[#D7E0EF] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-transform transition-colors duration-150 ease-out hover:-translate-y-0.5 hover:border-[#35507D] hover:bg-[#0D1830] hover:text-[#F8FAFC] hover:shadow-[0_12px_24px_rgba(0,0,0,0.18),inset_0_0_0_1px_rgba(79,140,255,0.12)] active:translate-y-0 active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C84C]/65 focus-visible:ring-offset-2 focus-visible:ring-offset-[#07111F] sm:min-h-14 sm:rounded-2xl sm:text-base";
 
 const mediumToggleClass =
-  "group relative flex min-h-12 w-full min-w-0 items-center justify-center overflow-hidden rounded-xl border border-[#223049] bg-[linear-gradient(180deg,rgba(11,16,32,0.94),rgba(7,17,31,0.86))] px-3 text-center text-sm font-semibold text-[#B9C4D6] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-all duration-150 ease-out hover:-translate-y-0.5 hover:border-[#36507D] hover:text-[#F8FAFC] hover:shadow-[0_10px_22px_rgba(0,0,0,0.16),inset_0_0_0_1px_rgba(79,140,255,0.10)] active:translate-y-0 active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C84C]/65 focus-visible:ring-offset-2 focus-visible:ring-offset-[#07111F]";
+  "group relative flex min-h-11 w-full min-w-0 items-center justify-center overflow-hidden rounded-xl border border-[#223049] bg-[linear-gradient(180deg,rgba(11,16,32,0.94),rgba(7,17,31,0.86))] px-3 text-center text-sm font-semibold text-[#B9C4D6] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-transform transition-colors duration-150 ease-out hover:-translate-y-0.5 hover:border-[#36507D] hover:text-[#F8FAFC] hover:shadow-[0_10px_22px_rgba(0,0,0,0.16),inset_0_0_0_1px_rgba(79,140,255,0.10)] active:translate-y-0 active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C84C]/65 focus-visible:ring-offset-2 focus-visible:ring-offset-[#07111F] sm:min-h-12";
 
 const tagToggleClass =
-  "group relative inline-flex min-h-11 w-full min-w-0 items-center justify-start overflow-hidden rounded-xl border border-[#223049] bg-[linear-gradient(180deg,rgba(11,16,32,0.94),rgba(7,17,31,0.86))] px-3 py-2 text-left text-sm font-semibold text-[#A8B5C8] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-all duration-150 ease-out hover:-translate-y-0.5 hover:border-[#36507D] hover:text-[#F8FAFC] hover:shadow-[0_10px_22px_rgba(0,0,0,0.16),inset_0_0_0_1px_rgba(79,140,255,0.10)] active:translate-y-0 active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C84C]/65 focus-visible:ring-offset-2 focus-visible:ring-offset-[#07111F]";
+  "group relative inline-flex min-h-10 w-full min-w-0 items-center justify-start overflow-hidden rounded-xl border border-[#223049] bg-[linear-gradient(180deg,rgba(11,16,32,0.94),rgba(7,17,31,0.86))] px-3 py-2 text-left text-sm font-semibold text-[#A8B5C8] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-transform transition-colors duration-150 ease-out hover:-translate-y-0.5 hover:border-[#36507D] hover:text-[#F8FAFC] hover:shadow-[0_10px_22px_rgba(0,0,0,0.16),inset_0_0_0_1px_rgba(79,140,255,0.10)] active:translate-y-0 active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C84C]/65 focus-visible:ring-offset-2 focus-visible:ring-offset-[#07111F] sm:min-h-11";
 
 const selectedToggleClass =
   "border-[#7CB4FF] bg-[linear-gradient(180deg,rgba(79,140,255,0.36),rgba(24,57,120,0.92))] text-[#F8FAFC] shadow-[0_16px_34px_rgba(79,140,255,0.18),inset_0_0_0_1px_rgba(184,209,255,0.42),inset_0_1px_0_rgba(255,255,255,0.12)] -translate-y-[1px]";
@@ -118,7 +118,7 @@ const selectedRoseToggleClass =
   "border-[#FB7185] bg-[linear-gradient(180deg,rgba(244,63,94,0.26),rgba(101,20,43,0.96))] text-[#FFF1F4] shadow-[0_16px_34px_rgba(244,63,94,0.16),inset_0_0_0_1px_rgba(255,189,206,0.34),inset_0_1px_0_rgba(255,255,255,0.10)] -translate-y-[1px]";
 
 const progressStepClass =
-  "flex items-center gap-3 rounded-xl px-3 py-3 text-left transition";
+  "flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-left transition-colors sm:gap-3 sm:py-3";
 
 function parseWentFirstValue(value: string | null | undefined) {
   return parseWentFirstChoice(value);
@@ -1108,7 +1108,7 @@ export function MatchLogForm({
 
       <form
         action={formAction}
-        className={`w-full max-w-full min-w-0 overflow-x-hidden p-3 sm:p-5 ${glassPanelStrong}`}
+      className={`w-full max-w-full min-w-0 overflow-x-hidden p-2.5 sm:p-5 ${glassPanelStrong}`}
       >
         <input type="hidden" name="deck_version_id" value={deckVersionId} />
         <input
@@ -1152,7 +1152,7 @@ export function MatchLogForm({
           />
         ))}
 
-        <div className="grid gap-4">
+        <div className="grid gap-3.5 sm:gap-4">
           {actionState.error ? (
             <div className="rounded-xl bg-[#F43F5E]/10 px-4 py-3 text-sm font-medium text-rose-100 shadow-[inset_0_0_0_1px_rgba(244,63,94,0.18)]">
               Something went wrong while saving this game. Please try again.
@@ -1162,19 +1162,19 @@ export function MatchLogForm({
             </div>
           ) : null}
           {wasSuccessful ? (
-            <div className="grid gap-4">
-              <div className="rounded-[28px] bg-[linear-gradient(180deg,rgba(14,24,42,0.95),rgba(8,17,31,0.90))] p-5 shadow-[0_20px_48px_rgba(0,0,0,0.24),inset_0_0_0_1px_rgba(148,163,184,0.11)] sm:p-6">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="grid gap-3.5 sm:gap-4">
+              <div className="rounded-[24px] bg-[linear-gradient(180deg,rgba(14,24,42,0.95),rgba(8,17,31,0.90))] p-4 shadow-[0_16px_36px_rgba(0,0,0,0.20),inset_0_0_0_1px_rgba(148,163,184,0.11)] sm:rounded-[28px] sm:p-6 sm:shadow-[0_20px_48px_rgba(0,0,0,0.24),inset_0_0_0_1px_rgba(148,163,184,0.11)]">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
                   <div className="min-w-0">
                     <div className="flex items-center gap-3">
-                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[20px] bg-emerald-500/12 text-emerald-300 shadow-[0_10px_22px_rgba(34,197,94,0.08),inset_0_0_0_1px_rgba(34,197,94,0.16)]">
-                      <CheckCircle2 className="size-7" aria-hidden="true" />
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[18px] bg-emerald-500/12 text-emerald-300 shadow-[0_10px_22px_rgba(34,197,94,0.08),inset_0_0_0_1px_rgba(34,197,94,0.16)] sm:h-14 sm:w-14 sm:rounded-[20px]">
+                      <CheckCircle2 className="size-6 sm:size-7" aria-hidden="true" />
                     </div>
                     <div>
                         <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#22C55E]">
                           Game logged
                         </p>
-                    <h2 className="mt-1 text-2xl font-bold text-[#F8FAFC] sm:text-3xl">
+                    <h2 className="mt-1 text-[1.45rem] font-bold leading-tight text-[#F8FAFC] sm:text-3xl">
                       {!countedTowardMission
                         ? "Your matchup history moved."
                         : sessionCoach?.completionStatus
@@ -1185,10 +1185,10 @@ export function MatchLogForm({
                     </h2>
                   </div>
                 </div>
-                <p className="mt-4 text-base font-semibold leading-7 text-[#F8FAFC]">
+                <p className="mt-3 text-[0.95rem] font-semibold leading-6 text-[#F8FAFC] sm:mt-4 sm:text-base sm:leading-7">
                   {postSaveSummary}
                 </p>
-                <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
+                <p className="mt-2 text-sm leading-5 text-[#94A3B8]/76 sm:leading-6">
                   {!countedTowardMission
                     ? sessionCoach?.missionGuidanceMode === "priority_watchlist"
                       ? "This game sits outside the watchlist, but it still strengthens the wider sample."
@@ -1207,7 +1207,7 @@ export function MatchLogForm({
                   </span>
                 </div>
 
-                <div className="mt-5 grid gap-2 sm:grid-cols-3">
+                <div className="mt-4 grid gap-2 sm:mt-5 sm:grid-cols-3">
                   {postSaveStatChips.map((chip) => (
                     <div
                       key={chip.label}
@@ -1225,7 +1225,7 @@ export function MatchLogForm({
               </div>
 
               {postLogCoachLine ? (
-                <div className="rounded-[20px] bg-[#07111F]/44 p-4 shadow-[inset_0_0_0_1px_rgba(245,200,76,0.18)]">
+                <div className="rounded-[18px] bg-[#07111F]/44 p-3.5 shadow-[inset_0_0_0_1px_rgba(245,200,76,0.18)] sm:rounded-[20px] sm:p-4">
                   <div className="flex items-center gap-2">
                     <span className="inline-flex size-6 items-center justify-center rounded-[8px] bg-[#F5C84C]/12 text-[10px] font-bold text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
                       TC
@@ -1244,7 +1244,7 @@ export function MatchLogForm({
               ) : null}
 
               {sessionCoach ? (
-                <div className="rounded-[24px] bg-[#07111F]/44 p-4 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.12)]">
+                <div className="rounded-[20px] bg-[#07111F]/44 p-3.5 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.12)] sm:rounded-[24px] sm:p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
@@ -1285,7 +1285,7 @@ export function MatchLogForm({
                   </div>
                   <div className="mt-3 h-2 rounded-full bg-[#0B1020]/72">
                     <div
-                      className="h-2 rounded-full bg-[#4F8CFF] transition-all"
+                      className="h-2 rounded-full bg-[#4F8CFF] transition-[width,background-color]"
                       style={{ width: `${postSaveProgressPercent}%` }}
                     />
                   </div>
@@ -1300,8 +1300,8 @@ export function MatchLogForm({
                 </div>
               ) : null}
 
-              <div className="grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
-                <div className="rounded-[24px] bg-[#07111F]/38 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+              <div className="grid gap-3.5 sm:gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+                <div className="rounded-[20px] bg-[#07111F]/38 p-3.5 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)] sm:rounded-[24px] sm:p-4">
                   <div className="flex items-center gap-2">
                     <Sparkles className="size-4 text-[#F5C84C]" aria-hidden="true" />
                     <p className="text-sm font-semibold text-[#F8FAFC]">
@@ -1343,7 +1343,7 @@ export function MatchLogForm({
                   ) : null}
                 </div>
 
-                <div className="rounded-[24px] bg-[#0B1020]/54 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.09)]">
+                <div className="rounded-[20px] bg-[#0B1020]/54 p-3.5 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.09)] sm:rounded-[24px] sm:p-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#F5C84C]">
                     Next best action
                   </p>
@@ -1375,9 +1375,9 @@ export function MatchLogForm({
           ) : null}
 
           {!wasSuccessful ? (
-            <div className="grid gap-4 xl:grid-cols-[220px_minmax(0,1fr)_280px]">
+            <div className="grid gap-3.5 sm:gap-4 xl:grid-cols-[220px_minmax(0,1fr)_280px]">
               <aside className="hidden xl:block">
-                <div className="rounded-xl bg-[#07111F]/36 p-4 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.12)]">
+                <div className="rounded-xl bg-[#07111F]/36 p-3.5 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.12)] sm:p-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
                     Quick log
                   </p>
@@ -1422,7 +1422,7 @@ export function MatchLogForm({
                 </div>
               </aside>
 
-              <section className="rounded-xl bg-[#07111F]/36 p-4 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.12)] sm:p-5">
+              <section className="rounded-xl bg-[#07111F]/36 p-3.5 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.12)] sm:p-5">
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
@@ -1434,20 +1434,20 @@ export function MatchLogForm({
                   </div>
                   <div className="h-2 rounded-full bg-[#07111F]/70">
                     <div
-                      className="h-2 rounded-full bg-[#4F8CFF] transition-all"
+                      className="h-2 rounded-full bg-[#4F8CFF] transition-[width,background-color]"
                       style={{ width: `${progressPercent}%` }}
                     />
                   </div>
                 </div>
 
-                <div className="mt-4 rounded-xl bg-[#0B1020]/52 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                <div className="mt-3.5 rounded-xl bg-[#0B1020]/52 p-3.5 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)] sm:mt-4 sm:p-4">
                   {currentStep === 0 ? (
-                    <div className="grid gap-4">
+                    <div className="grid gap-3.5 sm:gap-4">
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
                           Match
                         </p>
-                        <h2 className="mt-2 text-2xl font-semibold text-[#F8FAFC]">
+                        <h2 className="mt-2 text-[1.35rem] font-semibold leading-tight text-[#F8FAFC] sm:text-2xl">
                           Who did you play against?
                         </h2>
                         <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
@@ -1533,12 +1533,12 @@ export function MatchLogForm({
                   ) : null}
 
                   {currentStep === 1 ? (
-                    <div className="grid gap-4">
+                    <div className="grid gap-3.5 sm:gap-4">
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
                           Turn order
                         </p>
-                        <h2 className="mt-2 text-2xl font-semibold text-[#F8FAFC]">
+                        <h2 className="mt-2 text-[1.35rem] font-semibold leading-tight text-[#F8FAFC] sm:text-2xl">
                           Did you go first, second, or can&apos;t remember?
                         </h2>
                         <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
@@ -1577,12 +1577,12 @@ export function MatchLogForm({
                   ) : null}
 
                   {currentStep === 2 ? (
-                    <div className="grid gap-4">
+                    <div className="grid gap-3.5 sm:gap-4">
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
                           Result
                         </p>
-                        <h2 className="mt-2 text-2xl font-semibold text-[#F8FAFC]">
+                        <h2 className="mt-2 text-[1.35rem] font-semibold leading-tight text-[#F8FAFC] sm:text-2xl">
                           What was the result?
                         </h2>
                         <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
@@ -1618,19 +1618,19 @@ export function MatchLogForm({
                   ) : null}
 
                   {currentStep === 3 ? (
-                    <div className="grid gap-4">
+                    <div className="grid gap-3.5 sm:gap-4">
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
                           Game quality
                         </p>
-                        <h2 className="mt-2 text-2xl font-semibold text-[#F8FAFC]">
+                        <h2 className="mt-2 text-[1.35rem] font-semibold leading-tight text-[#F8FAFC] sm:text-2xl">
                           How did the game feel?
                         </h2>
                         <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
                           Capture the quick quality read while the game is still fresh.
                         </p>
                       </div>
-                      <div className="grid gap-3">
+                      <div className="grid gap-2.5 sm:gap-3">
                         <fieldset className={subCardClass}>
                           <legend className={label}>Start</legend>
                           <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -1736,12 +1736,12 @@ export function MatchLogForm({
                   ) : null}
 
                   {currentStep === 4 ? (
-                    <div className="grid gap-4">
+                    <div className="grid gap-3.5 sm:gap-4">
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
                           What mattered?
                         </p>
-                        <h2 className="mt-2 text-2xl font-semibold text-[#F8FAFC]">
+                        <h2 className="mt-2 text-[1.35rem] font-semibold leading-tight text-[#F8FAFC] sm:text-2xl">
                           {primaryTagTitle}
                         </h2>
                         <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
@@ -1896,12 +1896,12 @@ export function MatchLogForm({
                   ) : null}
 
                   {currentStep === 5 ? (
-                    <div className="grid gap-4">
+                    <div className="grid gap-3.5 sm:gap-4">
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
                           More context
                         </p>
-                        <h2 className="mt-2 text-2xl font-semibold text-[#F8FAFC]">
+                        <h2 className="mt-2 text-[1.35rem] font-semibold leading-tight text-[#F8FAFC] sm:text-2xl">
                           Anything worth remembering?
                         </h2>
                         <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
@@ -2051,7 +2051,7 @@ export function MatchLogForm({
                           onChange={(event) => setNotes(event.target.value)}
                           rows={3}
                           placeholder="Example: I lost because I missed second attacker and fell behind on prizes."
-                          className={`${textarea} mt-2 min-h-24 transition-all focus:min-h-28`}
+                          className={`${textarea} mt-2 min-h-24 transition-[min-height,border-color,background-color] focus:min-h-28`}
                         />
                       </div>
 
@@ -2074,7 +2074,7 @@ export function MatchLogForm({
                           <button
                             type="button"
                             onClick={importTcgLiveLog}
-                            className="w-fit rounded-md bg-[#4F8CFF]/12 px-3 py-2 text-sm font-semibold text-[#F8FAFC] transition hover:bg-[#4F8CFF]/20 active:scale-[0.98]"
+                            className="w-fit rounded-md bg-[#4F8CFF]/12 px-3 py-2 text-sm font-semibold text-[#F8FAFC] transition-colors hover:bg-[#4F8CFF]/20 active:scale-[0.98]"
                           >
                             Use log
                           </button>
@@ -2089,20 +2089,20 @@ export function MatchLogForm({
                   ) : null}
                 </div>
 
-                <div className="mt-4 rounded-xl bg-[#0B1020]/52 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)] xl:hidden">
+                <div className="mt-3.5 rounded-xl bg-[#0B1020]/52 p-2.5 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)] xl:hidden sm:mt-4 sm:p-3">
                   <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#F5C84C]">
                     Ready to save
                   </p>
-                  <p className="mt-2 text-sm font-medium leading-6 text-[#F8FAFC]">
+                  <p className="mt-1.5 text-sm font-medium leading-5 text-[#F8FAFC] sm:mt-2 sm:leading-6">
                     {readySummary ||
                       "Choose a matchup, result, and turn order to start the quick log."}
                   </p>
-                  <p className="mt-2 text-sm text-[#94A3B8]/76">
+                  <p className="mt-1.5 text-sm text-[#94A3B8]/76 sm:mt-2">
                     This will update your matchup trends.
                   </p>
                 </div>
 
-                <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div className="mt-4 flex flex-col gap-2 sm:mt-5 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex min-h-10 items-center gap-2">
                     {currentStep > 0 ? (
                       <button
