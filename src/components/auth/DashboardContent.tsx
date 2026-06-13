@@ -19,7 +19,6 @@ import {
   appShell,
   emptyCard,
   glassPanel,
-  glassPanelStrong,
   insightCard,
   metallicBadge,
   missionHeroCard,
@@ -38,7 +37,6 @@ import type {
   SessionCoachInsight,
   TrainingProgressSummary,
 } from "@/lib/session-coach";
-import type { ReviewInsightCard } from "@/lib/review-analysis";
 
 type DeckSummary = {
   id: string;
@@ -96,7 +94,6 @@ type DashboardContentProps = {
   matchupSummary: MatchupSummary[];
   sessionCoach: SessionCoachInsight | null;
   trainingProgress: TrainingProgressSummary;
-  deckCoachInsight?: ReviewInsightCard | null;
 };
 
 type Tone = "blue" | "gold" | "green" | "rose";
@@ -278,12 +275,10 @@ function MissionHeroCard({
   insight,
   nextActionTitle,
   nextActionCopy,
-  deckCoachInsight,
 }: {
   insight: SessionCoachInsight;
   nextActionTitle: string;
   nextActionCopy: string;
-  deckCoachInsight?: ReviewInsightCard | null;
 }) {
   const badge = getMissionBadge(insight);
   const progressPercent = Math.min(
@@ -448,42 +443,6 @@ function MissionHeroCard({
           </Link>
         </div>
       </div>
-
-      {deckCoachInsight ? (
-        <div className={`${premiumInsetStrong} xl:col-span-2 mt-0 p-4`}>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-            <div className="flex min-w-0 flex-1 items-center gap-3">
-              <div className="flex shrink-0 items-center gap-1.5">
-                <span className="inline-flex size-6 items-center justify-center rounded-[8px] bg-[#F5C84C]/12 text-[10px] font-bold text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
-                  TC
-                </span>
-                <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#94A3B8]/52">
-                  Coach says
-                </span>
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold text-[#F8FAFC]">
-                  {deckCoachInsight.title}
-                </p>
-                <p className={`mt-0.5 truncate text-xs font-medium ${
-                  deckCoachInsight.tone === "rose" ? "text-rose-300" :
-                  deckCoachInsight.tone === "emerald" ? "text-emerald-300" :
-                  deckCoachInsight.tone === "gold" ? "text-[#F5C84C]" :
-                  "text-[#B8D1FF]"
-                }`}>
-                  {deckCoachInsight.evidence}
-                </p>
-              </div>
-            </div>
-            <Link
-              href="/review"
-              className="shrink-0 inline-flex h-8 items-center justify-center rounded-[10px] bg-[#F5C84C] px-3 text-xs font-bold text-[#0B1020] shadow-[0_8px_20px_rgba(245,200,76,0.18)] transition hover:-translate-y-0.5 hover:bg-[#ffd85f] active:translate-y-0"
-            >
-              Open Review
-            </Link>
-          </div>
-        </div>
-      ) : null}
     </section>
   );
 }
@@ -645,7 +604,6 @@ export function DashboardContent({
   matchupSummary,
   sessionCoach,
   trainingProgress,
-  deckCoachInsight,
 }: DashboardContentProps) {
   const sampledMatchups = matchupSummary.filter((matchup) => matchup.matches >= 3);
   const worstMatchup = sampledMatchups.reduce<MatchupSummary | null>(
@@ -866,33 +824,7 @@ export function DashboardContent({
                   insight={sessionCoach}
                   nextActionTitle={nextAction.title}
                   nextActionCopy={nextAction.copy}
-                  deckCoachInsight={deckCoachInsight}
                 />
-              ) : deckCoachInsight ? (
-                <section className={`${glassPanelStrong} p-5 shadow-[0_18px_46px_rgba(0,0,0,0.22),inset_0_0_0_1px_rgba(245,200,76,0.22)]`}>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="inline-flex size-8 items-center justify-center rounded-[12px] bg-[#F5C84C]/12 text-xs font-bold text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
-                      TC
-                    </span>
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#94A3B8]/58">
-                      Coach says
-                    </span>
-                  </div>
-                  <h2 className="mt-3 text-xl font-bold tracking-tight text-[#F8FAFC]">
-                    {deckCoachInsight.title}
-                  </h2>
-                  <p className="mt-2 text-sm leading-6 text-[#D6E0F0]/82">
-                    {deckCoachInsight.explanation}
-                  </p>
-                  <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <p className={`text-sm font-medium ${deckCoachInsight.tone === "rose" ? "text-rose-200" : deckCoachInsight.tone === "emerald" ? "text-emerald-300" : deckCoachInsight.tone === "gold" ? "text-[#F5C84C]" : "text-[#B8D1FF]"}`}>
-                      {deckCoachInsight.evidence}
-                    </p>
-                    <Link href="/review" className="shrink-0 inline-flex h-10 items-center justify-center rounded-[14px] bg-[#F5C84C] px-4 text-sm font-bold text-[#0B1020] shadow-[0_10px_28px_rgba(245,200,76,0.20)] transition hover:-translate-y-0.5 hover:bg-[#ffd85f] active:translate-y-0">
-                      Open Review
-                    </Link>
-                  </div>
-                </section>
               ) : null}
 
               <section className="grid gap-3 lg:grid-cols-3">

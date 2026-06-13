@@ -88,8 +88,20 @@ test.describe("authenticated routes", () => {
     await expect(page.locator("body")).toContainText(
       /Strong signal|Building signal|Early signal|Needs more games/i
     );
+    await expect(page.locator("body")).toContainText(/Supporting insights|Other patterns found/i);
+    await expect(page.locator("body")).toContainText(/Matchup samples|Turn-order split|Tag pressure/i);
     await expect(page.locator("body")).not.toContainText(/What to test next/i);
     await expect(page.locator("body")).not.toContainText(/this line|sample block|converts with/i);
+    await expectNoAppError(page);
+  });
+
+  test("/dashboard stays focused on mission and review CTA", async ({ page }) => {
+    await page.goto("/dashboard");
+
+    await expect(page.locator("body")).toContainText(/Current mission/i);
+    await expect(page.locator("body")).toContainText(/Review details|Review all insights/i);
+    await expect(page.locator("body")).not.toContainText(/good prize plan.*positive pattern/i);
+    await expect(page.locator("body")).not.toContainText(/wins tagged.*losses tagged|3 of 14 wins tagged/i);
     await expectNoAppError(page);
   });
 

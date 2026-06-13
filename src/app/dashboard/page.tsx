@@ -3,15 +3,12 @@ import {
   buildSessionCoachInsight,
   buildTrainingProgressSummary,
 } from "@/lib/session-coach";
-import { buildPrimaryDeckInsight } from "@/lib/coach-insights";
 import { getOwnProfile } from "@/lib/community";
 import {
   countMatchResults,
-  parseMatchMetadata,
   type MatchResult,
 } from "@/lib/match-types";
 import type { CoachMatch } from "@/lib/session-coach";
-import type { ReviewMatch } from "@/lib/review-analysis";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
 
@@ -82,22 +79,6 @@ function getDeckVersionName(match: MatchRow) {
   return deckVersion?.name ?? "Unknown version";
 }
 
-function toReviewMatch(match: MatchRow): ReviewMatch {
-  return {
-    id: match.id,
-    deckId: "",
-    deckName: "",
-    deckVersionId: match.deck_version_id,
-    deckVersionName: getDeckVersionName(match),
-    deckVersionIsActive: false,
-    opponentArchetype: match.opponent_archetype,
-    result: match.result,
-    wentFirst: match.went_first,
-    playedAt: match.played_at,
-    metadata: parseMatchMetadata(match.metadata),
-  };
-}
-
 export default async function DashboardPage() {
   const supabase = await createServerSupabaseClient();
   const {
@@ -138,8 +119,6 @@ export default async function DashboardPage() {
   );
   const sessionCoach = buildSessionCoachInsight(matchRows as unknown as CoachMatch[]);
   const trainingProgress = buildTrainingProgressSummary(matchRows);
-  const reviewMatches = matchRows.map(toReviewMatch);
-  const deckCoachInsight = buildPrimaryDeckInsight(reviewMatches);
   const filteredMatches = matchRows;
   const totalRecord = getRecord(filteredMatches);
   const wentFirstRecord = getRecord(
@@ -196,7 +175,6 @@ export default async function DashboardPage() {
       matchupSummary={matchupSummary}
       sessionCoach={sessionCoach}
       trainingProgress={trainingProgress}
-      deckCoachInsight={deckCoachInsight}
       hasProfile={Boolean(ownProfile)}
       profileIsPrivate={ownProfile?.profile_visibility === "private"}
     />

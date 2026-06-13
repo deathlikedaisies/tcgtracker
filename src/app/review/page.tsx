@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { type ReactNode } from "react";
 import { AuthenticatedPageHeader } from "@/components/AuthenticatedPageHeader";
 import { AppSidebar } from "@/components/AppSidebar";
 import {
@@ -277,6 +278,118 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
     filteredMatches.filter((match) => match.result === "win"),
     (match) => match.metadata.positive_tags ?? []
   );
+  const supportingCards = [
+    matchupSummary.length
+      ? {
+          key: "matchup-samples",
+          title: "Matchup samples",
+          content: (
+            <div className="grid gap-3">
+              {matchupSummary.map((matchup) => (
+                <div
+                  key={matchup.opponent}
+                  className="rounded-[16px] bg-white/[0.03] p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="truncate text-sm font-semibold text-[#F8FAFC]">
+                      {matchup.opponent}
+                    </p>
+                    <span className="text-sm font-bold text-[#F8FAFC]">
+                      {matchup.winRate}%
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs text-[#94A3B8]/72">
+                    {matchup.record} across {matchup.matches} games
+                  </p>
+                </div>
+              ))}
+            </div>
+          ),
+        }
+      : null,
+    firstRecord.total || secondRecord.total
+      ? {
+          key: "turn-order-split",
+          title: "Turn-order split",
+          content: (
+            <div className="grid gap-3">
+              <div className="rounded-[16px] bg-white/[0.03] p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-sm font-semibold text-[#F8FAFC]">Going first</p>
+                  <span className="text-sm font-bold text-[#F8FAFC]">
+                    {firstRecord.total
+                      ? `${Math.round((firstRecord.wins / firstRecord.total) * 100)}%`
+                      : "N/A"}
+                  </span>
+                </div>
+                <p className="mt-1 text-xs text-[#94A3B8]/72">
+                  {firstRecord.total
+                    ? `${formatMatchRecord(
+                        firstRecord.wins,
+                        firstRecord.losses,
+                        firstRecord.ties
+                      )} across ${firstRecord.total} games`
+                    : "No first-turn sample yet"}
+                </p>
+              </div>
+              <div className="rounded-[16px] bg-white/[0.03] p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-sm font-semibold text-[#F8FAFC]">Going second</p>
+                  <span className="text-sm font-bold text-[#F8FAFC]">
+                    {secondRecord.total
+                      ? `${Math.round((secondRecord.wins / secondRecord.total) * 100)}%`
+                      : "N/A"}
+                  </span>
+                </div>
+                <p className="mt-1 text-xs text-[#94A3B8]/72">
+                  {secondRecord.total
+                    ? `${formatMatchRecord(
+                        secondRecord.wins,
+                        secondRecord.losses,
+                        secondRecord.ties
+                      )} across ${secondRecord.total} games`
+                    : "No second-turn sample yet"}
+                </p>
+              </div>
+            </div>
+          ),
+        }
+      : null,
+    topIssueTag || topPositiveTag
+      ? {
+          key: "tag-pressure",
+          title: "Tag pressure",
+          content: (
+            <div className="grid gap-3">
+              {topIssueTag ? (
+                <div className="rounded-[16px] bg-white/[0.03] p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                  <p className="text-sm font-semibold text-[#F8FAFC]">
+                    &quot;{topIssueTag[0]}&quot; is the leading loss tag
+                  </p>
+                  <p className="mt-1 text-xs text-[#94A3B8]/72">
+                    {topIssueTag[1]} logged losses include this tag.
+                  </p>
+                </div>
+              ) : null}
+              {topPositiveTag ? (
+                <div className="rounded-[16px] bg-white/[0.03] p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                  <p className="text-sm font-semibold text-[#F8FAFC]">
+                    &quot;{topPositiveTag[0]}&quot; is the leading win tag
+                  </p>
+                  <p className="mt-1 text-xs text-[#94A3B8]/72">
+                    {topPositiveTag[1]} logged wins include this tag.
+                  </p>
+                </div>
+              ) : null}
+            </div>
+          ),
+        }
+      : null,
+  ].filter(Boolean) as {
+    key: string;
+    title: string;
+    content: ReactNode;
+  }[];
 
   return (
     <main className={appShell}>
@@ -472,6 +585,39 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
               ) : null}
 
               {/* Secondary insight cards — max 3 visible, rest behind details */}
+              {supportingCards.length > 0 ? (
+                <section className={`${glassPanel} p-5`}>
+                  <div className="flex flex-col gap-2">
+                    <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
+                      Supporting insights
+                    </p>
+                    <h2 className={sectionTitle}>Other patterns found</h2>
+                    <p className="text-sm leading-6 text-[#94A3B8]/72">
+                      These are secondary patterns from your logs. Use them after reviewing the main coach recommendation.
+                    </p>
+                  </div>
+
+                  <div
+                    className={`mt-4 grid gap-4 ${
+                      supportingCards.length === 1
+                        ? ""
+                        : supportingCards.length === 2
+                          ? "xl:grid-cols-2"
+                          : "xl:grid-cols-3"
+                    }`}
+                  >
+                    {supportingCards.map((card) => (
+                      <article key={card.key} className={`${premiumInset} p-4`}>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                          {card.title}
+                        </p>
+                        <div className="mt-3">{card.content}</div>
+                      </article>
+                    ))}
+                  </div>
+                </section>
+              ) : null}
+
               {analysis.cards.length > 1 ? (() => {
                 const secondaryCards = analysis.cards.slice(1);
                 const visibleCards = secondaryCards.slice(0, 3);
@@ -518,111 +664,6 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
 
                 return (
                   <>
-                    <section className={`${glassPanel} p-5`}>
-                      <div className="flex flex-col gap-2">
-                        <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
-                          Supporting insights
-                        </p>
-                        <h2 className={sectionTitle}>Other patterns found</h2>
-                        <p className="text-sm leading-6 text-[#94A3B8]/72">
-                          These are secondary patterns from your logs. Use them after reviewing the main coach recommendation.
-                        </p>
-                      </div>
-
-                      <div className="mt-4 grid gap-4 xl:grid-cols-3">
-                        <article className={`${premiumInset} p-4`}>
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
-                            Matchup samples
-                          </p>
-                          <div className="mt-3 grid gap-3">
-                            {matchupSummary.length ? (
-                              matchupSummary.map((matchup) => (
-                                <div key={matchup.opponent} className="rounded-[16px] bg-white/[0.03] p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
-                                  <div className="flex items-center justify-between gap-3">
-                                    <p className="truncate text-sm font-semibold text-[#F8FAFC]">
-                                      {matchup.opponent}
-                                    </p>
-                                    <span className="text-sm font-bold text-[#F8FAFC]">
-                                      {matchup.winRate}%
-                                    </span>
-                                  </div>
-                                  <p className="mt-1 text-xs text-[#94A3B8]/72">
-                                    {matchup.record} across {matchup.matches} games
-                                  </p>
-                                </div>
-                              ))
-                            ) : (
-                              <p className="text-sm leading-6 text-[#94A3B8]/72">
-                                Log a few more games before matchup pressure separates cleanly.
-                              </p>
-                            )}
-                          </div>
-                        </article>
-
-                        <article className={`${premiumInset} p-4`}>
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
-                            Turn-order split
-                          </p>
-                          <div className="mt-3 grid gap-3">
-                            <div className="rounded-[16px] bg-white/[0.03] p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
-                              <div className="flex items-center justify-between gap-3">
-                                <p className="text-sm font-semibold text-[#F8FAFC]">Going first</p>
-                                <span className="text-sm font-bold text-[#F8FAFC]">
-                                  {firstRecord.total ? `${Math.round((firstRecord.wins / firstRecord.total) * 100)}%` : "N/A"}
-                                </span>
-                              </div>
-                              <p className="mt-1 text-xs text-[#94A3B8]/72">
-                                {firstRecord.total
-                                  ? `${formatMatchRecord(firstRecord.wins, firstRecord.losses, firstRecord.ties)} across ${firstRecord.total} games`
-                                  : "No first-turn sample yet"}
-                              </p>
-                            </div>
-                            <div className="rounded-[16px] bg-white/[0.03] p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
-                              <div className="flex items-center justify-between gap-3">
-                                <p className="text-sm font-semibold text-[#F8FAFC]">Going second</p>
-                                <span className="text-sm font-bold text-[#F8FAFC]">
-                                  {secondRecord.total ? `${Math.round((secondRecord.wins / secondRecord.total) * 100)}%` : "N/A"}
-                                </span>
-                              </div>
-                              <p className="mt-1 text-xs text-[#94A3B8]/72">
-                                {secondRecord.total
-                                  ? `${formatMatchRecord(secondRecord.wins, secondRecord.losses, secondRecord.ties)} across ${secondRecord.total} games`
-                                  : "No second-turn sample yet"}
-                              </p>
-                            </div>
-                          </div>
-                        </article>
-
-                        <article className={`${premiumInset} p-4`}>
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
-                            Tag pressure
-                          </p>
-                          <div className="mt-3 grid gap-3">
-                            <div className="rounded-[16px] bg-white/[0.03] p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
-                              <p className="text-sm font-semibold text-[#F8FAFC]">
-                                {topIssueTag ? `"${topIssueTag[0]}" is the leading loss tag` : "No repeated loss tag yet"}
-                              </p>
-                              <p className="mt-1 text-xs text-[#94A3B8]/72">
-                                {topIssueTag
-                                  ? `${topIssueTag[1]} logged losses include this tag.`
-                                  : "Keep using issue tags so failure patterns can separate."}
-                              </p>
-                            </div>
-                            <div className="rounded-[16px] bg-white/[0.03] p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
-                              <p className="text-sm font-semibold text-[#F8FAFC]">
-                                {topPositiveTag ? `"${topPositiveTag[0]}" is the leading win tag` : "No repeated positive tag yet"}
-                              </p>
-                              <p className="mt-1 text-xs text-[#94A3B8]/72">
-                                {topPositiveTag
-                                  ? `${topPositiveTag[1]} logged wins include this tag.`
-                                  : "Keep tagging what worked so SixPrizer can compare wins against losses."}
-                              </p>
-                            </div>
-                          </div>
-                        </article>
-                      </div>
-                    </section>
-
                     <section className="grid gap-4 xl:grid-cols-2">
                       {visibleCards.map(renderCard)}
                     </section>
