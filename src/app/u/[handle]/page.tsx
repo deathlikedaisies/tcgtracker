@@ -14,7 +14,9 @@ import {
   buildProfileSummaryText,
   getPublicProfilePageData,
 } from "@/lib/community";
+import { getPublicProfileUrl } from "@/lib/site-url";
 import { refreshProfileStatsAction } from "@/app/community/actions";
+import type { Metadata } from "next";
 
 function getInitial(value: string) {
   return value.trim().charAt(0).toUpperCase() || "S";
@@ -46,6 +48,51 @@ function formatUpdatedAt(value: string | null | undefined) {
     day: "numeric",
     year: "numeric",
   }).format(new Date(value));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ handle: string }>;
+}): Promise<Metadata> {
+  const { handle } = await params;
+  const data = await getPublicProfilePageData(handle);
+  const profileUrl = getPublicProfileUrl(handle);
+
+  if (!data) {
+    return {
+      title: "Profile unavailable",
+      alternates: {
+        canonical: profileUrl,
+      },
+    };
+  }
+
+  const { profile, stats } = data;
+  const description =
+    profile.bio ??
+    (stats
+      ? `${profile.display_name} is tracking competitive Pokemon TCG testing on SixPrizer.`
+      : `${profile.display_name} has a public SixPrizer player profile.`);
+
+  return {
+    title: `${profile.display_name} (@${profile.handle})`,
+    description,
+    alternates: {
+      canonical: getPublicProfileUrl(profile.handle),
+    },
+    openGraph: {
+      title: `${profile.display_name} (@${profile.handle})`,
+      description,
+      url: getPublicProfileUrl(profile.handle),
+      type: "profile",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${profile.display_name} (@${profile.handle})`,
+      description,
+    },
+  };
 }
 
 export default async function PublicProfilePage({
@@ -90,9 +137,7 @@ export default async function PublicProfilePage({
   }
 
   const { profile, stats, isOwner } = data;
-  const profileUrl = `${
-    process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
-  }/u/${profile.handle}`;
+  const profileUrl = getPublicProfileUrl(profile.handle);
   const summaryText = buildProfileSummaryText(profile, stats);
   const refreshAction = refreshProfileStatsAction.bind(
     null,

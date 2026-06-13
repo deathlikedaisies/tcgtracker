@@ -15,6 +15,7 @@ import {
   getSharedReportBySlug,
   type ProfileReactionType,
 } from "@/lib/community";
+import { getSharedReportUrl } from "@/lib/site-url";
 import { toggleReportReactionAction } from "@/app/community/actions";
 
 const REACTION_LABELS: Record<ProfileReactionType, string> = {
@@ -87,9 +88,7 @@ export default async function SharedReportPage({
   }
 
   const { report, ownerProfile, isOwner, viewerReactions, reactionCounts } = data;
-  const reportUrl = `${
-    process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
-  }/r/${report.slug}`;
+  const reportUrl = getSharedReportUrl(report.slug);
   const summaryText = buildReportSummaryText(report);
   const summary = report.summary;
   const issueTags = Array.isArray(summary.issueTags) ? summary.issueTags : [];

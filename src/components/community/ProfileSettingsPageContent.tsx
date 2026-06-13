@@ -13,6 +13,7 @@ import {
 } from "@/components/brand-styles";
 import { refreshProfileStatsAction } from "@/app/community/actions";
 import type { ProfileRecord } from "@/lib/community";
+import { getPublicProfileUrl } from "@/lib/site-url";
 
 type ProfileSettingsPageContentProps = {
   profile: ProfileRecord;
@@ -30,9 +31,7 @@ export function ProfileSettingsPageContent({
     profile.handle,
     "/profile"
   );
-  const publicUrl = `${
-    process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
-  }/u/${profile.handle}`;
+  const publicUrl = getPublicProfileUrl(profile.handle);
   const isPubliclyVisible = profile.profile_visibility !== "private";
 
   return (

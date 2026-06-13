@@ -17,10 +17,15 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 Set these variables locally and in Vercel:
 
 ```bash
+NEXT_PUBLIC_SITE_URL=
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 POKEMON_TCG_API_KEY=
 ```
+
+`NEXT_PUBLIC_SITE_URL` controls canonical public/shareable links such as player
+profiles and shared reports. Use `https://sixprizer.com` in production and
+`http://localhost:3000` for local development.
 
 `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` are
 required for login, signup, and all account data. The app also accepts

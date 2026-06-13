@@ -12,6 +12,12 @@ const authRoutes = [
   { path: "/profile", heading: /Profile|Create your profile/i },
 ];
 
+const expectedSiteUrl = (
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  process.env.PLAYWRIGHT_BASE_URL ??
+  "http://localhost:3000"
+).replace(/\/+$/, "");
+
 async function setProfileVisibility(
   page: import("@playwright/test").Page,
   profileVisibility: "private" | "public" | "link_only",
@@ -80,6 +86,10 @@ test.describe("authenticated routes", () => {
 
     await expectHeadingVisible(page, /Profile|Create your profile/i);
     await expect(page.locator("body")).toContainText(/Public profile URL/i);
+    await expect(page.locator("body")).toContainText(/https?:\/\/[^\s]+\/u\/domz_test/i);
+    await expect(page.locator("body")).toContainText(
+      `${expectedSiteUrl}/u/domz_test`
+    );
     const viewProfileLink = page.getByRole("link", { name: /View public profile/i });
     await expect(viewProfileLink).toBeVisible();
     await expect(
