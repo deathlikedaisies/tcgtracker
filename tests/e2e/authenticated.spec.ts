@@ -12,11 +12,15 @@ const authRoutes = [
   { path: "/profile", heading: /Profile|Create your profile/i },
 ];
 
-const expectedSiteUrl = (
-  process.env.NEXT_PUBLIC_SITE_URL ??
-  process.env.PLAYWRIGHT_BASE_URL ??
-  "http://localhost:3000"
-).replace(/\/+$/, "");
+function getExpectedOrigin(page: import("@playwright/test").Page) {
+  const configuredUrl =
+    process.env.PLAYWRIGHT_BASE_URL ??
+    process.env.NEXT_PUBLIC_SITE_URL ??
+    page.url() ??
+    "http://localhost:3000";
+
+  return new URL(configuredUrl).origin;
+}
 
 async function setProfileVisibility(
   page: import("@playwright/test").Page,
@@ -83,15 +87,22 @@ test.describe("authenticated routes", () => {
 
   test("/profile shows the public profile controls", async ({ page }) => {
     await page.goto("/profile");
+    const expectedOrigin = getExpectedOrigin(page);
 
     await expectHeadingVisible(page, /Profile|Create your profile/i);
     await expect(page.locator("body")).toContainText(/Public profile URL/i);
     await expect(page.locator("body")).toContainText(/https?:\/\/[^\s]+\/u\/domz_test/i);
     await expect(page.locator("body")).toContainText(
-      `${expectedSiteUrl}/u/domz_test`
+      `${expectedOrigin}/u/domz_test`
     );
     const viewProfileLink = page.getByRole("link", { name: /View public profile/i });
     await expect(viewProfileLink).toBeVisible();
+    await expect
+      .poll(async () => {
+        const href = await viewProfileLink.getAttribute("href");
+        return href ? new URL(href, page.url()).toString() : null;
+      })
+      .toBe(`${expectedOrigin}/u/domz_test`);
     await expect(
       page.getByRole("button", { name: /Copy profile link/i })
     ).toBeVisible();
