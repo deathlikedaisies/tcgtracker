@@ -592,7 +592,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
             userEmail={user.email ?? "Unknown email"}
           />
 
-          <form action="/review" className={`p-4 ${glassPanel}`}>
+          <form action="/review" className={`p-3.5 sm:p-4 ${glassPanel}`}>
             <div className="grid gap-3 min-[430px]:grid-cols-2 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_auto]">
               <div className="flex flex-col gap-2">
                 <label htmlFor="deck_id" className={label}>
@@ -688,7 +688,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
               {/* Primary coach insight — the first thing the user sees */}
               {analysis.cards.length > 0 ? (
                 <section
-                  className={`${glassPanelStrong} p-5 sm:p-6 ${
+                  className={`${glassPanelStrong} p-4 sm:p-6 ${
                     analysis.cards[0].tone === "rose"
                       ? "shadow-[0_22px_52px_rgba(0,0,0,0.26),inset_0_0_0_1px_rgba(244,63,94,0.22)]"
                       : analysis.cards[0].tone === "emerald"
@@ -698,7 +698,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
                           : "shadow-[0_22px_52px_rgba(0,0,0,0.26),inset_0_0_0_1px_rgba(79,140,255,0.20)]"
                   }`}
                 >
-                  <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:gap-8">
+                  <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:gap-8">
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="inline-flex size-8 items-center justify-center rounded-[12px] bg-[#F5C84C]/12 text-xs font-bold text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
@@ -713,13 +713,13 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
                           {analysis.sampleStatusLabel}
                         </span>
                       </div>
-                      <h2 className="mt-4 text-2xl font-bold tracking-tight text-[#F8FAFC] sm:text-3xl">
+                      <h2 className="mt-3 text-[1.65rem] font-bold tracking-tight text-[#F8FAFC] sm:mt-4 sm:text-3xl">
                         {analysis.cards[0].title}
                       </h2>
-                      <p className="mt-3 text-base leading-7 text-[#D6E0F0]/84">
+                      <p className="mt-2.5 text-sm leading-6 text-[#D6E0F0]/84 sm:mt-3 sm:text-base sm:leading-7">
                         {analysis.cards[0].explanation}
                       </p>
-                      <div className={`${premiumInset} mt-4 p-4`}>
+                      <div className={`${premiumInset} mt-3 p-3 sm:mt-4 sm:p-4`}>
                         <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
                           What to do next
                         </p>
@@ -729,7 +729,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
                       </div>
                     </div>
                     <div className="flex shrink-0 flex-col gap-3 xl:w-72">
-                      <div className={`${premiumInsetStrong} p-4`}>
+                      <div className={`${premiumInsetStrong} p-3 sm:p-4`}>
                         <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
                           Evidence
                         </p>
@@ -745,7 +745,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
                           {analysis.cards[0].evidence}
                         </p>
                       </div>
-                      <div className={`${premiumInset} p-4`}>
+                      <div className={`${premiumInset} p-3 sm:p-4`}>
                         <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
                           Confidence
                         </p>
@@ -766,7 +766,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
 
               {/* Secondary insight cards — max 3 visible, rest behind details */}
               {supportingCards.length > 0 ? (
-                <section className={`${glassPanel} p-5`}>
+                <section className={`${glassPanel} p-4 sm:p-5`}>
                   <div className="flex flex-col gap-2">
                     <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
                       Supporting insights

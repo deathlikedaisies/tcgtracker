@@ -33,9 +33,9 @@ export function AuthenticatedPageHeader({
   className = "",
 }: AuthenticatedPageHeaderProps) {
   return (
-    <header className={`${pageHeaderCard} p-3.5 sm:p-5 lg:px-6 lg:py-5 ${className}`}>
+    <header className={`${pageHeaderCard} p-3.5 sm:p-5 xl:px-6 xl:py-5 ${className}`}>
       <div className="flex flex-col gap-3 sm:gap-4">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/6 pb-3 lg:hidden">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/6 pb-3 xl:hidden">
           <SixPrizerLogo
             {...logoOnDark}
             size="sm"
@@ -45,14 +45,14 @@ export function AuthenticatedPageHeader({
           <SignOutButton compact />
         </div>
 
-        <div className="flex flex-col gap-2.5 lg:flex-row lg:items-end lg:justify-between lg:gap-6">
+        <div className="flex flex-col gap-2.5 xl:flex-row xl:items-end xl:justify-between xl:gap-6">
           <div className="min-w-0 max-w-3xl">
             {eyebrow ? (
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#4F8CFF]/86">
                 {eyebrow}
               </p>
             ) : null}
-            <h1 className="mt-1.5 text-[1.75rem] font-bold tracking-tight text-[#F8FAFC] sm:mt-2 sm:text-4xl lg:text-[2rem]">
+            <h1 className="mt-1.5 text-[1.75rem] font-bold tracking-tight text-[#F8FAFC] sm:mt-2 sm:text-4xl xl:text-[2rem]">
               {title}
             </h1>
             {subtitle ? (
@@ -66,11 +66,11 @@ export function AuthenticatedPageHeader({
           </div>
 
           {actions ? (
-            <div className="grid gap-3 lg:min-w-[220px] lg:justify-items-end">{actions}</div>
+            <div className="grid gap-3 xl:min-w-[220px] xl:justify-items-end">{actions}</div>
           ) : null}
         </div>
 
-        <div className="lg:hidden">
+        <div className="xl:hidden">
           <AppNav current={current} />
         </div>
       </div>

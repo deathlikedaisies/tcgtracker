@@ -518,15 +518,25 @@ export function ReviewDetailedAnalytics({
         <div className="mt-4">{renderPanel(activePanel)}</div>
       </div>
 
-      <div className="mt-3.5 grid gap-2.5 lg:hidden sm:mt-4 sm:gap-3">
-        {availablePanels.map((panel) => (
-          <details key={panel.key} className={`${premiumInsetStrong} group p-3 sm:p-4`}>
-            <summary className="cursor-pointer list-none text-sm font-semibold text-[#F8FAFC] marker:hidden">
-              {panel.label}
-            </summary>
-            <div className="mt-3.5 sm:mt-4">{renderPanel(panel.key)}</div>
-          </details>
-        ))}
+      <div className="mt-3.5 lg:hidden sm:mt-4">
+        <details className={`${premiumInsetStrong} group p-3 sm:p-4`}>
+          <summary className="cursor-pointer list-none text-sm font-semibold text-[#F8FAFC] marker:hidden">
+            Open detailed analytics
+          </summary>
+          <p className="mt-2 text-sm leading-5 text-[#94A3B8]/72">
+            Open this after the top read and supporting evidence.
+          </p>
+          <div className="mt-3.5 grid gap-2.5 sm:gap-3">
+            {availablePanels.map((panel) => (
+              <details key={panel.key} className={`${premiumInset} group p-3 sm:p-4`}>
+                <summary className="cursor-pointer list-none text-sm font-semibold text-[#F8FAFC] marker:hidden">
+                  {panel.label}
+                </summary>
+                <div className="mt-3.5 sm:mt-4">{renderPanel(panel.key)}</div>
+              </details>
+            ))}
+          </div>
+        </details>
       </div>
     </section>
   );

@@ -13,7 +13,7 @@ export const marketingShell =
 export const appContainer = "mx-auto flex w-full max-w-full min-w-0 flex-col gap-3 overflow-x-hidden sm:gap-5";
 
 export const appFrame =
-  "mx-auto grid w-full max-w-7xl min-w-0 gap-3 overflow-x-hidden sm:gap-4 lg:grid-cols-[224px_minmax(0,1fr)]";
+  "mx-auto grid w-full max-w-7xl min-w-0 gap-3 overflow-x-hidden sm:gap-4 xl:grid-cols-[224px_minmax(0,1fr)]";
 
 export const appMain = "flex min-w-0 flex-col gap-3 overflow-x-hidden sm:gap-5";
 
@@ -86,7 +86,7 @@ export const dangerButton =
   "inline-flex h-11 max-w-full items-center justify-center rounded-[14px] bg-[#F43F5E]/10 px-4 text-sm font-medium text-rose-200 transition hover:bg-[#F43F5E]/16 sm:h-10";
 
 export const subtlePill =
-  "rounded-full bg-[linear-gradient(180deg,rgba(11,16,32,0.84),rgba(7,17,31,0.74))] px-2.5 py-1 text-xs text-[#94A3B8]/86 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10),inset_0_1px_0_rgba(255,255,255,0.03)]";
+  "rounded-full bg-[linear-gradient(180deg,rgba(11,16,32,0.78),rgba(7,17,31,0.70))] px-2 py-0.5 text-[11px] text-[#94A3B8]/74 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08),inset_0_1px_0_rgba(255,255,255,0.02)] sm:px-2.5 sm:py-1 sm:text-xs sm:text-[#94A3B8]/82";
 
 export const metricCard =
   "relative overflow-hidden rounded-[18px] bg-[linear-gradient(180deg,rgba(11,18,32,0.82),rgba(8,14,26,0.72))] p-2.5 shadow-[0_8px_18px_rgba(0,0,0,0.14),inset_0_0_0_1px_rgba(148,163,184,0.09),inset_0_1px_0_rgba(255,255,255,0.03)] sm:rounded-[20px] sm:p-3 sm:shadow-[0_12px_28px_rgba(0,0,0,0.16),inset_0_0_0_1px_rgba(148,163,184,0.09),inset_0_1px_0_rgba(255,255,255,0.03)]";

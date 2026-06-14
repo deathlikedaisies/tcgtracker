@@ -49,7 +49,7 @@ const navItems = [
 
 export function AppSidebar({ current, deckLabel, insight }: AppSidebarProps) {
   return (
-    <aside className={`hidden min-h-[calc(100vh-3rem)] p-3 lg:sticky lg:top-6 lg:block ${navRailPanel}`}>
+    <aside className={`hidden min-h-[calc(100vh-3rem)] p-3 xl:sticky xl:top-6 xl:block ${navRailPanel}`}>
       <div className="relative flex h-full flex-col">
         <SixPrizerLogo {...logoOnDark} hideTextOnMobile={false} />
 
@@ -58,7 +58,7 @@ export function AppSidebar({ current, deckLabel, insight }: AppSidebarProps) {
             <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#94A3B8]/72">
               Active test
             </p>
-            <p className="mt-1 truncate text-sm font-semibold text-[#F8FAFC]">
+            <p className="mt-1 break-words text-sm leading-5 font-semibold text-[#F8FAFC]">
               {deckLabel}
             </p>
           </div>
