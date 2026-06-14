@@ -426,7 +426,7 @@ function getMissionNextAction(
               : `${archetype} is ready for review before you change your list.`
             : "You have enough focused evidence to review before changing your list.",
       ctaLabel:
-        missionType === "deck-version" ? "Compare versions" : "Review mission",
+        missionType === "deck-version" ? "Compare versions" : "Open review",
     };
   }
 
@@ -447,7 +447,7 @@ function getMissionNextAction(
       ctaLabel:
         mode === "priority_watchlist"
           ? "Log next game"
-          : `Continue mission (${completed}/${goal})`,
+          : "Keep logging",
     };
   }
 
@@ -467,9 +467,9 @@ function getMissionNextAction(
     ctaLabel:
       mode === "priority_watchlist"
         ? "Log next game"
-        : completed === 0
-          ? "Log next game"
-          : `Continue mission (${completed}/${goal})`,
+      : completed === 0
+        ? "Log next game"
+          : "Keep logging",
   };
 }
 

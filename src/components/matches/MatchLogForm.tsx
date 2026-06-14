@@ -1102,20 +1102,20 @@ export function MatchLogForm({
   return (
     <div className="mt-5 grid gap-4">
       {sessionCoach && !wasSuccessful ? (
-        <section className="rounded-[20px] bg-[#07111F]/40 p-3.5 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.12)] sm:rounded-[24px] sm:p-4">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <section className="rounded-[18px] bg-[#07111F]/34 p-3 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.10)] sm:rounded-[22px] sm:p-3.5">
+          <div className="flex flex-col gap-2.5 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">
               <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
                 Current focus
               </p>
-              <p className="mt-1 text-lg font-semibold text-[#F8FAFC]">
+              <p className="mt-1 text-base font-semibold text-[#F8FAFC] sm:text-lg">
                 {sessionCoach.missionTitle}
               </p>
-              <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
+              <p className="mt-1.5 text-sm leading-5 text-[#94A3B8]/76">
                 {sessionCoach.nextAction}
               </p>
             </div>
-            <div className="rounded-xl bg-[#0B1020]/52 px-3 py-2 text-xs font-semibold text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+            <div className="rounded-xl bg-[#0B1020]/48 px-3 py-1.5 text-xs font-semibold text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
               {sessionCoach.missionProgress}/{sessionCoach.missionTargetCount} games
             </div>
           </div>
@@ -1260,23 +1260,18 @@ export function MatchLogForm({
               ) : null}
 
               {sessionCoach ? (
-                <div className="rounded-[20px] bg-[#07111F]/44 p-3.5 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.12)] sm:rounded-[24px] sm:p-4">
+                <div className="rounded-[18px] bg-[#07111F]/40 p-3 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.10)] sm:rounded-[22px] sm:p-3.5">
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
                         Current focus
                       </p>
-                      <p className="mt-1 text-lg font-semibold text-[#F8FAFC]">
+                      <p className="mt-1 text-base font-semibold text-[#F8FAFC] sm:text-lg">
                         {sessionCoach.missionTitle}
                       </p>
-                      <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                        <span className="text-xs text-[#94A3B8]/72">
-                          {sessionCoach.missionGuidanceLabel}
-                        </span>
-                        <span className="text-[10px] font-semibold text-[#F5C84C]/80">
-                          → {sessionCoach.rewardLabel}
-                        </span>
-                      </div>
+                      <p className="mt-1 text-xs text-[#94A3B8]/72">
+                        {sessionCoach.missionGuidanceLabel}
+                      </p>
                     </div>
                     <span className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.08em] ${postSaveStatusToneClass}`}>
                       {postSaveStatusBadge}

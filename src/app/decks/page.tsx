@@ -625,7 +625,7 @@ export default async function DecksPage() {
                                 </span>
                                 {summary.activeMission ? (
                                   <span className="rounded-full bg-[#F5C84C]/12 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#FFE28A] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
-                                    Mission: {sessionCoach?.missionSkill}
+                                    Current focus: {sessionCoach?.missionSkill}
                                   </span>
                                 ) : null}
                               </div>

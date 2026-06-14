@@ -75,7 +75,7 @@ function ProductPreview() {
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#4F8CFF]">
-              Current mission
+              Current focus
             </p>
             <h2 className="mt-1 text-2xl font-black tracking-tight text-[#F8FAFC] sm:text-3xl">
               Mega Greninja matchup

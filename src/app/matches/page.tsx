@@ -521,7 +521,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                   defaultChecked={missionOnly}
                   className="h-4 w-4 rounded border-white/20 accent-[#F5C84C]"
                 />
-                Show games that advance the current mission
+                Show games that match the current focus
               </label>
             ) : null}
           </div>
@@ -556,7 +556,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                       totalFilteredMatches === 1 ? "" : "es"
                     }`
                   : `Showing ${pageStart}-${pageEnd} of ${totalFilteredMatches} matches`}
-                {missionOnly ? " that advance the current mission" : ""}. Page{" "}
+                {missionOnly ? " for the current focus" : ""}. Page{" "}
                 {currentPage} of {totalPages}.
               </p>
             </div>
@@ -622,7 +622,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                           </span>
                           {countsTowardMission ? (
                             <span className="rounded-full bg-[#F5C84C]/14 px-2 py-1 text-xs font-semibold text-[#F5C84C]">
-                              Mission progress
+                              Focus progress
                             </span>
                           ) : null}
                           {countsTowardContext ? (

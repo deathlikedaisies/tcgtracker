@@ -292,7 +292,7 @@ function MissionHeroCard({
   const primaryLabel = insight.ctaLabel;
 
   return (
-    <section className={`grid gap-3 p-3.5 sm:gap-4 sm:p-5 xl:grid-cols-[minmax(0,1.35fr)_320px] ${missionHeroCard} bg-[linear-gradient(180deg,rgba(14,24,42,0.94),rgba(8,17,31,0.90))]`}>
+    <section className={`grid gap-3 p-3 sm:gap-4 sm:p-5 xl:grid-cols-[minmax(0,1.35fr)_300px] ${missionHeroCard} bg-[linear-gradient(180deg,rgba(14,24,42,0.94),rgba(8,17,31,0.90))]`}>
       <div className="min-w-0">
         <div className="flex flex-wrap items-start gap-1.5 sm:gap-2">
           <span className="inline-flex size-8 items-center justify-center rounded-xl bg-[#F5C84C]/12 text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.18)] sm:size-10 sm:rounded-2xl">
@@ -359,7 +359,7 @@ function MissionHeroCard({
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
-              Sample progress
+              Progress
             </p>
             <p className="mt-1 text-base font-semibold text-[#F8FAFC] sm:text-lg">
               {insight.missionProgress}/{insight.missionTargetCount} games
@@ -394,24 +394,6 @@ function MissionHeroCard({
 
         <div className={`${premiumInset} mt-2.5 p-3`}>
           <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
-            Why this matters
-          </p>
-          <p className="mt-1 text-sm leading-5 text-[#D6E0F0]/82">
-            {insight.whyThisMatters}
-          </p>
-        </div>
-
-        <div className="mt-2 flex flex-wrap items-center gap-2 rounded-xl bg-[#F5C84C]/8 px-3 py-2 shadow-[inset_0_0_0_1px_rgba(245,200,76,0.14)]">
-          <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[#F5C84C]/72">
-            Reward
-          </span>
-          <span className="text-xs font-semibold text-[#F5C84C]">
-            {insight.rewardLabel}
-          </span>
-        </div>
-
-        <div className={`${premiumInset} mt-2.5 p-3`}>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
             Next move
           </p>
           <p className="mt-1.5 text-base font-semibold text-[#F8FAFC]">
@@ -438,8 +420,8 @@ function MissionHeroCard({
             {primaryLabel}
             <ArrowRight className="ml-2 size-4" aria-hidden="true" />
           </Link>
-          <Link href="/matchups" className={`${secondaryButton} h-11`}>
-            Review matchup data
+          <Link href="/review" className={`${secondaryButton} h-11`}>
+            Open review
           </Link>
         </div>
       </div>
@@ -789,16 +771,7 @@ export function DashboardContent({
   return (
     <main className={appShell}>
       <section className={`${appFrame} sixprizer-fade-in`}>
-        <AppSidebar
-          current="dashboard"
-          insight={{
-            label: "Current focus",
-            value: sessionCoach?.missionTitle ?? "Log games to unlock coaching",
-            helper: sessionCoach
-              ? `${sessionCoach.missionProgress}/${sessionCoach.missionTargetCount} games`
-              : "Start with a five-game sample",
-          }}
-        />
+        <AppSidebar current="dashboard" />
 
         <div className={`${appMain} mx-auto w-full max-w-7xl`}>
           <AuthenticatedPageHeader

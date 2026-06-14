@@ -29,7 +29,7 @@ import {
 import { countMatchResults, formatMatchRecord } from "@/lib/match-types";
 
 const demoTourSteps = [
-  ["1", "See your current mission", "/demo"],
+  ["1", "See your current focus", "/demo"],
   ["2", "Log a fake game", "/demo/matches/new"],
   ["3", "Review the games causing the leak", "/demo/matches"],
   ["4", "Open the matchup report and decide what to test next", "/demo/matchups"],
@@ -116,7 +116,7 @@ export default function DemoPage() {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#F5C84C]/82">
-                Current mission
+                Current focus
               </p>
               <h2 className="mt-2 text-3xl font-bold tracking-tight text-[#F8FAFC]">
                 {insights.currentMission.title}

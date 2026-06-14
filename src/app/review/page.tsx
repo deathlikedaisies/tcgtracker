@@ -841,17 +841,19 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
                 );
 
                 return (
-                  <details className="group">
-                    <summary className={`${premiumInset} inline-flex cursor-pointer list-none items-center gap-2 px-4 py-2.5 text-sm font-semibold text-[#B8D1FF] transition hover:text-[#F8FAFC] marker:hidden`}>
-                      More review signals
-                    </summary>
-                    <p className="mt-3 text-sm leading-6 text-[#94A3B8]/72">
-                      These are secondary reads. Use them after the top coach recommendation and supporting evidence.
-                    </p>
-                    <section className="mt-4 grid gap-4 xl:grid-cols-2">
-                      {secondaryCards.slice(0, 3).map(renderCard)}
-                    </section>
-                  </details>
+                  <section className={`${glassPanel} p-4 sm:p-5`}>
+                    <details className="group">
+                      <summary className={`${premiumInset} inline-flex cursor-pointer list-none items-center gap-2 px-4 py-2.5 text-sm font-semibold text-[#B8D1FF] transition hover:text-[#F8FAFC] marker:hidden`}>
+                        Secondary reads
+                      </summary>
+                      <p className="mt-3 text-sm leading-6 text-[#94A3B8]/72">
+                        These are useful, but they are not the main coaching read. Check them after the top recommendation and supporting evidence.
+                      </p>
+                      <section className="mt-4 grid gap-4 xl:grid-cols-2">
+                        {secondaryCards.slice(0, 3).map(renderCard)}
+                      </section>
+                    </details>
+                  </section>
                 );
               })() : null}
 

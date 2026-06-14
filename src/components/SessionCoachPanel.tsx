@@ -73,9 +73,6 @@ export function SessionCoachPanel({
                 {insight.missionContextLabel}
               </p>
             </div>
-            <span className="inline-flex items-center gap-1 rounded-full bg-[#F5C84C]/8 px-2 py-1 text-[10px] font-semibold text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.14)]">
-              {insight.rewardLabel}
-            </span>
           </div>
         </div>
         {showCta ? (

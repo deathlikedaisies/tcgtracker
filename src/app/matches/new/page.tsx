@@ -134,19 +134,7 @@ export default async function NewMatchPage({
   return (
     <main className={appShell}>
       <section className={appFrame}>
-        <AppSidebar
-          current="log"
-          deckLabel={deckOptions[0]?.label}
-          insight={
-            sessionCoach
-              ? {
-                  label: "Current focus",
-                  value: sessionCoach.missionTitle,
-                  helper: `${sessionCoach.missionProgress}/${sessionCoach.missionTargetCount} games`,
-                }
-              : undefined
-          }
-        />
+        <AppSidebar current="log" deckLabel={deckOptions[0]?.label} />
         <div className={`${appMain} mx-auto w-full max-w-7xl`}>
           <AuthenticatedPageHeader
             current="log"
