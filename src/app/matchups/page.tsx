@@ -624,13 +624,10 @@ export default async function MatchupsPage({
           <SessionCoachPanel insight={sessionCoach} />
         ) : null}
 
-        <form action="/matchups" className={`p-4 sm:p-5 ${glassPanel}`}>
-          <div className="grid gap-4 min-[430px]:grid-cols-2 lg:grid-cols-6">
-            <div className="flex flex-col gap-2 lg:col-span-2">
-              <label
-                htmlFor="deck_id"
-                className={label}
-              >
+        <form action="/matchups" className={`p-3 ${glassPanel}`}>
+          <div className="grid gap-2 min-[430px]:grid-cols-2 lg:grid-cols-[1fr_1fr_1.5fr_1fr]">
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="deck_id" className={label}>
                 Deck
               </label>
               <select
@@ -647,12 +644,9 @@ export default async function MatchupsPage({
                 ))}
               </select>
             </div>
-            <div className="flex flex-col gap-2 lg:col-span-2">
-              <label
-                htmlFor="deck_version_id"
-                className={label}
-              >
-                Deck version
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="deck_version_id" className={label}>
+                Version
               </label>
               <select
                 id="deck_version_id"
@@ -669,41 +663,20 @@ export default async function MatchupsPage({
                 ))}
               </select>
             </div>
-            <div className="flex flex-col gap-2">
-              <label
-                htmlFor="start_date"
-                className={label}
-              >
-                From
-              </label>
-              <input
-                id="start_date"
-                name="start_date"
-                type="date"
-                defaultValue={params.start_date ?? ""}
-                className={inputH10}
+            <div className="flex flex-col gap-1.5">
+              <ArchetypePicker
+                id="opponent_archetype"
+                name="opponent_archetype"
+                label="Opponent"
+                options={archetypeOptions}
+                defaultValue={selectedOpponentArchetype}
+                placeholder="All archetypes"
+                maxOptions={5}
+                listMaxHeightClassName="max-h-40"
               />
             </div>
-            <div className="flex flex-col gap-2">
-              <label
-                htmlFor="end_date"
-                className={label}
-              >
-                To
-              </label>
-              <input
-                id="end_date"
-                name="end_date"
-                type="date"
-                defaultValue={params.end_date ?? ""}
-                className={inputH10}
-              />
-            </div>
-            <div className="flex flex-col gap-2 lg:col-span-2">
-              <label
-                htmlFor="sort"
-                className={label}
-              >
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="sort" className={label}>
                 Sort
               </label>
               <select
@@ -718,33 +691,45 @@ export default async function MatchupsPage({
                 <option value="az">Opponent A-Z</option>
               </select>
             </div>
-            <div className="flex flex-col gap-2 lg:col-span-2">
-              <ArchetypePicker
-                id="opponent_archetype"
-                name="opponent_archetype"
-                label="Opponent archetype"
-                options={archetypeOptions}
-                defaultValue={selectedOpponentArchetype}
-                placeholder="All archetypes"
-                maxOptions={5}
-                listMaxHeightClassName="max-h-40"
-              />
-            </div>
-            <div className="flex flex-col gap-2 sm:flex-row md:col-span-2 lg:col-span-4 lg:items-end lg:justify-end">
-              <button
-                type="submit"
-                className={primaryButton}
-              >
-                Apply filters
-              </button>
-              <Link
-                href="/matchups"
-                className={secondaryButton}
-              >
-                Clear
-              </Link>
-            </div>
           </div>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <button type="submit" className={primaryButton}>
+              Apply filters
+            </button>
+            <Link href="/matchups" className={secondaryButton}>
+              Clear
+            </Link>
+          </div>
+          <details
+            className="mt-2"
+            {...((params.start_date || params.end_date) ? { open: true } : {})}
+          >
+            <summary className="cursor-pointer select-none text-xs font-semibold text-[#94A3B8]/72 hover:text-[#F8FAFC]">
+              Advanced filters
+            </summary>
+            <div className="mt-3 grid gap-2 min-[430px]:grid-cols-2">
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="start_date" className={label}>From</label>
+                <input
+                  id="start_date"
+                  name="start_date"
+                  type="date"
+                  defaultValue={params.start_date ?? ""}
+                  className={inputH10}
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="end_date" className={label}>To</label>
+                <input
+                  id="end_date"
+                  name="end_date"
+                  type="date"
+                  defaultValue={params.end_date ?? ""}
+                  className={inputH10}
+                />
+              </div>
+            </div>
+          </details>
         </form>
 
         {!hasMatches ? (

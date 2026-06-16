@@ -21,8 +21,6 @@ import {
   emptyCard,
   glassPanelStrong,
   interactiveTile,
-  premiumInset,
-  premiumInsetStrong,
   primaryButton,
   secondaryButton,
   sectionCopy,
@@ -130,20 +128,6 @@ function getDeckVersions(value: Deck["deck_versions"]) {
           Boolean(version) && typeof version === "object"
       )
     : [];
-}
-
-function formatDate(value: string) {
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return "Unknown date";
-  }
-
-  return new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(date);
 }
 
 function safeAnalyzeDeckList(decklist: string | null | undefined): {
@@ -528,9 +512,8 @@ export default async function DecksPage() {
               </div>
 
               {deckSummaries.length ? (
-                deckSummaries.map((summary, index) => {
+                deckSummaries.map((summary) => {
                   const removeDeck = deleteDeck.bind(null, summary.deckId);
-                  const activeVersionName = summary.activeVersionName;
                   const deckArchetype = summary.deckArchetype;
                   const listHealth = getDecklistHealth(
                     summary.analysis,
@@ -539,51 +522,20 @@ export default async function DecksPage() {
                   );
 
                   const localListSummary = listHealth.summary;
-                  const localListDetail = listHealth.detail;
                   const versionPrompt = !summary.totalVersions
                     ? "Add first version"
                     : !summary.performance.total
                       ? "Log first game"
                       : "Open";
-                  const statusItems = [
-                    {
-                      label: "Active version",
-                      value: activeVersionName,
-                      detail: summary.activeVersionId
-                        ? "This is the version used when logging new games"
-                        : "Choose or create the build you want to test",
-                    },
-                    {
-                      label: "Games logged",
-                      value: summary.totalDeckGames
-                        ? `${summary.totalDeckGames} game${summary.totalDeckGames === 1 ? "" : "s"}`
-                        : "No games yet",
-                      detail: summary.totalDeckGames
-                        ? `${summary.performance.wins}W ${summary.performance.losses}L ${summary.performance.ties}T`
-                        : "Log 3 games to unlock first trends",
-                    },
-                    {
-                      label: "Current read",
-                      value: summary.trend.label,
-                      detail: summary.performance.total
-                        ? `${summary.performance.winRate}% win rate across ${summary.performance.total} games`
-                        : "Needs games",
-                    },
-                    {
-                      label: "List parse",
-                      value: localListSummary,
-                      detail: localListDetail,
-                    },
-                  ];
 
                   return (
                     <article
                       key={summary.deck.id}
                       className="rounded-[26px] bg-[radial-gradient(circle_at_top_left,rgba(79,140,255,0.12),transparent_34%),linear-gradient(180deg,rgba(15,26,45,0.94),rgba(7,17,31,0.88))] p-4 shadow-[0_20px_56px_rgba(0,0,0,0.24),inset_0_0_0_1px_rgba(148,163,184,0.08)] sm:p-5"
                     >
-                      <div className="grid gap-5">
-                        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_260px] xl:items-start">
-                          <div className="min-w-0">
+                      <div className="grid gap-4">
+                        <div className="flex flex-col gap-4 xl:flex-row xl:items-start">
+                          <div className="min-w-0 flex-1">
                             <div className="flex items-start gap-3">
                               <ArchetypeSprites
                                 archetype={deckArchetype}
@@ -595,49 +547,62 @@ export default async function DecksPage() {
                                   <h3 className="truncate text-xl font-semibold text-[#F8FAFC]">
                                     {summary.deck.name}
                                   </h3>
-                                  <span className="rounded-full bg-[#4F8CFF]/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.14)]">
-                                    Manual archetype
+                                  <span
+                                    className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${summary.trend.tone}`}
+                                  >
+                                    {summary.trend.label}
                                   </span>
-                                  {index === 0 ? (
-                                    <span className="rounded-full bg-[#F5C84C]/12 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#FFE28A] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
-                                      Active test version
+                                  {!summary.totalVersions ? (
+                                    <span className="rounded-full bg-[#07111F]/58 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                                      Needs version
                                     </span>
                                   ) : null}
-                                  <span className="rounded-full bg-[#07111F]/58 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
-                                    {summary.totalVersions ? "Testing" : "Needs version"}
-                                  </span>
                                 </div>
                                 <p className="mt-1 text-sm text-[#94A3B8]/76">
                                   {deckArchetype}
                                 </p>
-                                <p className="mt-1 text-xs text-[#94A3B8]/62">
-                                  Created {formatDate(summary.deck.created_at)}
-                                </p>
                               </div>
                             </div>
 
-                            <div className={`${premiumInset} mt-4 p-4`}>
-                              <div className="flex flex-wrap items-center gap-2">
-                                <span
-                                  className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${summary.trend.tone}`}
-                                >
-                                  {summary.trend.label}
-                                </span>
-                                {summary.activeMission ? (
-                                  <span className="rounded-full bg-[#F5C84C]/12 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#FFE28A] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
-                                    Current focus: {sessionCoach?.missionSkill}
-                                  </span>
-                                ) : null}
-                              </div>
-                              <p className="mt-3 line-clamp-3 text-sm leading-6 text-[#94A3B8]/72">
-                                {summary.deck.notes
-                                  ? summary.deck.notes
-                                  : summary.activeMission ?? summary.trend.detail}
+                            {summary.deck.notes ? (
+                              <p className="mt-3 line-clamp-2 text-sm leading-6 text-[#94A3B8]/72">
+                                {summary.deck.notes}
                               </p>
+                            ) : summary.totalVersions ? (
+                              <p className="mt-3 text-sm leading-6 text-[#94A3B8]/72">
+                                {summary.trend.detail}
+                              </p>
+                            ) : null}
+
+                            <div className="mt-3 flex flex-wrap gap-3 text-sm text-[#94A3B8]">
+                              <span>
+                                <span className="font-semibold text-[#F8FAFC]">{summary.activeVersionName}</span>
+                              </span>
+                              {summary.totalDeckGames > 0 ? (
+                                <>
+                                  <span className="text-[#94A3B8]/40">·</span>
+                                  <span>
+                                    <span className="font-semibold text-[#F8FAFC]">{summary.totalDeckGames}</span> game{summary.totalDeckGames === 1 ? "" : "s"}
+                                  </span>
+                                  <span className="text-[#94A3B8]/40">·</span>
+                                  <span>{summary.performance.wins}W {summary.performance.losses}L {summary.performance.ties}T</span>
+                                </>
+                              ) : (
+                                <>
+                                  <span className="text-[#94A3B8]/40">·</span>
+                                  <span>No games yet</span>
+                                </>
+                              )}
+                              {localListSummary ? (
+                                <>
+                                  <span className="text-[#94A3B8]/40">·</span>
+                                  <span className="text-xs">{localListSummary}</span>
+                                </>
+                              ) : null}
                             </div>
                           </div>
 
-                          <div className="grid gap-2 sm:grid-cols-3 xl:grid-cols-1">
+                          <div className="grid grid-cols-3 gap-2 xl:w-52 xl:grid-cols-1">
                             <Link
                               href={`/decks/${summary.deck.id}`}
                               className={primaryButton}
@@ -648,7 +613,7 @@ export default async function DecksPage() {
                               href={`/decks/${summary.deck.id}#versions`}
                               className={secondaryButton}
                             >
-                              Compare versions
+                              Versions
                             </Link>
                             <form action={removeDeck}>
                               <ConfirmSubmitButton
@@ -659,42 +624,6 @@ export default async function DecksPage() {
                               </ConfirmSubmitButton>
                             </form>
                           </div>
-                        </div>
-
-                        <div className="grid gap-3 min-[430px]:grid-cols-2 xl:grid-cols-4">
-                          {statusItems.map((item) => (
-                            <div key={item.label} className={`${premiumInset} p-4`}>
-                              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
-                                {item.label}
-                              </p>
-                              <p className="mt-2 text-sm font-semibold text-[#F8FAFC]">
-                                {item.value}
-                              </p>
-                              <p className="mt-2 text-xs leading-5 text-[#94A3B8]/68">
-                                {item.detail}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
-
-                        <div className={`${premiumInsetStrong} flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between`}>
-                          <div>
-                            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
-                              Experiment status
-                            </p>
-                            <p className="mt-1 text-sm leading-6 text-[#94A3B8]/72">
-                              {summary.activeMission
-                                ? summary.activeMission
-                                : summary.totalVersions
-                                  ? "Open this deck to compare versions, review parser evidence, and keep logging games into the active build."
-                                  : "Add a first version so this deck can become a real testing experiment."}
-                            </p>
-                          </div>
-                          <p className="text-xs leading-5 text-[#94A3B8]/62 sm:max-w-[280px] sm:text-right">
-                            {summary.buildFailed
-                              ? "One saved version needs review, but the deck is still accessible."
-                              : localListDetail}
-                          </p>
                         </div>
                       </div>
                     </article>

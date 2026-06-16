@@ -401,9 +401,9 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
           </div>
         ) : null}
 
-        <form action="/matches" className={`p-3 sm:p-4 ${glassPanel}`}>
-          <div className="grid gap-3 min-[430px]:grid-cols-2 xl:grid-cols-6">
-            <div className="flex flex-col gap-2">
+        <form action="/matches" className={`p-3 ${glassPanel}`}>
+          <div className="grid gap-2 min-[430px]:grid-cols-2 lg:grid-cols-[1fr_1fr_1.5fr_1fr]">
+            <div className="flex flex-col gap-1.5">
               <label htmlFor="deck_id" className={label}>
                 Deck
               </label>
@@ -421,12 +421,9 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                 ))}
               </select>
             </div>
-            <div className="flex flex-col gap-2">
-              <label
-                htmlFor="deck_version_id"
-                className={label}
-              >
-                Deck version
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="deck_version_id" className={label}>
+                Version
               </label>
               <select
                 id="deck_version_id"
@@ -443,7 +440,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                 ))}
               </select>
             </div>
-            <div className="flex flex-col gap-2 md:col-span-2 xl:col-span-2">
+            <div className="flex flex-col gap-1.5">
               <ArchetypePicker
                 id="opponent_archetype"
                 name="opponent_archetype"
@@ -455,7 +452,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                 listMaxHeightClassName="max-h-40"
               />
             </div>
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-1.5">
               <label htmlFor="result" className={label}>
                 Result
               </label>
@@ -471,60 +468,57 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                 <option value="tie">Tie</option>
               </select>
             </div>
-            <div className="flex flex-col gap-2">
-              <label
-                htmlFor="start_date"
-                className={label}
-              >
-                From
-              </label>
-              <input
-                id="start_date"
-                name="start_date"
-                type="date"
-                defaultValue={params.start_date ?? ""}
-                className={inputH10}
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <label htmlFor="end_date" className={label}>
-                To
-              </label>
-              <input
-                id="end_date"
-                name="end_date"
-                type="date"
-                defaultValue={params.end_date ?? ""}
-                className={inputH10}
-              />
-            </div>
-            <div className="flex flex-col gap-2 min-[430px]:col-span-2 sm:flex-row xl:col-span-2 xl:items-end">
-              <button
-                type="submit"
-                className={primaryButton}
-              >
-                Apply filters
-              </button>
-              <Link
-                href="/matches"
-                className={secondaryButton}
-              >
-                Clear
-              </Link>
-            </div>
-            {sessionCoach ? (
-              <label className={`${premiumInset} flex min-h-11 items-center gap-2 px-3 text-sm font-medium text-[#F8FAFC] min-[430px]:col-span-2 xl:col-span-6`}>
-                <input
-                  type="checkbox"
-                  name="mission_only"
-                  value="1"
-                  defaultChecked={missionOnly}
-                  className="h-4 w-4 rounded border-white/20 accent-[#F5C84C]"
-                />
-                Show games that match the current focus
-              </label>
-            ) : null}
           </div>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <button type="submit" className={primaryButton}>
+              Apply filters
+            </button>
+            <Link href="/matches" className={secondaryButton}>
+              Clear
+            </Link>
+          </div>
+          <details
+            className="mt-2"
+            {...((params.start_date || params.end_date || missionOnly) ? { open: true } : {})}
+          >
+            <summary className="cursor-pointer select-none text-xs font-semibold text-[#94A3B8]/72 hover:text-[#F8FAFC]">
+              Advanced filters
+            </summary>
+            <div className="mt-3 grid gap-2 min-[430px]:grid-cols-2 lg:grid-cols-3">
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="start_date" className={label}>From</label>
+                <input
+                  id="start_date"
+                  name="start_date"
+                  type="date"
+                  defaultValue={params.start_date ?? ""}
+                  className={inputH10}
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="end_date" className={label}>To</label>
+                <input
+                  id="end_date"
+                  name="end_date"
+                  type="date"
+                  defaultValue={params.end_date ?? ""}
+                  className={inputH10}
+                />
+              </div>
+              {sessionCoach ? (
+                <label className={`${premiumInset} flex min-h-11 items-center gap-2 px-3 text-sm font-medium text-[#F8FAFC]`}>
+                  <input
+                    type="checkbox"
+                    name="mission_only"
+                    value="1"
+                    defaultChecked={missionOnly}
+                    className="h-4 w-4 rounded border-white/20 accent-[#F5C84C]"
+                  />
+                  Current focus only
+                </label>
+              ) : null}
+            </div>
+          </details>
         </form>
 
         {!coachMatchRows.length ? (

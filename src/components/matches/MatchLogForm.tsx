@@ -1101,27 +1101,6 @@ export function MatchLogForm({
 
   return (
     <div className="mt-5 grid gap-4">
-      {sessionCoach && !wasSuccessful ? (
-        <section className="rounded-[16px] bg-[#07111F]/28 p-2.5 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.08)] sm:rounded-[22px] sm:p-3.5">
-          <div className="flex flex-col gap-2.5 sm:flex-row sm:items-start sm:justify-between">
-            <div className="min-w-0">
-              <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
-                Current focus
-              </p>
-              <p className="mt-1 text-[15px] font-semibold text-[#F8FAFC] sm:text-lg">
-                {sessionCoach.missionTitle}
-              </p>
-              <p className="mt-1 text-xs leading-5 text-[#94A3B8]/72 sm:text-sm">
-                {sessionCoach.nextAction}
-              </p>
-            </div>
-            <div className="rounded-lg bg-[#0B1020]/42 px-2.5 py-1 text-[11px] font-semibold text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
-              {sessionCoach.missionProgress}/{sessionCoach.missionTargetCount} games
-            </div>
-          </div>
-        </section>
-      ) : null}
-
       <form
         action={formAction}
       className={`w-full max-w-full min-w-0 overflow-x-hidden p-2.5 sm:p-5 ${glassPanelStrong}`}
@@ -2189,6 +2168,26 @@ export function MatchLogForm({
           ) : null}
         </div>
       </form>
+      {sessionCoach && !wasSuccessful ? (
+        <section className="rounded-[16px] bg-[#07111F]/28 p-2.5 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.08)] sm:rounded-[22px] sm:p-3.5">
+          <div className="flex flex-col gap-2.5 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0">
+              <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
+                Current focus
+              </p>
+              <p className="mt-1 text-[15px] font-semibold text-[#F8FAFC] sm:text-lg">
+                {sessionCoach.missionTitle}
+              </p>
+              <p className="mt-1 text-xs leading-5 text-[#94A3B8]/72 sm:text-sm">
+                {sessionCoach.nextAction}
+              </p>
+            </div>
+            <div className="rounded-lg bg-[#0B1020]/42 px-2.5 py-1 text-[11px] font-semibold text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+              {sessionCoach.missionProgress}/{sessionCoach.missionTargetCount} games
+            </div>
+          </div>
+        </section>
+      ) : null}
     </div>
   );
 }
