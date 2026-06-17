@@ -284,8 +284,8 @@ export default async function Home() {
       </header>
 
       <section className="relative px-4 pb-12 pt-9 sm:px-6 sm:pb-16 sm:pt-10">
-        <div className="mx-auto grid max-w-[1400px] gap-8 xl:gap-9 2xl:gap-10 lg:grid-cols-[1fr_1fr] lg:items-center">
-          <div className="relative min-w-0 overflow-hidden rounded-[30px] bg-[linear-gradient(180deg,rgba(16,26,45,0.95),rgba(8,17,31,0.90))] p-5 shadow-[0_24px_62px_rgba(0,0,0,0.28),inset_0_0_0_1px_rgba(148,163,184,0.12),inset_0_1px_0_rgba(255,255,255,0.03)] backdrop-blur sm:p-6 lg:px-9 lg:py-8 xl:px-10 xl:py-9">
+        <div className="mx-auto grid max-w-[1400px] gap-8 xl:gap-9 2xl:gap-10 lg:grid-cols-[1fr_1fr] lg:items-start">
+          <div className="relative min-w-0 overflow-hidden rounded-[30px] bg-[linear-gradient(180deg,rgba(16,26,45,0.95),rgba(8,17,31,0.90))] p-5 shadow-[0_24px_62px_rgba(0,0,0,0.28),inset_0_0_0_1px_rgba(148,163,184,0.12),inset_0_1px_0_rgba(255,255,255,0.03)] backdrop-blur sm:p-6 lg:p-8 xl:p-9">
             <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.05),transparent_22%,rgba(79,140,255,0.04)_46%,rgba(245,200,76,0.035)_68%,transparent_84%)]" />
             <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,rgba(79,140,255,0.28),rgba(255,255,255,0.08),rgba(245,200,76,0.22))]" />
             <div className="pointer-events-none absolute -left-10 -top-10 size-36 rounded-full bg-[#4F8CFF]/[0.12] blur-3xl" />
