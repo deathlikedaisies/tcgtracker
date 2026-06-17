@@ -42,43 +42,42 @@ export default function DemoMatchupsPage() {
       </section>
 
       <section className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
-        <article className="rounded-[22px] bg-[#2A1320]/84 p-4 shadow-[0_20px_56px_rgba(244,63,94,0.12),inset_0_0_0_1px_rgba(244,63,94,0.26)] backdrop-blur sm:p-5">
+        <article className="rounded-[22px] bg-[#2A1320]/84 p-3 shadow-[0_20px_56px_rgba(244,63,94,0.12),inset_0_0_0_1px_rgba(244,63,94,0.26)] backdrop-blur sm:p-4">
           <p className="text-xs font-semibold uppercase tracking-[0.1em] text-rose-200">
             Actionable leak
           </p>
-          <div className="mt-3 flex items-center gap-3">
-            <ArchetypeSprites archetype={biggestLeak.archetype} size="md" />
-            <div>
-              <h2 className="text-3xl font-bold text-[#F8FAFC]">{biggestLeak.archetype}</h2>
-              <p className="text-sm text-rose-100/78">
-                {formatMatchRecord(
-                  biggestLeak.wins,
-                  biggestLeak.losses,
-                  biggestLeak.ties
-                )}, {biggestLeak.winRate}% win rate
-              </p>
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-3">
+              <ArchetypeSprites archetype={biggestLeak.archetype} size="md" />
+              <div className="min-w-0">
+                <h2 className="text-2xl font-bold text-[#F8FAFC]">{biggestLeak.archetype}</h2>
+                <p className="text-sm text-rose-100/78">
+                  {formatMatchRecord(
+                    biggestLeak.wins,
+                    biggestLeak.losses,
+                    biggestLeak.ties
+                  )}, {biggestLeak.winRate}% win rate
+                </p>
+              </div>
+            </div>
+            <span className={`shrink-0 rounded-full px-2 py-1 text-xs font-semibold ${getConfidenceTone(biggestLeak.games.length)}`}>
+              {getConfidenceLabel(biggestLeak.games.length)}
+            </span>
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <div className="flex items-center gap-2 rounded-[12px] bg-[#0B1020]/42 px-3 py-1.5">
+              <span className="text-xs text-rose-100/70">First</span>
+              <span className="text-sm font-bold text-[#F8FAFC]">{pct(biggestLeak.firstWins, biggestLeak.firstGames)}%</span>
+            </div>
+            <div className="flex items-center gap-2 rounded-[12px] bg-[#0B1020]/42 px-3 py-1.5">
+              <span className="text-xs text-rose-100/70">Second</span>
+              <span className="text-sm font-bold text-[#F43F5E]">{pct(biggestLeak.secondWins, biggestLeak.secondGames)}%</span>
+            </div>
+            <div className="flex items-center gap-2 rounded-[12px] bg-[#0B1020]/42 px-3 py-1.5">
+              <span className="text-xs text-rose-100/70">Samples</span>
+              <span className="text-sm font-bold text-[#F8FAFC]">{biggestLeak.games.length}</span>
             </div>
           </div>
-          <span className={`mt-4 inline-flex rounded-full px-2 py-1 text-xs font-semibold ${getConfidenceTone(biggestLeak.games.length)}`}>
-            {getConfidenceLabel(biggestLeak.games.length)}
-          </span>
-          <div className="mt-5 grid gap-2 sm:grid-cols-2">
-            <div className="rounded-[16px] bg-[#0B1020]/42 p-3">
-              <p className="text-xs text-rose-100/70">Going first</p>
-              <p className="text-2xl font-bold text-[#F8FAFC]">
-                {pct(biggestLeak.firstWins, biggestLeak.firstGames)}%
-              </p>
-            </div>
-            <div className="rounded-[16px] bg-[#0B1020]/42 p-3">
-              <p className="text-xs text-rose-100/70">Going second</p>
-              <p className="text-2xl font-bold text-[#F43F5E]">
-                {pct(biggestLeak.secondWins, biggestLeak.secondGames)}%
-              </p>
-            </div>
-          </div>
-          <p className="mt-4 text-sm leading-6 text-rose-100/82">
-            Actionable leak means this matchup has enough games to test deliberately before chasing noisier warnings.
-          </p>
         </article>
 
         <article className={cardLarge}>
@@ -104,7 +103,7 @@ export default function DemoMatchupsPage() {
           <div>
             <h2 className="text-xl font-bold text-[#F8FAFC]">Watchlist</h2>
             <p className="text-sm leading-6 text-[#94A3B8]/76">
-              Low-sample matchups that look scary but need more games before becoming a mission.
+              Low-sample matchups that look scary but need more games before becoming an action plan.
             </p>
           </div>
           <span className="rounded-full bg-[#F5C84C]/12 px-2 py-1 text-xs font-semibold text-[#F5C84C]">

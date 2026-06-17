@@ -27,7 +27,7 @@ type FilterKey =
   | "bench pressure";
 
 const filters: { key: FilterKey; label: string }[] = [
-  { key: "mission", label: "Current mission" },
+  { key: "mission", label: "Current focus" },
   { key: "losses", label: "Losses only" },
   { key: "review", label: "Review-tagged" },
   { key: "greninja", label: "Mega Greninja" },
@@ -117,7 +117,7 @@ export function DemoMatchesReview() {
       <section className={pageHeaderCard}>
         <div>
           <p className="text-sm font-semibold text-[#4F8CFF]">Review mode</p>
-          <h1 className={pageTitle}>Mission match review</h1>
+          <h1 className={pageTitle}>Match review</h1>
           <p className={pageCopy}>
             Start with the games that explain the current leak, then widen into the full seeded archive.
           </p>
@@ -141,7 +141,7 @@ export function DemoMatchesReview() {
                     Mega Greninja going second
                   </h2>
                   <p className="text-sm leading-6 text-[#94A3B8]/78">
-                    Current mission from the demo coaching loop.
+                    Current focus from the demo coaching loop.
                   </p>
                 </div>
               </div>
@@ -257,7 +257,7 @@ export function DemoMatchesReview() {
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     {missionGame ? (
                       <span className="rounded-full bg-[#F5C84C]/14 px-1.5 py-0.5 text-[11px] font-semibold text-[#F5C84C]">
-                        Mission game
+                        Focus game
                       </span>
                     ) : null}
                     {match.tags.includes("review") ? (
