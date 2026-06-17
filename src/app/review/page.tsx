@@ -184,31 +184,35 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
     redirect("/login");
   }
 
-  const { data: decks, error: decksError } = await supabase
-    .from("decks")
-    .select("id, name, deck_versions(id, name, is_active)")
-    .eq("user_id", user.id)
-    .order("name", { ascending: true })
-    .order("is_active", {
-      referencedTable: "deck_versions",
-      ascending: false,
-    })
-    .order("name", {
-      referencedTable: "deck_versions",
-      ascending: true,
-    });
+  const [
+    { data: decks, error: decksError },
+    { data: matches, error: matchesError },
+  ] = await Promise.all([
+    supabase
+      .from("decks")
+      .select("id, name, deck_versions(id, name, is_active)")
+      .eq("user_id", user.id)
+      .order("name", { ascending: true })
+      .order("is_active", {
+        referencedTable: "deck_versions",
+        ascending: false,
+      })
+      .order("name", {
+        referencedTable: "deck_versions",
+        ascending: true,
+      }),
+    supabase
+      .from("matches")
+      .select(
+        "id, deck_version_id, opponent_archetype, result, went_first, event_type, played_at, metadata, deck_versions(id, name, is_active, deck_id, decks(id, name)), match_tags(tag)"
+      )
+      .eq("user_id", user.id)
+      .order("played_at", { ascending: false }),
+  ]);
 
   if (decksError) {
     throw new Error(decksError.message);
   }
-
-  const { data: matches, error: matchesError } = await supabase
-    .from("matches")
-    .select(
-      "id, deck_version_id, opponent_archetype, result, went_first, event_type, played_at, metadata, deck_versions(id, name, is_active, deck_id, decks(id, name)), match_tags(tag)"
-    )
-    .eq("user_id", user.id)
-    .order("played_at", { ascending: false });
 
   if (matchesError) {
     throw new Error(matchesError.message);

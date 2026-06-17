@@ -89,23 +89,29 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  const { data: decks, error: decksError } = await supabase
-    .from("decks")
-    .select("id, name, archetype, created_at, deck_versions(id, name, is_active)")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: false });
+  const [
+    { data: decks, error: decksError },
+    { data: matches, error: matchesError },
+    ownProfile,
+  ] = await Promise.all([
+    supabase
+      .from("decks")
+      .select("id, name, archetype, created_at, deck_versions(id, name, is_active)")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("matches")
+      .select(
+        "id, deck_version_id, opponent_archetype, result, went_first, event_type, played_at, metadata, match_tags(tag), deck_versions(name)"
+      )
+      .eq("user_id", user.id)
+      .order("played_at", { ascending: false }),
+    getOwnProfile(user.id),
+  ]);
 
   if (decksError) {
     throw new Error(decksError.message);
   }
-
-  const { data: matches, error: matchesError } = await supabase
-    .from("matches")
-    .select(
-      "id, deck_version_id, opponent_archetype, result, went_first, event_type, played_at, metadata, match_tags(tag), deck_versions(name)"
-    )
-    .eq("user_id", user.id)
-    .order("played_at", { ascending: false });
 
   if (matchesError) {
     throw new Error(matchesError.message);
@@ -113,25 +119,23 @@ export default async function DashboardPage() {
 
   const matchRows = (matches ?? []) as unknown as MatchRow[];
   const deckRows = (decks ?? []) as unknown as DeckRow[];
-  const ownProfile = await getOwnProfile(user.id);
   const hasAnyDeckVersions = deckRows.some(
     (deck) => (deck.deck_versions ?? []).length > 0
   );
   const sessionCoach = buildSessionCoachInsight(matchRows as unknown as CoachMatch[]);
   const trainingProgress = buildTrainingProgressSummary(matchRows);
-  const filteredMatches = matchRows;
-  const totalRecord = getRecord(filteredMatches);
+  const totalRecord = getRecord(matchRows);
   const wentFirstRecord = getRecord(
-    filteredMatches.filter((match) => match.went_first === true),
+    matchRows.filter((match) => match.went_first === true),
     "N/A"
   );
   const wentSecondRecord = getRecord(
-    filteredMatches.filter((match) => match.went_first === false),
+    matchRows.filter((match) => match.went_first === false),
     "N/A"
   );
 
   const matchupSummary = Array.from(
-    filteredMatches
+    matchRows
       .reduce((summary, match) => {
         const current = summary.get(match.opponent_archetype) ?? [];
         current.push(match);
@@ -146,7 +150,7 @@ export default async function DashboardPage() {
     }))
     .sort((first, second) => second.matches - first.matches);
 
-  const recentMatches = filteredMatches.slice(0, 10).map((match) => ({
+  const recentMatches = matchRows.slice(0, 10).map((match) => ({
     id: match.id,
     playedAt: match.played_at,
     deckVersionName: getDeckVersionName(match),

@@ -223,25 +223,29 @@ export default async function DecksPage() {
     redirect("/login");
   }
 
-  const { data: decks, error } = await supabase
-    .from("decks")
-    .select(
-      "id, name, archetype, notes, created_at, deck_versions(id, name, decklist, notes, is_active, created_at)"
-    )
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: false });
+  const [
+    { data: decks, error },
+    { data: matches, error: matchesError },
+  ] = await Promise.all([
+    supabase
+      .from("decks")
+      .select(
+        "id, name, archetype, notes, created_at, deck_versions(id, name, decklist, notes, is_active, created_at)"
+      )
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("matches")
+      .select(
+        "deck_version_id, opponent_archetype, result, went_first, event_type, played_at, match_tags(tag)"
+      )
+      .eq("user_id", user.id)
+      .order("played_at", { ascending: false }),
+  ]);
 
   if (error) {
     throw new Error(error.message);
   }
-
-  const { data: matches, error: matchesError } = await supabase
-    .from("matches")
-    .select(
-      "deck_version_id, opponent_archetype, result, went_first, event_type, played_at, match_tags(tag)"
-    )
-    .eq("user_id", user.id)
-    .order("played_at", { ascending: false });
 
   if (matchesError) {
     throw new Error(matchesError.message);
@@ -294,24 +298,8 @@ export default async function DecksPage() {
       const activeVersionName = activeVersion
         ? safeText(activeVersion.name, "Untitled version")
         : "No active version set";
-      const listParseSummary = analysis
-        ? `${analysis.totalCards} cards · ${analysis.pokemonCount} Pokémon · ${analysis.trainerCount} Trainer · ${analysis.energyCount} Energy`
-        : parseError
-          ? "List could not be parsed"
-          : activeVersionId
-            ? "No list added"
-            : "Add a deck list to unlock local parsing";
-      const listParseDetail = parseError
-        ? parseError
-        : analysis
-          ? analysis.unresolved.length
-            ? `${analysis.unresolved.length} unresolved name${analysis.unresolved.length === 1 ? "" : "s"}. Open deck for legality details.`
-            : "Local list parsed. Open deck for legality details."
-          : activeVersionId
-            ? "This active version does not have a deck list yet."
-            : "Add a first version to start list checks.";
-      const resolvedListParseSummary = listParseSummary ? listHealth.summary : listHealth.summary;
-      const resolvedListParseDetail = listParseDetail ? listHealth.detail : listHealth.detail;
+      const resolvedListParseSummary = listHealth.summary;
+      const resolvedListParseDetail = listHealth.detail;
       const versionPrompt = !versions.length
         ? "Add first version"
         : !performance.total

@@ -203,7 +203,7 @@ function getHeadlineSignal(matchup: {
     return "Building signal";
   }
 
-  return matchup.winRateValue <= 45 ? "Actionable leak" : "Needs more games";
+  return matchup.winRateValue <= 45 ? "Priority weakness" : "Needs more games";
 }
 
 export default async function MatchupsPage({
@@ -219,22 +219,47 @@ export default async function MatchupsPage({
     redirect("/login");
   }
 
-  const { data: decks, error: decksError } = await supabase
-    .from("decks")
-    .select("id, name, archetype, deck_versions(id, name, is_active)")
-    .eq("user_id", user.id)
-    .order("name", { ascending: true })
-    .order("is_active", {
-      referencedTable: "deck_versions",
-      ascending: false,
-    })
-    .order("name", {
-      referencedTable: "deck_versions",
-      ascending: true,
-    });
+  const [
+    { data: decks, error: decksError },
+    { data: matches, error: matchesError },
+    { data: notes, error: notesError },
+  ] = await Promise.all([
+    supabase
+      .from("decks")
+      .select("id, name, archetype, deck_versions(id, name, is_active)")
+      .eq("user_id", user.id)
+      .order("name", { ascending: true })
+      .order("is_active", {
+        referencedTable: "deck_versions",
+        ascending: false,
+      })
+      .order("name", {
+        referencedTable: "deck_versions",
+        ascending: true,
+      }),
+    supabase
+      .from("matches")
+      .select(
+        "id, deck_version_id, opponent_archetype, result, went_first, event_type, played_at, match_tags(tag), deck_versions(id, deck_id)"
+      )
+      .eq("user_id", user.id),
+    supabase
+      .from("matchup_notes")
+      .select("id, your_archetype, opponent_archetype, notes, updated_at")
+      .eq("user_id", user.id)
+      .order("updated_at", { ascending: false }),
+  ]);
 
   if (decksError) {
     throw new Error(decksError.message);
+  }
+
+  if (matchesError) {
+    throw new Error(matchesError.message);
+  }
+
+  if (notesError) {
+    throw new Error(notesError.message);
   }
 
   const userDecks = (decks ?? []) as DeckWithVersions[];
@@ -264,27 +289,6 @@ export default async function MatchupsPage({
   ) as SortKey;
   const startDate = parseDateStart(params.start_date);
   const endDate = parseDateEnd(params.end_date);
-
-  const { data: matches, error: matchesError } = await supabase
-    .from("matches")
-    .select(
-      "id, deck_version_id, opponent_archetype, result, went_first, event_type, played_at, match_tags(tag), deck_versions(id, deck_id)"
-    )
-    .eq("user_id", user.id);
-
-  if (matchesError) {
-    throw new Error(matchesError.message);
-  }
-
-  const { data: notes, error: notesError } = await supabase
-    .from("matchup_notes")
-    .select("id, your_archetype, opponent_archetype, notes, updated_at")
-    .eq("user_id", user.id)
-    .order("updated_at", { ascending: false });
-
-  if (notesError) {
-    throw new Error(notesError.message);
-  }
 
   const matchRows = (matches ?? []) as unknown as MatchRow[];
   const sessionCoach = buildSessionCoachInsight(matchRows);

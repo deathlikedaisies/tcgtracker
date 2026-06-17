@@ -123,7 +123,9 @@ export async function logMatch(
   }
 
   revalidatePath("/dashboard");
+  revalidatePath("/matches");
   revalidatePath("/matchups");
+  revalidatePath("/review");
   revalidatePath("/matches/new");
   redirect(
     `/matches/new?success=1&opponent=${encodeURIComponent(

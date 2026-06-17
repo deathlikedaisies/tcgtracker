@@ -114,6 +114,7 @@ function revalidateMatchViews() {
   revalidatePath("/dashboard");
   revalidatePath("/matches");
   revalidatePath("/matchups");
+  revalidatePath("/review");
 }
 
 export async function deleteMatch(matchId: string) {
