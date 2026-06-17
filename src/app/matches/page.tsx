@@ -23,7 +23,6 @@ import {
   sectionTitle,
   subtlePill,
 } from "@/components/brand-styles";
-import { SessionCoachPanel } from "@/components/SessionCoachPanel";
 import { getArchetypeOptions } from "@/lib/archetypes";
 import {
   buildSessionCoachInsight,
@@ -392,7 +391,30 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
         />
 
         {sessionCoach ? (
-          <SessionCoachPanel insight={sessionCoach} />
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-[14px] bg-[#07111F]/32 px-3 py-2.5 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.10)]">
+            <div className="flex min-w-0 items-center gap-2.5">
+              <span className="inline-flex size-6 shrink-0 items-center justify-center rounded-[8px] bg-[#F5C84C]/12 text-[10px] font-bold text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
+                TC
+              </span>
+              <span className="shrink-0 text-[11px] font-semibold uppercase tracking-[0.1em] text-[#94A3B8]/62">
+                Focus
+              </span>
+              <span className="min-w-0 truncate text-sm font-semibold text-[#F8FAFC]">
+                {sessionCoach.missionTitle}
+              </span>
+            </div>
+            <div className="flex shrink-0 items-center gap-2">
+              <span className="text-xs text-[#94A3B8]/72">
+                {sessionCoach.missionProgress}/{sessionCoach.missionTargetCount} games
+              </span>
+              <Link
+                href="/matches/new"
+                className="rounded-md bg-[#4F8CFF]/14 px-2.5 py-1 text-xs font-semibold text-[#B8D1FF] transition hover:bg-[#4F8CFF]/24"
+              >
+                Keep logging
+              </Link>
+            </div>
+          </div>
         ) : null}
 
         {params.updated === "1" ? (

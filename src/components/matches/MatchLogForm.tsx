@@ -2127,12 +2127,12 @@ export function MatchLogForm({
                         (currentStep === 1 && !canAdvanceFromResult) ||
                         (currentStep === 2 && !canAdvanceFromTurnOrder)
                       }
-                      className={`${primaryButton} h-12 w-full sm:w-auto ${
+                      className={`h-12 w-full sm:w-auto ${
                         ((currentStep === 0 && !canAdvanceFromMatch) ||
                           (currentStep === 1 && !canAdvanceFromResult) ||
                           (currentStep === 2 && !canAdvanceFromTurnOrder))
-                          ? "cursor-not-allowed opacity-60"
-                          : ""
+                          ? `${secondaryButton} cursor-not-allowed opacity-50`
+                          : primaryButton
                       }`}
                     >
                       Next

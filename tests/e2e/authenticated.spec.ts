@@ -37,7 +37,7 @@ async function setProfileVisibility(
       `input[name="analytics_visibility"][value="${analyticsVisibility}"]`
     )
     .check({ force: true });
-  await page.getByRole("button", { name: /Save profile/i }).click();
+  await page.getByRole("button", { name: /Save profile/i }).first().click();
   await expect(page.locator("body")).toContainText("Profile saved.");
 }
 

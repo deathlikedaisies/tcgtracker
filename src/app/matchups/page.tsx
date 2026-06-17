@@ -519,38 +519,34 @@ export default async function MatchupsPage({
 
         {hasFilteredMatches ? (
           <section className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_340px]">
-            <article className={`p-4 ${glassPanelStrong}`}>
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <AlertTriangle className="size-5 text-[#F43F5E]" aria-hidden="true" />
+            <article className={`p-3 sm:p-4 ${glassPanelStrong}`}>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex min-w-0 flex-wrap items-center gap-2.5">
+                  <div className="flex items-center gap-1.5">
+                    <AlertTriangle className="size-4 text-[#F43F5E]" aria-hidden="true" />
                     <p className="text-xs font-semibold uppercase tracking-[0.1em] text-rose-200">
                       {getHeadlineSignal(worstMatchup)}
                     </p>
                   </div>
-                  <div className="mt-3 flex min-w-0 flex-wrap items-center gap-3">
-                    {worstMatchup ? (
-                      <ArchetypeSprites archetype={worstMatchup.opponentArchetype} />
-                    ) : null}
-                    <h2 className="text-2xl font-bold tracking-tight text-[#F8FAFC]">
-                      {worstMatchup?.opponentArchetype ?? "No matchup yet"}
-                    </h2>
-                  </div>
+                  {worstMatchup ? (
+                    <ArchetypeSprites archetype={worstMatchup.opponentArchetype} />
+                  ) : null}
+                  <h2 className="text-lg font-bold tracking-tight text-[#F8FAFC]">
+                    {worstMatchup?.opponentArchetype ?? "No matchup yet"}
+                  </h2>
                 </div>
-                <p className="text-4xl font-bold text-[#F43F5E]">
+                <p className="text-3xl font-bold text-[#F43F5E]">
                   {worstMatchup?.winRate ?? "0%"}
                 </p>
               </div>
-              <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                <div className={`${premiumInset} rounded-[16px] p-3`}>
-                  <p className="text-xs text-[#94A3B8]/72">Samples</p>
-                  <p className="mt-1 text-lg font-bold text-[#F8FAFC]">
-                    {worstMatchup?.matches ?? 0}
-                  </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <div className={`${premiumInset} flex items-center gap-2 rounded-[12px] px-3 py-1.5`}>
+                  <span className="text-xs text-[#94A3B8]/72">Samples</span>
+                  <span className="text-sm font-bold text-[#F8FAFC]">{worstMatchup?.matches ?? 0}</span>
                 </div>
-                <div className={`${premiumInset} rounded-[16px] p-3`}>
-                  <p className="text-xs text-[#94A3B8]/72">Record</p>
-                  <p className="mt-1 text-lg font-bold text-[#F8FAFC]">
+                <div className={`${premiumInset} flex items-center gap-2 rounded-[12px] px-3 py-1.5`}>
+                  <span className="text-xs text-[#94A3B8]/72">Record</span>
+                  <span className="text-sm font-bold text-[#F8FAFC]">
                     {worstMatchup
                       ? formatMatchRecord(
                           worstMatchup.wins,
@@ -558,15 +554,14 @@ export default async function MatchupsPage({
                           worstMatchup.ties
                         )
                       : "0-0"}
-                  </p>
+                  </span>
                 </div>
-                <div className={`${premiumInset} rounded-[16px] p-3`}>
-                  <p className="text-xs text-[#94A3B8]/72">Action</p>
-                  <p className="mt-1 text-sm font-semibold leading-5 text-[#F8FAFC]">
+                <div className={`${premiumInset} flex items-center rounded-[12px] px-3 py-1.5`}>
+                  <span className="text-xs font-semibold text-[#F8FAFC]">
                     {worstMatchup && worstMatchup.matches >= 15
                       ? "Keep logging"
                       : "Keep building signal"}
-                  </p>
+                  </span>
                 </div>
               </div>
             </article>

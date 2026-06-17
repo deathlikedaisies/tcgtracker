@@ -269,13 +269,20 @@ export function ProfileSettingsForm({
   const currentAnalyticsVisibility = values.analyticsVisibility;
 
   return (
-    <form action={formAction} className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start">
+    <form action={formAction} className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start">
+      <div className="flex items-center justify-between gap-3 rounded-[16px] bg-[#07111F]/40 px-4 py-2.5 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)] xl:col-span-2 xl:sticky xl:top-4 xl:z-10">
+        <p className="text-sm font-semibold text-[#F8FAFC]">
+          {mode === "setup" ? "Create your profile" : "Profile settings"}
+        </p>
+        <SaveProfileButton mode={mode} />
+      </div>
+
       <div className={`grid gap-4 p-4 sm:p-5 ${formSectionCard}`}>
         <div className="grid gap-4">
           <SectionHeader
             step="1"
             title="Player identity"
-            description="Set the public-facing basics of your SixPrizer player identity. Keep it private until you are ready."
+            description="Display name, handle, country, and bio. Keep private until ready to share."
           />
 
           <section className={`grid gap-4 p-4 sm:p-5 ${premiumInsetStrong}`}>
@@ -411,7 +418,7 @@ export function ProfileSettingsForm({
           <SectionHeader
             step="2"
             title="Competitive profile"
-            description="Give your profile the context that makes it feel like a serious testing identity, not just an account name."
+            description="Add your main deck, favorite archetype, and current testing focus."
           />
 
           <section className={`grid gap-4 p-4 sm:p-5 ${premiumInsetStrong}`}>
@@ -481,7 +488,7 @@ export function ProfileSettingsForm({
           <SectionHeader
             step="3"
             title="Privacy and sharing"
-            description="Decide what other players can discover and what level of testing signal is safe to share."
+            description="Control who can see your profile and how much testing data is visible."
           />
 
           <section className={`grid gap-5 p-4 sm:p-5 ${premiumInsetStrong}`}>
@@ -556,29 +563,14 @@ export function ProfileSettingsForm({
           </div>
         ) : null}
 
-        <section className={`grid gap-4 p-4 sm:p-5 ${premiumInsetStrong}`}>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#F5C84C]">
-              Final step
-            </p>
-            <h2 className={`mt-2 ${sectionTitle}`}>
-              {mode === "setup" ? "Create your SixPrizer profile" : "Save your profile"}
-            </h2>
-            <p className={pageCopy}>
-              {mode === "setup"
-                ? "You can keep everything private until you are ready to share."
-                : "You can keep everything private until you are ready to share, and public reports stay opt-in."}
-            </p>
-          </div>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className={sectionCopy}>
-              {mode === "setup"
-                ? "Create the identity first. You can refine the details after a few more testing sessions."
-                : "Saving here updates your identity and sharing controls without exposing raw match details."}
-            </p>
-            <SaveProfileButton mode={mode} />
-          </div>
-        </section>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <p className={sectionCopy}>
+            {mode === "setup"
+              ? "Everything stays private until you decide to share."
+              : "Raw match data and decklists are never exposed."}
+          </p>
+          <SaveProfileButton mode={mode} />
+        </div>
       </div>
 
       <aside className="grid gap-4 xl:sticky xl:top-6">

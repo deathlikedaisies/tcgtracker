@@ -521,7 +521,6 @@ export default async function DecksPage() {
                     Boolean(summary.activeVersion?.decklist?.trim())
                   );
 
-                  const localListSummary = listHealth.summary;
                   const versionPrompt = !summary.totalVersions
                     ? "Add first version"
                     : !summary.performance.total
@@ -593,12 +592,10 @@ export default async function DecksPage() {
                                   <span>No games yet</span>
                                 </>
                               )}
-                              {localListSummary ? (
-                                <>
-                                  <span className="text-[#94A3B8]/40">·</span>
-                                  <span className="text-xs">{localListSummary}</span>
-                                </>
-                              ) : null}
+                              <span className="text-[#94A3B8]/40">·</span>
+                              <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${listHealth.toneClass}`}>
+                                {listHealth.label}
+                              </span>
                             </div>
                           </div>
 
