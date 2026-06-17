@@ -44,7 +44,7 @@ export default function DemoMatchupsPage() {
       <section className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
         <article className="rounded-[22px] bg-[#2A1320]/84 p-3 shadow-[0_20px_56px_rgba(244,63,94,0.12),inset_0_0_0_1px_rgba(244,63,94,0.26)] backdrop-blur sm:p-4">
           <p className="text-xs font-semibold uppercase tracking-[0.1em] text-rose-200">
-            Actionable leak
+            Biggest weakness
           </p>
           <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
@@ -78,6 +78,9 @@ export default function DemoMatchupsPage() {
               <span className="text-sm font-bold text-[#F8FAFC]">{biggestLeak.games.length}</span>
             </div>
           </div>
+          <p className="mt-3 text-sm leading-6 text-rose-100/82">
+            This matchup has enough games to test on purpose. Play a few more games against it and check whether the same problem keeps causing losses.
+          </p>
         </article>
 
         <article className={cardLarge}>
@@ -103,7 +106,7 @@ export default function DemoMatchupsPage() {
           <div>
             <h2 className="text-xl font-bold text-[#F8FAFC]">Watchlist</h2>
             <p className="text-sm leading-6 text-[#94A3B8]/76">
-              Low-sample matchups that look scary but need more games before becoming an action plan.
+              These matchups look risky, but there are not enough games yet. Keep logging them before making changes.
             </p>
           </div>
           <span className="rounded-full bg-[#F5C84C]/12 px-2 py-1 text-xs font-semibold text-[#F5C84C]">
@@ -128,7 +131,7 @@ export default function DemoMatchupsPage() {
                 </span>
               </div>
               <p className="mt-3 text-sm leading-6 text-[#94A3B8]/76">
-                Early warning: {matchup.winRate}% over only {matchup.games.length} games. Add three more games before turning it into an action plan.
+                {matchup.winRate}% over only {matchup.games.length} games. Keep logging this matchup before making any list changes.
               </p>
             </article>
           ))}
