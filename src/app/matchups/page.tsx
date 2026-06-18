@@ -522,7 +522,7 @@ export default async function MatchupsPage({
         ) : null}
 
         {hasFilteredMatches ? (
-          <section className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_340px]">
+          <section className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start">
             <article className={`p-3 sm:p-4 ${glassPanelStrong}`}>
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex min-w-0 flex-wrap items-center gap-2.5">

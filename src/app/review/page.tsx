@@ -456,7 +456,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
           return {
             bestLabel: leader.name,
             explanation:
-              leader.openingRate !== null && runnerUp?.openingRate !== null
+              leader.openingRate !== null && runnerUp !== null && runnerUp.openingRate !== null
                 ? `${leader.name} is showing the cleanest starts so far at ${leader.openingRate}% good or great openings versus ${runnerUp.openingRate}% on ${runnerUp.name}. Matchup spread may still explain part of the difference.`
                 : `${leader.name} has the strongest sample so far, but keep logging before treating it as the clear winner.`,
           };
