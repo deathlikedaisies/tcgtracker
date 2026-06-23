@@ -10,11 +10,13 @@ export type AuthResult = {
   ok: boolean;
   message?: string;
   needsEmailConfirmation?: boolean;
+  emailNotConfirmed?: boolean;
 };
 
 export type AuthFormState = {
   message: string;
-  variant?: "error" | "success";
+  variant?: "error" | "success" | "email-unconfirmed";
+  emailForResend?: string;
 };
 
 const AUTH_MESSAGES = {
@@ -22,6 +24,8 @@ const AUTH_MESSAGES = {
     "Could not connect to SixPrizer. Check your connection and try again.",
   invalidCredentials: "Email or password is incorrect.",
   missingConfig: "SixPrizer is not configured correctly. Please contact support.",
+  emailNotConfirmed:
+    "Your email has not been confirmed yet. Please check your inbox and spam folder for the SixPrizer confirmation email, then try logging in again.",
   fallback: "Authentication failed. Please try again.",
 } as const;
 
@@ -80,7 +84,13 @@ export async function submitAuthForm(
 
     if (error) {
       logSafeAuthError("Supabase auth returned an error", error);
-      return { ok: false, message: normalizeAuthError(error) };
+      const lowerMsg = error.message?.toLowerCase() ?? "";
+      const emailNotConfirmed = lowerMsg.includes("email not confirmed");
+      return {
+        ok: false,
+        message: emailNotConfirmed ? AUTH_MESSAGES.emailNotConfirmed : normalizeAuthError(error),
+        emailNotConfirmed,
+      };
     }
 
     return {
@@ -128,6 +138,14 @@ export async function submitAuthFormAction(
   const result = await submitAuthForm(mode, email, password);
 
   if (!result.ok) {
+    if (result.emailNotConfirmed) {
+      return {
+        message: result.message ?? AUTH_MESSAGES.emailNotConfirmed,
+        variant: "email-unconfirmed",
+        emailForResend: email,
+      };
+    }
+
     return {
       message: result.message ?? AUTH_MESSAGES.fallback,
       variant: "error",
@@ -137,10 +155,31 @@ export async function submitAuthFormAction(
   if (result.needsEmailConfirmation) {
     // TODO: Supabase confirmation email subject/body and sender branding should be customized in the Supabase dashboard/custom SMTP.
     return {
-      message: "Check your email to confirm your account, then log in.",
+      message:
+        "Account created. Please check your inbox and spam folder for the SixPrizer confirmation email before logging in.",
       variant: "success",
     };
   }
 
   redirect("/dashboard");
+}
+
+export async function resendConfirmationEmail(
+  _prevState: AuthFormState,
+  formData: FormData
+): Promise<AuthFormState> {
+  const email = String(formData.get("email") ?? "").trim();
+
+  try {
+    const supabase = await createServerSupabaseClient();
+    await supabase.auth.resend({ type: "signup", email });
+  } catch {
+    // Return the same generic message regardless of outcome to prevent account enumeration.
+  }
+
+  return {
+    message:
+      "If an account exists for this email, we sent a new confirmation email. Please check your inbox and spam folder.",
+    variant: "success",
+  };
 }
