@@ -39,6 +39,7 @@ import {
   type MatchResult,
 } from "@/lib/match-types";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
+import { parseDateStart, parseDateEnd } from "@/lib/date-utils";
 import { deleteMatch } from "./actions";
 
 type MatchesPageProps = {
@@ -159,30 +160,6 @@ function getDeckName(match: Pick<MatchRow, "deck_versions">) {
   const resolvedDeck = Array.isArray(deck) ? deck[0] : deck;
 
   return resolvedDeck?.name ?? "Unknown deck";
-}
-
-function parseDateStart(value: string | undefined) {
-  if (!value) {
-    return null;
-  }
-
-  const date = new Date(`${value}T00:00:00.000Z`);
-  return Number.isNaN(date.getTime()) ? null : date;
-}
-
-function parseDateEnd(value: string | undefined) {
-  if (!value) {
-    return null;
-  }
-
-  const date = new Date(`${value}T00:00:00.000Z`);
-
-  if (Number.isNaN(date.getTime())) {
-    return null;
-  }
-
-  date.setUTCDate(date.getUTCDate() + 1);
-  return date;
 }
 
 function parsePage(value: string | undefined) {

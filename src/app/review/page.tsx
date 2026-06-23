@@ -23,6 +23,7 @@ import {
 } from "@/components/brand-styles";
 import {
   buildReviewAnalysis,
+  getMostCommonTag,
   type ReviewMatch,
 } from "@/lib/review-analysis";
 import {
@@ -123,23 +124,6 @@ function getToneClass(tone: "blue" | "gold" | "emerald" | "rose") {
   }
 
   return "bg-[#4F8CFF]/10 text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.16)]";
-}
-
-function getMostCommonTag(
-  matches: ReviewMatch[],
-  selector: (match: ReviewMatch) => string[]
-) {
-  const counts = new Map<string, number>();
-
-  matches.forEach((match) => {
-    selector(match).forEach((tag) => {
-      counts.set(tag, (counts.get(tag) ?? 0) + 1);
-    });
-  });
-
-  return (
-    Array.from(counts.entries()).sort((left, right) => right[1] - left[1])[0] ?? null
-  );
 }
 
 function formatShortDate(value: string) {

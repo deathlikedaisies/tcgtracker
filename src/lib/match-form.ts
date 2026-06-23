@@ -7,6 +7,7 @@ import {
   MATCH_START_QUALITY_OPTIONS,
 } from "@/lib/match-types";
 import { parseSelectedTags } from "@/lib/match-options";
+import { isOneOf } from "@/lib/type-guards";
 
 export function optionalText(value: FormDataEntryValue | null) {
   const text = String(value ?? "").trim();
@@ -28,13 +29,6 @@ export function parseWentFirstChoice(value: string | null | undefined) {
 function optionalArray(formData: FormData, fieldName: string) {
   const values = parseSelectedTags(formData.getAll(fieldName));
   return values.length ? values : undefined;
-}
-
-function isOneOf<T extends readonly string[]>(
-  value: string | null,
-  options: T
-): value is T[number] {
-  return Boolean(value) && options.includes(value as T[number]);
 }
 
 export function getGameContextEventType(context: MatchGameContext) {

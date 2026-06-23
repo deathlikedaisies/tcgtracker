@@ -1,3 +1,5 @@
+import { isOneOf } from "@/lib/type-guards";
+
 export type MatchResult = "win" | "loss" | "tie";
 export type MatchGameContext = "testing" | "competitive";
 export type MatchStartQuality = "great" | "good" | "okay" | "bad";
@@ -91,13 +93,6 @@ function cleanStringArray(value: unknown) {
   );
 
   return values.length ? values : undefined;
-}
-
-function isOneOf<T extends readonly string[]>(
-  value: unknown,
-  options: T
-): value is T[number] {
-  return typeof value === "string" && options.includes(value);
 }
 
 export function isMatchResult(

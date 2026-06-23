@@ -36,6 +36,7 @@ import {
 } from "@/lib/match-types";
 import { buildSessionCoachInsight } from "@/lib/session-coach";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
+import { parseDateStart, parseDateEnd } from "@/lib/date-utils";
 import { saveMatchupNote } from "./actions";
 
 type SortKey = "most_played" | "highest_win_rate" | "lowest_win_rate" | "az";
@@ -118,30 +119,6 @@ function formatUpdatedAt(value: string) {
     day: "numeric",
     year: "numeric",
   }).format(new Date(value));
-}
-
-function parseDateStart(value: string | undefined) {
-  if (!value) {
-    return null;
-  }
-
-  const date = new Date(`${value}T00:00:00.000Z`);
-  return Number.isNaN(date.getTime()) ? null : date;
-}
-
-function parseDateEnd(value: string | undefined) {
-  if (!value) {
-    return null;
-  }
-
-  const date = new Date(`${value}T00:00:00.000Z`);
-
-  if (Number.isNaN(date.getTime())) {
-    return null;
-  }
-
-  date.setUTCDate(date.getUTCDate() + 1);
-  return date;
 }
 
 function getMatchupCoachLabel(matchup: {

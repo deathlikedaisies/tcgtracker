@@ -95,7 +95,7 @@ function getPositiveTags(match: ReviewMatch) {
   return match.metadata.positive_tags ?? [];
 }
 
-function getMostCommonTag(
+export function getMostCommonTag(
   matches: ReviewMatch[],
   selector: (match: ReviewMatch) => string[]
 ) {
