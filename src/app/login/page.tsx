@@ -7,9 +7,24 @@ import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
-export default async function LoginPage() {
+type LoginPageProps = {
+  searchParams: Promise<{
+    signup?: string;
+  }>;
+};
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const { signup } = await searchParams;
   const authConfigured = Boolean(getOptionalSupabaseConfig());
   let shouldRedirect = false;
+  const initialMessage =
+    signup === "success"
+      ? {
+          message:
+            "Account created. Check your inbox and spam folder for the SixPrizer confirmation email before logging in.",
+          variant: "success" as const,
+        }
+      : null;
 
   if (authConfigured) {
     try {
@@ -47,7 +62,11 @@ export default async function LoginPage() {
             Access your SixPrizer dashboard.
           </p>
         </div>
-        <AuthForm mode="login" authConfigured={authConfigured} />
+        <AuthForm
+          mode="login"
+          authConfigured={authConfigured}
+          initialMessage={initialMessage}
+        />
       </section>
     </main>
   );

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import {
   ArrowRight,
@@ -26,6 +27,7 @@ import {
   logoOnDark,
   pageTitle,
   premiumInset,
+  primaryButton,
   statCard,
   secondaryButton,
   sectionCopy,
@@ -458,6 +460,47 @@ export default async function DeckDetailPage({
       interpretation,
     };
   });
+  const hasDeckVersions = deckVersions.length > 0;
+  const hasDeckGames = totalRecord.total > 0;
+  const needsFirstVersionSetup = !hasDeckVersions;
+  const needsFirstGame = hasDeckVersions && !hasDeckGames;
+  const showVersionEvidence = hasDeckVersions && hasDeckGames;
+  const activeVersionLogHref = activeVersion
+    ? `/matches/new?deck_version_id=${activeVersion.id}`
+    : `/matches/new?deck_id=${deck.id}`;
+  const deckHeaderStats = [
+    {
+      label: "Versions",
+      value: `${deckVersions.length} saved`,
+    },
+    {
+      label: "Games logged",
+      value: totalRecord.total ? `${totalRecord.total} games` : "No games yet",
+    },
+    {
+      label: hasDeckVersions ? "Active version" : "Next step",
+      value: hasDeckVersions
+        ? activeVersion
+          ? safeText(activeVersion.name, "Untitled version")
+          : "No active version"
+        : "Add your first version",
+    },
+    ...(hasDeckGames
+      ? [
+          {
+            label: "Best current read",
+            value: bestVersion
+              ? `${safeText(
+                  deckVersions.find((version) => version.id === bestVersion.versionId)?.name,
+                  "Version"
+                )} ${Math.round(
+                  (bestVersion.performance.wins / bestVersion.performance.total) * 100
+                )}%`
+              : `${totalWinRate}% overall`,
+          },
+        ]
+      : []),
+  ];
 
   return (
     <main className={appShell}>
@@ -508,48 +551,21 @@ export default async function DeckDetailPage({
                   </div>
                 </div>
 
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div className={`${statCard} p-3`}>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
-                      Versions
-                    </p>
-                    <p className="mt-2 text-sm font-semibold text-[#F8FAFC]">
-                      {deckVersions.length} saved
-                    </p>
-                  </div>
-                  <div className={`${statCard} p-3`}>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
-                      Games logged
-                    </p>
-                    <p className="mt-2 text-sm font-semibold text-[#F8FAFC]">
-                      {totalRecord.total ? `${totalRecord.total} games` : "No games yet"}
-                    </p>
-                  </div>
-                  <div className={`${statCard} p-3`}>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
-                      Active version
-                    </p>
-                    <p className="mt-2 text-sm font-semibold text-[#F8FAFC]">
-                      {activeVersion ? safeText(activeVersion.name, "Untitled version") : "No active version"}
-                    </p>
-                  </div>
-                  <div className={`${statCard} p-3`}>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
-                      Best current read
-                    </p>
-                    <p className="mt-2 text-sm font-semibold text-[#F8FAFC]">
-                      {bestVersion
-                        ? `${safeText(
-                            deckVersions.find((version) => version.id === bestVersion.versionId)?.name,
-                            "Version"
-                          )} ${Math.round(
-                            (bestVersion.performance.wins / bestVersion.performance.total) * 100
-                          )}%`
-                        : totalRecord.total
-                          ? `${totalWinRate}% overall`
-                          : "Needs more data"}
-                    </p>
-                  </div>
+                <div
+                  className={`grid gap-3 ${
+                    deckHeaderStats.length > 3 ? "sm:grid-cols-2" : ""
+                  }`}
+                >
+                  {deckHeaderStats.map((stat) => (
+                    <div key={stat.label} className={`${statCard} p-3`}>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                        {stat.label}
+                      </p>
+                      <p className="mt-2 text-sm font-semibold text-[#F8FAFC]">
+                        {stat.value}
+                      </p>
+                    </div>
+                  ))}
                 </div>
               </div>
             </section>
@@ -566,9 +582,9 @@ export default async function DeckDetailPage({
             </div>
           ) : null}
 
-          {sessionCoach ? <SessionCoachPanel insight={sessionCoach} /> : null}
+          {sessionCoach && hasDeckGames ? <SessionCoachPanel insight={sessionCoach} /> : null}
 
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
+          <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-start">
             <section id="versions" className="grid gap-4 scroll-mt-8">
               <div className={`p-4 ${glassPanel}`}>
                 <div className="flex items-start gap-3">
@@ -578,14 +594,17 @@ export default async function DeckDetailPage({
                   <div>
                     <h2 className={sectionTitle}>Test versions</h2>
                     <p className={`mt-1 ${sectionCopy}`}>
-                      {needsPrimaryVersionSetup
-                        ? "Versions are what you log games with. Start by adding the build you actually want to test."
+                      {needsFirstVersionSetup
+                        ? "Start by adding the build you actually want to test."
+                        : needsFirstGame
+                          ? "You have a version saved. Log a few games before SixPrizer starts comparing builds."
                         : "Manual archetype sets deck identity. Auto-detection below shows version-specific parser evidence."}
                     </p>
                   </div>
                 </div>
               </div>
 
+              {showVersionEvidence ? (
               <div className={`p-5 ${glassPanelStrong}`}>
                 <div className="flex flex-col gap-4">
                   <div>
@@ -632,7 +651,7 @@ export default async function DeckDetailPage({
                     {versionEvidenceRowsWithInterpretation.map((row) => (
                       <div
                         key={row.versionId}
-                        className={`${premiumInset} grid gap-3 p-4 lg:grid-cols-[minmax(0,1fr)_repeat(4,minmax(0,140px))]`}
+                        className={`${premiumInset} grid gap-4 p-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]`}
                       >
                         <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
@@ -656,53 +675,75 @@ export default async function DeckDetailPage({
                             {row.interpretation}
                           </p>
                         </div>
-                        <div className={`${statCard} p-3`}>
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
-                            Games
-                          </p>
-                          <p className="mt-2 text-lg font-semibold text-[#F8FAFC]">
-                            {row.total}
-                          </p>
-                        </div>
-                        <div className={`${statCard} p-3`}>
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
-                            Win rate
-                          </p>
-                          <p className="mt-2 text-lg font-semibold text-[#F8FAFC]">
-                            {row.winRate !== null ? `${row.winRate}%` : "N/A"}
-                          </p>
-                        </div>
-                        <div className={`${statCard} p-3`}>
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
-                            Opening quality
-                          </p>
-                          <p className="mt-2 text-lg font-semibold text-[#F8FAFC]">
-                            {row.openingRate !== null ? `${row.openingRate}%` : "N/A"}
-                          </p>
-                          <p className="mt-1 text-[11px] text-[#94A3B8]/72">
-                            {row.openingKnown
-                              ? `${row.openingKnown} rated games`
-                              : "No opening ratings"}
-                          </p>
-                        </div>
-                        <div className={`${statCard} p-3`}>
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
-                            Sequencing quality
-                          </p>
-                          <p className="mt-2 text-lg font-semibold text-[#F8FAFC]">
-                            {row.sequencingRate !== null ? `${row.sequencingRate}%` : "N/A"}
-                          </p>
-                          <p className="mt-1 text-[11px] text-[#94A3B8]/72">
-                            {row.sequencingKnown
-                              ? `${row.sequencingKnown} rated games`
-                              : "No sequencing ratings"}
-                          </p>
+                        <div className="grid gap-3 min-[430px]:grid-cols-2">
+                          <div className={`${statCard} p-3`}>
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                              Games
+                            </p>
+                            <p className="mt-2 text-lg font-semibold text-[#F8FAFC]">
+                              {row.total}
+                            </p>
+                          </div>
+                          <div className={`${statCard} p-3`}>
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                              Win rate
+                            </p>
+                            <p className="mt-2 text-lg font-semibold text-[#F8FAFC]">
+                              {row.winRate !== null ? `${row.winRate}%` : "N/A"}
+                            </p>
+                          </div>
+                          <div className={`${statCard} p-3`}>
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                              Opening quality
+                            </p>
+                            <p className="mt-2 text-lg font-semibold text-[#F8FAFC]">
+                              {row.openingRate !== null ? `${row.openingRate}%` : "N/A"}
+                            </p>
+                            <p className="mt-1 text-[11px] text-[#94A3B8]/72">
+                              {row.openingKnown
+                                ? `${row.openingKnown} rated games`
+                                : "No opening ratings"}
+                            </p>
+                          </div>
+                          <div className={`${statCard} p-3`}>
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                              Sequencing quality
+                            </p>
+                            <p className="mt-2 text-lg font-semibold text-[#F8FAFC]">
+                              {row.sequencingRate !== null ? `${row.sequencingRate}%` : "N/A"}
+                            </p>
+                            <p className="mt-1 text-[11px] text-[#94A3B8]/72">
+                              {row.sequencingKnown
+                                ? `${row.sequencingKnown} rated games`
+                                : "No sequencing ratings"}
+                            </p>
+                          </div>
                         </div>
                       </div>
                     ))}
                   </div>
                 </div>
               </div>
+              ) : needsFirstGame ? (
+                <div className={`p-5 ${glassPanelStrong}`}>
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
+                        Before version analytics
+                      </p>
+                      <h3 className="mt-2 text-lg font-semibold text-[#F8FAFC]">
+                        Log a few games before SixPrizer can compare versions
+                      </h3>
+                      <p className="mt-2 text-sm leading-6 text-[#94A3B8]/74">
+                        You already have a version saved. The next useful step is to log the first few games with it so this page has real evidence to work from.
+                      </p>
+                    </div>
+                    <Link href={activeVersionLogHref} className={primaryButton}>
+                      Log first game
+                    </Link>
+                  </div>
+                </div>
+              ) : null}
 
               {needsPrimaryVersionSetup ? (
                 <div className={`p-5 sm:p-6 ${glassPanelStrong}`}>
@@ -761,6 +802,7 @@ export default async function DeckDetailPage({
                   const total = insight?.performance.total ?? 0;
                   const winRate = total ? Math.round((wins / total) * 100) : 0;
                   const canDeleteVersion = total === 0;
+                  const versionLogHref = `/matches/new?deck_version_id=${version.id}`;
 
                   return (
                     <article
@@ -795,6 +837,11 @@ export default async function DeckDetailPage({
                         </div>
 
                         <div className="flex flex-wrap gap-2">
+                          {needsFirstGame && version.is_active ? (
+                            <Link href={versionLogHref} className={primaryButton}>
+                              Log first game
+                            </Link>
+                          ) : null}
                           {!version.is_active ? (
                             <form action={markActive}>
                               <button
@@ -832,6 +879,128 @@ export default async function DeckDetailPage({
                         </div>
                       </div>
 
+                      {needsFirstGame ? (
+                        <div className="mt-4 grid gap-4">
+                          <div className={`${premiumInset} p-4`}>
+                            <p className="text-sm leading-6 text-[#D6E0F0]/82">
+                              Log a few games before SixPrizer can compare versions. For now, make sure the active build is correct and the parser summary looks sane.
+                            </p>
+                          </div>
+
+                          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                            <div className={`${statCard} p-3`}>
+                              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                                Status
+                              </p>
+                              <p className="mt-2 text-sm font-semibold text-[#F8FAFC]">
+                                {version.is_active ? "Active version" : "Saved version"}
+                              </p>
+                            </div>
+                            <div className={`${statCard} p-3`}>
+                              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                                List health
+                              </p>
+                              <p className="mt-2 text-sm font-semibold text-[#F8FAFC]">
+                                {normalizeDecklistUiText(listHealth.label)}
+                              </p>
+                            </div>
+                            <div className={`${statCard} p-3`}>
+                              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                                Next move
+                              </p>
+                              <p className="mt-2 text-sm font-semibold text-[#F8FAFC]">
+                                {version.is_active ? "Log first game" : "Make active or edit"}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="grid gap-4 xl:grid-cols-2">
+                            <div className={`${premiumInset} p-4`}>
+                              <div className="flex items-center gap-2">
+                                <Target className="size-4 text-[#F5C84C]" aria-hidden="true" />
+                                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#F5C84C]">
+                                  Auto-detected archetype
+                                </p>
+                              </div>
+                              {analysis?.suggestion.isClearSuggestion ? (
+                                <div className="mt-4 grid gap-3">
+                                  <div className="flex flex-wrap items-start justify-between gap-3">
+                                    <div className="flex min-w-0 items-center gap-3">
+                                      <ArchetypeSprites
+                                        archetype={analysis.suggestion.archetype}
+                                        className="shrink-0"
+                                      />
+                                      <div className="min-w-0">
+                                        <p className="truncate text-base font-semibold text-[#F8FAFC]">
+                                          {analysis.suggestion.archetype}
+                                        </p>
+                                        <p className="mt-1 text-xs text-[#94A3B8]/72">
+                                          Suggested archetype
+                                        </p>
+                                      </div>
+                                    </div>
+                                    <span
+                                      className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${getSuggestionBadgeTone(
+                                        analysis.suggestion.confidence
+                                      )}`}
+                                    >
+                                      {analysis.suggestion.confidenceLabel}
+                                    </span>
+                                  </div>
+                                  <p className="text-sm leading-6 text-[#94A3B8]/72">
+                                    {analysis.suggestion.reason}
+                                  </p>
+                                  <p className="text-xs text-[#94A3B8]/68">
+                                    These cards helped SixPrizer identify the deck. This is only a suggestion.
+                                  </p>
+                                </div>
+                              ) : parseError ? (
+                                <div className="mt-4">
+                                  <p className="text-base font-semibold text-[#F8FAFC]">
+                                    List could not be parsed
+                                  </p>
+                                  <p className="mt-2 text-sm leading-6 text-[#94A3B8]/72">
+                                    {parseError}
+                                  </p>
+                                </div>
+                              ) : (
+                                <div className="mt-4">
+                                  <p className="text-base font-semibold text-[#F8FAFC]">
+                                    No clear archetype detected
+                                  </p>
+                                  <p className="mt-2 text-sm leading-6 text-[#94A3B8]/72">
+                                    No clear archetype detected. You can still log games, but the deck family may need a manual check.
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+
+                            <div className={`${premiumInset} p-4`}>
+                              <div className="flex items-center gap-2">
+                                <ShieldCheck className="size-4 text-[#F5C84C]" aria-hidden="true" />
+                                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#F5C84C]">
+                                  List status
+                                </p>
+                              </div>
+                              <div className="mt-4 grid gap-3">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <span
+                                    className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${listHealth.toneClass}`}
+                                  >
+                                    {listHealth.label}
+                                  </span>
+                                  <span className="text-xs font-semibold uppercase tracking-[0.08em] text-[#94A3B8]/72">
+                                    {normalizeDecklistUiText(listHealth.summary)}
+                                  </span>
+                                </div>
+                                <p className="text-sm leading-6 text-[#94A3B8]/72">
+                                  {normalizeDecklistUiText(listHealth.detail)}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
                       <div className="mt-4 grid gap-4 xl:grid-cols-2">
                         <div className={`${premiumInset} p-4`}>
                           <div className="flex items-center gap-2">
@@ -904,7 +1073,10 @@ export default async function DeckDetailPage({
                                 </span>
                               </div>
                               <p className="text-sm leading-6 text-[#94A3B8]/72">
-                                Matched core cards: {analysis.suggestion.matchedCoreCards.join(", ")}
+                                {analysis.suggestion.reason}
+                              </p>
+                              <p className="text-xs text-[#94A3B8]/68">
+                                These cards helped SixPrizer identify the deck. This is only a suggestion.
                               </p>
                             </div>
                           ) : parseError ? (
@@ -1026,6 +1198,7 @@ export default async function DeckDetailPage({
                           )}
                         </div>
                       </div>
+                      )}
 
                       {version.notes ? (
                         <div className={`${premiumInset} mt-4 p-4`}>
@@ -1052,18 +1225,20 @@ export default async function DeckDetailPage({
                   );
                 })
               ) : (
-                <div className={emptyCard}>
-                  <h3 className="text-lg font-semibold text-[#F8FAFC]">
-                    No test versions yet.
-                  </h3>
-                  <p className={sectionCopy}>
-                    Add the first 60-card build above to unlock match logging, version comparison, and parser evidence.
-                  </p>
-                </div>
+                needsFirstVersionSetup ? null : (
+                  <div className={emptyCard}>
+                    <h3 className="text-lg font-semibold text-[#F8FAFC]">
+                      No test versions yet.
+                    </h3>
+                    <p className={sectionCopy}>
+                      Add the first 60-card build above to unlock match logging, version comparison, and parser evidence.
+                    </p>
+                  </div>
+                )
               )}
             </section>
 
-            <aside id="add-version" className="scroll-mt-6 lg:sticky lg:top-6">
+            <aside id="add-version" className="scroll-mt-6 xl:sticky xl:top-6">
               <div className="flex flex-col gap-4">
                 <div className={`p-4 ${glassPanel}`}>
                   <div className="flex items-start gap-3">
@@ -1104,7 +1279,7 @@ export default async function DeckDetailPage({
                   </div>
                 </form>
 
-                {!needsPrimaryVersionSetup ? (
+                {!needsFirstVersionSetup ? (
                   <DeckVersionForm
                     action={createVersion}
                     deckHref={`/decks/${deck.id}`}
@@ -1120,10 +1295,10 @@ export default async function DeckDetailPage({
                       </span>
                       <div>
                         <h3 className="text-base font-semibold text-[#F8FAFC]">
-                          Version setup is the next step
+                          Add the first version in the main panel
                         </h3>
                         <p className="mt-1 text-sm leading-6 text-[#94A3B8]/72">
-                          Use the main panel to add the build you want to log games with first. This side rail becomes the place to add extra versions after setup.
+                          Once the first build is saved, this side rail becomes the place to add extra versions.
                         </p>
                       </div>
                     </div>

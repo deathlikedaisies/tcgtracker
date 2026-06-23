@@ -19,6 +19,10 @@ import {
 type AuthFormProps = {
   mode: AuthMode;
   authConfigured?: boolean;
+  initialMessage?: {
+    message: string;
+    variant: AuthFormState["variant"];
+  } | null;
 };
 
 const missingConfigMessage =
@@ -38,7 +42,11 @@ function getTone(variant: AuthFormState["variant"]) {
   return toneError;
 }
 
-export function AuthForm({ mode, authConfigured = true }: AuthFormProps) {
+export function AuthForm({
+  mode,
+  authConfigured = true,
+  initialMessage = null,
+}: AuthFormProps) {
   const isLogin = mode === "login";
   const authAction = submitAuthFormAction.bind(null, mode, authConfigured);
   const [state, formAction, isSubmitting] = useActionState(
@@ -51,7 +59,12 @@ export function AuthForm({ mode, authConfigured = true }: AuthFormProps) {
   );
   const buttonLabel = isLogin ? "Log in" : "Create account";
   const pendingLabel = isLogin ? "Logging in..." : "Creating account...";
-  const displayedMessage = authConfigured ? state.message : missingConfigMessage;
+  const displayedMessage = authConfigured
+    ? state.message || initialMessage?.message || ""
+    : missingConfigMessage;
+  const displayedVariant = authConfigured
+    ? state.variant ?? initialMessage?.variant
+    : "error";
   const isUnconfirmed = state.variant === "email-unconfirmed";
 
   return (
@@ -109,7 +122,11 @@ export function AuthForm({ mode, authConfigured = true }: AuthFormProps) {
           </div>
         ) : null}
         {displayedMessage ? (
-          <p role="alert" aria-live="polite" className={getTone(authConfigured ? state.variant : "error")}>
+          <p
+            role={displayedVariant === "success" ? "status" : "alert"}
+            aria-live="polite"
+            className={getTone(displayedVariant)}
+          >
             {displayedMessage}
           </p>
         ) : null}

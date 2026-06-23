@@ -29,6 +29,16 @@ test.describe("public routes", () => {
     await expectNoAppError(page);
   });
 
+  test("login page shows the signup confirmation message", async ({ page }) => {
+    await page.goto("/login?signup=success");
+
+    await expectHeadingVisible(page, "Log in to SixPrizer");
+    await expect(page.locator("body")).toContainText(
+      "Account created. Check your inbox and spam folder for the SixPrizer confirmation email before logging in."
+    );
+    await expectNoAppError(page);
+  });
+
   test("signup page loads", async ({ page }) => {
     await page.goto("/signup");
 

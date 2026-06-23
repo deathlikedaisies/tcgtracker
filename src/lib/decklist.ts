@@ -496,10 +496,10 @@ function suggestArchetype(cards: ParsedDeckCard[]): ArchetypeSuggestion {
 
   const isClearSuggestion = topCandidate.confidence === "high" || topCandidate.confidence === "medium";
   const matchedCoreLine = topCandidate.matchedCoreCards.length
-    ? `Matched core cards: ${topCandidate.matchedCoreCards.join(", ")}.`
-    : "No matched core cards yet.";
+    ? `Matched cards: ${topCandidate.matchedCoreCards.join(", ")}.`
+    : "No matched cards yet.";
   const matchedSupportLine = topCandidate.matchedSupportCards.length
-    ? ` Support cards: ${topCandidate.matchedSupportCards.join(", ")}.`
+    ? ` Other matched cards: ${topCandidate.matchedSupportCards.join(", ")}.`
     : "";
 
   if (!isClearSuggestion) {

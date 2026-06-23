@@ -228,11 +228,7 @@ export async function submitAuthFormAction(
 
   if (result.needsEmailConfirmation) {
     // TODO: Supabase confirmation email subject/body and sender branding should be customized in the Supabase dashboard/custom SMTP.
-    return {
-      message:
-        "Account created. Please check your inbox and spam folder for the SixPrizer confirmation email before logging in.",
-      variant: "success",
-    };
+    redirect("/login?signup=success");
   }
 
   redirect("/dashboard");
