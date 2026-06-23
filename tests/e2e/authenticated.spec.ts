@@ -64,6 +64,64 @@ test.describe("authenticated routes", () => {
     });
   }
 
+  test("/matches/new requires quality before reason and reason before save", async ({
+    page,
+  }) => {
+    await page.goto("/matches/new");
+
+    await expectHeadingVisible(page, "Log a game");
+    await expect(page.locator("body")).toContainText(
+      /Match[\s\S]*Result[\s\S]*Turn order[\s\S]*Quality[\s\S]*Reason[\s\S]*More context/i
+    );
+
+    const continueButton = page.getByRole("button", { name: "Continue" });
+    await expect(continueButton).toBeDisabled();
+
+    const opponentSearch = page.getByLabel("Opponent deck");
+    await opponentSearch.fill("Mega");
+    await page.getByRole("button", { name: /Mega/i }).first().click();
+    await expect(continueButton).toBeEnabled();
+    await continueButton.click();
+
+    await page.getByRole("button", { name: "Win" }).click();
+    await page.getByRole("button", { name: "Continue" }).click();
+
+    await page.getByRole("button", { name: "Can't remember" }).click();
+    await page.getByRole("button", { name: "Continue" }).click();
+
+    await expect(page.locator("body")).toContainText(/Rate how the game felt/i);
+    const qualityContinue = page.getByRole("button", { name: "Continue" });
+    await expect(qualityContinue).toBeDisabled();
+
+    const startFieldset = page
+      .locator("fieldset")
+      .filter({ has: page.locator("legend", { hasText: /^Start$/ }) });
+    const openingFieldset = page
+      .locator("fieldset")
+      .filter({ has: page.locator("legend", { hasText: /^Opening hand$/ }) });
+    const sequencingFieldset = page
+      .locator("fieldset")
+      .filter({ has: page.locator("legend", { hasText: /^Sequencing$/ }) });
+
+    await startFieldset.getByRole("button", { name: "Good" }).click();
+    await openingFieldset.getByRole("button", { name: "Good" }).click();
+    await sequencingFieldset.getByRole("button", { name: "Good" }).click();
+    await expect(qualityContinue).toBeEnabled();
+    await qualityContinue.click();
+
+    await expect(page.locator("body")).toContainText(/What won you the game\?/i);
+    const saveNowButton = page.getByRole("button", { name: "Save now" }).first();
+    await expect(saveNowButton).toBeDisabled();
+
+    await page.getByRole("button", { name: /strong setup/i }).first().click();
+    await expect(saveNowButton).toBeEnabled();
+    await saveNowButton.click();
+
+    await page.waitForURL(/\/matches\/new\?success=1/, { timeout: 30000 });
+    await expect(page.locator("body")).toContainText(/Logged\./i);
+    await expectNoAppError(page);
+  });
+
   test("/matchups can create a persisted matchup report", async ({ page }) => {
     await page.goto("/matchups");
 

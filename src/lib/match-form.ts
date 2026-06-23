@@ -1,6 +1,7 @@
 import {
   type MatchGameContext,
   type MatchMetadata,
+  type MatchResult,
   MATCH_GAME_CONTEXT_OPTIONS,
   MATCH_OPENING_HAND_OPTIONS,
   MATCH_SEQUENCING_OPTIONS,
@@ -33,6 +34,32 @@ function optionalArray(formData: FormData, fieldName: string) {
 
 export function getGameContextEventType(context: MatchGameContext) {
   return context === "competitive" ? "tournament" : "testing";
+}
+
+export function hasRequiredQuality(metadata: MatchMetadata) {
+  return Boolean(
+    metadata.start_quality &&
+      metadata.opening_hand_quality &&
+      metadata.sequencing_quality
+  );
+}
+
+export function hasRequiredReasonTags(
+  result: MatchResult,
+  metadata: MatchMetadata
+) {
+  const issueCount = metadata.issue_tags?.length ?? 0;
+  const positiveCount = metadata.positive_tags?.length ?? 0;
+
+  if (result === "win") {
+    return positiveCount > 0;
+  }
+
+  if (result === "loss") {
+    return issueCount > 0;
+  }
+
+  return issueCount > 0 || positiveCount > 0;
 }
 
 export function buildMatchMetadataFromFormData(formData: FormData): MatchMetadata {

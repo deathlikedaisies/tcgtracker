@@ -131,8 +131,8 @@ const stepOrder = [
   { label: "Match", shortLabel: "1" },
   { label: "Result", shortLabel: "2" },
   { label: "Turn order", shortLabel: "3" },
-  { label: "Reason", shortLabel: "4" },
-  { label: "Quality", shortLabel: "5" },
+  { label: "Quality", shortLabel: "4" },
+  { label: "Reason", shortLabel: "5" },
   { label: "More context", shortLabel: "6" },
 ] as const;
 
@@ -1048,8 +1048,21 @@ export function MatchLogForm({
   const canAdvanceFromTurnOrder =
     wentFirst === "true" || wentFirst === "false" || wentFirst === "unknown";
   const canAdvanceFromResult = result === "win" || result === "loss" || result === "tie";
+  const canAdvanceFromQuality = Boolean(
+    startQuality && openingHandQuality && sequencingQuality
+  );
+  const canAdvanceFromReason =
+    result === "win"
+      ? positiveTags.length > 0
+      : result === "loss"
+        ? issueTags.length > 0
+        : issueTags.length > 0 || positiveTags.length > 0;
   const canQuickSave =
-    canAdvanceFromMatch && canAdvanceFromResult && canAdvanceFromTurnOrder;
+    canAdvanceFromMatch &&
+    canAdvanceFromResult &&
+    canAdvanceFromTurnOrder &&
+    canAdvanceFromQuality &&
+    canAdvanceFromReason;
   const blockedNextMessage =
     currentStep === 0 && !canAdvanceFromMatch
       ? "Choose an opponent deck to continue."
@@ -1057,6 +1070,14 @@ export function MatchLogForm({
         ? "Choose win, loss, or tie."
         : currentStep === 2 && !canAdvanceFromTurnOrder
           ? "Choose whether you went first, second, or can't remember."
+          : currentStep === 3 && !canAdvanceFromQuality
+            ? "Rate the start, opening hand, and sequencing before continuing."
+            : currentStep === 4 && !canAdvanceFromReason
+              ? result === "win"
+                ? "Add at least one positive reason before saving."
+                : result === "loss"
+                  ? "Add at least one issue reason before saving."
+                  : "Add at least one reason tag before saving."
           : null;
   const summaryChipClass =
     "inline-flex items-center rounded-full bg-[#0B1020]/72 px-2.5 py-1 text-[11px] font-semibold text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]";
@@ -1067,7 +1088,7 @@ export function MatchLogForm({
       </p>
       <p className="mt-2 text-sm font-medium leading-6 text-[#F8FAFC]">
         {readySummary ||
-          "Choose a matchup, result, and turn order to start the quick log."}
+          "Choose a matchup, result, turn order, quality, and reason to complete the quick log."}
       </p>
       <div className="mt-3 flex flex-wrap gap-1.5">
         <span className={summaryChipClass}>
@@ -1607,17 +1628,17 @@ export function MatchLogForm({
                     </div>
                   ) : null}
 
-                  {currentStep === 4 ? (
+                  {currentStep === 3 ? (
                     <div className="grid gap-3.5 sm:gap-4">
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
-                          Quick quality
+                          Quality
                         </p>
                         <h2 className="mt-2 text-[1.35rem] font-semibold leading-tight text-[#F8FAFC] sm:text-2xl">
-                          Add quality if you remember it
+                          Rate how the game felt
                         </h2>
                         <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
-                          This is optional. Add it now if the game is still fresh, or save without it.
+                          Rate the start, opening hand, and sequencing before moving on.
                         </p>
                       </div>
                       <div className="grid gap-2.5 sm:gap-3">
@@ -1633,11 +1654,7 @@ export function MatchLogForm({
                               <button
                                 key={value}
                                 type="button"
-                                onClick={() =>
-                                  setStartQuality(
-                                    startQuality === value ? undefined : value
-                                  )
-                                }
+                                onClick={() => setStartQuality(value)}
                                 aria-pressed={isSelected}
                                 className={`${mediumToggleClass} ${
                                   isSelected ? getSelectedToneClass(tone) : ""
@@ -1665,13 +1682,7 @@ export function MatchLogForm({
                               <button
                                 key={value}
                                 type="button"
-                                onClick={() =>
-                                  setOpeningHandQuality(
-                                    openingHandQuality === value
-                                      ? undefined
-                                        : value
-                                  )
-                                }
+                                onClick={() => setOpeningHandQuality(value)}
                                 aria-pressed={isSelected}
                                 className={`${mediumToggleClass} ${
                                   isSelected ? getSelectedToneClass(tone) : ""
@@ -1699,13 +1710,7 @@ export function MatchLogForm({
                               <button
                                 key={value}
                                 type="button"
-                                onClick={() =>
-                                  setSequencingQuality(
-                                    sequencingQuality === value
-                                      ? undefined
-                                        : value
-                                  )
-                                }
+                                onClick={() => setSequencingQuality(value)}
                                 aria-pressed={isSelected}
                                 className={`${mediumToggleClass} ${
                                   isSelected ? getSelectedToneClass(tone) : ""
@@ -1725,7 +1730,7 @@ export function MatchLogForm({
                     </div>
                   ) : null}
 
-                  {currentStep === 3 ? (
+                  {currentStep === 4 ? (
                     <div className="grid gap-3.5 sm:gap-4">
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
@@ -1735,7 +1740,7 @@ export function MatchLogForm({
                           {primaryTagTitle}
                         </h2>
                         <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
-                          Add one reason, or skip and save.
+                          Add at least one reason tag before saving this game.
                         </p>
                       </div>
                       <fieldset className={subCardClass}>
@@ -2085,11 +2090,11 @@ export function MatchLogForm({
                   </p>
                   <p className="mt-1.5 text-sm font-medium leading-5 text-[#F8FAFC] sm:mt-2 sm:leading-6">
                     {readySummary ||
-                      "Choose matchup, result, and turn order to save quickly."}
+                      "Choose matchup, result, turn order, quality, and reason to save."}
                   </p>
                   <p className="mt-1.5 text-sm text-[#94A3B8]/76 sm:mt-2">
                     {canQuickSave
-                      ? "You can save now, or add optional detail first."
+                      ? "You can save now, or add optional context first."
                       : "This will update your matchup trends."}
                   </p>
                 </div>
@@ -2114,7 +2119,7 @@ export function MatchLogForm({
                     ) : null}
                   </div>
 
-                  {currentStep < 3 ? (
+                  {currentStep < 4 ? (
                     <button
                       type="button"
                       onClick={() =>
@@ -2125,17 +2130,19 @@ export function MatchLogForm({
                       disabled={
                         (currentStep === 0 && !canAdvanceFromMatch) ||
                         (currentStep === 1 && !canAdvanceFromResult) ||
-                        (currentStep === 2 && !canAdvanceFromTurnOrder)
+                        (currentStep === 2 && !canAdvanceFromTurnOrder) ||
+                        (currentStep === 3 && !canAdvanceFromQuality)
                       }
                       className={`h-12 w-full sm:w-auto ${
                         ((currentStep === 0 && !canAdvanceFromMatch) ||
                           (currentStep === 1 && !canAdvanceFromResult) ||
-                          (currentStep === 2 && !canAdvanceFromTurnOrder))
+                          (currentStep === 2 && !canAdvanceFromTurnOrder) ||
+                          (currentStep === 3 && !canAdvanceFromQuality))
                           ? `${secondaryButton} cursor-not-allowed opacity-50`
                           : primaryButton
                       }`}
                     >
-                      Next
+                      Continue
                     </button>
                   ) : currentStep < stepOrder.length - 1 ? (
                     <div className="grid w-full gap-2 sm:w-auto sm:grid-cols-2">
@@ -2146,11 +2153,26 @@ export function MatchLogForm({
                             Math.min(step + 1, stepOrder.length - 1)
                           )
                         }
-                        className={secondaryButton}
+                        disabled={!canAdvanceFromReason}
+                        className={`${
+                          !canAdvanceFromReason
+                            ? `${secondaryButton} cursor-not-allowed opacity-50`
+                            : secondaryButton
+                        }`}
                       >
-                        {currentStep === 3 ? "Optional quality" : "More context"}
+                        More context
                       </button>
-                      <SubmitButton label="Save now" />
+                      <button
+                        type="submit"
+                        disabled={!canAdvanceFromReason}
+                        className={`h-12 w-full text-base ${
+                          !canAdvanceFromReason
+                            ? `${secondaryButton} cursor-not-allowed opacity-50`
+                            : primaryButton
+                        }`}
+                      >
+                        Save now
+                      </button>
                     </div>
                   ) : (
                     <div className="grid w-full gap-2 sm:w-auto sm:grid-cols-2">

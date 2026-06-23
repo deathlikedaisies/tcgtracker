@@ -7,6 +7,8 @@ import { LATEST_FORMAT } from "@/lib/formats";
 import {
   buildMatchMetadataFromFormData,
   getGameContextEventType,
+  hasRequiredQuality,
+  hasRequiredReasonTags,
   optionalText,
   parseWentFirstChoice,
 } from "@/lib/match-form";
@@ -60,6 +62,26 @@ export async function logMatch(
 
     if (!results.has(result)) {
       throw new Error("Result must be win, loss, or tie.");
+    }
+
+    if (wentFirstValue !== "true" && wentFirstValue !== "false" && wentFirstValue !== "unknown") {
+      throw new Error("Turn order is required.");
+    }
+
+    if (!hasRequiredQuality(metadata)) {
+      throw new Error(
+        "Game quality is required. Rate the start, opening hand, and sequencing before saving."
+      );
+    }
+
+    if (!hasRequiredReasonTags(result as "win" | "loss" | "tie", metadata)) {
+      throw new Error(
+        result === "win"
+          ? "Add at least one positive reason before saving."
+          : result === "loss"
+            ? "Add at least one issue reason before saving."
+            : "Add at least one reason tag before saving."
+      );
     }
 
     if (eventType && !eventTypes.has(eventType)) {

@@ -75,8 +75,8 @@ const stepOrder = [
   { label: "Match", shortLabel: "1" },
   { label: "Result", shortLabel: "2" },
   { label: "Turn order", shortLabel: "3" },
-  { label: "Reason", shortLabel: "4" },
-  { label: "Quality", shortLabel: "5" },
+  { label: "Quality", shortLabel: "4" },
+  { label: "Reason", shortLabel: "5" },
   { label: "More context", shortLabel: "6" },
 ] as const;
 
@@ -486,8 +486,21 @@ export function DemoMatchLogForm() {
   const canAdvanceFromMatch = Boolean(opponent.trim());
   const canAdvanceFromTurnOrder = wentFirst !== null;
   const canAdvanceFromResult = result === "win" || result === "loss" || result === "tie";
+  const canAdvanceFromQuality = Boolean(
+    startQuality && openingHandQuality && sequencingQuality
+  );
+  const canAdvanceFromReason =
+    result === "win"
+      ? positiveTags.length > 0
+      : result === "loss"
+        ? issueTags.length > 0
+        : issueTags.length > 0 || positiveTags.length > 0;
   const canQuickSave =
-    canAdvanceFromMatch && canAdvanceFromTurnOrder && canAdvanceFromResult;
+    canAdvanceFromMatch &&
+    canAdvanceFromTurnOrder &&
+    canAdvanceFromResult &&
+    canAdvanceFromQuality &&
+    canAdvanceFromReason;
   const blockedNextMessage =
     currentStep === 0 && !canAdvanceFromMatch
       ? "Choose an opponent deck to continue."
@@ -495,6 +508,14 @@ export function DemoMatchLogForm() {
         ? "Choose win, loss, or tie."
         : currentStep === 2 && !canAdvanceFromTurnOrder
           ? "Choose whether you went first, second, or can't remember."
+          : currentStep === 3 && !canAdvanceFromQuality
+            ? "Rate the start, opening hand, and sequencing before continuing."
+            : currentStep === 4 && !canAdvanceFromReason
+              ? result === "win"
+                ? "Add at least one positive reason before saving."
+                : result === "loss"
+                  ? "Add at least one issue reason before saving."
+                  : "Add at least one reason tag before saving."
           : null;
   const finalizedResult: MatchResult =
     result === "win" || result === "loss" || result === "tie" ? result : "loss";
@@ -514,7 +535,8 @@ export function DemoMatchLogForm() {
         Live summary
       </p>
       <p className="mt-2 text-sm font-medium leading-6 text-[#F8FAFC]">
-        {readySummary || "Start with a matchup, then add result and turn order."}
+        {readySummary ||
+          "Choose a matchup, result, turn order, quality, and reason to complete the quick log."}
       </p>
       <div className="mt-3 flex flex-wrap gap-1.5">
         <span className={summaryChipClass}>
@@ -1057,7 +1079,7 @@ export function DemoMatchLogForm() {
                 </div>
               ) : null}
 
-              {currentStep === 3 ? (
+              {currentStep === 4 ? (
                 <div className="grid gap-4">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
@@ -1067,7 +1089,7 @@ export function DemoMatchLogForm() {
                       {primaryTagTitle}
                     </h2>
                     <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
-                      Add one reason, or skip and save.
+                      Add at least one reason tag before saving this game.
                     </p>
                   </div>
                   <fieldset className={subCardClass}>
@@ -1207,17 +1229,17 @@ export function DemoMatchLogForm() {
                 </div>
               ) : null}
 
-              {currentStep === 4 ? (
+              {currentStep === 3 ? (
                 <div className="grid gap-4">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
-                      Quick quality
+                      Quality
                     </p>
                     <h2 className="mt-2 text-2xl font-semibold text-[#F8FAFC]">
-                      Add quality if you remember it
+                      Rate how the game felt
                     </h2>
                     <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
-                      This is optional. Add it now if the game is still fresh, or save without it.
+                      Rate the start, opening hand, and sequencing before moving on.
                     </p>
                   </div>
                   <div className="grid gap-3">
@@ -1233,11 +1255,7 @@ export function DemoMatchLogForm() {
                           <button
                             key={value}
                             type="button"
-                            onClick={() =>
-                              setStartQuality(
-                                startQuality === value ? undefined : value
-                              )
-                            }
+                            onClick={() => setStartQuality(value)}
                             aria-pressed={isSelected}
                             className={`${mediumToggleClass} ${
                               isSelected ? getSelectedToneClass(tone) : ""
@@ -1265,11 +1283,7 @@ export function DemoMatchLogForm() {
                           <button
                             key={value}
                             type="button"
-                            onClick={() =>
-                              setOpeningHandQuality(
-                                openingHandQuality === value ? undefined : value
-                              )
-                            }
+                            onClick={() => setOpeningHandQuality(value)}
                             aria-pressed={isSelected}
                             className={`${mediumToggleClass} ${
                               isSelected ? getSelectedToneClass(tone) : ""
@@ -1297,11 +1311,7 @@ export function DemoMatchLogForm() {
                           <button
                             key={value}
                             type="button"
-                            onClick={() =>
-                              setSequencingQuality(
-                                sequencingQuality === value ? undefined : value
-                              )
-                            }
+                            onClick={() => setSequencingQuality(value)}
                             aria-pressed={isSelected}
                             className={`${mediumToggleClass} ${
                               isSelected ? getSelectedToneClass(tone) : ""
@@ -1458,11 +1468,12 @@ export function DemoMatchLogForm() {
                 Ready to save
               </p>
               <p className="mt-2 text-sm font-medium leading-6 text-[#F8FAFC]">
-                {readySummary || "Choose matchup, result, and turn order to save quickly."}
+                {readySummary ||
+                  "Choose matchup, result, turn order, quality, and reason to save."}
               </p>
               <p className="mt-2 text-sm text-[#94A3B8]/76">
                 {canQuickSave
-                  ? "You can save now, or add optional detail first."
+                  ? "You can save now, or add optional context first."
                   : "This will update your matchup trends."}
               </p>
             </div>
@@ -1485,7 +1496,7 @@ export function DemoMatchLogForm() {
                 ) : null}
               </div>
 
-              {currentStep < 3 ? (
+              {currentStep < 4 ? (
                 <button
                   type="button"
                   onClick={() =>
@@ -1494,17 +1505,19 @@ export function DemoMatchLogForm() {
                   disabled={
                     (currentStep === 0 && !canAdvanceFromMatch) ||
                     (currentStep === 1 && !canAdvanceFromResult) ||
-                    (currentStep === 2 && !canAdvanceFromTurnOrder)
+                    (currentStep === 2 && !canAdvanceFromTurnOrder) ||
+                    (currentStep === 3 && !canAdvanceFromQuality)
                   }
                   className={`h-12 w-full sm:w-auto ${
                     ((currentStep === 0 && !canAdvanceFromMatch) ||
                       (currentStep === 1 && !canAdvanceFromResult) ||
-                      (currentStep === 2 && !canAdvanceFromTurnOrder))
+                      (currentStep === 2 && !canAdvanceFromTurnOrder) ||
+                      (currentStep === 3 && !canAdvanceFromQuality))
                       ? `${secondaryButton} cursor-not-allowed opacity-50`
                       : primaryButton
                   }`}
                 >
-                  Next
+                  Continue
                 </button>
               ) : currentStep < stepOrder.length - 1 ? (
                 <div className="grid w-full gap-2 sm:w-auto sm:grid-cols-2">
@@ -1513,13 +1526,23 @@ export function DemoMatchLogForm() {
                     onClick={() =>
                       setCurrentStep((step) => Math.min(step + 1, stepOrder.length - 1))
                     }
-                    className={secondaryButton}
+                    disabled={!canAdvanceFromReason}
+                    className={`${
+                      !canAdvanceFromReason
+                        ? `${secondaryButton} cursor-not-allowed opacity-50`
+                        : secondaryButton
+                    }`}
                   >
-                    {currentStep === 3 ? "Optional quality" : "More context"}
+                    More context
                   </button>
                   <button
                     type="submit"
-                    className={`${primaryButton} h-12 w-full text-base`}
+                    disabled={!canAdvanceFromReason}
+                    className={`h-12 w-full text-base ${
+                      !canAdvanceFromReason
+                        ? `${secondaryButton} cursor-not-allowed opacity-50`
+                        : primaryButton
+                    }`}
                   >
                     Save now
                   </button>
