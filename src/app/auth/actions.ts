@@ -26,7 +26,14 @@ const AUTH_MESSAGES = {
   missingConfig: "SixPrizer is not configured correctly. Please contact support.",
   emailNotConfirmed:
     "Your email has not been confirmed yet. Please check your inbox and spam folder for the SixPrizer confirmation email, then try logging in again.",
+  rateLimit: "Too many attempts. Please wait a few minutes and try again.",
   fallback: "Authentication failed. Please try again.",
+  signupAlreadyRegistered:
+    "An account already exists for this email. Try logging in, or resend the confirmation email if you have not confirmed it yet.",
+  signupInvalidEmail: "Enter a valid email address.",
+  signupWeakPassword: "Use a password with at least 8 characters.",
+  signupFallback:
+    "We could not create your account. Please check your details and try again.",
 } as const;
 
 function normalizeAuthError(error: unknown) {
@@ -54,6 +61,62 @@ function normalizeAuthError(error: unknown) {
   }
 
   return AUTH_MESSAGES.fallback;
+}
+
+function normalizeSignupError(error: unknown): string {
+  const message = error instanceof Error ? error.message : String(error ?? "");
+  const lower = message.toLowerCase();
+
+  if (error instanceof SupabaseConfigError) {
+    return AUTH_MESSAGES.missingConfig;
+  }
+
+  if (
+    lower.includes("fetch failed") ||
+    lower.includes("failed to fetch") ||
+    lower.includes("network request failed") ||
+    lower.includes("typeerror")
+  ) {
+    return AUTH_MESSAGES.network;
+  }
+
+  if (
+    lower.includes("user already registered") ||
+    lower.includes("already registered") ||
+    lower.includes("already been registered")
+  ) {
+    return AUTH_MESSAGES.signupAlreadyRegistered;
+  }
+
+  if (
+    lower.includes("invalid email") ||
+    lower.includes("unable to validate email") ||
+    lower.includes("valid email address")
+  ) {
+    return AUTH_MESSAGES.signupInvalidEmail;
+  }
+
+  if (
+    lower.includes("password should be") ||
+    lower.includes("password is too short") ||
+    lower.includes("weak password") ||
+    lower.includes("at least 6 character") ||
+    lower.includes("at least 8 character")
+  ) {
+    return AUTH_MESSAGES.signupWeakPassword;
+  }
+
+  if (
+    lower.includes("email rate limit") ||
+    lower.includes("rate limit exceeded") ||
+    lower.includes("too many requests") ||
+    lower.includes("over_email_send_rate_limit") ||
+    lower.includes("for security purposes")
+  ) {
+    return AUTH_MESSAGES.rateLimit;
+  }
+
+  return AUTH_MESSAGES.signupFallback;
 }
 
 function logSafeAuthError(context: string, error: unknown) {
@@ -88,7 +151,11 @@ export async function submitAuthForm(
       const emailNotConfirmed = lowerMsg.includes("email not confirmed");
       return {
         ok: false,
-        message: emailNotConfirmed ? AUTH_MESSAGES.emailNotConfirmed : normalizeAuthError(error),
+        message: emailNotConfirmed
+          ? AUTH_MESSAGES.emailNotConfirmed
+          : mode === "signup"
+            ? normalizeSignupError(error)
+            : normalizeAuthError(error),
         emailNotConfirmed,
       };
     }
@@ -124,6 +191,13 @@ export async function submitAuthFormAction(
   if (!email || !password) {
     return {
       message: "Enter your email and password.",
+      variant: "error",
+    };
+  }
+
+  if (mode === "signup" && password.length < 8) {
+    return {
+      message: AUTH_MESSAGES.signupWeakPassword,
       variant: "error",
     };
   }

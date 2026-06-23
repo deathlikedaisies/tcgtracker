@@ -30,19 +30,24 @@ export async function createDeck(
   _state: DeckCreateState,
   formData: FormData
 ): Promise<DeckCreateState> {
+  // getSignedInUser calls redirect("/login") when unauthenticated — must stay outside
+  // any try/catch so the redirect signal propagates correctly to Next.js.
+  const { supabase, user } = await getSignedInUser();
+
+  const name = String(formData.get("name") ?? "").trim();
+  const archetype = String(formData.get("archetype") ?? "").trim();
+
+  if (!name) {
+    return { error: "Deck name is required." };
+  }
+
+  if (!archetype) {
+    return { error: "Archetype is required." };
+  }
+
+  let deckId: string;
+
   try {
-    const { supabase, user } = await getSignedInUser();
-    const name = String(formData.get("name") ?? "").trim();
-    const archetype = String(formData.get("archetype") ?? "").trim();
-
-    if (!name) {
-      return { error: "Deck name is required." };
-    }
-
-    if (!archetype) {
-      return { error: "Archetype is required." };
-    }
-
     const { data: deck, error } = await supabase
       .from("decks")
       .insert({
@@ -56,17 +61,20 @@ export async function createDeck(
       .single();
 
     if (error || !deck) {
-      return { error: error?.message ?? "Could not create deck." };
+      console.error("createDeck: insert failed", { message: error?.message });
+      return { error: "Could not create deck. Please try again." };
     }
 
-    revalidatePath("/decks");
-    revalidatePath("/dashboard");
-    redirect(`/decks/${deck.id}?created=1`);
-  } catch (error) {
-    return {
-      error: error instanceof Error ? error.message : "Could not create deck.",
-    };
+    deckId = deck.id;
+  } catch (err) {
+    console.error("createDeck: unexpected error", err instanceof Error ? { message: err.message } : err);
+    return { error: "Could not create deck. Please try again." };
   }
+
+  revalidatePath("/decks");
+  revalidatePath("/dashboard");
+  // redirect() is outside all try/catch so Next.js can handle the NEXT_REDIRECT signal.
+  redirect(`/decks/${deckId}?created=1`);
 }
 
 export async function deleteDeck(deckId: string) {

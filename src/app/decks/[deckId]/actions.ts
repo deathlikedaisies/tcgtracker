@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 
 export type DeckVersionActionState = {
@@ -129,8 +130,9 @@ export async function createDeckVersion(
       },
     };
   } catch (error) {
+    if (isRedirectError(error)) throw error;
     return {
-      error: error instanceof Error ? error.message : "Could not create version.",
+      error: "Could not create version. Please try again.",
       success: null,
     };
   }
@@ -232,8 +234,9 @@ export async function updateDeckVersion(
       },
     };
   } catch (error) {
+    if (isRedirectError(error)) throw error;
     return {
-      error: error instanceof Error ? error.message : "Could not update version.",
+      error: "Could not update version. Please try again.",
       success: null,
     };
   }
