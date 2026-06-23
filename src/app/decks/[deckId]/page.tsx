@@ -341,9 +341,6 @@ export default async function DeckDetailPage({
   const deckName = safeText(deck.name, "Untitled deck");
   const deckNotes = safeOptionalText(deck.notes);
   const deckArchetype = safeText(deck.archetype, "Unknown archetype");
-  const hasExplicitActiveVersion = deckVersions.some((version) => version.is_active);
-  const needsPrimaryVersionSetup =
-    !deckVersions.length || !hasExplicitActiveVersion;
   const activeVersion =
     deckVersions.find((version) => version.is_active) ?? deckVersions[0] ?? null;
   const bestVersion = versionInsights
@@ -465,9 +462,6 @@ export default async function DeckDetailPage({
   const needsFirstVersionSetup = !hasDeckVersions;
   const needsFirstGame = hasDeckVersions && !hasDeckGames;
   const showVersionEvidence = hasDeckVersions && hasDeckGames;
-  const activeVersionLogHref = activeVersion
-    ? `/matches/new?deck_version_id=${activeVersion.id}`
-    : `/matches/new?deck_id=${deck.id}`;
   const deckHeaderStats = [
     {
       label: "Versions",
@@ -724,28 +718,9 @@ export default async function DeckDetailPage({
                   </div>
                 </div>
               </div>
-              ) : needsFirstGame ? (
-                <div className={`p-5 ${glassPanelStrong}`}>
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
-                        Before version analytics
-                      </p>
-                      <h3 className="mt-2 text-lg font-semibold text-[#F8FAFC]">
-                        Log a few games before SixPrizer can compare versions
-                      </h3>
-                      <p className="mt-2 text-sm leading-6 text-[#94A3B8]/74">
-                        You already have a version saved. The next useful step is to log the first few games with it so this page has real evidence to work from.
-                      </p>
-                    </div>
-                    <Link href={activeVersionLogHref} className={primaryButton}>
-                      Log first game
-                    </Link>
-                  </div>
-                </div>
               ) : null}
 
-              {needsPrimaryVersionSetup ? (
+              {needsFirstVersionSetup ? (
                 <div className={`p-5 sm:p-6 ${glassPanelStrong}`}>
                   <DeckVersionForm
                     action={createVersion}
@@ -883,19 +858,11 @@ export default async function DeckDetailPage({
                         <div className="mt-4 grid gap-4">
                           <div className={`${premiumInset} p-4`}>
                             <p className="text-sm leading-6 text-[#D6E0F0]/82">
-                              Log a few games before SixPrizer can compare versions. For now, make sure the active build is correct and the parser summary looks sane.
+                              Your first test version is ready. Log a few games before SixPrizer starts comparing versions.
                             </p>
                           </div>
 
-                          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                            <div className={`${statCard} p-3`}>
-                              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
-                                Status
-                              </p>
-                              <p className="mt-2 text-sm font-semibold text-[#F8FAFC]">
-                                {version.is_active ? "Active version" : "Saved version"}
-                              </p>
-                            </div>
+                          <div className="grid gap-3 sm:grid-cols-2">
                             <div className={`${statCard} p-3`}>
                               <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
                                 List health
@@ -906,83 +873,75 @@ export default async function DeckDetailPage({
                             </div>
                             <div className={`${statCard} p-3`}>
                               <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
-                                Next move
+                                Archetype suggestion
                               </p>
                               <p className="mt-2 text-sm font-semibold text-[#F8FAFC]">
-                                {version.is_active ? "Log first game" : "Make active or edit"}
+                                {analysis?.suggestion.isClearSuggestion
+                                  ? analysis.suggestion.archetype
+                                  : "No clear archetype yet"}
                               </p>
                             </div>
                           </div>
 
-                          <div className="grid gap-4 xl:grid-cols-2">
-                            <div className={`${premiumInset} p-4`}>
-                              <div className="flex items-center gap-2">
-                                <Target className="size-4 text-[#F5C84C]" aria-hidden="true" />
-                                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#F5C84C]">
-                                  Auto-detected archetype
-                                </p>
-                              </div>
-                              {analysis?.suggestion.isClearSuggestion ? (
-                                <div className="mt-4 grid gap-3">
-                                  <div className="flex flex-wrap items-start justify-between gap-3">
-                                    <div className="flex min-w-0 items-center gap-3">
-                                      <ArchetypeSprites
-                                        archetype={analysis.suggestion.archetype}
-                                        className="shrink-0"
-                                      />
-                                      <div className="min-w-0">
-                                        <p className="truncate text-base font-semibold text-[#F8FAFC]">
-                                          {analysis.suggestion.archetype}
-                                        </p>
-                                        <p className="mt-1 text-xs text-[#94A3B8]/72">
-                                          Suggested archetype
-                                        </p>
+                          <details className={`${premiumInset} p-4`}>
+                            <summary className="cursor-pointer list-none text-sm font-semibold text-[#DCE8FF] marker:hidden">
+                              Decklist details
+                            </summary>
+                            <div className="mt-4 grid gap-4 xl:grid-cols-2">
+                              <div className="grid gap-3">
+                                <div className="flex items-center gap-2">
+                                  <Target className="size-4 text-[#F5C84C]" aria-hidden="true" />
+                                  <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#F5C84C]">
+                                    Suggested archetype
+                                  </p>
+                                </div>
+                                {analysis?.suggestion.isClearSuggestion ? (
+                                  <>
+                                    <div className="flex flex-wrap items-start justify-between gap-3">
+                                      <div className="flex min-w-0 items-center gap-3">
+                                        <ArchetypeSprites
+                                          archetype={analysis.suggestion.archetype}
+                                          className="shrink-0"
+                                        />
+                                        <div className="min-w-0">
+                                          <p className="truncate text-base font-semibold text-[#F8FAFC]">
+                                            {analysis.suggestion.archetype}
+                                          </p>
+                                          <p className="mt-1 text-xs text-[#94A3B8]/72">
+                                            Suggested archetype
+                                          </p>
+                                        </div>
                                       </div>
+                                      <span
+                                        className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${getSuggestionBadgeTone(
+                                          analysis.suggestion.confidence
+                                        )}`}
+                                      >
+                                        {analysis.suggestion.confidenceLabel}
+                                      </span>
                                     </div>
-                                    <span
-                                      className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${getSuggestionBadgeTone(
-                                        analysis.suggestion.confidence
-                                      )}`}
-                                    >
-                                      {analysis.suggestion.confidenceLabel}
-                                    </span>
-                                  </div>
+                                    <p className="text-sm leading-6 text-[#94A3B8]/72">
+                                      {analysis.suggestion.reason}
+                                    </p>
+                                  </>
+                                ) : (
                                   <p className="text-sm leading-6 text-[#94A3B8]/72">
-                                    {analysis.suggestion.reason}
+                                    {parseError ??
+                                      "No clear archetype detected yet. You can still log games with this version."}
                                   </p>
-                                  <p className="text-xs text-[#94A3B8]/68">
-                                    These cards helped SixPrizer identify the deck. This is only a suggestion.
-                                  </p>
-                                </div>
-                              ) : parseError ? (
-                                <div className="mt-4">
-                                  <p className="text-base font-semibold text-[#F8FAFC]">
-                                    List could not be parsed
-                                  </p>
-                                  <p className="mt-2 text-sm leading-6 text-[#94A3B8]/72">
-                                    {parseError}
-                                  </p>
-                                </div>
-                              ) : (
-                                <div className="mt-4">
-                                  <p className="text-base font-semibold text-[#F8FAFC]">
-                                    No clear archetype detected
-                                  </p>
-                                  <p className="mt-2 text-sm leading-6 text-[#94A3B8]/72">
-                                    No clear archetype detected. You can still log games, but the deck family may need a manual check.
-                                  </p>
-                                </div>
-                              )}
-                            </div>
-
-                            <div className={`${premiumInset} p-4`}>
-                              <div className="flex items-center gap-2">
-                                <ShieldCheck className="size-4 text-[#F5C84C]" aria-hidden="true" />
-                                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#F5C84C]">
-                                  List status
+                                )}
+                                <p className="text-xs text-[#94A3B8]/68">
+                                  These cards helped SixPrizer identify the deck. This is only a suggestion.
                                 </p>
                               </div>
-                              <div className="mt-4 grid gap-3">
+
+                              <div className="grid gap-3">
+                                <div className="flex items-center gap-2">
+                                  <ShieldCheck className="size-4 text-[#F5C84C]" aria-hidden="true" />
+                                  <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#F5C84C]">
+                                    List status
+                                  </p>
+                                </div>
                                 <div className="flex flex-wrap items-center gap-2">
                                   <span
                                     className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${listHealth.toneClass}`}
@@ -998,7 +957,7 @@ export default async function DeckDetailPage({
                                 </p>
                               </div>
                             </div>
-                          </div>
+                          </details>
                         </div>
                       ) : (
                       <div className="mt-4 grid gap-4 xl:grid-cols-2">
@@ -1254,32 +1213,77 @@ export default async function DeckDetailPage({
                   </div>
                 </div>
 
-                <form
-                  id="manual-archetype"
-                  action={setDeckArchetype}
-                  className={`scroll-mt-6 p-4 ${glassPanel}`}
-                >
-                  <h2 className={sectionTitle}>Set archetype manually</h2>
-                  <p className={`mt-1 ${sectionCopy}`}>
-                    Use a known archetype or type a custom deck family name.
-                  </p>
-                  <div className="mt-4 flex flex-col gap-4">
-                    <ArchetypePicker
-                      id="deck-archetype"
-                      name="archetype"
-                      label="Manual archetype"
-                      options={archetypeOptions}
-                      defaultValue={deckArchetype}
-                      customOptionPrefix="Use custom deck archetype"
-                      required
-                    />
-                    <button type="submit" className={secondaryButton}>
-                      Save manual archetype
-                    </button>
-                  </div>
-                </form>
+                {needsFirstGame ? (
+                  <details className={`p-4 ${glassPanel}`}>
+                    <summary className="cursor-pointer list-none text-sm font-semibold text-[#DCE8FF] marker:hidden">
+                      Edit deck identity
+                    </summary>
+                    <form
+                      id="manual-archetype"
+                      action={setDeckArchetype}
+                      className="mt-4 flex flex-col gap-4"
+                    >
+                      <p className={sectionCopy}>
+                        Use a known archetype or type a custom deck family name.
+                      </p>
+                      <ArchetypePicker
+                        id="deck-archetype"
+                        name="archetype"
+                        label="Manual archetype"
+                        options={archetypeOptions}
+                        defaultValue={deckArchetype}
+                        customOptionPrefix="Use custom deck archetype"
+                        required
+                      />
+                      <button type="submit" className={secondaryButton}>
+                        Save manual archetype
+                      </button>
+                    </form>
+                  </details>
+                ) : (
+                  <form
+                    id="manual-archetype"
+                    action={setDeckArchetype}
+                    className={`scroll-mt-6 p-4 ${glassPanel}`}
+                  >
+                    <h2 className={sectionTitle}>Set archetype manually</h2>
+                    <p className={`mt-1 ${sectionCopy}`}>
+                      Use a known archetype or type a custom deck family name.
+                    </p>
+                    <div className="mt-4 flex flex-col gap-4">
+                      <ArchetypePicker
+                        id="deck-archetype"
+                        name="archetype"
+                        label="Manual archetype"
+                        options={archetypeOptions}
+                        defaultValue={deckArchetype}
+                        customOptionPrefix="Use custom deck archetype"
+                        required
+                      />
+                      <button type="submit" className={secondaryButton}>
+                        Save manual archetype
+                      </button>
+                    </div>
+                  </form>
+                )}
 
                 {!needsFirstVersionSetup ? (
+                  needsFirstGame ? (
+                    <details className={`${glassPanel} p-4`}>
+                      <summary className="cursor-pointer list-none text-sm font-semibold text-[#DCE8FF] marker:hidden">
+                        Add another test version
+                      </summary>
+                      <div className="mt-4">
+                        <DeckVersionForm
+                          action={createVersion}
+                          deckHref={`/decks/${deck.id}`}
+                          title="Add another test version"
+                          description="Paste a 60-card list, name the build, and decide whether it should replace the current active version."
+                          submitLabel="Create version"
+                        />
+                      </div>
+                    </details>
+                  ) : (
                   <DeckVersionForm
                     action={createVersion}
                     deckHref={`/decks/${deck.id}`}
@@ -1287,6 +1291,7 @@ export default async function DeckDetailPage({
                     description="Paste a 60-card list, name the build, and decide whether it should replace the current active version."
                     submitLabel="Create version"
                   />
+                  )
                 ) : (
                   <div className={`${interactiveTile} p-4`}>
                     <div className="flex items-start gap-3">
