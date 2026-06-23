@@ -58,7 +58,11 @@ function CreateVersionSubmitButton({ label }: { label: string }) {
   const { pending } = useFormStatus();
 
   return (
-    <button type="submit" disabled={pending} className={primaryButton}>
+    <button
+      type="submit"
+      disabled={pending}
+      className={`${primaryButton} w-full sm:w-auto`}
+    >
       {pending ? "Creating..." : label}
     </button>
   );
@@ -555,17 +559,15 @@ export function DeckVersionForm({
               Make this the active test version used for new match logs
             </label>
 
-            <div className="grid gap-2 sm:grid-cols-[auto_minmax(0,1fr)] sm:items-center">
+            <div className="grid gap-2 sm:flex sm:flex-row-reverse sm:items-center sm:justify-between">
+              <CreateVersionSubmitButton label={submitLabel} />
               <button
                 type="button"
                 onClick={() => setCurrentStep("review")}
-                className={secondaryButton}
+                className={`${secondaryButton} w-full sm:w-auto`}
               >
                 Back to review
               </button>
-              <div className="sm:justify-self-end">
-                <CreateVersionSubmitButton label={submitLabel} />
-              </div>
             </div>
           </div>
         ) : null}

@@ -253,6 +253,7 @@ export default async function DecksPage() {
 
   const userDecks = (decks ?? []) as Deck[];
   const userMatches = (matches ?? []) as MatchRow[];
+  const hasNoDecks = userDecks.length === 0;
   const sessionCoach = buildSessionCoachInsight(userMatches);
   const archetypeOptions = getArchetypeOptions(
     LATEST_FORMAT,
@@ -415,7 +416,30 @@ export default async function DecksPage() {
             userEmail={user.email ?? "Unknown email"}
           />
 
-          <section className={`${glassPanelStrong} mt-5`}>
+          {hasNoDecks ? (
+            <section className="mt-5 grid gap-4 sm:gap-5">
+              <div className={`${glassPanelStrong} p-4 sm:p-5`}>
+                <div className="flex items-start gap-3">
+                  <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-2xl bg-[#F5C84C]/12 text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
+                    <Sparkles className="size-5" aria-hidden="true" />
+                  </span>
+                  <div>
+                    <h2 className={sectionTitle}>Create your first deck</h2>
+                    <p className={`mt-1 ${sectionCopy}`}>
+                      Start with the deck family you want to test first. You can add the version right after this.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <DeckCreateForm
+                archetypeOptions={archetypeOptions}
+                hasDecks={false}
+              />
+            </section>
+          ) : null}
+
+          <section className={`${glassPanelStrong} ${hasNoDecks ? "mt-4" : "mt-5"}`}>
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               {[
                 {
@@ -485,19 +509,21 @@ export default async function DecksPage() {
 
           <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
             <section className="grid gap-4">
-              <div className={`${glassPanelStrong} p-4 sm:p-5`}>
-                <div className="flex items-start gap-3">
-                  <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-2xl bg-[#4F8CFF]/10 text-[#B8D1FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.18)]">
-                    <Layers3 className="size-5" aria-hidden="true" />
-                  </span>
-                  <div>
-                    <h2 className={sectionTitle}>Active experiments</h2>
-                    <p className={`mt-1 ${sectionCopy}`}>
-                      Decks hold versions. Versions are what you log games with.
-                    </p>
+              {deckSummaries.length ? (
+                <div className={`${glassPanelStrong} p-4 sm:p-5`}>
+                  <div className="flex items-start gap-3">
+                    <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-2xl bg-[#4F8CFF]/10 text-[#B8D1FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.18)]">
+                      <Layers3 className="size-5" aria-hidden="true" />
+                    </span>
+                    <div>
+                      <h2 className={sectionTitle}>Active experiments</h2>
+                      <p className={`mt-1 ${sectionCopy}`}>
+                        Decks hold versions. Versions are what you log games with.
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
+              ) : null}
 
               {deckSummaries.length ? (
                 deckSummaries.map((summary) => {
@@ -617,10 +643,10 @@ export default async function DecksPage() {
               ) : (
                 <div className={emptyCard}>
                   <h3 className="text-lg font-semibold text-[#F8FAFC]">
-                    Create your first deck.
+                    Your deck list will show up here.
                   </h3>
                   <p className={`mt-2 ${sectionCopy}`}>
-                    Start with the deck family, add a version next, and log a few games to unlock experiment signal.
+                    After you create the deck, add a version and log a few games to unlock experiment signal.
                   </p>
                 </div>
               )}
@@ -628,22 +654,26 @@ export default async function DecksPage() {
 
             <aside className="lg:sticky lg:top-6">
               <div className="grid gap-4">
-                <div className={`${glassPanelStrong} p-4`}>
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="size-5 text-[#F5C84C]" aria-hidden="true" />
-                    <h2 className="text-lg font-semibold text-[#F8FAFC]">
-                      {userDecks.length ? "Add another deck" : "Start a new experiment"}
-                    </h2>
-                  </div>
-                  <p className={`mt-1 ${sectionCopy}`}>
-                    Create the deck family first. You&apos;ll add versions next.
-                  </p>
-                </div>
+                {userDecks.length ? (
+                  <>
+                    <div className={`${glassPanelStrong} p-4`}>
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="size-5 text-[#F5C84C]" aria-hidden="true" />
+                        <h2 className="text-lg font-semibold text-[#F8FAFC]">
+                          Add another deck
+                        </h2>
+                      </div>
+                      <p className={`mt-1 ${sectionCopy}`}>
+                        Create the deck family first. You&apos;ll add versions next.
+                      </p>
+                    </div>
 
-                <DeckCreateForm
-                  archetypeOptions={archetypeOptions}
-                  hasDecks={Boolean(userDecks.length)}
-                />
+                    <DeckCreateForm
+                      archetypeOptions={archetypeOptions}
+                      hasDecks
+                    />
+                  </>
+                ) : null}
 
                 <div className={`${interactiveTile} p-4`}>
                   <div className="flex items-start gap-3">
@@ -652,10 +682,12 @@ export default async function DecksPage() {
                     </span>
                     <div>
                       <h3 className="text-base font-semibold text-[#F8FAFC]">
-                        Deck setup
+                        {userDecks.length ? "Deck setup" : "What happens next"}
                       </h3>
                       <p className="mt-1 text-sm leading-6 text-[#94A3B8]/72">
-                        Decks hold versions. Versions are what you log games with.
+                        {userDecks.length
+                          ? "Decks hold versions. Versions are what you log games with."
+                          : "Decks hold versions. After this, add your first test version and start logging games."}
                       </p>
                     </div>
                   </div>

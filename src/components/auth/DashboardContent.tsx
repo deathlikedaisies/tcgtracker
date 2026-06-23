@@ -440,31 +440,44 @@ function SetupChecklist({
   hasAnyDeckVersions: boolean;
   firstDeckId?: string;
 }) {
+  const deckSetupHref = firstDeckId ? `/decks/${firstDeckId}` : "/decks";
+  const matchLoggingHref = hasAnyDeckVersions ? "/matches/new" : deckSetupHref;
+  const reviewSignalHref = matchLoggingHref;
   const steps = [
     {
       label: "Create your SixPrizer profile",
       complete: hasProfile,
       helper: "It can stay private until you want to share a summary.",
+      href: "/profile",
+      ariaLabel: "Go to profile setup",
     },
     {
       label: "Create your first deck",
       complete: hasDecks,
       helper: "Name the list you want to test first.",
+      href: "/decks",
+      ariaLabel: "Create your first deck",
     },
     {
       label: "Add a test version",
       complete: hasAnyDeckVersions,
       helper: "Paste a version so matchup signal can start.",
+      href: deckSetupHref,
+      ariaLabel: "Add a test version",
     },
     {
       label: "Log your first game",
       complete: false,
       helper: "One logged game unlocks the coaching loop.",
+      href: matchLoggingHref,
+      ariaLabel: "Log your first game",
     },
     {
       label: "Build first signal",
       complete: false,
       helper: "Three to five games is enough to start seeing direction.",
+      href: reviewSignalHref,
+      ariaLabel: "Open review",
     },
   ];
 
@@ -506,11 +519,13 @@ function SetupChecklist({
 
       <div className="mt-4 grid gap-2.5 sm:mt-6 sm:gap-3 sm:grid-cols-2">
         {steps.map((step) => (
-          <div
+          <Link
             key={step.label}
-            className={`${premiumInset} rounded-[18px] p-3 sm:rounded-[20px] sm:p-4`}
+            href={step.href}
+            aria-label={step.ariaLabel}
+            className={`${premiumInset} group rounded-[18px] p-3 transition-transform transition-colors duration-150 ease-out hover:-translate-y-0.5 hover:text-inherit hover:shadow-[0_14px_30px_rgba(0,0,0,0.18),inset_0_0_0_1px_rgba(79,140,255,0.18)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C84C]/65 focus-visible:ring-offset-2 focus-visible:ring-offset-[#07111F] active:scale-[0.99] sm:rounded-[20px] sm:p-4`}
           >
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-between gap-3">
               <span
                 className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${
                   step.complete
@@ -520,10 +535,14 @@ function SetupChecklist({
               >
                 {step.complete ? "Done" : "Next"}
               </span>
+              <ArrowRight
+                className="size-4 text-[#94A3B8]/68 transition-transform duration-150 ease-out group-hover:translate-x-0.5 group-hover:text-[#DCE8FF] group-focus-visible:translate-x-0.5 group-focus-visible:text-[#DCE8FF]"
+                aria-hidden="true"
+              />
             </div>
             <p className="mt-2.5 text-base font-semibold text-[#F8FAFC]">{step.label}</p>
             <p className="mt-1 text-sm leading-5 text-[#94A3B8]/72 sm:leading-6">{step.helper}</p>
-          </div>
+          </Link>
         ))}
       </div>
 
