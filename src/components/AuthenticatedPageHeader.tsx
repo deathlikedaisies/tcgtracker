@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { ReactNode } from "react";
 import { AppNav } from "@/components/AppNav";
 import { SixPrizerLogo } from "@/components/SixPrizerLogo";
@@ -36,12 +37,18 @@ export function AuthenticatedPageHeader({
     <header className={`${pageHeaderCard} p-3.5 sm:p-5 xl:px-6 xl:py-5 ${className}`}>
       <div className="flex flex-col gap-3 sm:gap-4">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/6 pb-3 xl:hidden">
-          <SixPrizerLogo
-            {...logoOnDark}
-            size="sm"
-            hideTextOnMobile
-            className="min-w-0"
-          />
+          <Link
+            href="/dashboard"
+            aria-label="Go to dashboard"
+            className="min-w-0 rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C84C]/65 focus-visible:ring-offset-2 focus-visible:ring-offset-[#07111F]"
+          >
+            <SixPrizerLogo
+              {...logoOnDark}
+              size="sm"
+              hideTextOnMobile
+              className="min-w-0"
+            />
+          </Link>
           <SignOutButton compact />
         </div>
 

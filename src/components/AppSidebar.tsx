@@ -51,7 +51,13 @@ export function AppSidebar({ current, deckLabel, insight }: AppSidebarProps) {
   return (
     <aside className={`hidden min-h-[calc(100vh-3rem)] p-3 xl:sticky xl:top-6 xl:block ${navRailPanel}`}>
       <div className="relative flex h-full flex-col">
-        <SixPrizerLogo {...logoOnDark} hideTextOnMobile={false} />
+        <Link
+          href="/dashboard"
+          aria-label="Go to dashboard"
+          className="w-fit rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C84C]/65 focus-visible:ring-offset-2 focus-visible:ring-offset-[#07111F]"
+        >
+          <SixPrizerLogo {...logoOnDark} hideTextOnMobile={false} />
+        </Link>
 
         {deckLabel ? (
           <div className={`mt-6 p-3 ${premiumInset}`}>

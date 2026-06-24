@@ -28,7 +28,6 @@ import {
   secondaryButton,
   statCard,
 } from "@/components/brand-styles";
-import { SixPrizerLogo } from "@/components/SixPrizerLogo";
 import {
   formatMatchRecord,
   type MatchResult,
@@ -503,12 +502,6 @@ function SetupChecklist({
 
   return (
     <section className={emptyCard}>
-      <SixPrizerLogo
-        variant="app-icon"
-        showText={false}
-        className="mb-5"
-        markClassName="size-12 bg-[linear-gradient(180deg,rgba(11,18,32,0.84),rgba(8,14,26,0.74))] shadow-[0_0_28px_rgba(79,140,255,0.16),inset_0_0_0_1px_rgba(79,140,255,0.22)]"
-      />
       <p className="text-sm font-semibold text-[#4F8CFF]">First setup</p>
       <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[#F8FAFC]">
         Build your coaching home.
