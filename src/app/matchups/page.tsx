@@ -35,6 +35,7 @@ import {
   type MatchResult,
 } from "@/lib/match-types";
 import { buildSessionCoachInsight } from "@/lib/session-coach";
+import { evaluateMatchupSignal } from "@/lib/session-coach";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { parseDateStart, parseDateEnd } from "@/lib/date-utils";
 import { saveMatchupNote } from "./actions";
@@ -445,12 +446,25 @@ export default async function MatchupsPage({
       return matchup;
     }
 
-    if (matchup.winRateValue < currentWorst.winRateValue) {
+    const matchupSignal = evaluateMatchupSignal({
+      matches: matchup.matches,
+      wins: matchup.wins,
+      losses: matchup.losses,
+      ties: matchup.ties,
+    });
+    const currentSignal = evaluateMatchupSignal({
+      matches: currentWorst.matches,
+      wins: currentWorst.wins,
+      losses: currentWorst.losses,
+      ties: currentWorst.ties,
+    });
+
+    if (matchupSignal.score > currentSignal.score) {
       return matchup;
     }
 
     if (
-      matchup.winRateValue === currentWorst.winRateValue &&
+      matchupSignal.score === currentSignal.score &&
       matchup.matches > currentWorst.matches
     ) {
       return matchup;

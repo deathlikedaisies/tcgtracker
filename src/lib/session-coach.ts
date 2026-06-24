@@ -131,6 +131,13 @@ export type TrainingProgressSummary = {
   lossPatternTrend: string | null;
 };
 
+export type MatchupSignalSummary = {
+  actionable: boolean;
+  highConfidence: boolean;
+  score: number;
+  winRate: number;
+};
+
 type MissionCandidate = {
   priority: 1 | 2 | 3 | 4 | 5 | 6;
   score: number;
@@ -554,8 +561,14 @@ function isHighConfidenceMatchupLeak({
 }) {
   const lossRate = total ? losses / total : 0;
   const winRate = total ? wins / total : 0;
+  const decisiveGames = wins + losses;
+  const decisiveLossRate = decisiveGames ? losses / decisiveGames : lossRate;
+  const decisiveWinRate = decisiveGames ? wins / decisiveGames : winRate;
   const strongSample = total >= 12;
-  const poorRecord = lossRate >= 0.55 || winRate <= 0.35;
+  const poorRecord =
+    decisiveLossRate >= 0.55 ||
+    decisiveWinRate <= 0.4 ||
+    (total >= 40 && losses >= 18 && winRate <= 0.42);
   const strongTagSupport =
     repeatedTagCount >= 4 && (repeatedTagRate >= 0.3 || repeatedTagCount >= 6);
 
@@ -564,6 +577,49 @@ function isHighConfidenceMatchupLeak({
     poorRecord &&
     (strongTagSupport || total >= 20 || hasTurnContext)
   );
+}
+
+export function evaluateMatchupSignal({
+  matches,
+  wins,
+  losses,
+  ties,
+}: {
+  matches: number;
+  wins: number;
+  losses: number;
+  ties: number;
+}): MatchupSignalSummary {
+  const total = matches;
+  const winRate = total ? wins / total : 0;
+  const actionable = total >= 12 && losses >= 5 && winRate <= 0.45;
+  const highConfidence =
+    total >= 30 &&
+    losses >= 10 &&
+    winRate <= 0.42 &&
+    (losses - wins >= 8 || total >= 60);
+  const sampleScore = Math.min(total, 120) * 2.4;
+  const lossScore = Math.min(losses, 80) * 4;
+  const decisiveLossScore = Math.max(losses - wins, 0) * 2.2;
+  const rateScore = (1 - winRate) * 40;
+  const confidenceBonus = highConfidence ? 28 : actionable ? 10 : 0;
+  const sampleBonus =
+    total >= 120 ? 36 : total >= 80 ? 28 : total >= 40 ? 18 : total >= 20 ? 8 : 0;
+  const tiePenalty = ties >= Math.ceil(total * 0.25) ? 6 : 0;
+
+  return {
+    actionable,
+    highConfidence,
+    score:
+      sampleScore +
+      lossScore +
+      decisiveLossScore +
+      rateScore +
+      confidenceBonus +
+      sampleBonus -
+      tiePenalty,
+    winRate,
+  };
 }
 
 function getCompletionStatus(
@@ -828,7 +884,13 @@ function buildMatchupMissionCandidates(
   return matchupGroups.flatMap(([archetype, groupedMatches]) => {
       const total = groupedMatches.length;
       const { wins, losses, ties } = countMatchResults(groupedMatches);
-      const winRate = total ? wins / total : 0;
+      const matchupSignal = evaluateMatchupSignal({
+        matches: total,
+        wins,
+        losses,
+        ties,
+      });
+      const winRate = matchupSignal.winRate;
 
       if (total < 5 || losses < 3 || winRate > 0.45) {
         return [];
@@ -867,9 +929,7 @@ function buildMatchupMissionCandidates(
         ? formatIssueLabel(repeatedTag.tag)
         : null;
       const score =
-        total * 1.5 +
-        losses * 2 +
-        (1 - winRate) * 28 +
+        matchupSignal.score +
         (repeatedTag?.count ?? 0) * 2.5 +
         repeatedTagRate * 10 +
         (turnContext ? 6 : 0) +
@@ -882,7 +942,11 @@ function buildMatchupMissionCandidates(
       const whyTurn = turnContext ? ` Leak is worse ${turnContext}.` : "";
 
       return [{
-        priority: highConfidenceLeak ? (1 as const) : (4 as const),
+        priority: highConfidenceLeak
+          ? (1 as const)
+          : matchupSignal.actionable
+            ? (3 as const)
+            : (5 as const),
         score,
         archetype,
         missionType: "matchup" as const,

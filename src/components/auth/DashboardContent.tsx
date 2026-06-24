@@ -36,6 +36,7 @@ import type {
   SessionCoachInsight,
   TrainingProgressSummary,
 } from "@/lib/session-coach";
+import { evaluateMatchupSignal } from "@/lib/session-coach";
 
 type DeckSummary = {
   id: string;
@@ -600,20 +601,46 @@ export function DashboardContent({
   trainingProgress,
 }: DashboardContentProps) {
   const sampledMatchups = matchupSummary.filter((matchup) => matchup.matches >= 3);
-  const worstMatchup = sampledMatchups.reduce<MatchupSummary | null>(
+  const actionableMatchups = sampledMatchups.filter((matchup) => {
+    const signal = evaluateMatchupSignal({
+      matches: matchup.matches,
+      wins: matchup.wins,
+      losses: matchup.losses,
+      ties: matchup.ties,
+    });
+
+    return signal.actionable || (matchup.matches >= 5 && matchup.losses >= 3);
+  });
+  const worstMatchupSource = actionableMatchups.length
+    ? actionableMatchups
+    : sampledMatchups;
+  const worstMatchup = worstMatchupSource.reduce<MatchupSummary | null>(
     (currentWorst, matchup) => {
       if (!currentWorst) {
         return matchup;
       }
 
-      const matchupRate = parseRate(matchup.winRate);
-      const worstRate = parseRate(currentWorst.winRate);
+      const matchupSignal = evaluateMatchupSignal({
+        matches: matchup.matches,
+        wins: matchup.wins,
+        losses: matchup.losses,
+        ties: matchup.ties,
+      });
+      const currentSignal = evaluateMatchupSignal({
+        matches: currentWorst.matches,
+        wins: currentWorst.wins,
+        losses: currentWorst.losses,
+        ties: currentWorst.ties,
+      });
 
-      if (matchupRate < worstRate) {
+      if (matchupSignal.score > currentSignal.score) {
         return matchup;
       }
 
-      if (matchupRate === worstRate && matchup.matches > currentWorst.matches) {
+      if (
+        matchupSignal.score === currentSignal.score &&
+        matchup.matches > currentWorst.matches
+      ) {
         return matchup;
       }
 

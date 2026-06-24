@@ -75,7 +75,7 @@ function isoDateTime(value) {
   return value.toISOString();
 }
 
-function makeRng(seed = 200) {
+function makeRng(seed = 1000) {
   let state = seed >>> 0;
   return () => {
     state += 0x6d2b79f5;
@@ -110,16 +110,6 @@ function unique(values) {
   return Array.from(new Set(values.filter(Boolean)));
 }
 
-function chunk(values, size) {
-  const chunks = [];
-
-  for (let index = 0; index < values.length; index += size) {
-    chunks.push(values.slice(index, index + size));
-  }
-
-  return chunks;
-}
-
 function lower(value) {
   return value.trim().toLowerCase();
 }
@@ -128,6 +118,14 @@ function asTurnOrder(value) {
   if (value === true) return "first";
   if (value === false) return "second";
   return "unknown";
+}
+
+function chunk(values, size) {
+  const chunks = [];
+  for (let index = 0; index < values.length; index += size) {
+    chunks.push(values.slice(index, index + size));
+  }
+  return chunks;
 }
 
 function countResults(matches) {
@@ -142,8 +140,8 @@ function countResults(matches) {
 }
 
 function playedAtFor(index) {
-  const base = new Date("2026-04-18T10:00:00.000Z");
-  const dayOffset = index % 56;
+  const base = new Date("2026-01-18T10:00:00.000Z");
+  const dayOffset = index % 140;
   const hour = 9 + (index % 11);
   const minute = (index * 13) % 60;
   const date = new Date(base);
@@ -208,22 +206,16 @@ async function inspectCounts(userId) {
 
   const deckIds = deckRows.map((deck) => deck.id);
   if (deckIds.length) {
-    let versionCount = 0;
+    const { count: versionCount, error: versionError } = await admin
+      .from("deck_versions")
+      .select("*", { count: "exact", head: true })
+      .in("deck_id", deckIds);
 
-    for (const deckIdChunk of chunk(deckIds, 200)) {
-      const { count, error: versionError } = await admin
-        .from("deck_versions")
-        .select("*", { count: "exact", head: true })
-        .in("deck_id", deckIdChunk);
-
-      if (versionError) {
-        throw new Error(`Unable to inspect deck versions: ${versionError.message}`);
-      }
-
-      versionCount += count ?? 0;
+    if (versionError) {
+      throw new Error(`Unable to inspect deck versions: ${versionError.message}`);
     }
 
-    counts.deck_versions = versionCount;
+    counts.deck_versions = versionCount ?? 0;
   } else {
     counts.deck_versions = 0;
   }
@@ -240,12 +232,11 @@ async function inspectCounts(userId) {
   const matchIds = matchRows.map((match) => match.id);
   if (matchIds.length) {
     let tagCount = 0;
-
-    for (const matchIdChunk of chunk(matchIds, 200)) {
+    for (const ids of chunk(matchIds, 200)) {
       const { count, error: tagError } = await admin
         .from("match_tags")
         .select("*", { count: "exact", head: true })
-        .in("match_id", matchIdChunk);
+        .in("match_id", ids);
 
       if (tagError) {
         throw new Error(`Unable to inspect match_tags: ${tagError.message}`);
@@ -280,11 +271,11 @@ async function cleanUserData(userId) {
   }
 
   if (pre.matchIds.length) {
-    for (const matchIdChunk of chunk(pre.matchIds, 200)) {
+    for (const ids of chunk(pre.matchIds, 200)) {
       const { error: tagDeleteError } = await admin
         .from("match_tags")
         .delete()
-        .in("match_id", matchIdChunk);
+        .in("match_id", ids);
 
       if (tagDeleteError) {
         throw new Error(`Unable to delete match_tags: ${tagDeleteError.message}`);
@@ -302,15 +293,13 @@ async function cleanUserData(userId) {
   }
 
   if (pre.deckIds.length) {
-    for (const deckIdChunk of chunk(pre.deckIds, 200)) {
-      const { error: versionDeleteError } = await admin
-        .from("deck_versions")
-        .delete()
-        .in("deck_id", deckIdChunk);
+    const { error: versionDeleteError } = await admin
+      .from("deck_versions")
+      .delete()
+      .in("deck_id", pre.deckIds);
 
-      if (versionDeleteError) {
-        throw new Error(`Unable to delete deck_versions: ${versionDeleteError.message}`);
-      }
+    if (versionDeleteError) {
+      throw new Error(`Unable to delete deck_versions: ${versionDeleteError.message}`);
     }
   }
 
@@ -663,10 +652,166 @@ const EXPERIMENTAL_TRIMMED = `${EXPERIMENTAL_LIST}
 
 # Testing a thinner Regieleki package for shorter races`;
 
+const SLOWKING_LIST = `Pokemon (18)
+4 Slowpoke
+3 Slowking ex
+2 Fezandipiti ex
+2 Munkidori
+2 Budew
+1 Manaphy
+1 Lumineon V
+1 Radiant Greninja
+1 Iron Bundle
+1 Klefki
+
+Trainer (31)
+4 Buddy-Buddy Poffin
+4 Nest Ball
+4 Ultra Ball
+3 Iono
+3 Boss's Orders
+2 Counter Catcher
+2 Night Stretcher
+2 Rare Candy
+2 Switch
+2 Artazon
+1 Prime Catcher
+1 Lost Vacuum
+1 Super Rod
+
+Energy (11)
+7 Psychic Energy
+4 Double Turbo Energy`;
+
+const SLOWKING_LIST_V2 = `${SLOWKING_LIST}
+
+# Cleaner candy counts for steadier second-stage setup`;
+
+const SLOWKING_LIST_V3 = `${SLOWKING_LIST}
+
+# Testing extra disruption into midgame prize races`;
+
+const ZOROARK_LIST = `Pokemon (18)
+4 N's Zorua
+3 N's Zoroark ex
+2 Fezandipiti ex
+2 Munkidori
+2 Budew
+1 Manaphy
+1 Lumineon V
+1 Radiant Greninja
+1 Rotom V
+1 Klefki
+
+Trainer (31)
+4 Buddy-Buddy Poffin
+4 Nest Ball
+4 Ultra Ball
+3 Iono
+3 Boss's Orders
+2 Counter Catcher
+2 Night Stretcher
+2 Rare Candy
+2 Switch
+2 Artazon
+1 Prime Catcher
+1 Super Rod
+1 Lost Vacuum
+
+Energy (11)
+7 Darkness Energy
+4 Double Turbo Energy`;
+
+const ZOROARK_LIST_V2 = `${ZOROARK_LIST}
+
+# More draw support for grindier midgame turns`;
+
+const ZOROARK_LIST_V3 = `${ZOROARK_LIST}
+
+# Lower curve variant for quicker mirror pressure`;
+
+const HYDRAPPLE_LIST = `Pokemon (19)
+4 Teal Mask Ogerpon ex
+3 Chikorita
+2 Bayleef
+2 Meganium
+2 Applin
+2 Dipplin
+2 Hydrapple ex
+1 Manaphy
+1 Fezandipiti ex
+
+Trainer (30)
+4 Buddy-Buddy Poffin
+4 Nest Ball
+4 Ultra Ball
+3 Rare Candy
+3 Iono
+2 Boss's Orders
+2 Counter Catcher
+2 Night Stretcher
+2 Artazon
+1 Prime Catcher
+1 Super Rod
+1 Switch
+1 Lost Vacuum
+
+Energy (11)
+7 Grass Energy
+4 Double Turbo Energy`;
+
+const HYDRAPPLE_LIST_V2 = `${HYDRAPPLE_LIST}
+
+# Added cleaner Meganium access and fewer dead openers`;
+
+const HYDRAPPLE_LIST_V3 = `${HYDRAPPLE_LIST}
+
+# Narrow anti-Greninja flex slots for current testing`;
+
+const CRUSTLE_LIST = `Pokemon (18)
+4 Dwebble
+3 Crustle
+2 Fezandipiti ex
+2 Budew
+2 Munkidori
+1 Manaphy
+1 Lumineon V
+1 Radiant Greninja
+1 Klefki
+1 Iron Bundle
+
+Trainer (31)
+4 Buddy-Buddy Poffin
+4 Nest Ball
+4 Ultra Ball
+3 Iono
+3 Boss's Orders
+2 Counter Catcher
+2 Night Stretcher
+2 Rare Candy
+2 Artazon
+1 Prime Catcher
+1 Switch
+1 Super Rod
+1 Lost Vacuum
+1 Rescue Board
+
+Energy (11)
+7 Fighting Energy
+4 Double Turbo Energy`;
+
+const CRUSTLE_LIST_V2 = `${CRUSTLE_LIST}
+
+# Testing a sturdier setup package against Dragapult pressure`;
+
+const CRUSTLE_LIST_V3 = `${CRUSTLE_LIST}
+
+# Small anti-control flex without changing the shell`;
+
 const DECK_BLUEPRINTS = [
   {
     key: "ragingBolt",
-    name: "Playtest 250 - Raging Bolt Lab",
+    name: "Playtest 1000 - Raging Bolt Lab",
     archetype: "Raging Bolt",
     versions: [
       {
@@ -688,13 +833,31 @@ const DECK_BLUEPRINTS = [
         name: "v3 Anti-Bench",
         decklist: CLEAN_RAGING_BOLT_V3,
         notes: "Current active test version for the Mega Greninja leak.",
+        is_active: false,
+      },
+      {
+        key: "v4_greninja",
+        name: "v4 Greninja Plan",
+        decklist: `${CLEAN_RAGING_BOLT_V3}
+
+# Narrow focus build for Mega Greninja and turn-order recovery`,
+        notes: "Sharper Mega Greninja plan with cleaner anti-bench sequencing.",
+        is_active: false,
+      },
+      {
+        key: "v5_latecycle",
+        name: "v5 Late-Cycle",
+        decklist: `${CLEAN_RAGING_BOLT_V3}
+
+# Small late-cycle consistency tune after weeks of reps`,
+        notes: "Current active version after the broader 1000-game cycle.",
         is_active: true,
       },
     ],
   },
   {
     key: "dragapult",
-    name: "Playtest 250 - Dragapult Dusknoir",
+    name: "Playtest 1000 - Dragapult Dusknoir",
     archetype: "Dragapult",
     versions: [
       {
@@ -718,11 +881,20 @@ const DECK_BLUEPRINTS = [
         notes: "Testing a greedier package for prizing lines.",
         is_active: false,
       },
+      {
+        key: "v4_latecycle",
+        name: "v4 Late-Cycle",
+        decklist: `${DRAGAPULT_PRIZE_LIST}
+
+# Slightly sturdier support counts after broader matchup testing`,
+        notes: "Late-cycle refinement after the sequencing leak was understood better.",
+        is_active: false,
+      },
     ],
   },
   {
     key: "greninja",
-    name: "Playtest 250 - Mega Greninja Tempo",
+    name: "Playtest 1000 - Mega Greninja Tempo",
     archetype: "Mega Greninja",
     versions: [
       {
@@ -745,7 +917,7 @@ const DECK_BLUEPRINTS = [
   },
   {
     key: "charizard",
-    name: "Playtest 250 - Charizard Pressure",
+    name: "Playtest 1000 - Charizard Pressure",
     archetype: "Charizard",
     versions: [
       {
@@ -768,7 +940,7 @@ const DECK_BLUEPRINTS = [
   },
   {
     key: "rogueBox",
-    name: "Playtest 250 - Rogue Box",
+    name: "Playtest 1000 - Rogue Box",
     archetype: "Unknown",
     versions: [
       {
@@ -789,7 +961,7 @@ const DECK_BLUEPRINTS = [
   },
   {
     key: "controlLab",
-    name: "Playtest 250 - Control Counterlab",
+    name: "Playtest 1000 - Control Counterlab",
     archetype: "Gholdengo",
     versions: [
       {
@@ -812,7 +984,7 @@ const DECK_BLUEPRINTS = [
   },
   {
     key: "gardevoir",
-    name: "Playtest 250 - Gardevoir Refinement",
+    name: "Playtest 1000 - Gardevoir Refinement",
     archetype: "Gardevoir",
     versions: [
       {
@@ -833,7 +1005,7 @@ const DECK_BLUEPRINTS = [
   },
   {
     key: "experimental",
-    name: "Playtest 250 - Experimental Turbo",
+    name: "Playtest 1000 - Experimental Turbo",
     archetype: "Miraidon",
     versions: [
       {
@@ -848,6 +1020,118 @@ const DECK_BLUEPRINTS = [
         name: "v2 Trimmed",
         decklist: EXPERIMENTAL_TRIMMED,
         notes: "Still noisy, but cleaner for short race testing.",
+        is_active: true,
+      },
+    ],
+  },
+  {
+    key: "slowking",
+    name: "Playtest 1000 - Slowking Grid",
+    archetype: "Slowking",
+    versions: [
+      {
+        key: "v1_baseline",
+        name: "v1 Baseline",
+        decklist: SLOWKING_LIST,
+        notes: "Baseline Slowking shell before the cleaner candy package.",
+        is_active: false,
+      },
+      {
+        key: "v2_candy",
+        name: "v2 Candy Balance",
+        decklist: SLOWKING_LIST_V2,
+        notes: "Healthier setup version that should look better over time.",
+        is_active: false,
+      },
+      {
+        key: "v3_disruption",
+        name: "v3 Disruption",
+        decklist: SLOWKING_LIST_V3,
+        notes: "Current active Slowking list after heavier ladder reps.",
+        is_active: true,
+      },
+    ],
+  },
+  {
+    key: "zoroark",
+    name: "Playtest 1000 - Zoroark Curve",
+    archetype: "N's Zoroark",
+    versions: [
+      {
+        key: "v1_baseline",
+        name: "v1 Baseline",
+        decklist: ZOROARK_LIST,
+        notes: "Straight curve list before extra draw smoothing.",
+        is_active: false,
+      },
+      {
+        key: "v2_draw",
+        name: "v2 Draw Smoothing",
+        decklist: ZOROARK_LIST_V2,
+        notes: "Cleaner midgame draw support into longer rounds.",
+        is_active: false,
+      },
+      {
+        key: "v3_lowcurve",
+        name: "v3 Low Curve",
+        decklist: ZOROARK_LIST_V3,
+        notes: "Current active list with faster pressure and lower sample size.",
+        is_active: true,
+      },
+    ],
+  },
+  {
+    key: "ogerhydra",
+    name: "Playtest 1000 - Ogerpon Hydrapple Lab",
+    archetype: "Ogerpon Meganium Hydrapple",
+    versions: [
+      {
+        key: "v1_fullshell",
+        name: "v1 Full Shell",
+        decklist: HYDRAPPLE_LIST,
+        notes: "Initial full shell before trimming dead support slots.",
+        is_active: false,
+      },
+      {
+        key: "v2_cleaner",
+        name: "v2 Cleaner Setup",
+        decklist: HYDRAPPLE_LIST_V2,
+        notes: "Cleaner setup counts and better candy pacing.",
+        is_active: false,
+      },
+      {
+        key: "v3_greninja",
+        name: "v3 Greninja Plan",
+        decklist: HYDRAPPLE_LIST_V3,
+        notes: "Current active list with narrow anti-Greninja changes.",
+        is_active: true,
+      },
+    ],
+  },
+  {
+    key: "crustle",
+    name: "Playtest 1000 - Crustle Wall",
+    archetype: "Crustle",
+    versions: [
+      {
+        key: "v1_baseline",
+        name: "v1 Baseline",
+        decklist: CRUSTLE_LIST,
+        notes: "Baseline Crustle shell for current local testing.",
+        is_active: false,
+      },
+      {
+        key: "v2_setup",
+        name: "v2 Setup Stability",
+        decklist: CRUSTLE_LIST_V2,
+        notes: "Improved setup package without changing the core plan.",
+        is_active: false,
+      },
+      {
+        key: "v3_control",
+        name: "v3 Control Respect",
+        decklist: CRUSTLE_LIST_V3,
+        notes: "Current active version with small anti-control respect.",
         is_active: true,
       },
     ],
@@ -924,6 +1208,7 @@ function buildMatch({
   sequencingQuality,
   issueTags,
   positiveTags,
+  customTags,
   cardsShined,
   cardsFailed,
   notes,
@@ -958,6 +1243,7 @@ function buildMatch({
         sequencing_quality: sequencingQuality,
         issue_tags: issueTags,
         positive_tags: positiveTags,
+        custom_tags: customTags,
         cards_shined: cardsShined,
         cards_failed: cardsFailed,
       },
@@ -1063,6 +1349,7 @@ function generateSeedMatches(userId, created) {
     qualityProfile,
     forcedIssueFn,
     forcedPositiveFn,
+    customTagsFn,
     cardsFn,
     contextFn,
   }) {
@@ -1074,6 +1361,7 @@ function generateSeedMatches(userId, created) {
       const sequencingQuality = qualityProfile.sequencing(result, gameIndex);
       const forcedIssues = forcedIssueFn ? forcedIssueFn(result, gameIndex) : [];
       const forcedPositives = forcedPositiveFn ? forcedPositiveFn(result, gameIndex) : [];
+      const customTags = unique(customTagsFn ? customTagsFn(result, gameIndex) : []);
       const { issueTags, positiveTags } = tagSet(result, forcedIssues, forcedPositives);
       const cards = cardsFn ? cardsFn(result, gameIndex) : { cardsShined: [], cardsFailed: [] };
       const extraContext = contextFn ? contextFn(result, gameIndex) : {};
@@ -1098,6 +1386,7 @@ function generateSeedMatches(userId, created) {
         sequencingQuality,
         issueTags,
         positiveTags,
+        customTags,
         cardsShined: cards.cardsShined,
         cardsFailed: cards.cardsFailed,
         notes,
@@ -1658,8 +1947,905 @@ function generateSeedMatches(userId, created) {
     contextFn: () => ({ gameContext: "testing", testingSessionName: "Experimental trimmed" }),
   });
 
-  if (records.length !== 250) {
-    throw new Error(`Expected 250 generated matches, received ${records.length}.`);
+  // Raging Bolt additional scale reps - 160 total
+  buildSeries({
+    deckKey: "ragingBolt",
+    versionKey: "v4_greninja",
+    opponent: "Mega Greninja",
+    games: 20,
+    resultPattern: (i) => (i < 7 ? "win" : i < 18 ? "loss" : "tie"),
+    turnPattern: (i) => (i % 6 === 0 ? null : i % 2 === 0),
+    qualityProfile: stableProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["bench pressure", "missed setup"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["good prize plan", "key tech mattered"] : []),
+    customTagsFn: (result) => (result === "loss" ? ["beta:greedy keep"] : ["beta:tempo pivot"]),
+    cardsFn: () => ({ cardsShined: ["Earthen Vessel"], cardsFailed: ["Switch Cart"] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "RB greninja cycle two", focusMatchup: "Mega Greninja" }),
+  });
+
+  buildSeries({
+    deckKey: "ragingBolt",
+    versionKey: "v5_latecycle",
+    opponent: "Mega Greninja",
+    games: 20,
+    resultPattern: (i) => (i < 9 ? "win" : i < 17 ? "loss" : "tie"),
+    turnPattern: (i) => (i % 5 === 0 ? null : i % 2 === 0),
+    qualityProfile: stableProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["bench pressure", "poor prize trade"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["strong recovery", "good prize plan"] : []),
+    customTagsFn: (_result, i) => (i % 4 === 0 ? ["beta:bench tax"] : ["beta:clean race"]),
+    cardsFn: () => ({ cardsShined: ["Teal Mask Ogerpon ex"], cardsFailed: ["Lumineon V"] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "RB late-cycle greninja", focusMatchup: "Mega Greninja" }),
+  });
+
+  buildSeries({
+    deckKey: "ragingBolt",
+    versionKey: "v5_latecycle",
+    opponent: "Dragapult Dusknoir",
+    games: 20,
+    resultPattern: (i) => (i < 10 ? "win" : i < 17 ? "loss" : "tie"),
+    turnPattern: (i) => (i % 4 === 0 ? false : i % 2 === 0),
+    qualityProfile: stableProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["bad sequencing", "tempo loss"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["clean sequencing"] : []),
+    customTagsFn: () => ["beta:counter-swing"],
+    cardsFn: () => ({ cardsShined: ["Mimikyu"], cardsFailed: ["Counter Catcher"] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "RB late-cycle dragapult" }),
+  });
+
+  buildSeries({
+    deckKey: "ragingBolt",
+    versionKey: "v4_greninja",
+    opponent: "Slowking",
+    games: 10,
+    resultPattern: (i) => (i < 5 ? "win" : i < 8 ? "loss" : "tie"),
+    turnPattern: (i) => (i % 3 === 0 ? null : i % 2 === 0),
+    qualityProfile: stableProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["supporter drought"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["strong setup"] : []),
+    customTagsFn: () => ["beta:late pressure"],
+    cardsFn: () => ({ cardsShined: ["Munkidori"], cardsFailed: [] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "RB slowking check" }),
+  });
+
+  buildSeries({
+    deckKey: "ragingBolt",
+    versionKey: "v5_latecycle",
+    opponent: "N's Zoroark",
+    games: 10,
+    resultPattern: (i) => (i < 6 ? "win" : i < 9 ? "loss" : "tie"),
+    turnPattern: (i) => (i % 5 === 0 ? null : i % 2 === 0),
+    qualityProfile: stableProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["matchup knowledge"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["strong setup"] : []),
+    customTagsFn: () => ["beta:race map"],
+    cardsFn: () => ({ cardsShined: ["Raging Bolt ex"], cardsFailed: [] }),
+    contextFn: () => ({ gameContext: "competitive", eventName: "Regional prep set", roundNumber: "4" }),
+  });
+
+  // Dragapult additional reps - 130 total
+  buildSeries({
+    deckKey: "dragapult",
+    versionKey: "v2_consistency",
+    opponent: "Slowking",
+    games: 20,
+    resultPattern: (i) => (i < 11 ? "win" : i < 17 ? "loss" : "tie"),
+    turnPattern: (i) => (i % 6 === 0 ? null : i % 2 === 0),
+    qualityProfile: stableProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["bad sequencing", "tempo loss"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["clean sequencing", "good prize plan"] : []),
+    customTagsFn: () => ["beta:tempo pivot"],
+    cardsFn: () => ({ cardsShined: ["Dusknoir"], cardsFailed: ["Rare Candy"] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Dragapult slowking map" }),
+  });
+
+  buildSeries({
+    deckKey: "dragapult",
+    versionKey: "v4_latecycle",
+    opponent: "Mega Greninja",
+    games: 20,
+    resultPattern: (i) => (i < 9 ? "win" : i < 17 ? "loss" : "tie"),
+    turnPattern: (i) => (i % 5 === 0 ? null : i % 2 === 0),
+    qualityProfile: stableProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["missed setup", "bad sequencing"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["strong recovery"] : []),
+    customTagsFn: () => ["beta:late drag line"],
+    cardsFn: () => ({ cardsShined: ["Dragapult ex"], cardsFailed: ["Counter Catcher"] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Dragapult late-cycle frogs", focusMatchup: "Mega Greninja" }),
+  });
+
+  buildSeries({
+    deckKey: "dragapult",
+    versionKey: "v4_latecycle",
+    opponent: "Crustle",
+    games: 15,
+    resultPattern: (i) => (i < 8 ? "win" : i < 13 ? "loss" : "tie"),
+    turnPattern: (i) => (i % 4 === 0 ? false : i % 2 === 0),
+    qualityProfile: stableProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["poor prize trade"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["good prize plan"] : []),
+    customTagsFn: () => ["beta:wall crack"],
+    cardsFn: () => ({ cardsShined: ["Dusknoir"], cardsFailed: [] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Dragapult crustle wall" }),
+  });
+
+  buildSeries({
+    deckKey: "dragapult",
+    versionKey: "v3_prize",
+    opponent: "N's Zoroark",
+    games: 15,
+    resultPattern: (i) => (i < 7 ? "win" : i < 12 ? "loss" : "tie"),
+    turnPattern: (i) => (i % 3 === 0 ? null : i % 2 === 0),
+    qualityProfile: stableProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["tempo loss"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["clean sequencing"] : []),
+    customTagsFn: () => ["beta:small edge"],
+    cardsFn: () => ({ cardsShined: ["Dragapult ex"], cardsFailed: [] }),
+    contextFn: () => ({ gameContext: "competitive", eventName: "Regional prep set", roundNumber: "2" }),
+  });
+
+  buildSeries({
+    deckKey: "dragapult",
+    versionKey: "v2_consistency",
+    opponent: "Ogerpon Meganium Hydrapple",
+    games: 15,
+    resultPattern: (i) => (i < 6 ? "win" : i < 12 ? "loss" : "tie"),
+    turnPattern: (i) => (i % 4 === 0 ? null : i % 2 === 0),
+    qualityProfile: stableProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["bench pressure", "bad sequencing"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["good prize plan"] : []),
+    customTagsFn: () => ["beta:grass squeeze"],
+    cardsFn: () => ({ cardsShined: ["Dreepy"], cardsFailed: [] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Dragapult hydra reps" }),
+  });
+
+  // Mega Greninja additional reps - 95 total
+  buildSeries({
+    deckKey: "greninja",
+    versionKey: "v2_clean",
+    opponent: "Raging Bolt",
+    games: 20,
+    resultPattern: (i) => (i < 11 ? "win" : i < 16 ? "loss" : "tie"),
+    turnPattern: (i) => (i % 6 === 0 ? null : i % 2 === 0),
+    qualityProfile: stableProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["supporter drought"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["key tech mattered", "strong setup"] : []),
+    customTagsFn: () => ["beta:clean pressure"],
+    cardsFn: () => ({ cardsShined: ["Greninja ex"], cardsFailed: ["Counter Catcher"] }),
+    contextFn: () => ({ gameContext: "competitive", eventName: "NAIC prep night", roundNumber: "1", focusMatchup: "Raging Bolt" }),
+  });
+
+  buildSeries({
+    deckKey: "greninja",
+    versionKey: "v2_clean",
+    opponent: "Charizard ex",
+    games: 20,
+    resultPattern: (i) => (i < 12 ? "win" : i < 17 ? "loss" : "tie"),
+    turnPattern: (i) => (i % 5 === 0 ? null : i % 2 === 0),
+    qualityProfile: stableProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["stadium lock"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["strong recovery"] : []),
+    customTagsFn: () => ["beta:clear route"],
+    cardsFn: () => ({ cardsShined: ["Pidgeot ex"], cardsFailed: [] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Greninja zard cycle" }),
+  });
+
+  buildSeries({
+    deckKey: "greninja",
+    versionKey: "v1_raw",
+    opponent: "Slowking",
+    games: 15,
+    resultPattern: (i) => (i < 6 ? "win" : i < 12 ? "loss" : "tie"),
+    turnPattern: (i) => (i % 3 === 0 ? false : i % 2 === 0),
+    qualityProfile: stableProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["bad sequencing"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["strong setup"] : []),
+    customTagsFn: () => ["beta:slow pivot"],
+    cardsFn: () => ({ cardsShined: ["Frogadier"], cardsFailed: [] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Greninja slowking check" }),
+  });
+
+  buildSeries({
+    deckKey: "greninja",
+    versionKey: "v2_clean",
+    opponent: "N's Zoroark",
+    games: 10,
+    resultPattern: (i) => (i < 5 ? "win" : i < 8 ? "loss" : "tie"),
+    turnPattern: (i) => (i % 4 === 0 ? null : i % 2 === 0),
+    qualityProfile: stableProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["prize map error"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["clean sequencing"] : []),
+    customTagsFn: () => ["beta:trade route"],
+    cardsFn: () => ({ cardsShined: ["Greninja ex"], cardsFailed: [] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Greninja zoroark reps" }),
+  });
+
+  buildSeries({
+    deckKey: "greninja",
+    versionKey: "v1_raw",
+    opponent: "Rocket's Honchkrow",
+    games: 10,
+    resultPattern: (i) => (i < 2 ? "win" : i < 7 ? "loss" : "tie"),
+    turnPattern: (i) => (i % 2 === 0 ? false : null),
+    qualityProfile: badStartProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["matchup knowledge"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["strong setup"] : []),
+    customTagsFn: () => ["beta:flier tax"],
+    cardsFn: () => ({ cardsShined: [], cardsFailed: ["Pidgeot ex"] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Greninja honchkrow small sample" }),
+  });
+
+  // Charizard additional reps - 110 total
+  buildSeries({
+    deckKey: "charizard",
+    versionKey: "v2_itemlock",
+    opponent: "Slowking",
+    games: 20,
+    resultPattern: (i) => (i < 12 ? "win" : i < 17 ? "loss" : "tie"),
+    turnPattern: (i) => (i < 11 ? true : i % 4 === 0 ? null : false),
+    qualityProfile: stableProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["missed setup"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["good prize plan"] : []),
+    customTagsFn: () => ["beta:first swing"],
+    cardsFn: () => ({ cardsShined: ["Charizard ex"], cardsFailed: ["Rare Candy"] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Zard slowking reps" }),
+  });
+
+  buildSeries({
+    deckKey: "charizard",
+    versionKey: "v2_itemlock",
+    opponent: "Mega Greninja",
+    games: 20,
+    resultPattern: (i) => (i < 7 ? "win" : i < 16 ? "loss" : "tie"),
+    turnPattern: (i) => (i < 10 ? true : i % 5 === 0 ? null : false),
+    qualityProfile: stableProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["missed setup", "item lock"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["strong recovery"] : []),
+    customTagsFn: () => ["beta:awkward opener"],
+    cardsFn: () => ({ cardsShined: ["Canceling Cologne"], cardsFailed: [] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Zard frogs expanded" }),
+  });
+
+  buildSeries({
+    deckKey: "charizard",
+    versionKey: "v1_straight",
+    opponent: "Crustle",
+    games: 15,
+    resultPattern: (i) => (i < 8 ? "win" : i < 12 ? "loss" : "tie"),
+    turnPattern: (i) => (i < 8 ? true : i % 3 === 0 ? null : false),
+    qualityProfile: stableProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["poor prize trade"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["good prize plan"] : []),
+    customTagsFn: () => ["beta:wall math"],
+    cardsFn: () => ({ cardsShined: ["Boss's Orders"], cardsFailed: [] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Zard crustle map" }),
+  });
+
+  buildSeries({
+    deckKey: "charizard",
+    versionKey: "v2_itemlock",
+    opponent: "Ogerpon Meganium Hydrapple",
+    games: 10,
+    resultPattern: (i) => (i < 5 ? "win" : i < 8 ? "loss" : "tie"),
+    turnPattern: (i) => (i % 5 === 0 ? null : i % 2 === 0),
+    qualityProfile: stableProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["tempo loss"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["clean sequencing"] : []),
+    customTagsFn: () => ["beta:grass tax"],
+    cardsFn: () => ({ cardsShined: ["Artazon"], cardsFailed: [] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Zard hydra reps" }),
+  });
+
+  buildSeries({
+    deckKey: "charizard",
+    versionKey: "v2_itemlock",
+    opponent: "Rocket's Honchkrow",
+    games: 10,
+    resultPattern: (i) => (i < 3 ? "win" : i < 8 ? "loss" : "tie"),
+    turnPattern: (i) => (i % 3 === 0 ? false : null),
+    qualityProfile: badStartProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["matchup knowledge"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["strong setup"] : []),
+    customTagsFn: () => ["beta:bird tax"],
+    cardsFn: () => ({ cardsShined: [], cardsFailed: ["Buddy-Buddy Poffin"] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Zard honchkrow scare sample" }),
+  });
+
+  // Rogue Box additional noise - 25 total
+  buildSeries({
+    deckKey: "rogueBox",
+    versionKey: "v2_trimmed",
+    opponent: "Lillie's Clefairy",
+    games: 5,
+    resultPattern: (i) => (i === 0 ? "win" : i === 1 ? "loss" : i === 2 ? "tie" : i === 3 ? "loss" : "win"),
+    turnPattern: (i) => (i % 2 === 0 ? null : false),
+    qualityProfile: evenProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["matchup knowledge"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["key tech mattered"] : []),
+    customTagsFn: () => ["beta:rogue line"],
+    cardsFn: () => ({ cardsShined: [], cardsFailed: [] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Rogue clefairy check" }),
+  });
+
+  buildSeries({
+    deckKey: "rogueBox",
+    versionKey: "v2_trimmed",
+    opponent: "Festival Lead",
+    games: 5,
+    resultPattern: (i) => (i === 0 ? "loss" : i === 1 ? "tie" : i === 2 ? "win" : i === 3 ? "loss" : "tie"),
+    turnPattern: () => null,
+    qualityProfile: evenProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["tempo loss"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["strong setup"] : []),
+    customTagsFn: () => ["beta:rogue swing"],
+    cardsFn: () => ({ cardsShined: [], cardsFailed: [] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Rogue festival noise" }),
+  });
+
+  buildSeries({
+    deckKey: "rogueBox",
+    versionKey: "v1_meta",
+    opponent: "Rocket's Honchkrow",
+    games: 5,
+    resultPattern: (i) => (i === 0 ? "loss" : i === 1 ? "loss" : i === 2 ? "tie" : i === 3 ? "win" : "loss"),
+    turnPattern: (i) => (i % 2 === 0 ? null : false),
+    qualityProfile: evenProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["matchup knowledge"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["strong recovery"] : []),
+    customTagsFn: () => ["beta:rogue bird"],
+    cardsFn: () => ({ cardsShined: [], cardsFailed: [] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Rogue honchkrow scare" }),
+  });
+
+  // Control additional reps - 55 total
+  buildSeries({
+    deckKey: "controlLab",
+    versionKey: "v2_ladder",
+    opponent: "Slowking",
+    games: 10,
+    resultPattern: (i) => (i < 4 ? "win" : i < 8 ? "loss" : "tie"),
+    turnPattern: (i) => (i % 4 === 0 ? null : false),
+    qualityProfile: stableProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["item lock"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["strong recovery"] : []),
+    customTagsFn: () => ["beta:control map"],
+    cardsFn: () => ({ cardsShined: ["Temple of Sinnoh"], cardsFailed: [] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Counterlab slowking reps" }),
+  });
+
+  buildSeries({
+    deckKey: "controlLab",
+    versionKey: "v2_ladder",
+    opponent: "Charizard ex",
+    games: 10,
+    resultPattern: (i) => (i < 1 ? "win" : i < 9 ? "loss" : "tie"),
+    turnPattern: (i) => (i % 2 === 0 ? false : true),
+    qualityProfile: stableProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["item lock", "supporter drought"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["good prize plan"] : []),
+    customTagsFn: () => ["beta:lock tax"],
+    cardsFn: () => ({ cardsShined: [], cardsFailed: ["Gholdengo ex"] }),
+    contextFn: () => ({ gameContext: "competitive", eventName: "Locals finals", roundNumber: "1" }),
+  });
+
+  buildSeries({
+    deckKey: "controlLab",
+    versionKey: "v1_counter",
+    opponent: "Dragapult",
+    games: 10,
+    resultPattern: (i) => (i < 3 ? "win" : i < 8 ? "loss" : "tie"),
+    turnPattern: (i) => (i % 5 === 0 ? null : false),
+    qualityProfile: stableProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["item lock", "tempo loss"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["strong recovery"] : []),
+    customTagsFn: () => ["beta:slow prison"],
+    cardsFn: () => ({ cardsShined: ["Cornerstone Mask Ogerpon ex"], cardsFailed: [] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Counterlab dragapult reps" }),
+  });
+
+  buildSeries({
+    deckKey: "controlLab",
+    versionKey: "v2_ladder",
+    opponent: "Mega Greninja",
+    games: 10,
+    resultPattern: (i) => (i < 3 ? "win" : i < 8 ? "loss" : "tie"),
+    turnPattern: (i) => (i % 4 === 0 ? null : false),
+    qualityProfile: stableProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["item lock"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["strong setup"] : []),
+    customTagsFn: () => ["beta:lock loop"],
+    cardsFn: () => ({ cardsShined: [], cardsFailed: [] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Counterlab greninja reps" }),
+  });
+
+  // Gardevoir additional reps - 90 total
+  buildSeries({
+    deckKey: "gardevoir",
+    versionKey: "v2_recovery",
+    opponent: "Slowking",
+    games: 15,
+    resultPattern: (i) => (i < 9 ? "win" : i < 13 ? "loss" : "tie"),
+    turnPattern: (i) => (i % 6 === 0 ? null : i % 2 === 0),
+    qualityProfile: stableProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["tempo loss"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["key tech mattered", "strong recovery"] : []),
+    customTagsFn: () => ["beta:resource line"],
+    cardsFn: () => ({ cardsShined: ["Munkidori"], cardsFailed: [] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Gardy slowking plan" }),
+  });
+
+  buildSeries({
+    deckKey: "gardevoir",
+    versionKey: "v2_recovery",
+    opponent: "Dragapult",
+    games: 15,
+    resultPattern: (i) => (i < 8 ? "win" : i < 12 ? "loss" : "tie"),
+    turnPattern: (i) => (i % 5 === 0 ? null : i % 2 === 0),
+    qualityProfile: stableProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["poor prize trade"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["key tech mattered"] : []),
+    customTagsFn: () => ["beta:trade loop"],
+    cardsFn: () => ({ cardsShined: ["Drifloon"], cardsFailed: [] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Gardy dragapult cleanup" }),
+  });
+
+  buildSeries({
+    deckKey: "gardevoir",
+    versionKey: "v1_baseline",
+    opponent: "N's Zoroark",
+    games: 10,
+    resultPattern: (i) => (i < 4 ? "win" : i < 8 ? "loss" : "tie"),
+    turnPattern: (i) => (i % 4 === 0 ? null : i % 2 === 0),
+    qualityProfile: badStartProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["supporter drought"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["strong recovery"] : []),
+    customTagsFn: () => ["beta:thin opener"],
+    cardsFn: () => ({ cardsShined: [], cardsFailed: ["Rare Candy"] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Gardy zoroark baseline" }),
+  });
+
+  buildSeries({
+    deckKey: "gardevoir",
+    versionKey: "v2_recovery",
+    opponent: "Ogerpon Meganium Hydrapple",
+    games: 10,
+    resultPattern: (i) => (i < 6 ? "win" : i < 8 ? "loss" : "tie"),
+    turnPattern: (i) => (i % 3 === 0 ? false : i % 2 === 0),
+    qualityProfile: stableProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["bench pressure"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["key tech mattered"] : []),
+    customTagsFn: () => ["beta:grass pivot"],
+    cardsFn: () => ({ cardsShined: ["Bravery Charm"], cardsFailed: [] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Gardy hydra route" }),
+  });
+
+  buildSeries({
+    deckKey: "gardevoir",
+    versionKey: "v2_recovery",
+    opponent: "Lillie's Clefairy",
+    games: 10,
+    resultPattern: (i) => (i < 7 ? "win" : i < 9 ? "loss" : "tie"),
+    turnPattern: (i) => (i % 5 === 0 ? null : i % 2 === 0),
+    qualityProfile: stableProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["matchup knowledge"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["good prize plan"] : []),
+    customTagsFn: () => ["beta:fairy check"],
+    cardsFn: () => ({ cardsShined: ["Munkidori"], cardsFailed: [] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Gardy clefairy reps" }),
+  });
+
+  // Experimental extra low-confidence reps - 25 total
+  buildSeries({
+    deckKey: "experimental",
+    versionKey: "v2_trimmed",
+    opponent: "Slowking",
+    games: 5,
+    resultPattern: (i) => (i === 0 ? "win" : i === 1 ? "tie" : "loss"),
+    turnPattern: () => null,
+    qualityProfile: evenProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["matchup knowledge"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["strong setup"] : []),
+    customTagsFn: () => ["beta:weird line"],
+    cardsFn: () => ({ cardsShined: [], cardsFailed: [] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Experimental slowking noise" }),
+  });
+
+  buildSeries({
+    deckKey: "experimental",
+    versionKey: "v2_trimmed",
+    opponent: "Rocket's Honchkrow",
+    games: 5,
+    resultPattern: (i) => (i === 0 ? "loss" : i === 1 ? "tie" : i === 2 ? "win" : "loss"),
+    turnPattern: (i) => (i % 2 === 0 ? null : false),
+    qualityProfile: evenProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["matchup knowledge"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["key tech mattered"] : []),
+    customTagsFn: () => ["beta:bird scare"],
+    cardsFn: () => ({ cardsShined: [], cardsFailed: [] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Experimental honchkrow sample" }),
+  });
+
+  // Slowking new deck - 95 matches total
+  buildSeries({
+    deckKey: "slowking",
+    versionKey: "v1_baseline",
+    opponent: "Dragapult",
+    games: 20,
+    resultPattern: (i) => (i < 8 ? "win" : i < 16 ? "loss" : "tie"),
+    turnPattern: (i) => (i % 5 === 0 ? null : i % 2 === 0),
+    qualityProfile: stableProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["missed setup", "bad sequencing"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["clean sequencing"] : []),
+    customTagsFn: () => ["beta:slow lane"],
+    cardsFn: () => ({ cardsShined: ["Slowking ex"], cardsFailed: ["Rare Candy"] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Slowking dragapult baseline" }),
+  });
+
+  buildSeries({
+    deckKey: "slowking",
+    versionKey: "v2_candy",
+    opponent: "Mega Greninja",
+    games: 20,
+    resultPattern: (i) => (i < 10 ? "win" : i < 16 ? "loss" : "tie"),
+    turnPattern: (i) => (i % 6 === 0 ? null : i % 2 === 0),
+    qualityProfile: stableProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["missed setup"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["strong recovery"] : []),
+    customTagsFn: () => ["beta:slow candy"],
+    cardsFn: () => ({ cardsShined: ["Slowking ex"], cardsFailed: [] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Slowking frogs cleanup" }),
+  });
+
+  buildSeries({
+    deckKey: "slowking",
+    versionKey: "v3_disruption",
+    opponent: "Charizard ex",
+    games: 20,
+    resultPattern: (i) => (i < 12 ? "win" : i < 17 ? "loss" : "tie"),
+    turnPattern: (i) => (i < 10 ? false : i % 5 === 0 ? null : true),
+    qualityProfile: stableProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["tempo loss"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["good prize plan"] : []),
+    customTagsFn: () => ["beta:slow trap"],
+    cardsFn: () => ({ cardsShined: ["Munkidori"], cardsFailed: [] }),
+    contextFn: () => ({ gameContext: "competitive", eventName: "League challenge", roundNumber: "2" }),
+  });
+
+  buildSeries({
+    deckKey: "slowking",
+    versionKey: "v3_disruption",
+    opponent: "Raging Bolt",
+    games: 20,
+    resultPattern: (i) => (i < 7 ? "win" : i < 17 ? "loss" : "tie"),
+    turnPattern: (i) => (i % 4 === 0 ? null : false),
+    qualityProfile: badStartProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["bench pressure", "missed setup"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["strong recovery"] : []),
+    customTagsFn: () => ["beta:bolt squeeze"],
+    cardsFn: () => ({ cardsShined: [], cardsFailed: ["Slowpoke"] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Slowking bolt problem" }),
+  });
+
+  buildSeries({
+    deckKey: "slowking",
+    versionKey: "v2_candy",
+    opponent: "Rocket's Honchkrow",
+    games: 5,
+    resultPattern: (i) => (i < 1 ? "win" : i < 4 ? "loss" : "tie"),
+    turnPattern: () => null,
+    qualityProfile: evenProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["matchup knowledge"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["strong setup"] : []),
+    customTagsFn: () => ["beta:bird jam"],
+    cardsFn: () => ({ cardsShined: [], cardsFailed: [] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Slowking honchkrow scare" }),
+  });
+
+  buildSeries({
+    deckKey: "slowking",
+    versionKey: "v3_disruption",
+    opponent: "Festival Lead",
+    games: 5,
+    resultPattern: (i) => (i < 3 ? "win" : i === 3 ? "loss" : "tie"),
+    turnPattern: (i) => (i % 2 === 0 ? false : null),
+    qualityProfile: stableProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["poor prize trade"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["clean sequencing"] : []),
+    customTagsFn: () => ["beta:festival crack"],
+    cardsFn: () => ({ cardsShined: ["Slowking ex"], cardsFailed: [] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Slowking festival check" }),
+  });
+
+  buildSeries({
+    deckKey: "slowking",
+    versionKey: "v1_baseline",
+    opponent: "Lillie's Clefairy",
+    games: 5,
+    resultPattern: (i) => (i < 2 ? "win" : i < 4 ? "loss" : "tie"),
+    turnPattern: (i) => (i % 2 === 0 ? true : null),
+    qualityProfile: stableProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["matchup knowledge"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["good prize plan"] : []),
+    customTagsFn: () => ["beta:fairy tax"],
+    cardsFn: () => ({ cardsShined: [], cardsFailed: [] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Slowking clefairy check" }),
+  });
+
+  // Zoroark new deck - 80 matches total
+  buildSeries({
+    deckKey: "zoroark",
+    versionKey: "v1_baseline",
+    opponent: "Dragapult",
+    games: 20,
+    resultPattern: (i) => (i < 9 ? "win" : i < 16 ? "loss" : "tie"),
+    turnPattern: (i) => (i % 5 === 0 ? null : i % 2 === 0),
+    qualityProfile: stableProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["bad sequencing"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["clean sequencing"] : []),
+    customTagsFn: () => ["beta:zoro tempo"],
+    cardsFn: () => ({ cardsShined: ["N's Zoroark"], cardsFailed: [] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Zoroark dragapult baseline" }),
+  });
+
+  buildSeries({
+    deckKey: "zoroark",
+    versionKey: "v2_draw",
+    opponent: "Mega Greninja",
+    games: 20,
+    resultPattern: (i) => (i < 10 ? "win" : i < 17 ? "loss" : "tie"),
+    turnPattern: (i) => (i % 4 === 0 ? null : i % 2 === 0),
+    qualityProfile: stableProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["missed setup"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["strong recovery"] : []),
+    customTagsFn: () => ["beta:zoro draw"],
+    cardsFn: () => ({ cardsShined: ["N's Zoroark"], cardsFailed: [] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Zoroark frogs cleanup" }),
+  });
+
+  buildSeries({
+    deckKey: "zoroark",
+    versionKey: "v3_lowcurve",
+    opponent: "Charizard ex",
+    games: 15,
+    resultPattern: (i) => (i < 9 ? "win" : i < 12 ? "loss" : "tie"),
+    turnPattern: (i) => (i < 9 ? true : i % 3 === 0 ? null : false),
+    qualityProfile: stableProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["tempo loss"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["good prize plan"] : []),
+    customTagsFn: () => ["beta:low curve"],
+    cardsFn: () => ({ cardsShined: ["N's Zoroark"], cardsFailed: [] }),
+    contextFn: () => ({ gameContext: "competitive", eventName: "League cup", roundNumber: "5" }),
+  });
+
+  buildSeries({
+    deckKey: "zoroark",
+    versionKey: "v3_lowcurve",
+    opponent: "Slowking",
+    games: 10,
+    resultPattern: (i) => (i < 6 ? "win" : i < 8 ? "loss" : "tie"),
+    turnPattern: (i) => (i % 5 === 0 ? null : i % 2 === 0),
+    qualityProfile: stableProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["matchup knowledge"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["strong setup"] : []),
+    customTagsFn: () => ["beta:slow check"],
+    cardsFn: () => ({ cardsShined: [], cardsFailed: [] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Zoroark slowking sample" }),
+  });
+
+  buildSeries({
+    deckKey: "zoroark",
+    versionKey: "v2_draw",
+    opponent: "Ogerpon Meganium Hydrapple",
+    games: 10,
+    resultPattern: (i) => (i < 4 ? "win" : i < 8 ? "loss" : "tie"),
+    turnPattern: (i) => (i % 3 === 0 ? false : i % 2 === 0),
+    qualityProfile: stableProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["bench pressure"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["key tech mattered"] : []),
+    customTagsFn: () => ["beta:grass block"],
+    cardsFn: () => ({ cardsShined: [], cardsFailed: [] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Zoroark hydra check" }),
+  });
+
+  buildSeries({
+    deckKey: "zoroark",
+    versionKey: "v1_baseline",
+    opponent: "Rocket's Honchkrow",
+    games: 5,
+    resultPattern: (i) => (i < 1 ? "win" : i < 4 ? "loss" : "tie"),
+    turnPattern: () => null,
+    qualityProfile: evenProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["matchup knowledge"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["strong setup"] : []),
+    customTagsFn: () => ["beta:zoro bird"],
+    cardsFn: () => ({ cardsShined: [], cardsFailed: [] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Zoroark honchkrow scare" }),
+  });
+
+  // Ogerpon Hydrapple new deck - 75 matches total
+  buildSeries({
+    deckKey: "ogerhydra",
+    versionKey: "v1_fullshell",
+    opponent: "Raging Bolt",
+    games: 20,
+    resultPattern: (i) => (i < 8 ? "win" : i < 16 ? "loss" : "tie"),
+    turnPattern: (i) => (i % 5 === 0 ? null : i % 2 === 0),
+    qualityProfile: stableProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["bench pressure", "missed setup"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["strong setup"] : []),
+    customTagsFn: () => ["beta:grass shell"],
+    cardsFn: () => ({ cardsShined: ["Hydrapple ex"], cardsFailed: [] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Hydra bolt baseline" }),
+  });
+
+  buildSeries({
+    deckKey: "ogerhydra",
+    versionKey: "v2_cleaner",
+    opponent: "Dragapult",
+    games: 20,
+    resultPattern: (i) => (i < 10 ? "win" : i < 15 ? "loss" : "tie"),
+    turnPattern: (i) => (i % 4 === 0 ? null : i % 2 === 0),
+    qualityProfile: stableProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["bad sequencing"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["good prize plan"] : []),
+    customTagsFn: () => ["beta:hydrapple pivot"],
+    cardsFn: () => ({ cardsShined: ["Meganium"], cardsFailed: [] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Hydra dragapult cleanup" }),
+  });
+
+  buildSeries({
+    deckKey: "ogerhydra",
+    versionKey: "v3_greninja",
+    opponent: "Mega Greninja",
+    games: 15,
+    resultPattern: (i) => (i < 6 ? "win" : i < 12 ? "loss" : "tie"),
+    turnPattern: (i) => (i % 3 === 0 ? false : i % 2 === 0),
+    qualityProfile: stableProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["missed setup", "tempo loss"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["key tech mattered"] : []),
+    customTagsFn: () => ["beta:frog check"],
+    cardsFn: () => ({ cardsShined: ["Hydrapple ex"], cardsFailed: [] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Hydra frogs plan", focusMatchup: "Mega Greninja" }),
+  });
+
+  buildSeries({
+    deckKey: "ogerhydra",
+    versionKey: "v2_cleaner",
+    opponent: "Slowking",
+    games: 10,
+    resultPattern: (i) => (i < 6 ? "win" : i < 8 ? "loss" : "tie"),
+    turnPattern: (i) => (i % 5 === 0 ? null : i % 2 === 0),
+    qualityProfile: stableProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["supporter drought"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["strong recovery"] : []),
+    customTagsFn: () => ["beta:slow plant"],
+    cardsFn: () => ({ cardsShined: ["Meganium"], cardsFailed: [] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Hydra slowking check" }),
+  });
+
+  buildSeries({
+    deckKey: "ogerhydra",
+    versionKey: "v3_greninja",
+    opponent: "Lillie's Clefairy",
+    games: 5,
+    resultPattern: (i) => (i < 3 ? "win" : i === 3 ? "loss" : "tie"),
+    turnPattern: (i) => (i % 2 === 0 ? false : null),
+    qualityProfile: stableProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["matchup knowledge"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["good prize plan"] : []),
+    customTagsFn: () => ["beta:fairy garden"],
+    cardsFn: () => ({ cardsShined: [], cardsFailed: [] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Hydra clefairy check" }),
+  });
+
+  buildSeries({
+    deckKey: "ogerhydra",
+    versionKey: "v1_fullshell",
+    opponent: "Crustle",
+    games: 5,
+    resultPattern: (i) => (i < 2 ? "win" : i < 4 ? "loss" : "tie"),
+    turnPattern: () => null,
+    qualityProfile: stableProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["poor prize trade"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["strong setup"] : []),
+    customTagsFn: () => ["beta:wall vines"],
+    cardsFn: () => ({ cardsShined: [], cardsFailed: [] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Hydra crustle sample" }),
+  });
+
+  // Crustle new deck - 60 matches total
+  buildSeries({
+    deckKey: "crustle",
+    versionKey: "v1_baseline",
+    opponent: "Dragapult",
+    games: 15,
+    resultPattern: (i) => (i < 6 ? "win" : i < 12 ? "loss" : "tie"),
+    turnPattern: (i) => (i % 5 === 0 ? null : false),
+    qualityProfile: stableProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["missed setup"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["good prize plan"] : []),
+    customTagsFn: () => ["beta:wall line"],
+    cardsFn: () => ({ cardsShined: ["Crustle"], cardsFailed: [] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Crustle dragapult wall" }),
+  });
+
+  buildSeries({
+    deckKey: "crustle",
+    versionKey: "v2_setup",
+    opponent: "Mega Greninja",
+    games: 15,
+    resultPattern: (i) => (i < 7 ? "win" : i < 12 ? "loss" : "tie"),
+    turnPattern: (i) => (i % 4 === 0 ? null : false),
+    qualityProfile: stableProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["tempo loss"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["strong recovery"] : []),
+    customTagsFn: () => ["beta:stone pivot"],
+    cardsFn: () => ({ cardsShined: ["Crustle"], cardsFailed: [] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Crustle frogs cleanup" }),
+  });
+
+  buildSeries({
+    deckKey: "crustle",
+    versionKey: "v3_control",
+    opponent: "Slowking",
+    games: 10,
+    resultPattern: (i) => (i < 5 ? "win" : i < 8 ? "loss" : "tie"),
+    turnPattern: (i) => (i % 3 === 0 ? false : null),
+    qualityProfile: stableProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["supporter drought"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["clean sequencing"] : []),
+    customTagsFn: () => ["beta:stone grind"],
+    cardsFn: () => ({ cardsShined: ["Crustle"], cardsFailed: [] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Crustle slowking grind" }),
+  });
+
+  buildSeries({
+    deckKey: "crustle",
+    versionKey: "v2_setup",
+    opponent: "Charizard ex",
+    games: 10,
+    resultPattern: (i) => (i < 5 ? "win" : i < 8 ? "loss" : "tie"),
+    turnPattern: (i) => (i % 5 === 0 ? null : false),
+    qualityProfile: stableProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["poor prize trade"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["good prize plan"] : []),
+    customTagsFn: () => ["beta:fire wall"],
+    cardsFn: () => ({ cardsShined: [], cardsFailed: [] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Crustle zard check" }),
+  });
+
+  buildSeries({
+    deckKey: "crustle",
+    versionKey: "v3_control",
+    opponent: "Festival Lead",
+    games: 5,
+    resultPattern: (i) => (i < 3 ? "win" : i === 3 ? "loss" : "tie"),
+    turnPattern: (i) => (i % 2 === 0 ? false : null),
+    qualityProfile: stableProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["matchup knowledge"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["clean sequencing"] : []),
+    customTagsFn: () => ["beta:festival crack"],
+    cardsFn: () => ({ cardsShined: [], cardsFailed: [] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Crustle festival sample" }),
+  });
+
+  buildSeries({
+    deckKey: "crustle",
+    versionKey: "v1_baseline",
+    opponent: "Rocket's Honchkrow",
+    games: 5,
+    resultPattern: (i) => (i < 1 ? "win" : i < 4 ? "loss" : "tie"),
+    turnPattern: () => null,
+    qualityProfile: evenProfile,
+    forcedIssueFn: (result) => (result === "loss" ? ["matchup knowledge"] : []),
+    forcedPositiveFn: (result) => (result === "win" ? ["strong setup"] : []),
+    customTagsFn: () => ["beta:bird wall"],
+    cardsFn: () => ({ cardsShined: [], cardsFailed: [] }),
+    contextFn: () => ({ gameContext: "testing", testingSessionName: "Crustle honchkrow scare" }),
+  });
+
+  if (records.length !== 1000) {
+    throw new Error(`Expected 1000 generated matches, received ${records.length}.`);
   }
 
   return records;
@@ -1733,21 +2919,17 @@ async function fetchSeededData(userId) {
   }
 
   let tagCount = 0;
-  const matchIds = matches.map((match) => match.id);
+  for (const matchIds of chunk(matches.map((match) => match.id), 200)) {
+    const { count, error: tagError } = await admin
+      .from("match_tags")
+      .select("*", { count: "exact", head: true })
+      .in("match_id", matchIds);
 
-  if (matchIds.length) {
-    for (const matchIdChunk of chunk(matchIds, 200)) {
-      const { count, error: tagError } = await admin
-        .from("match_tags")
-        .select("*", { count: "exact", head: true })
-        .in("match_id", matchIdChunk);
-
-      if (tagError) {
-        throw new Error(`Unable to count match tags: ${tagError.message}`);
-      }
-
-      tagCount += count ?? 0;
+    if (tagError) {
+      throw new Error(`Unable to count match tags: ${tagError.message}`);
     }
+
+    tagCount += count ?? 0;
   }
 
   return {
@@ -1895,40 +3077,29 @@ function mapToSortedRows(map, topN = null) {
 function buildSeededGamesTsv(insertedRows) {
   const lines = [
     [
-      "match_id",
       "deck",
       "version",
-      "played_at",
       "opponent",
       "result",
-      "turn_order",
+      "went_first",
       "start_quality",
       "opening_hand_quality",
       "sequencing_quality",
       "issue_tags",
       "positive_tags",
-      "cards_shined",
-      "cards_failed",
-      "game_context",
-      "session_or_event",
-      "focus_matchup",
-      "notes",
+      "custom_tags",
+      "notes_flag",
+      "match_date",
     ].join("\t"),
   ];
 
   insertedRows.forEach((row) => {
     const metadata = row.insert.metadata || {};
-    const contextLabel =
-      metadata.game_context === "competitive"
-        ? metadata.event_name || "competitive"
-        : metadata.testing_session_name || "testing";
 
     lines.push(
       [
-        row.matchId,
         row.deckName,
         row.versionName,
-        row.insert.played_at,
         row.insert.opponent_archetype,
         row.insert.result,
         asTurnOrder(row.insert.went_first),
@@ -1937,12 +3108,9 @@ function buildSeededGamesTsv(insertedRows) {
         metadata.sequencing_quality || "",
         (metadata.issue_tags || []).join("|"),
         (metadata.positive_tags || []).join("|"),
-        (metadata.cards_shined || []).join("|"),
-        (metadata.cards_failed || []).join("|"),
-        metadata.game_context || "",
-        contextLabel,
-        metadata.focus_matchup || "",
-        row.insert.notes || "",
+        (metadata.custom_tags || []).join("|"),
+        row.insert.notes ? "yes" : "no",
+        String(row.insert.played_at || "").slice(0, 10),
       ].join("\t")
     );
   });
@@ -1952,12 +3120,15 @@ function buildSeededGamesTsv(insertedRows) {
 
 function buildSummaryTsv(summary) {
   const lines = [["section", "label", "detail", "value"].join("\t")];
+  const pageSize = 20;
+  const pageCount = Math.ceil(summary.totalMatches / pageSize);
 
   [
     ["overview", "total_decks", "", summary.totalDecks],
     ["overview", "total_versions", "", summary.totalVersions],
     ["overview", "total_matches", "", summary.totalMatches],
     ["overview", "total_tags", "", summary.totalTags],
+    ["overview", "logs_pages", `page_size=${pageSize}`, pageCount],
     ["results", "wins", "", summary.resultTotals.win],
     ["results", "losses", "", summary.resultTotals.loss],
     ["results", "ties", "", summary.resultTotals.tie],
@@ -1974,16 +3145,16 @@ function buildSummaryTsv(summary) {
     lines.push(["matches_per_version", name, "", count].join("\t"));
   });
 
-  mapToSortedRows(summary.issueTagCounts).forEach(([name, count]) => {
+  mapToSortedRows(summary.matchupCounts, 20).forEach(([name, count]) => {
+    lines.push(["top_opponents", name, "", count].join("\t"));
+  });
+
+  mapToSortedRows(summary.issueTagCounts, 20).forEach(([name, count]) => {
     lines.push(["issue_tags", name, "", count].join("\t"));
   });
 
-  mapToSortedRows(summary.positiveTagCounts).forEach(([name, count]) => {
+  mapToSortedRows(summary.positiveTagCounts, 20).forEach(([name, count]) => {
     lines.push(["positive_tags", name, "", count].join("\t"));
-  });
-
-  mapToSortedRows(summary.matchupCounts).forEach(([name, count]) => {
-    lines.push(["matchups", name, "", count].join("\t"));
   });
 
   summary.versionTimeline
@@ -2013,7 +3184,7 @@ function buildIntegrityReport({
   const topPositiveTags = mapToSortedRows(summary.positiveTagCounts, 5);
   const topMatchups = mapToSortedRows(summary.matchupCounts, 8);
 
-  return `# Playtest 250 Integrity Report
+  return `# Playtest 1000 Integrity Report
 
 Date: ${isoDate(new Date())}
 Test user: ${TEST_EMAIL}
@@ -2068,7 +3239,7 @@ ${topPositiveTags.map(([name, count]) => `- ${name}: ${count}`).join("\n")}
 - Gardevoir has a positive tech pattern and should not read only as a problem surface.
 - Charizard has a visible going-first advantage.
 - Rogue Box stays noisy and low-sample so the app should avoid overclaiming (${patternSummary.rogueResults.win}-${patternSummary.rogueResults.loss}-${patternSummary.rogueResults.tie} across ${patternSummary.rogueMatchCount} games).
-- Multiple versions should show meaningful version signal, especially Raging Bolt v3, Dragapult v2, and Gardevoir v2.
+- Multiple versions should show meaningful version signal, especially Raging Bolt v5, Slowking v3, and Gardevoir v2.
 `;
 }
 
@@ -2076,7 +3247,7 @@ async function main() {
   ensureDir(RESULTS_DIR);
   ensureDir(DOCS_DIR);
 
-  console.log("\n=== SixPrizer 250-log playtest seed ===\n");
+  console.log("\n=== SixPrizer 1000-log playtest seed ===\n");
 
   const user = await getTestUser();
   console.log(`Test user: ${user.email}`);
@@ -2085,8 +3256,8 @@ async function main() {
   const preclean = await inspectCounts(user.id);
 
   writeFile(
-    "docs/playtest_250_seed_summary.md",
-    `# Playtest 250 Seed Summary
+    "docs/playtest_1000_seed_summary.md",
+    `# Playtest 1000 Seed Summary
 
 Date: ${isoDate(new Date())}
 User id: ${user.id}
@@ -2107,12 +3278,12 @@ ${preclean.decks.length ? preclean.decks.map((deck) => `- ${deck.name} (${deck.i
 
 ## Planned seeded shape
 
-- Matches: 250
-- Decks: 8
-- Versions: 18
+- Matches: 1000
+- Decks: 12
+- Versions: 33
 - Key matchup leak: Raging Bolt into Mega Greninja
 - Positive deck pattern: Gardevoir v2 recovery plan
-- Low-signal deck: Rogue Box
+- Low-signal deck: Rogue Box and low-sample Honchkrow scares
 `
   );
 
@@ -2120,8 +3291,8 @@ ${preclean.decks.length ? preclean.decks.map((deck) => `- ${deck.name} (${deck.i
   const postclean = await inspectCounts(user.id);
 
   writeFile(
-    "docs/playtest_250_cleanup_report.md",
-    `# Playtest 250 Cleanup Report
+    "docs/playtest_1000_cleanup_report.md",
+    `# Playtest 1000 Cleanup Report
 
 Date: ${isoDate(new Date())}
 User id: ${user.id}
@@ -2158,12 +3329,12 @@ All deletes were scoped to user_id ${user.id}. The auth user and all non-test-us
   const patternSummary = buildPatternSummary(seeded);
 
   writeFile(
-    "results/playtest_250_seeded_games.tsv",
+    "results/playtest_1000_seeded_games.tsv",
     buildSeededGamesTsv(insertedRows)
   );
-  writeFile("results/playtest_250_summary.tsv", buildSummaryTsv(summary));
+  writeFile("results/playtest_1000_summary.tsv", buildSummaryTsv(summary));
   writeFile(
-    "results/playtest_250_integrity_report.md",
+    "results/playtest_1000_integrity_report.md",
     buildIntegrityReport({
       userId: user.id,
       summary,

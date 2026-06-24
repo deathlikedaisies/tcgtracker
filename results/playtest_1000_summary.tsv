@@ -1,0 +1,123 @@
+section	label	detail	value
+overview	total_decks		12
+overview	total_versions		33
+overview	total_matches		1000
+overview	total_tags		1772
+overview	logs_pages	page_size=20	50
+results	wins		452
+results	losses		380
+results	ties		168
+turn_order	first		296
+turn_order	second		473
+turn_order	unknown		231
+matches_per_deck	Playtest 1000 - Raging Bolt Lab		160
+matches_per_deck	Playtest 1000 - Dragapult Dusknoir		130
+matches_per_deck	Playtest 1000 - Charizard Pressure		110
+matches_per_deck	Playtest 1000 - Mega Greninja Tempo		95
+matches_per_deck	Playtest 1000 - Slowking Grid		95
+matches_per_deck	Playtest 1000 - Gardevoir Refinement		90
+matches_per_deck	Playtest 1000 - Zoroark Curve		80
+matches_per_deck	Playtest 1000 - Ogerpon Hydrapple Lab		75
+matches_per_deck	Playtest 1000 - Crustle Wall		60
+matches_per_deck	Playtest 1000 - Control Counterlab		55
+matches_per_deck	Playtest 1000 - Experimental Turbo		25
+matches_per_deck	Playtest 1000 - Rogue Box		25
+matches_per_version	Playtest 1000 - Charizard Pressure | v2 Item Lock Prep		83
+matches_per_version	Playtest 1000 - Gardevoir Refinement | v2 Recovery		68
+matches_per_version	Playtest 1000 - Mega Greninja Tempo | v2 Cleaner Counts		60
+matches_per_version	Playtest 1000 - Dragapult Dusknoir | v2 Consistency		55
+matches_per_version	Playtest 1000 - Raging Bolt Lab | v5 Late-Cycle		50
+matches_per_version	Playtest 1000 - Slowking Grid | v3 Disruption		45
+matches_per_version	Playtest 1000 - Control Counterlab | v2 Ladder Tech		36
+matches_per_version	Playtest 1000 - Dragapult Dusknoir | v4 Late-Cycle		35
+matches_per_version	Playtest 1000 - Mega Greninja Tempo | v1 Raw Tempo		35
+matches_per_version	Playtest 1000 - Raging Bolt Lab | v2 Vessel Package		34
+matches_per_version	Playtest 1000 - Raging Bolt Lab | v3 Anti-Bench		32
+matches_per_version	Playtest 1000 - Ogerpon Hydrapple Lab | v2 Cleaner Setup		30
+matches_per_version	Playtest 1000 - Raging Bolt Lab | v4 Greninja Plan		30
+matches_per_version	Playtest 1000 - Zoroark Curve | v2 Draw Smoothing		30
+matches_per_version	Playtest 1000 - Charizard Pressure | v1 Straight		27
+matches_per_version	Playtest 1000 - Crustle Wall | v2 Setup Stability		25
+matches_per_version	Playtest 1000 - Dragapult Dusknoir | v3 Prize Mapping		25
+matches_per_version	Playtest 1000 - Ogerpon Hydrapple Lab | v1 Full Shell		25
+matches_per_version	Playtest 1000 - Slowking Grid | v1 Baseline		25
+matches_per_version	Playtest 1000 - Slowking Grid | v2 Candy Balance		25
+matches_per_version	Playtest 1000 - Zoroark Curve | v1 Baseline		25
+matches_per_version	Playtest 1000 - Zoroark Curve | v3 Low Curve		25
+matches_per_version	Playtest 1000 - Gardevoir Refinement | v1 Baseline		22
+matches_per_version	Playtest 1000 - Crustle Wall | v1 Baseline		20
+matches_per_version	Playtest 1000 - Ogerpon Hydrapple Lab | v3 Greninja Plan		20
+matches_per_version	Playtest 1000 - Control Counterlab | v1 Counter Package		19
+matches_per_version	Playtest 1000 - Experimental Turbo | v2 Trimmed		17
+matches_per_version	Playtest 1000 - Crustle Wall | v3 Control Respect		15
+matches_per_version	Playtest 1000 - Dragapult Dusknoir | v1 Bare Bones		15
+matches_per_version	Playtest 1000 - Rogue Box | v2 Trimmed Soup		15
+matches_per_version	Playtest 1000 - Raging Bolt Lab | v1 Turbo		14
+matches_per_version	Playtest 1000 - Rogue Box | v1 Meta Soup		10
+matches_per_version	Playtest 1000 - Experimental Turbo | v1 Full Send		8
+top_opponents	Mega Greninja		244
+top_opponents	Charizard ex		139
+top_opponents	Slowking		125
+top_opponents	Raging Bolt		103
+top_opponents	Dragapult		100
+top_opponents	N's Zoroark		45
+top_opponents	Ogerpon Meganium Hydrapple		45
+top_opponents	Rocket's Honchkrow		45
+top_opponents	Dragapult Dusknoir		44
+top_opponents	Crustle		35
+top_opponents	Lillie's Clefairy		25
+top_opponents	Gardevoir		20
+top_opponents	Festival Lead		15
+top_opponents	Control / Item Lock		11
+top_opponents	Rogue decks		4
+issue_tags	missed setup		165
+issue_tags	tempo loss		146
+issue_tags	supporter drought		145
+issue_tags	poor prize trade		101
+issue_tags	bench pressure		78
+issue_tags	bad sequencing		68
+issue_tags	matchup knowledge		48
+issue_tags	item lock		31
+issue_tags	Item Lock		23
+issue_tags	prize map error		10
+issue_tags	stadium lock		7
+positive_tags	strong recovery		248
+positive_tags	key tech mattered		211
+positive_tags	good prize plan		187
+positive_tags	favorable matchup		132
+positive_tags	strong setup		74
+positive_tags	clean sequencing		71
+positive_tags	Good Tech		27
+version_timeline	Playtest 1000 - Charizard Pressure	v1 Straight | active=false | first=2026-01-23T11:25:00+00:00 | last=2026-05-22T14:52:00+00:00	27
+version_timeline	Playtest 1000 - Charizard Pressure	v2 Item Lock Prep | active=true | first=2026-01-18T19:20:00+00:00 | last=2026-06-06T18:07:00+00:00	83
+version_timeline	Playtest 1000 - Control Counterlab	v1 Counter Package | active=false | first=2026-02-27T15:00:00+00:00 | last=2026-03-17T09:54:00+00:00	19
+version_timeline	Playtest 1000 - Control Counterlab	v2 Ladder Tech | active=true | first=2026-02-07T17:40:00+00:00 | last=2026-03-23T15:12:00+00:00	36
+version_timeline	Playtest 1000 - Crustle Wall	v1 Baseline | active=false | first=2026-02-02T14:35:00+00:00 | last=2026-05-12T17:42:00+00:00	20
+version_timeline	Playtest 1000 - Crustle Wall	v2 Setup Stability | active=false | first=2026-01-18T10:20:00+00:00 | last=2026-05-27T10:57:00+00:00	25
+version_timeline	Playtest 1000 - Crustle Wall	v3 Control Respect | active=true | first=2026-01-28T09:30:00+00:00 | last=2026-06-06T09:07:00+00:00	15
+version_timeline	Playtest 1000 - Dragapult Dusknoir	v1 Bare Bones | active=false | first=2026-04-08T12:20:00+00:00 | last=2026-04-22T15:22:00+00:00	15
+version_timeline	Playtest 1000 - Dragapult Dusknoir	v2 Consistency | active=true | first=2026-03-09T09:30:00+00:00 | last=2026-06-01T16:42:00+00:00	55
+version_timeline	Playtest 1000 - Dragapult Dusknoir	v3 Prize Mapping | active=false | first=2026-05-03T09:25:00+00:00 | last=2026-05-22T12:52:00+00:00	25
+version_timeline	Playtest 1000 - Dragapult Dusknoir	v4 Late-Cycle | active=false | first=2026-03-29T18:50:00+00:00 | last=2026-05-02T19:12:00+00:00	35
+version_timeline	Playtest 1000 - Experimental Turbo	v1 Full Send | active=false | first=2026-04-23T13:55:00+00:00 | last=2026-04-30T09:26:00+00:00	8
+version_timeline	Playtest 1000 - Experimental Turbo	v2 Trimmed | active=true | first=2026-05-01T10:39:00+00:00 | last=2026-05-27T16:17:00+00:00	17
+version_timeline	Playtest 1000 - Gardevoir Refinement	v1 Baseline | active=false | first=2026-03-24T16:25:00+00:00 | last=2026-04-27T19:47:00+00:00	22
+version_timeline	Playtest 1000 - Gardevoir Refinement	v2 Recovery | active=true | first=2026-03-19T13:20:00+00:00 | last=2026-05-17T17:07:00+00:00	68
+version_timeline	Playtest 1000 - Mega Greninja Tempo	v1 Raw Tempo | active=false | first=2026-02-22T13:35:00+00:00 | last=2026-06-01T11:02:00+00:00	35
+version_timeline	Playtest 1000 - Mega Greninja Tempo	v2 Cleaner Counts | active=true | first=2026-01-18T11:00:00+00:00 | last=2026-06-06T16:07:00+00:00	60
+version_timeline	Playtest 1000 - Ogerpon Hydrapple Lab	v1 Full Shell | active=false | first=2026-02-12T16:25:00+00:00 | last=2026-04-27T13:27:00+00:00	25
+version_timeline	Playtest 1000 - Ogerpon Hydrapple Lab	v2 Cleaner Setup | active=false | first=2026-03-04T14:45:00+00:00 | last=2026-04-17T14:17:00+00:00	30
+version_timeline	Playtest 1000 - Ogerpon Hydrapple Lab	v3 Greninja Plan | active=true | first=2026-03-24T12:05:00+00:00 | last=2026-04-22T19:22:00+00:00	20
+version_timeline	Playtest 1000 - Raging Bolt Lab	v1 Turbo | active=false | first=2026-01-18T09:00:00+00:00 | last=2026-01-31T11:49:00+00:00	14
+version_timeline	Playtest 1000 - Raging Bolt Lab	v2 Vessel Package | active=false | first=2026-02-01T12:02:00+00:00 | last=2026-03-20T15:13:00+00:00	34
+version_timeline	Playtest 1000 - Raging Bolt Lab	v3 Anti-Bench | active=false | first=2026-02-13T13:38:00+00:00 | last=2026-04-07T11:07:00+00:00	32
+version_timeline	Playtest 1000 - Raging Bolt Lab	v4 Greninja Plan | active=false | first=2026-02-17T11:10:00+00:00 | last=2026-05-27T14:17:00+00:00	30
+version_timeline	Playtest 1000 - Raging Bolt Lab	v5 Late-Cycle | active=true | first=2026-01-18T14:40:00+00:00 | last=2026-06-06T13:27:00+00:00	50
+version_timeline	Playtest 1000 - Rogue Box	v1 Meta Soup | active=false | first=2026-02-02T12:35:00+00:00 | last=2026-03-03T17:52:00+00:00	10
+version_timeline	Playtest 1000 - Rogue Box	v2 Trimmed Soup | active=true | first=2026-01-23T13:25:00+00:00 | last=2026-03-08T11:57:00+00:00	15
+version_timeline	Playtest 1000 - Slowking Grid	v1 Baseline | active=false | first=2026-01-18T16:40:00+00:00 | last=2026-06-06T15:27:00+00:00	25
+version_timeline	Playtest 1000 - Slowking Grid	v2 Candy Balance | active=false | first=2026-01-28T15:50:00+00:00 | last=2026-04-02T13:42:00+00:00	25
+version_timeline	Playtest 1000 - Slowking Grid	v3 Disruption | active=true | first=2026-02-17T13:10:00+00:00 | last=2026-04-07T18:47:00+00:00	45
+version_timeline	Playtest 1000 - Zoroark Curve	v1 Baseline | active=false | first=2026-02-07T11:20:00+00:00 | last=2026-05-02T10:12:00+00:00	25
+version_timeline	Playtest 1000 - Zoroark Curve	v2 Draw Smoothing | active=false | first=2026-01-28T12:10:00+00:00 | last=2026-05-22T19:32:00+00:00	30
+version_timeline	Playtest 1000 - Zoroark Curve	v3 Low Curve | active=true | first=2026-01-18T13:00:00+00:00 | last=2026-06-06T12:47:00+00:00	25
