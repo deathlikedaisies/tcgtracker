@@ -343,7 +343,7 @@ const ARCHETYPE_RULES: ArchetypeRule[] = [
     baseScore: 82,
   },
   {
-    archetype: "Dragapult ex",
+    archetype: "Dragapult",
     requiredCoreCards: [["Dragapult ex"], ["Drakloak", "Dreepy"]],
     excludedCards: [
       ["Dusknoir", "Dusclops", "Duskull"],
@@ -365,6 +365,18 @@ const ARCHETYPE_RULES: ArchetypeRule[] = [
     baseScore: 76,
   },
   {
+    archetype: "Slowking",
+    requiredCoreCards: [["Slowking ex", "Slowking"]],
+    optionalSupportCards: [["Slowpoke"], ["Rare Candy"]],
+    baseScore: 78,
+  },
+  {
+    archetype: "Crustle",
+    requiredCoreCards: [["Crustle"]],
+    optionalSupportCards: [["Dwebble"], ["Rare Candy"]],
+    baseScore: 76,
+  },
+  {
     archetype: "Charizard ex",
     requiredCoreCards: [["Charizard ex"]],
     optionalCoreCards: [["Pidgeot ex", "Pidgeot", "Pidgeotto", "Pidgey"]],
@@ -372,13 +384,47 @@ const ARCHETYPE_RULES: ArchetypeRule[] = [
     baseScore: 76,
   },
   {
+    archetype: "Ogerpon Meganium Hydrapple",
+    requiredCoreCards: [
+      ["Teal Mask Ogerpon ex", "Ogerpon"],
+      ["Meganium", "Bayleef", "Chikorita"],
+      ["Hydrapple ex", "Hydrapple"],
+    ],
+    optionalSupportCards: [["Rare Candy"], ["Applin", "Dipplin"]],
+    baseScore: 84,
+  },
+  {
     archetype: "Ogerpon Meganium",
     requiredCoreCards: [
       ["Teal Mask Ogerpon ex", "Ogerpon"],
       ["Meganium", "Bayleef", "Chikorita"],
     ],
+    excludedCards: [["Hydrapple ex", "Hydrapple"]],
     optionalSupportCards: [["Rare Candy"]],
     baseScore: 80,
+  },
+  {
+    archetype: "Hydrapple",
+    requiredCoreCards: [["Hydrapple ex", "Hydrapple"]],
+    excludedCards: [
+      ["Meganium", "Bayleef", "Chikorita"],
+      ["Teal Mask Ogerpon ex", "Ogerpon"],
+    ],
+    optionalSupportCards: [["Applin", "Dipplin"], ["Rare Candy"]],
+    baseScore: 76,
+  },
+  {
+    archetype: "Ogerpon Box",
+    requiredCoreCards: [["Teal Mask Ogerpon ex", "Ogerpon"]],
+    excludedCards: [
+      ["Meganium", "Bayleef", "Chikorita"],
+      ["Hydrapple ex", "Hydrapple"],
+    ],
+    optionalSupportCards: [
+      ["Wellspring Mask Ogerpon ex", "Cornerstone Mask Ogerpon ex", "Hearthflame Mask Ogerpon ex"],
+      ["Energy Switch", "Earthen Vessel"],
+    ],
+    baseScore: 70,
   },
   {
     archetype: "Froslass Munkidori",
@@ -454,6 +500,12 @@ const ARCHETYPE_RULES: ArchetypeRule[] = [
     requiredCoreCards: [["Beedrill"]],
     optionalSupportCards: [["Kakuna", "Weedle"]],
     baseScore: 70,
+  },
+  {
+    archetype: "Lillie's Clefairy",
+    requiredCoreCards: [["Lillie's Clefairy ex", "Lillie's Clefairy"]],
+    optionalSupportCards: [["Clefairy"]],
+    baseScore: 76,
   },
 ];
 

@@ -1,6 +1,39 @@
 export const OTHER_ARCHETYPE = "Other / Emerging";
 
-export const POST_ROTATION_2026_ARCHETYPES = [
+const CURRENT_LIMITLESS_2026_ARCHETYPES = [
+  "Dragapult",
+  "Dragapult Dusknoir",
+  "Mega Greninja",
+  "Slowking",
+  "N's Zoroark",
+  "Crustle",
+  "Alakazam Dudunsparce",
+  "Ogerpon Meganium Hydrapple",
+  "Hydrapple",
+  "Ogerpon Box",
+  "Beedrill",
+  "Lillie's Clefairy",
+  "Lucario Hariyama",
+  "Rocket's Honchkrow",
+  "Mega Lucario",
+  "Rocket's Mewtwo",
+  "Dragapult Blaziken",
+  "Festival Lead",
+  "Raging Bolt",
+  "Alakazam",
+  "Hop's Trevenant",
+  "Ethan's Typhlosion",
+  "Cynthia's Garchomp",
+  "Marnie's Grimmsnarl",
+  "Metagross",
+  "Mega Lopunny",
+  "Mega Starmie",
+  "Ogerpon Meganium",
+  "Archaludon",
+  OTHER_ARCHETYPE,
+] as const;
+
+const LEGACY_POST_ROTATION_2026_ARCHETYPES = [
   "Dragapult ex",
   "Mega Greninja",
   "Ogerpon Meganium",
@@ -93,7 +126,11 @@ export const POST_ROTATION_2026_ARCHETYPES = [
   "Mega Abomasnow",
   "Archaludon Zoroark",
   "Mega Zygarde ex",
-  OTHER_ARCHETYPE,
+] as const;
+
+export const POST_ROTATION_2026_ARCHETYPES = [
+  ...CURRENT_LIMITLESS_2026_ARCHETYPES,
+  ...LEGACY_POST_ROTATION_2026_ARCHETYPES,
 ] as const;
 
 export const PRE_ROTATION_2025_2026_ARCHETYPES = [

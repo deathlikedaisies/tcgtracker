@@ -36,7 +36,7 @@ User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 - /matches
 - /matches?page=2
 - /decks
-- /decks/5f09f158-cd16-446d-ad11-3c3fea7760ac
+- /decks/a33ee642-08e9-4f86-821a-e000d3fdd78c
 - /matches/new
 - /profile
 
@@ -44,7 +44,7 @@ User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 
 - /dashboard
 - /decks
-- /decks/5f09f158-cd16-446d-ad11-3c3fea7760ac
+- /decks/a33ee642-08e9-4f86-821a-e000d3fdd78c
 - /review
 - /matchups
 - /matches
@@ -124,6 +124,7 @@ User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 - results/playtest_250_screenshots/desktop__decks_68dfa729-a7d7-48a7-903e-28f4250e2f91.png
 - results/playtest_250_screenshots/desktop__decks_890b7d89-ebd9-452f-942c-fec73bd3ce4f.png
 - results/playtest_250_screenshots/desktop__decks_9d3c1d32-9c41-4a8b-9156-92282aa29fc3.png
+- results/playtest_250_screenshots/desktop__decks_a33ee642-08e9-4f86-821a-e000d3fdd78c.png
 - results/playtest_250_screenshots/desktop__decks_c6d10d22-3347-415b-8d94-85b3dfc9ba13.png
 - results/playtest_250_screenshots/desktop__decks_c8f8baa8-7d5e-4024-b5e2-f42f6fbfcbb1.png
 - results/playtest_250_screenshots/desktop__decks_db971151-af64-4a09-9aec-5c0d19a221a8.png
@@ -146,6 +147,7 @@ User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 - results/playtest_250_screenshots/mobile__decks_5f09f158-cd16-446d-ad11-3c3fea7760ac.png
 - results/playtest_250_screenshots/mobile__decks_890b7d89-ebd9-452f-942c-fec73bd3ce4f.png
 - results/playtest_250_screenshots/mobile__decks_9d3c1d32-9c41-4a8b-9156-92282aa29fc3.png
+- results/playtest_250_screenshots/mobile__decks_a33ee642-08e9-4f86-821a-e000d3fdd78c.png
 - results/playtest_250_screenshots/mobile__decks_c6d10d22-3347-415b-8d94-85b3dfc9ba13.png
 - results/playtest_250_screenshots/mobile__decks_c8f8baa8-7d5e-4024-b5e2-f42f6fbfcbb1.png
 - results/playtest_250_screenshots/mobile__decks_db971151-af64-4a09-9aec-5c0d19a221a8.png
@@ -193,14 +195,14 @@ User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 
 ## Performance summary
 
-- /decks/5f09f158-cd16-446d-ad11-3c3fea7760ac: 4855ms
-- /matchups: 2064ms
-- /matchups: 1830ms
-- /matches?page=2: 1503ms
-- /matches: 1197ms
-- /matches: 1188ms
-- /review: 1049ms
-- /decks/5f09f158-cd16-446d-ad11-3c3fea7760ac: 1046ms
+- /decks/a33ee642-08e9-4f86-821a-e000d3fdd78c: 5679ms
+- /matchups: 2153ms
+- /matchups: 1934ms
+- /matches?page=2: 1179ms
+- /matches: 1171ms
+- /matches: 1150ms
+- /review: 1073ms
+- /decks/a33ee642-08e9-4f86-821a-e000d3fdd78c: 1035ms
 
 ## Production validation
 

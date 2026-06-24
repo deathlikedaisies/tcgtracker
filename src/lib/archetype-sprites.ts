@@ -18,6 +18,7 @@ export const ARCHETYPE_POKEMON: Record<string, ArchetypePokemon[]> = {
     { pokemon: "Starmie" },
     { pokemon: "Froslass" },
   ],
+  Dragapult: [{ pokemon: "Dragapult", label: "Dragapult" }],
   "Dragapult ex": [{ pokemon: "Dragapult", label: "Dragapult ex" }],
   "Dragapult Blaziken": [
     { pokemon: "Dragapult", label: "Dragapult ex" },
@@ -44,6 +45,11 @@ export const ARCHETYPE_POKEMON: Record<string, ArchetypePokemon[]> = {
   "Ogerpon Meganium": [
     { pokemon: "Ogerpon" },
     { pokemon: "Meganium" },
+  ],
+  "Ogerpon Meganium Hydrapple": [
+    { pokemon: "Ogerpon" },
+    { pokemon: "Meganium" },
+    { pokemon: "Hydrapple" },
   ],
   "Festival Lead": [{ pokemon: "Dipplin", label: "Festival Lead" }],
   "Rocket's Spidops": [{ pokemon: "Spidops", label: "Rocket's Spidops" }],
