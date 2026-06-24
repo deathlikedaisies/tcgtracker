@@ -54,6 +54,7 @@ export function ProfileSettingsPageContent({
   const completionItems = [
     { label: "Display name", done: Boolean(profile.display_name?.trim()) },
     { label: "Country", done: Boolean(profile.country?.trim()) },
+    { label: "Favorite deck", done: Boolean(profile.favorite_archetype?.trim()) },
     { label: "Bio", done: Boolean(profile.bio?.trim()) },
     { label: "Sharing configured", done: profile.profile_visibility !== "private" },
   ];
@@ -107,18 +108,11 @@ export function ProfileSettingsPageContent({
                       {profile.bio}
                     </p>
                   ) : null}
-                  {profile.favorite_archetype || profile.main_deck_name ? (
+                  {profile.favorite_archetype ? (
                     <div className="mt-3 flex flex-wrap gap-2">
-                      {profile.favorite_archetype ? (
-                        <span className="rounded-md bg-[#4F8CFF]/10 px-2.5 py-1 text-xs font-medium text-[#B8D1FF]">
-                          {profile.favorite_archetype}
-                        </span>
-                      ) : null}
-                      {profile.main_deck_name ? (
-                        <span className="rounded-md bg-[#F5C84C]/10 px-2.5 py-1 text-xs font-medium text-[#FFE28A]">
-                          {profile.main_deck_name}
-                        </span>
-                      ) : null}
+                      <span className="rounded-md bg-[#4F8CFF]/10 px-2.5 py-1 text-xs font-medium text-[#B8D1FF]">
+                        Favorite deck: {profile.favorite_archetype}
+                      </span>
                     </div>
                   ) : null}
                 </div>

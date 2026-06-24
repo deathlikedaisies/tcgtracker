@@ -7,7 +7,7 @@ Date: 2026-06-24
 - Main sidebar includes Profile in the normal nav flow: yes
 - Guided builder visible: Your player card
 - Live preview updated with the typed player identity: no
-- Save succeeded and values persisted after reload: yes
+- Save succeeded and values persisted after reload: no
 
 ## Private profile
 

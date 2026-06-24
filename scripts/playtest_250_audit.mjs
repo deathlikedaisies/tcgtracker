@@ -481,12 +481,10 @@ async function fillProfileBuilder(page, values, visibility, analyticsVisibility)
   await settlePage(page);
 
   await page.getByLabel("Display name").fill(values.displayName);
+  await page.getByLabel("Country").selectOption({ label: values.country });
   await page.getByLabel("Avatar URL").fill(values.avatarUrl);
-  await page.getByLabel("Country").fill(values.country);
   await page.getByLabel("Bio").fill(values.bio);
-  await page.getByLabel("Favorite archetype").fill(values.favoriteArchetype);
-  await page.getByLabel("Main deck").fill(values.mainDeckName);
-  await page.getByLabel("Current testing focus").fill(values.currentTestingFocus);
+  await page.getByLabel("Favorite deck").fill(values.favoriteArchetype);
 
   await chooseOptionCard(page, "profile_visibility", visibility);
   await chooseOptionCard(page, "analytics_visibility", analyticsVisibility);

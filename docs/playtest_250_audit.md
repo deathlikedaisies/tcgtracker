@@ -36,7 +36,7 @@ User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 - /matches
 - /matches?page=2
 - /decks
-- /decks/e5cd6abb-cd96-4605-b569-f8b91eba50dc
+- /decks/5f09f158-cd16-446d-ad11-3c3fea7760ac
 - /matches/new
 - /profile
 
@@ -44,7 +44,7 @@ User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 
 - /dashboard
 - /decks
-- /decks/e5cd6abb-cd96-4605-b569-f8b91eba50dc
+- /decks/5f09f158-cd16-446d-ad11-3c3fea7760ac
 - /review
 - /matchups
 - /matches
@@ -101,10 +101,10 @@ User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 
 ### Profile and report privacy
 
-- Severity: low
-- Problem: Profile builder and privacy-safe report behavior held up at seeded volume.
+- Severity: high
+- Problem: Profile builder save flow needs follow-up.
 - Suggested fix: Keep the profile route and link-only/private report behavior under regression coverage.
-- Fix now or defer: defer
+- Fix now or defer: fix now
 
 ### Mobile and responsive
 
@@ -120,6 +120,7 @@ User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 - results/playtest_250_screenshots/desktop__decks.png
 - results/playtest_250_screenshots/desktop__decks_28de826e-26f4-42cb-9164-b37387e846ff.png
 - results/playtest_250_screenshots/desktop__decks_547bde5b-c76f-40aa-9390-fc3145355cf9.png
+- results/playtest_250_screenshots/desktop__decks_5f09f158-cd16-446d-ad11-3c3fea7760ac.png
 - results/playtest_250_screenshots/desktop__decks_68dfa729-a7d7-48a7-903e-28f4250e2f91.png
 - results/playtest_250_screenshots/desktop__decks_890b7d89-ebd9-452f-942c-fec73bd3ce4f.png
 - results/playtest_250_screenshots/desktop__decks_9d3c1d32-9c41-4a8b-9156-92282aa29fc3.png
@@ -142,6 +143,7 @@ User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 - results/playtest_250_screenshots/mobile__dashboard.png
 - results/playtest_250_screenshots/mobile__decks.png
 - results/playtest_250_screenshots/mobile__decks_547bde5b-c76f-40aa-9390-fc3145355cf9.png
+- results/playtest_250_screenshots/mobile__decks_5f09f158-cd16-446d-ad11-3c3fea7760ac.png
 - results/playtest_250_screenshots/mobile__decks_890b7d89-ebd9-452f-942c-fec73bd3ce4f.png
 - results/playtest_250_screenshots/mobile__decks_9d3c1d32-9c41-4a8b-9156-92282aa29fc3.png
 - results/playtest_250_screenshots/mobile__decks_c6d10d22-3347-415b-8d94-85b3dfc9ba13.png
@@ -191,14 +193,14 @@ User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 
 ## Performance summary
 
-- /matches: 7781ms
-- /matches?page=2: 2588ms
-- /matchups: 2231ms
-- /matchups: 1853ms
-- /decks: 1614ms
-- /decks/e5cd6abb-cd96-4605-b569-f8b91eba50dc: 1592ms
-- /matches: 1458ms
-- /decks/e5cd6abb-cd96-4605-b569-f8b91eba50dc: 1394ms
+- /decks/5f09f158-cd16-446d-ad11-3c3fea7760ac: 4855ms
+- /matchups: 2064ms
+- /matchups: 1830ms
+- /matches?page=2: 1503ms
+- /matches: 1197ms
+- /matches: 1188ms
+- /review: 1049ms
+- /decks/5f09f158-cd16-446d-ad11-3c3fea7760ac: 1046ms
 
 ## Production validation
 

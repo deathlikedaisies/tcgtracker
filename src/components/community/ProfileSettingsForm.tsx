@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useActionState, useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
+import { ArchetypePicker } from "@/components/ArchetypePicker";
 import {
   formSectionCard,
   inputH10,
@@ -21,11 +22,13 @@ import {
   saveProfileAction,
   type ProfileFormState,
 } from "@/app/community/actions";
+import { getArchetypeOptions } from "@/lib/archetypes";
 import type {
   AnalyticsVisibility,
   ProfileRecord,
   ProfileVisibility,
 } from "@/lib/community";
+import { getCountryOptions, getCountryOptionValue } from "@/lib/countries";
 
 type ProfileSettingsFormProps = {
   profile: ProfileRecord | null;
@@ -264,6 +267,10 @@ export function ProfileSettingsForm({
 
   const currentProfileVisibility = values.profileVisibility;
   const currentAnalyticsVisibility = values.analyticsVisibility;
+  const countryOptions = getCountryOptions(values.country);
+  const favoriteDeckOptions = getArchetypeOptions(null, [
+    values.favoriteArchetype,
+  ]);
 
   return (
     <form action={formAction} className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start">
@@ -307,10 +314,10 @@ export function ProfileSettingsForm({
                 <label htmlFor="country" className={label}>
                   Country
                 </label>
-                <input
+                <select
                   id="country"
                   name="country"
-                  value={values.country}
+                  value={getCountryOptionValue(values.country)}
                   onChange={(event) =>
                     setValues((current) => ({
                       ...current,
@@ -318,8 +325,14 @@ export function ProfileSettingsForm({
                     }))
                   }
                   className={inputH10}
-                  placeholder="Netherlands"
-                />
+                >
+                  <option value="">Select your country</option>
+                  {countryOptions.map((country) => (
+                    <option key={country} value={country}>
+                      {country}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 
@@ -390,68 +403,35 @@ export function ProfileSettingsForm({
           <SectionHeader
             step="2"
             title="Competitive profile"
-            description="Add your main deck, favorite archetype, and current testing focus."
+            description="Add the deck you know best so your player card feels more familiar."
           />
 
           <section className={`grid gap-4 p-4 sm:p-5 ${premiumInsetStrong}`}>
-            <div className="grid gap-4 lg:grid-cols-3">
-              <div className="grid gap-2">
-                <label htmlFor="favorite_archetype" className={label}>
-                  Favorite archetype
-                </label>
-                <input
-                  id="favorite_archetype"
-                  name="favorite_archetype"
-                  value={values.favoriteArchetype}
-                  onChange={(event) =>
-                    setValues((current) => ({
-                      ...current,
-                      favoriteArchetype: event.target.value,
-                    }))
-                  }
-                  className={inputH10}
-                  placeholder="Raging Bolt"
-                />
-              </div>
-              <div className="grid gap-2">
-                <label htmlFor="main_deck_name" className={label}>
-                  Main deck
-                </label>
-                <input
-                  id="main_deck_name"
-                  name="main_deck_name"
-                  value={values.mainDeckName}
-                  onChange={(event) =>
-                    setValues((current) => ({
-                      ...current,
-                      mainDeckName: event.target.value,
-                    }))
-                  }
-                  className={inputH10}
-                  placeholder="Raging Bolt v3 Anti-Bench"
-                />
-              </div>
-              <div className="grid gap-2">
-                <label htmlFor="current_testing_focus" className={label}>
-                  Current testing focus
-                </label>
-                <input
-                  id="current_testing_focus"
-                  name="current_testing_focus"
-                  value={values.currentTestingFocus}
-                  onChange={(event) =>
-                    setValues((current) => ({
-                      ...current,
-                      currentTestingFocus: event.target.value,
-                    }))
-                  }
-                  className={inputH10}
-                  placeholder="Mega Greninja matchup"
-                />
-              </div>
-            </div>
+            <ArchetypePicker
+              id="favorite_archetype"
+              name="favorite_archetype"
+              label="Favorite deck"
+              options={favoriteDeckOptions}
+              value={values.favoriteArchetype}
+              onValueChange={(nextValue) =>
+                setValues((current) => ({
+                  ...current,
+                  favoriteArchetype: nextValue,
+                }))
+              }
+              placeholder="Search or pick a deck"
+              maxOptions={8}
+              listMaxHeightClassName="max-h-48"
+              customOptionPrefix="Use custom deck"
+            />
+            <input type="hidden" name="main_deck_name" value={values.mainDeckName} />
+            <input
+              type="hidden"
+              name="current_testing_focus"
+              value={values.currentTestingFocus}
+            />
             <p className={sectionCopy}>
-              These fields shape your preview and public testing identity, but they do not expose raw decklists or notes.
+              This helps the preview feel familiar without exposing raw decklists or private notes.
             </p>
           </section>
         </div>
@@ -592,17 +572,7 @@ export function ProfileSettingsForm({
               </span>
               {profilePreview.favoriteArchetype ? (
                 <span className={`${premiumChip} text-[#DCE8FF]`}>
-                  {profilePreview.favoriteArchetype}
-                </span>
-              ) : null}
-              {profilePreview.mainDeckName ? (
-                <span className={`${premiumChip} text-[#FFE28A]`}>
-                  {profilePreview.mainDeckName}
-                </span>
-              ) : null}
-              {profilePreview.currentTestingFocus ? (
-                <span className={`${premiumChip} text-emerald-200`}>
-                  {profilePreview.currentTestingFocus}
+                  Favorite deck: {profilePreview.favoriteArchetype}
                 </span>
               ) : null}
             </div>

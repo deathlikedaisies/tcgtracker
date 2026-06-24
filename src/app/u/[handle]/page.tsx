@@ -149,11 +149,7 @@ export default async function PublicProfilePage({
 
   const identityChips = [
     profile.country ? `Country: ${profile.country}` : null,
-    profile.favorite_archetype ? `Favorite archetype: ${profile.favorite_archetype}` : null,
-    profile.main_deck_name ? `Main deck: ${profile.main_deck_name}` : null,
-    profile.current_testing_focus || stats?.current_focus
-      ? `Current focus: ${profile.current_testing_focus ?? stats?.current_focus}`
-      : null,
+    profile.favorite_archetype ? `Favorite deck: ${profile.favorite_archetype}` : null,
   ].filter((value): value is string => Boolean(value));
 
   return (
@@ -349,7 +345,7 @@ export default async function PublicProfilePage({
                 Current testing
               </p>
               <h2 className={`mt-2 ${sectionTitle}`}>
-                {profile.current_testing_focus ?? stats?.current_focus ?? "No public focus set"}
+                {stats?.current_focus ?? "No public focus set"}
               </h2>
               <p className={pageCopy}>
                 {analyticsVisible

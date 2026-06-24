@@ -1687,10 +1687,8 @@ export function buildProfileSummaryText(
     parts.push(`${stats.total_matches} games logged.`);
   }
 
-  if (profile.current_testing_focus || stats?.current_focus) {
-    parts.push(
-      `Current focus: ${profile.current_testing_focus ?? stats?.current_focus}.`
-    );
+  if (stats?.current_focus) {
+    parts.push(`Current focus: ${stats.current_focus}.`);
   }
 
   if (stats?.best_improvement) {

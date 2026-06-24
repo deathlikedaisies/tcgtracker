@@ -149,6 +149,10 @@ test.describe("authenticated routes", () => {
 
     await expectHeadingVisible(page, /Profile|Create your profile/i);
     await expect(page.getByLabel("Handle")).toHaveCount(0);
+    await expect(page.getByLabel("Main deck")).toHaveCount(0);
+    await expect(page.getByLabel("Current testing focus")).toHaveCount(0);
+    await expect(page.getByLabel("Country")).toHaveCount(1);
+    await expect(page.getByLabel("Favorite deck")).toHaveCount(1);
     await expect(page.locator("body")).not.toContainText(/^Handle$/m);
     await expect(page.locator("body")).toContainText(/Public profile URL/i);
     await expect(page.locator("body")).toContainText(/https?:\/\/[^\s]+\/u\/domz_test/i);
