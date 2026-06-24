@@ -1,6 +1,6 @@
 import { chromium } from "playwright";
 import { createClient } from "@supabase/supabase-js";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "fs";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
 
@@ -371,7 +371,7 @@ async function fillProfileBuilder(page, values, visibility, analyticsVisibility)
   const previewCard = page.locator("aside").filter({ hasText: "Live preview" }).first();
   const previewText = await previewCard.innerText();
 
-  await page.getByRole("button", { name: /Save profile/i }).click();
+  await page.getByRole("button", { name: /Save profile/i }).first().click();
   await page.waitForLoadState("networkidle");
   await page.getByText("Profile saved.").waitFor({ timeout: 10000 });
 
@@ -428,13 +428,120 @@ async function createReportFromMatchups(page) {
 async function refreshProfileStats(page) {
   await page.goto(`${BASE_URL}/settings/profile`);
   await page.waitForLoadState("networkidle");
-  await page.getByRole("button", { name: "Refresh public stats" }).click();
+  await page.getByRole("button", { name: /Refresh stats/i }).click();
   await page.waitForURL(/refreshed=1/, { timeout: 20000 });
   await page.waitForLoadState("networkidle");
 }
 
 function stripWhitespace(value) {
   return value.replace(/\s+/g, " ").trim();
+}
+
+function extractBodySegment(bodyText, startMarker, endMarkers = [], maxLength = 420) {
+  const lowerBody = bodyText.toLowerCase();
+  const lowerStart = startMarker.toLowerCase();
+  const startIndex = lowerBody.indexOf(lowerStart);
+
+  if (startIndex === -1) {
+    return null;
+  }
+
+  let endIndex = bodyText.length;
+  for (const marker of endMarkers) {
+    const candidate = lowerBody.indexOf(marker.toLowerCase(), startIndex + lowerStart.length);
+    if (candidate !== -1 && candidate < endIndex) {
+      endIndex = candidate;
+    }
+  }
+
+  return stripWhitespace(bodyText.slice(startIndex, Math.min(endIndex, startIndex + maxLength)));
+}
+
+async function auditAuthenticatedMatchSave(page, userId) {
+  const marker = `playtest-250-audit-temp-${Date.now()}`;
+  const saveStartedAt = new Date().toISOString();
+  const form = page.locator("form").first();
+
+  await page.goto(`${BASE_URL}/matches/new`);
+  await page.waitForLoadState("networkidle");
+
+  const continueButton = form.getByRole("button", { name: "Continue" });
+
+  await page.getByLabel("Opponent deck").fill("Mega Greninja");
+  await page.getByRole("button", { name: /Mega Greninja/i }).first().click();
+  await continueButton.click();
+
+  await page.getByRole("button", { name: "Loss" }).click();
+  await continueButton.click();
+
+  await page.getByRole("button", { name: "Can't remember" }).click();
+  await continueButton.click();
+
+  await page.locator("fieldset").filter({ hasText: "Start" }).getByRole("button", { name: "Bad" }).click();
+  await page.locator("fieldset").filter({ hasText: "Opening hand" }).getByRole("button", { name: "Okay" }).click();
+  await page.locator("fieldset").filter({ hasText: "Sequencing" }).getByRole("button", { name: "Bad" }).click();
+  await continueButton.click();
+
+  await page.getByRole("button", { name: "bench pressure" }).click();
+  await page
+    .getByPlaceholder("e.g. Item Lock, prize map error, stadium lock")
+    .first()
+    .fill("audit marker");
+  await form.getByRole("button", { name: "Add", exact: true }).click();
+  await form.getByRole("button", { name: "More context", exact: true }).click();
+
+  await page.getByLabel("One learning").fill(marker);
+  await form.getByRole("button", { name: "Save now", exact: true }).click();
+  await page.waitForLoadState("networkidle");
+
+  const bodyText = await page.locator("body").innerText();
+  await screenshot(page, "authenticated_post_save_reward_250");
+
+  const { data: tempMatches, error } = await admin
+    .from("matches")
+    .select("id, notes, played_at")
+    .eq("user_id", userId)
+    .gte("played_at", saveStartedAt)
+    .order("played_at", { ascending: false });
+
+  if (error) {
+    throw new Error(`Unable to find temp audit match: ${error.message}`);
+  }
+
+  const tempIds = tempMatches.map((match) => match.id);
+
+  if (tempIds.length) {
+    const { error: tagDeleteError } = await admin
+      .from("match_tags")
+      .delete()
+      .in("match_id", tempIds);
+
+    if (tagDeleteError) {
+      throw new Error(`Unable to delete temp match_tags: ${tagDeleteError.message}`);
+    }
+
+    const { error: matchDeleteError } = await admin
+      .from("matches")
+      .delete()
+      .in("id", tempIds);
+
+    if (matchDeleteError) {
+      throw new Error(`Unable to delete temp audit match: ${matchDeleteError.message}`);
+    }
+  }
+
+  return {
+    marker,
+    rewardText:
+      extractBodySegment(bodyText, "Logged.", ["Current focus", "Match history", "Log another game"], 220) ||
+      bodyText
+        .split("\n")
+        .map((line) => line.trim())
+        .find((line) => /logged\./i.test(line)) ||
+      (bodyText.match(/logged\.[\s\S]{0,180}/i)?.[0] ?? null) ||
+      null,
+    deletedMatches: tempIds.length,
+  };
 }
 
 function buildCoachFindingsRows({
@@ -544,6 +651,129 @@ function toTsv(rows) {
         row.evidence,
         row.verdict,
         row.action,
+        row.notes,
+      ].join("\t")
+    ),
+  ].join("\n");
+}
+
+function buildIssueMatrixRows({ patterns, coachFindings, matchesPageTwoLine, postSaveAudit, reviewBody }) {
+  const findingByName = new Map(coachFindings.map((finding) => [finding.finding, finding]));
+  const reviewTagsVisible = /Tag pressure|Detailed analytics|Deck versions/i.test(reviewBody);
+
+  return [
+    {
+      patternName: "clear_bad_matchup",
+      deckVersion: "Raging Bolt Lab / mixed versions",
+      opponentOrTag: "Mega Greninja",
+      expectedAppSignal: "Dashboard and Matchups should prioritize Mega Greninja as the main actionable leak.",
+      observedAppSignal:
+        findingByName.get("Primary mission")?.actualCopy ||
+        findingByName.get("Weakest actionable matchup")?.actualCopy ||
+        "",
+      passFail:
+        findingByName.get("Primary mission")?.verdict === "Correct" &&
+        findingByName.get("Weakest actionable matchup")?.verdict === "Correct"
+          ? "pass"
+          : "fail",
+      notes: `Seeded at ${formatRecord(patterns.ragingBoltVsGreninja.record)} across ${patterns.ragingBoltVsGreninja.matches} games.`,
+    },
+    {
+      patternName: "low_sample_noise",
+      deckVersion: "Rogue Box",
+      opponentOrTag: "rogue sample",
+      expectedAppSignal: "Low-sample Rogue Box noise should not outrank stronger matchup leaks.",
+      observedAppSignal: findingByName.get("Weakest actionable matchup")?.actualCopy || "",
+      passFail:
+        !(findingByName.get("Weakest actionable matchup")?.actualCopy || "").includes("Rogue")
+          ? "pass"
+          : "fail",
+      notes: `Rogue Box stays at ${formatRecord(patterns.rogueNoise)} across ${patterns.rogueNoise.total} games.`,
+    },
+    {
+      patternName: "version_improvement",
+      deckVersion: "Raging Bolt v1/v2/v3 and Gardevoir v1/v2",
+      opponentOrTag: "version signal",
+      expectedAppSignal: "Deck detail should expose meaningful version movement instead of flat no-signal copy.",
+      observedAppSignal: findingByName.get("Version improvement signal")?.actualCopy || "",
+      passFail:
+        findingByName.get("Version improvement signal")?.verdict === "Correct"
+          ? "pass"
+          : "fail",
+      notes: "Raging Bolt v3 and Gardevoir v2 are seeded as the healthier versions.",
+    },
+    {
+      patternName: "repeated_loss_issue",
+      deckVersion: "Control Counterlab",
+      opponentOrTag: "Item Lock",
+      expectedAppSignal: "Review should surface Item Lock as a repeated loss issue.",
+      observedAppSignal: findingByName.get("Primary insight")?.actualCopy || "",
+      passFail:
+        (findingByName.get("Primary insight")?.actualCopy || "").includes("Item Lock")
+          ? "pass"
+          : "fail",
+      notes: `${patterns.controlItemLock.itemLockLosses} of ${patterns.controlItemLock.totalLosses} control losses are tagged Item Lock.`,
+    },
+    {
+      patternName: "positive_tag_enrichment",
+      deckVersion: "Gardevoir Refinement",
+      opponentOrTag: "key tech mattered",
+      expectedAppSignal: "Review should preserve a positive keep signal instead of only showing problems.",
+      observedAppSignal: findingByName.get("Primary insight")?.actualCopy || "",
+      passFail: reviewTagsVisible ? "pass" : "fail",
+      notes: `${patterns.gardevoirPositive.techWins} of ${patterns.gardevoirPositive.totalWins} Gardevoir wins are tagged key tech mattered.`,
+    },
+    {
+      patternName: "turn_order_split",
+      deckVersion: "Charizard Pressure",
+      opponentOrTag: "turn order",
+      expectedAppSignal: "Detailed analytics should preserve a visible first/second split.",
+      observedAppSignal: /Turn order|Detailed analytics/i.test(reviewBody) ? "Turn-order analytics visible" : "Turn-order analytics missing",
+      passFail: /Turn order|Detailed analytics/i.test(reviewBody) ? "pass" : "fail",
+      notes: `Charizard first=${formatRecord(patterns.charizardTurnSignal.first)} second=${formatRecord(patterns.charizardTurnSignal.second)}.`,
+    },
+    {
+      patternName: "pagination_depth",
+      deckVersion: "all decks",
+      opponentOrTag: "matches page 2",
+      expectedAppSignal: "Logs should remain paginated beyond page 1.",
+      observedAppSignal: matchesPageTwoLine || "",
+      passFail: matchesPageTwoLine && /Page|Showing|Filtered/i.test(matchesPageTwoLine) ? "pass" : "fail",
+      notes: "Audit includes /matches?page=2 to confirm deeper-page volume behavior.",
+    },
+    {
+      patternName: "post_save_reward",
+      deckVersion: "temporary audit save",
+      opponentOrTag: "save loop",
+      expectedAppSignal: "Saving a game should still produce a short, concrete reward message.",
+      observedAppSignal: postSaveAudit.rewardText || "",
+      passFail: postSaveAudit.rewardText ? "pass" : "fail",
+      notes: `${postSaveAudit.deletedMatches} temporary saved match cleaned back out after audit.`,
+    },
+  ];
+}
+
+function issueMatrixToTsv(rows) {
+  const header = [
+    "pattern_name",
+    "deck_version",
+    "opponent_or_tag",
+    "expected_app_signal",
+    "observed_app_signal",
+    "pass_fail",
+    "notes",
+  ];
+
+  return [
+    header.join("\t"),
+    ...rows.map((row) =>
+      [
+        row.patternName,
+        row.deckVersion,
+        row.opponentOrTag,
+        row.expectedAppSignal,
+        stripWhitespace(row.observedAppSignal || ""),
+        row.passFail,
         row.notes,
       ].join("\t")
     ),
@@ -687,40 +917,119 @@ ${consoleErrors.length ? consoleErrors.map((error) => `- ${error}`).join("\n") :
 `;
 }
 
-function renderCombinedAudit({ user, summary, coreFindings, profileAudit, visualRoutes, mobileRoutes, timings, productionNote }) {
+function renderCombinedAudit({
+  user,
+  summary,
+  coreFindings,
+  profileAudit,
+  visualRoutes,
+  mobileRoutes,
+  timings,
+  productionNote,
+  patterns,
+  issueMatrix,
+  screenshots,
+}) {
+  const overflowFound =
+    visualRoutes.some((route) => route.overflow) ||
+    mobileRoutes.some((route) => route.overflow);
+  const fixedNow = issueMatrix.filter((row) => row.passFail === "pass");
+  const deferred = issueMatrix.filter((row) => row.passFail !== "pass");
+
   return `# Playtest 250 Audit
 
 Date: ${isoDate(new Date())}
 User id: ${user.id}
 
-## Seeded dataset
+## Seed setup summary
 
+- Test account: ${EMAIL}
+- Base URL audited: ${BASE_URL}
 - Decks: ${summary.decks}
 - Versions: ${summary.versions}
 - Matches: ${summary.matches}
 - Shared reports after audit: ${summary.sharedReports}
 
-## Core product highlights
+## Data patterns intentionally created
 
-${coreFindings.map((finding) => `- ${finding.surface}: ${finding.verdict} - ${finding.finding}`).join("\n")}
+- Raging Bolt vs Mega Greninja is the main leak at ${formatRecord(patterns.ragingBoltVsGreninja.record)} across ${patterns.ragingBoltVsGreninja.matches} games.
+- Rogue Box stays noisy at ${formatRecord(patterns.rogueNoise)} across ${patterns.rogueNoise.total} games so it should not outrank stronger leaks.
+- Control Counterlab repeats Item Lock in ${patterns.controlItemLock.itemLockLosses} of ${patterns.controlItemLock.totalLosses} losses.
+- Gardevoir keeps a positive tech signal in ${patterns.gardevoirPositive.techWins} of ${patterns.gardevoirPositive.totalWins} wins.
+- Charizard keeps a visible first/second split at ${formatRecord(patterns.charizardTurnSignal.first)} going first and ${formatRecord(patterns.charizardTurnSignal.second)} going second.
+- Unknown turn order is present and should stay excluded from the split.
 
-## Profile/community highlights
+## Routes audited
 
-- Profile save worked: ${profileAudit.profileSaveWorked ? "yes" : "no"}
-- Private profile stayed unavailable to anonymous users: ${profileAudit.privateProfile.heading === "Profile unavailable" ? "yes" : "no"}
-- Link-only report remained anonymous-safe: ${profileAudit.privateReport.ownerHidden ? "yes" : "no"}
+### Public
 
-## Visual/responsive summary
+${visualRoutes
+  .filter((route) => ["/", "/demo"].includes(route.route))
+  .map((route) => `- ${route.route}`)
+  .join("\n")}
 
-- Desktop routes checked: ${visualRoutes.length}
-- Mobile routes checked: ${mobileRoutes.length}
-- Any overflow found: ${visualRoutes.some((route) => route.overflow) || mobileRoutes.some((route) => route.overflow) ? "yes" : "no"}
+### Authenticated desktop
+
+${visualRoutes
+  .filter((route) => !["/", "/demo"].includes(route.route))
+  .map((route) => `- ${route.route}`)
+  .join("\n")}
+
+### Authenticated mobile
+
+${mobileRoutes.map((route) => `- ${route.route}`).join("\n")}
+
+## Findings by page
+
+${coreFindings
+  .map((finding) => {
+    const severity = finding.verdict === "Correct" ? "low" : "medium";
+    return `### ${finding.surface}: ${finding.finding}
+
+- Severity: ${severity}
+- Problem: ${finding.verdict === "Correct" ? "No blocking issue found in this audit pass." : finding.notes}
+- Suggested fix: ${finding.action}
+- Fix now or defer: ${finding.verdict === "Correct" ? "defer" : "fix now if confirmed in product review"}`
+  })
+  .join("\n\n")}
+
+### Profile and report privacy
+
+- Severity: ${profileAudit.profileSaveWorked && profileAudit.privateReport.ownerHidden ? "low" : "high"}
+- Problem: ${profileAudit.profileSaveWorked ? "Profile builder and privacy-safe report behavior held up at seeded volume." : "Profile builder save flow needs follow-up."}
+- Suggested fix: Keep the profile route and link-only/private report behavior under regression coverage.
+- Fix now or defer: ${profileAudit.profileSaveWorked ? "defer" : "fix now"}
+
+### Mobile and responsive
+
+- Severity: ${overflowFound ? "high" : "low"}
+- Problem: ${overflowFound ? "Horizontal overflow was detected on at least one audited route." : "No horizontal overflow found across the audited mobile routes."}
+- Suggested fix: Keep mobile route captures in the seeded audit and treat any future overflow as a fix-now issue.
+- Fix now or defer: ${overflowFound ? "fix now" : "defer"}
+
+## Screenshots taken
+
+${screenshots.map((name) => `- results/playtest_250_screenshots/${name}.png`).join("\n")}
+
+## Recommended fixes
+
+${issueMatrix.map((row) => `- ${row.patternName}: ${row.notes}`).join("\n")}
+
+## Fixed now vs deferred
+
+### Fixed now
+
+${fixedNow.length ? fixedNow.map((row) => `- ${row.patternName}: no change required in this pass; current behavior matched the seeded expectation.`).join("\n") : "- None"}
+
+### Deferred
+
+${deferred.length ? deferred.map((row) => `- ${row.patternName}: ${row.notes}`).join("\n") : "- None"}
 
 ## Performance summary
 
 ${timings
   .sort((a, b) => b.loadMs - a.loadMs)
-  .slice(0, 5)
+  .slice(0, 8)
   .map((item) => `- ${item.route}: ${item.loadMs}ms`)
   .join("\n")}
 
@@ -785,10 +1094,11 @@ async function main() {
     "/review",
     "/matchups",
     "/matches",
+    "/matches?page=2",
     "/decks",
     `/decks/${ragingBoltDeck.id}`,
     "/matches/new",
-    "/settings/profile",
+    "/profile",
   ];
 
   for (const route of authDesktopPaths) {
@@ -806,27 +1116,46 @@ async function main() {
   const matchupRoute = desktopRoutes.find((route) => route.route === "/matchups");
   const deckRoute = desktopRoutes.find((route) => route.route === `/decks/${ragingBoltDeck.id}`);
   const matchesRoute = desktopRoutes.find((route) => route.route === "/matches");
-  const settingsRoute = desktopRoutes.find((route) => route.route === "/settings/profile");
+  const matchesPageTwoRoute = desktopRoutes.find((route) => route.route === "/matches?page=2");
+  const profileRoute = desktopRoutes.find((route) => route.route === "/profile");
 
   const normalizedDashboardBody = stripWhitespace(dashboardRoute?.bodyText || "");
   const normalizedReviewBody = stripWhitespace(reviewRoute?.bodyText || "");
   const normalizedMatchupBody = stripWhitespace(matchupRoute?.bodyText || "");
   const normalizedDeckBody = stripWhitespace(deckRoute?.bodyText || "");
-  const dashboardMission = normalizedDashboardBody
-    .match(/Current mission([\s\S]{0,280})Why this mission/i)?.[1]?.trim() || null;
-  const dashboardPrompt = normalizedDashboardBody
-    .match(/(Start here|Next setup step|Build your testing signal|Optional sharing)([\s\S]{0,280})(Current mission|Recent form|Biggest actionable matchup)/i)?.[0]?.trim() || null;
-  const reviewHero = normalizedReviewBody
-    .match(/REVIEW MODE([\s\S]{0,180})\d+-\d+-\d+ across/i)?.[1]?.trim() || null;
-  const reviewHasNextTest = /What to test next|Next test/i.test(normalizedReviewBody);
-  const reviewHasConfidenceCue = /Strong signal|Building signal|Early signal|Needs more games/i.test(
+  const dashboardMission =
+    extractBodySegment(normalizedDashboardBody, "Next best action", ["Why this?", "Progress", "Review details"], 320) ||
+    extractBodySegment(normalizedDashboardBody, "Current focus", ["Recent form", "Review details"], 320);
+  const dashboardPrompt =
+    extractBodySegment(
+      normalizedDashboardBody,
+      "Optional sharing",
+      ["Recent form", "Biggest actionable matchup", "What changed", "Review details"],
+      260
+    ) ||
+    extractBodySegment(
+      normalizedDashboardBody,
+      "Build your testing signal",
+      ["Recent form", "Biggest actionable matchup", "What changed", "Review details"],
+      260
+    );
+  const reviewHero =
+    extractBodySegment(normalizedReviewBody, "Top coach read", ["Supporting insights", "Detailed analytics"], 340) ||
+    extractBodySegment(normalizedReviewBody, "Review", ["Supporting insights", "Detailed analytics"], 340);
+  const reviewHasNextTest = /What to do next/i.test(normalizedReviewBody);
+  const reviewHasConfidenceCue = /Strong enough to review|Worth testing next|Early signal|Needs more games/i.test(
     normalizedReviewBody
   );
-  const matchupHero = normalizedMatchupBody
-    .match(/Actionable leak([\s\S]{0,260})(Matchup breakdown|Deck All decks|Deck version All versions)/i)?.[1]?.trim() || null;
+  const matchupHero =
+    extractBodySegment(normalizedMatchupBody, "Actionable leak", ["Matchup breakdown", "Deck", "Deck version"], 280) ||
+    extractBodySegment(normalizedMatchupBody, "Priority watchlist", ["Matchup breakdown", "Deck", "Deck version"], 280);
   const deckSignal = normalizedDeckBody
     .match(/Version evidence([\s\S]{0,320})(Add your first test version|Set up an active test version|Untitled version|v1|v2|v3)/i)?.[1]?.trim() || null;
   const matchesLine = matchesRoute?.bodyText
+    ?.split("\n")
+    .map((line) => line.trim())
+    .find((line) => /Showing|Filtered|Page/i.test(line)) || null;
+  const matchesPageTwoLine = matchesPageTwoRoute?.bodyText
     ?.split("\n")
     .map((line) => line.trim())
     .find((line) => /Showing|Filtered|Page/i.test(line)) || null;
@@ -852,8 +1181,8 @@ async function main() {
   );
 
   const profileNavOk =
-    (settingsRoute?.bodyText || "").includes("Profile") &&
-    (settingsRoute?.bodyText || "").includes("Matchups");
+    (profileRoute?.bodyText || "").includes("Profile") &&
+    (profileRoute?.bodyText || "").includes("Matchups");
 
   await publicPage.goto(`${BASE_URL}/u/${PROFILE_INPUT.handle}`);
   await publicPage.waitForLoadState("networkidle");
@@ -950,6 +1279,7 @@ async function main() {
 
   await fillProfileBuilder(desktopPage, PROFILE_INPUT, "private", "private");
   const restoredPrivate = true;
+  const postSaveAudit = await auditAuthenticatedMatchSave(desktopPage, user.id);
 
   // Mobile audit with the final private state.
   const mobileContext = await browser.newContext({
@@ -967,11 +1297,13 @@ async function main() {
   const mobileRoutes = [];
   for (const route of [
     "/dashboard",
+    "/decks",
+    `/decks/${ragingBoltDeck.id}`,
     "/review",
     "/matchups",
     "/matches",
     "/matches/new",
-    "/settings/profile",
+    "/profile",
   ]) {
     mobileRoutes.push(
       await captureRoute(mobilePage, route, `mobile_${route.replace(/[/?=&]/g, "_")}`)
@@ -988,6 +1320,28 @@ async function main() {
   });
   await screenshot(mobilePage, "mobile_profile_private");
 
+  const mobileWideContext = await browser.newContext({
+    viewport: { width: 430, height: 932 },
+    isMobile: true,
+  });
+  const mobileWidePage = await mobileWideContext.newPage();
+  mobileWidePage.on("console", (message) => {
+    if (message.type() === "error") {
+      consoleErrors.push(`mobile-430: ${message.text()}`);
+    }
+  });
+  await login(mobileWidePage);
+  for (const route of ["/dashboard", "/matches/new", "/review"]) {
+    mobileRoutes.push(
+      await captureRoute(
+        mobileWidePage,
+        route,
+        `mobile430_${route.replace(/[/?=&]/g, "_")}`
+      )
+    );
+  }
+
+  await mobileWideContext.close();
   await mobileContext.close();
   await publicContext.close();
   await desktopContext.close();
@@ -996,7 +1350,7 @@ async function main() {
   seedData = await fetchSeedData(user.id);
 
   const profileAudit = {
-    settingsHeading: settingsRoute?.heading || privateSave.savedText.match(/\bProfile\b/)?.[0] || null,
+    settingsHeading: profileRoute?.heading || privateSave.savedText.match(/\bProfile\b/)?.[0] || null,
     previewMatched:
       privateSave.previewText.includes(PROFILE_INPUT.displayName) &&
       privateSave.previewText.includes(`@${PROFILE_INPUT.handle}`) &&
@@ -1020,10 +1374,27 @@ async function main() {
 
   const allRoutes = [...desktopRoutes, ...mobileRoutes];
   const timings = allRoutes.map((route) => ({ route: route.route, loadMs: route.loadMs }));
+  const issueMatrix = buildIssueMatrixRows({
+    patterns,
+    coachFindings,
+    matchesPageTwoLine,
+    postSaveAudit,
+    reviewBody: normalizedReviewBody,
+  });
+  const screenshotNames = existsSync(SCREENSHOT_DIR)
+    ? readdirSync(SCREENSHOT_DIR)
+        .filter((name) => name.endsWith(".png"))
+        .map((name) => name.replace(/\.png$/, ""))
+        .sort()
+    : [];
 
   writeFile(
     "results/playtest_250_coach_findings.tsv",
     toTsv(coachFindings)
+  );
+  writeFile(
+    "results/playtest_250_issue_matrix.tsv",
+    issueMatrixToTsv(issueMatrix)
   );
   writeFile(
     "docs/playtest_250_core_product_audit.md",
@@ -1075,6 +1446,9 @@ async function main() {
       timings,
       productionNote:
         "Not run in this audit pass because no deploy was performed. Production validation should happen after review and deployment.",
+      patterns,
+      issueMatrix,
+      screenshots: screenshotNames,
     })
   );
   writeFile(

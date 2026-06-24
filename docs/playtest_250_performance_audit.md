@@ -1,25 +1,31 @@
 # Playtest 250 Performance Audit
 
-Date: 2026-06-12
+Date: 2026-06-24
 
 ## Route timings
 
-- /matchups: 15096ms
-- /matches/new: 4647ms
-- /matches/new: 2885ms
-- /matches: 2532ms
-- /matchups: 2063ms
-- /decks/4b741cf6-8f28-4b2b-afea-45d085fffd83: 2035ms
-- /matches: 1522ms
-- /decks: 1262ms
-- /dashboard: 1255ms
-- /dashboard: 1211ms
-- /demo: 1191ms
-- /review: 1132ms
-- /: 1121ms
-- /review: 1119ms
-- /settings/profile: 973ms
-- /settings/profile: 915ms
+- /matches/new: 5338ms
+- /matchups: 2660ms
+- /matchups: 2300ms
+- /matches: 1946ms
+- /decks/9d3c1d32-9c41-4a8b-9156-92282aa29fc3: 1428ms
+- /review: 1427ms
+- /matches: 1395ms
+- /matches?page=2: 1390ms
+- /decks/9d3c1d32-9c41-4a8b-9156-92282aa29fc3: 1369ms
+- /: 1170ms
+- /decks: 1146ms
+- /review: 1110ms
+- /decks: 1093ms
+- /review: 1092ms
+- /matches/new: 1061ms
+- /matches/new: 1060ms
+- /dashboard: 990ms
+- /dashboard: 935ms
+- /profile: 932ms
+- /dashboard: 931ms
+- /profile: 924ms
+- /demo: 844ms
 - /u/domz_test: 0ms
 
 ## Notes

@@ -1,11 +1,11 @@
 # Playtest 250 Profile And Community Audit
 
-Date: 2026-06-12
+Date: 2026-06-24
 
 ## Profile builder
 
 - Main sidebar includes Profile in the normal nav flow: yes
-- Guided builder visible: Profile
+- Guided builder visible: Your player card
 - Live preview updated with the typed player identity: yes
 - Save succeeded and values persisted after reload: yes
 
@@ -17,7 +17,7 @@ Date: 2026-06-12
 ## Public profile
 
 - Public identity visible: yes
-- Analytics private state kept stats hidden: yes
+- Analytics private state kept stats hidden: no
 - Aggregate-only state showed safe stats only: yes
 
 ## Link-only profile
@@ -31,7 +31,7 @@ Date: 2026-06-12
 - Anonymous access to link-only report worked: yes
 - Private owner identity stayed hidden on anonymous report view: yes
 - Aggregate/public profile report also worked: yes
-- Report pages stayed summary-only with no raw logs or decklists: yes
+- Report pages stayed summary-only with no raw logs or decklists: no
 
 ## Final state
 
