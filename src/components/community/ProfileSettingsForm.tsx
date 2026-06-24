@@ -34,7 +34,6 @@ type ProfileSettingsFormProps = {
 
 type BuilderValues = {
   displayName: string;
-  handle: string;
   avatarUrl: string;
   bio: string;
   country: string;
@@ -98,7 +97,6 @@ const PRIVATE_RULES = [
 function getInitialProfileValues(profile: ProfileRecord | null): BuilderValues {
   return {
     displayName: profile?.display_name ?? "",
-    handle: profile?.handle ?? "",
     avatarUrl: profile?.avatar_url ?? "",
     bio: profile?.bio ?? "",
     country: profile?.country ?? "",
@@ -252,7 +250,6 @@ export function ProfileSettingsForm({
   const profilePreview = useMemo(
     () => ({
       displayName: values.displayName.trim() || "Your player name",
-      handle: values.handle.trim() ? `@${values.handle.trim()}` : "@your-handle",
       bio:
         values.bio.trim() ||
         "Share what you are testing and how you approach matchups.",
@@ -282,7 +279,7 @@ export function ProfileSettingsForm({
           <SectionHeader
             step="1"
             title="Player identity"
-            description="Display name, handle, country, and bio. Keep private until ready to share."
+            description="Display name, country, and bio. Keep private until ready to share."
           />
 
           <section className={`grid gap-4 p-4 sm:p-5 ${premiumInsetStrong}`}>
@@ -307,29 +304,22 @@ export function ProfileSettingsForm({
                 />
               </div>
               <div className="grid gap-2">
-                <label htmlFor="handle" className={label}>
-                  Handle
+                <label htmlFor="country" className={label}>
+                  Country
                 </label>
                 <input
-                  id="handle"
-                  name="handle"
-                  required
-                  value={values.handle}
+                  id="country"
+                  name="country"
+                  value={values.country}
                   onChange={(event) =>
                     setValues((current) => ({
                       ...current,
-                      handle: event.target.value,
+                      country: event.target.value,
                     }))
                   }
                   className={inputH10}
-                  placeholder="domzimm888"
-                  autoCapitalize="off"
-                  autoCorrect="off"
-                  spellCheck={false}
+                  placeholder="Netherlands"
                 />
-                <FieldHint>
-                  Lowercase only. Use letters, numbers, underscores, or hyphens. No spaces.
-                </FieldHint>
               </div>
             </div>
 
@@ -355,24 +345,6 @@ export function ProfileSettingsForm({
                   <FieldHint>
                     Optional. Add a clean image URL if you want your public profile to feel more personal.
                   </FieldHint>
-                </div>
-                <div className="grid gap-2">
-                  <label htmlFor="country" className={label}>
-                    Country
-                  </label>
-                  <input
-                    id="country"
-                    name="country"
-                    value={values.country}
-                    onChange={(event) =>
-                      setValues((current) => ({
-                        ...current,
-                        country: event.target.value,
-                      }))
-                    }
-                    className={inputH10}
-                    placeholder="Netherlands"
-                  />
                 </div>
               </div>
 
@@ -603,11 +575,8 @@ export function ProfileSettingsForm({
                 <h3 className="text-xl font-semibold tracking-tight text-[#F8FAFC]">
                   {profilePreview.displayName}
                 </h3>
-                <p className="mt-1 text-sm font-medium text-[#94A3B8]">
-                  {profilePreview.handle}
-                </p>
                 {profilePreview.country ? (
-                  <p className="mt-2 text-sm text-[#D6E0F0]">{profilePreview.country}</p>
+                  <p className="mt-1 text-sm text-[#D6E0F0]">{profilePreview.country}</p>
                 ) : null}
               </div>
             </div>

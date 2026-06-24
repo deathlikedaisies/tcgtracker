@@ -148,6 +148,8 @@ test.describe("authenticated routes", () => {
     const expectedOrigin = getExpectedOrigin(page);
 
     await expectHeadingVisible(page, /Profile|Create your profile/i);
+    await expect(page.getByLabel("Handle")).toHaveCount(0);
+    await expect(page.locator("body")).not.toContainText(/^Handle$/m);
     await expect(page.locator("body")).toContainText(/Public profile URL/i);
     await expect(page.locator("body")).toContainText(/https?:\/\/[^\s]+\/u\/domz_test/i);
     await expect(page.locator("body")).toContainText(

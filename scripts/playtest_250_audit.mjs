@@ -481,7 +481,6 @@ async function fillProfileBuilder(page, values, visibility, analyticsVisibility)
   await settlePage(page);
 
   await page.getByLabel("Display name").fill(values.displayName);
-  await page.getByLabel("Handle").fill(values.handle);
   await page.getByLabel("Avatar URL").fill(values.avatarUrl);
   await page.getByLabel("Country").fill(values.country);
   await page.getByLabel("Bio").fill(values.bio);

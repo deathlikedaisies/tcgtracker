@@ -53,7 +53,6 @@ export function ProfileSettingsPageContent({
 
   const completionItems = [
     { label: "Display name", done: Boolean(profile.display_name?.trim()) },
-    { label: "Handle", done: Boolean(profile.handle?.trim()) },
     { label: "Country", done: Boolean(profile.country?.trim()) },
     { label: "Bio", done: Boolean(profile.bio?.trim()) },
     { label: "Sharing configured", done: profile.profile_visibility !== "private" },
@@ -100,9 +99,8 @@ export function ProfileSettingsPageContent({
                       {visibilityLabel(profile.profile_visibility)}
                     </span>
                   </div>
-                  <p className="mt-0.5 text-sm text-[#94A3B8]">@{profile.handle}</p>
                   {profile.country ? (
-                    <p className="mt-0.5 text-sm text-[#94A3B8]/72">{profile.country}</p>
+                    <p className="mt-1 text-sm text-[#94A3B8]/72">{profile.country}</p>
                   ) : null}
                   {profile.bio ? (
                     <p className="mt-3 line-clamp-3 text-sm leading-6 text-[#94A3B8]/80">

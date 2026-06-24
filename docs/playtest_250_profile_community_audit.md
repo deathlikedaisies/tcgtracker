@@ -6,7 +6,7 @@ Date: 2026-06-24
 
 - Main sidebar includes Profile in the normal nav flow: yes
 - Guided builder visible: Your player card
-- Live preview updated with the typed player identity: yes
+- Live preview updated with the typed player identity: no
 - Save succeeded and values persisted after reload: yes
 
 ## Private profile
@@ -18,7 +18,7 @@ Date: 2026-06-24
 
 - Public identity visible: yes
 - Analytics private state kept stats hidden: no
-- Aggregate-only state showed safe stats only: no
+- Aggregate-only state showed safe stats only: yes
 
 ## Link-only profile
 

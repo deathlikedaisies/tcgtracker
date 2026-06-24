@@ -253,6 +253,55 @@ export function normalizeHandle(value: string) {
   return value.trim().replace(/^@+/, "").toLowerCase();
 }
 
+function buildHandleSeedFromDisplayName(displayName: string) {
+  const normalized = normalizeHandle(
+    displayName
+      .replace(/[^a-zA-Z0-9 _-]+/g, " ")
+      .trim()
+      .replace(/\s+/g, "-")
+  )
+    .replace(/[^a-z0-9_-]+/g, "")
+    .replace(/^-+|-+$/g, "");
+
+  if (normalized.length >= 3) {
+    return normalized.slice(0, 30);
+  }
+
+  if (normalized.length > 0) {
+    return `${normalized}player`.slice(0, 30);
+  }
+
+  return "trainer";
+}
+
+async function generateAvailableHandle(
+  supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>,
+  baseSeed: string,
+  currentUserId: string
+) {
+  const base = buildHandleSeedFromDisplayName(baseSeed);
+
+  for (let attempt = 0; attempt < 25; attempt += 1) {
+    const suffix = attempt === 0 ? "" : `-${attempt + 1}`;
+    const candidate = `${base}${suffix}`.slice(0, 30);
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("user_id")
+      .eq("handle", candidate)
+      .maybeSingle();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (!data || (typeof data.user_id === "string" && data.user_id === currentUserId)) {
+      return candidate;
+    }
+  }
+
+  return `${base}-${currentUserId.slice(0, 4)}`.slice(0, 30);
+}
+
 export function validateHandle(handle: string) {
   const normalized = normalizeHandle(handle);
 
@@ -801,15 +850,6 @@ export async function getProfileByHandle(handle: string) {
 
 export async function createOrUpdateProfile(userId: string, input: ProfileInput) {
   const supabase = await createServerSupabaseClient();
-  const handleError = validateHandle(input.handle);
-
-  if (handleError) {
-    return {
-      ok: false as const,
-      error: handleError,
-      profile: null,
-    };
-  }
 
   if (!cleanText(input.displayName)) {
     return {
@@ -835,7 +875,23 @@ export async function createOrUpdateProfile(userId: string, input: ProfileInput)
     };
   }
 
-  const normalizedHandle = normalizeHandle(input.handle);
+  const existingProfile = await getProfileByUserIdForViewer(userId);
+  const requestedHandle = normalizeHandle(input.handle);
+  const normalizedHandle = requestedHandle
+    ? requestedHandle
+    : existingProfile?.handle
+      ? existingProfile.handle
+      : await generateAvailableHandle(supabase, input.displayName, userId);
+  const handleError = validateHandle(normalizedHandle);
+
+  if (handleError) {
+    return {
+      ok: false as const,
+      error: handleError,
+      profile: null,
+    };
+  }
+
   const payload = {
     user_id: userId,
     handle: normalizedHandle,

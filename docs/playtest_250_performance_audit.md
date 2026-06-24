@@ -4,28 +4,28 @@ Date: 2026-06-24
 
 ## Route timings
 
-- /decks/fdf38baf-d650-4365-9632-79fb250b85e7: 4892ms
-- /matchups: 2235ms
-- /matchups: 2148ms
-- /matches?page=2: 1580ms
-- /matches: 1232ms
-- /matches: 1163ms
-- /review: 1092ms
-- /decks/fdf38baf-d650-4365-9632-79fb250b85e7: 1016ms
-- /dashboard: 983ms
-- /matches/new: 969ms
-- /review: 964ms
-- /: 899ms
-- /dashboard: 881ms
-- /review: 848ms
-- /matches/new: 819ms
-- /decks: 808ms
-- /matches/new: 783ms
-- /decks: 772ms
-- /profile: 713ms
-- /dashboard: 662ms
-- /profile: 659ms
-- /demo: 578ms
+- /matches: 7781ms
+- /matches?page=2: 2588ms
+- /matchups: 2231ms
+- /matchups: 1853ms
+- /decks: 1614ms
+- /decks/e5cd6abb-cd96-4605-b569-f8b91eba50dc: 1592ms
+- /matches: 1458ms
+- /decks/e5cd6abb-cd96-4605-b569-f8b91eba50dc: 1394ms
+- /review: 1360ms
+- /: 1326ms
+- /matches/new: 1316ms
+- /review: 1073ms
+- /review: 1000ms
+- /decks: 975ms
+- /dashboard: 896ms
+- /matches/new: 893ms
+- /dashboard: 816ms
+- /matches/new: 795ms
+- /profile: 770ms
+- /dashboard: 740ms
+- /demo: 705ms
+- /profile: 685ms
 - /u/domz_test: 0ms
 
 ## Notes
@@ -36,75 +36,79 @@ Date: 2026-06-24
 
 ## Console errors
 
-- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=qe9v0nXjVAZ_H9qg_xBKg' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=qe9v0nXjVAZ_H9qg_xBKg' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=6XHDAN5GKByIUyirCfQN_' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=6XHDAN5GKByIUyirCfQN_' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=AAOzjAl2tC0MBT5yAo7_O' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=6XHDAN5GKByIUyirCfQN_' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=Obwe7xFTGIbrcceTQg0Jz' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=VjqCoxSHTA_XPDL-kefZv' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=6XHDAN5GKByIUyirCfQN_' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=VjqCoxSHTA_XPDL-kefZv' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=6XHDAN5GKByIUyirCfQN_' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=pwJ-SsI3WoSPVnvdsJWVP' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=6XHDAN5GKByIUyirCfQN_' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=pwJ-SsI3WoSPVnvdsJWVP' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=pwJ-SsI3WoSPVnvdsJWVP' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=ls1RNaG5Gcx4Gh1RYgPll' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=ls1RNaG5Gcx4Gh1RYgPll' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=ls1RNaG5Gcx4Gh1RYgPll' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=6XHDAN5GKByIUyirCfQN_' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=77cLvYDDnS44DRE6ZvZuc' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=77cLvYDDnS44DRE6ZvZuc' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=77cLvYDDnS44DRE6ZvZuc' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=eF0ikRORIqIBtOcSZ3VZJ' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=6XHDAN5GKByIUyirCfQN_' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=eF0ikRORIqIBtOcSZ3VZJ' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=6XHDAN5GKByIUyirCfQN_' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=H0B0BqXci_oxzccstLxdF' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=6XHDAN5GKByIUyirCfQN_' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=6XHDAN5GKByIUyirCfQN_' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=Jh89yYv33NJrIMLMVwuyj' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=Jh89yYv33NJrIMLMVwuyj' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=mPUCEKQtJ4oHQtWkaAaFk' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=Xp6YZbw25K3VSeKu8Ei1V' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=6n8ip3G6lc8h4gBEm1PJb' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=U8l8C2mzNZ-J6jteQ0Iy_' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=bYsaC831fyIkSv1uCUUUd' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=cTaXd_aWgLgT5MQJDfnrb' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=gos1gF8dGyQp1pfqUXTRV' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=nT5hDeTkgOR82o8UP6D8J' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=R5h5jEA4HKjvtC-8nsFlS' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- mobile: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=l4_6dh1l8o_pydOcT04YW' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- mobile: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=EhpKPKitgqVMd6J9Q0jo6' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- mobile: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=9R4Tc4VmqjJvS0P0QFAIM' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- mobile: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=1t2DUP9qGRji5lM-ll4uC' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- mobile: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=1t2DUP9qGRji5lM-ll4uC' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- mobile: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=DT0onSNHVHKdrmZUio0Gv' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=R5h5jEA4HKjvtC-8nsFlS' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- mobile: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=DT0onSNHVHKdrmZUio0Gv' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=nT5hDeTkgOR82o8UP6D8J' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- mobile: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=DT0onSNHVHKdrmZUio0Gv' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- mobile: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=wbgDmiLsXwEIT--weqA-A' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- mobile: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=wbgDmiLsXwEIT--weqA-A' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- mobile: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=jRr4Mb5xcqE6mtmTrkx8r' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- mobile: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=jRr4Mb5xcqE6mtmTrkx8r' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=nT5hDeTkgOR82o8UP6D8J' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- mobile: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=cGTAE4GKMtbsPFzto285F' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=R5h5jEA4HKjvtC-8nsFlS' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=nT5hDeTkgOR82o8UP6D8J' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- mobile: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=cGTAE4GKMtbsPFzto285F' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- mobile: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=MhRyLc6ZxeCJirewFZl7Y' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=R5h5jEA4HKjvtC-8nsFlS' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=nT5hDeTkgOR82o8UP6D8J' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- mobile-430: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=JoigtMULais2qHlXzDhNT' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=R5h5jEA4HKjvtC-8nsFlS' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=nT5hDeTkgOR82o8UP6D8J' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- mobile-430: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=9B7jswLgEZUAznI76MTSm' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- mobile: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=doEZLaQQGTkYHi6oLKV3Z' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- mobile-430: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=xcnmzjeT5mNnH003U4dVh' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- mobile-430: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=xcnmzjeT5mNnH003U4dVh' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- mobile-430: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=WsAZd3B4V1a3f93r4RU9n' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- mobile-430: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=lBancyrPKqmXLh_jVHw4r' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
-- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=R5h5jEA4HKjvtC-8nsFlS' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=FLLDMLmNmi9ISgIyTt_7B' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=FLLDMLmNmi9ISgIyTt_7B' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=6A7S0iLASvbCseyOq8jhR' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=6A7S0iLASvbCseyOq8jhR' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=TswTcV9sZgRCcDvQLXrzs' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=6A7S0iLASvbCseyOq8jhR' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=SM2QeP2m35aNn1aFlX5Ha' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=6A7S0iLASvbCseyOq8jhR' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=N6YkRDjysf-Xp2NsVgcND' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=6A7S0iLASvbCseyOq8jhR' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=N6YkRDjysf-Xp2NsVgcND' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=6A7S0iLASvbCseyOq8jhR' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=k9cHirLND5A1mevV1kkMS' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=k9cHirLND5A1mevV1kkMS' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=k9cHirLND5A1mevV1kkMS' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=0E-5zxlou6uHLQ4kmmlgC' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=0E-5zxlou6uHLQ4kmmlgC' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=6A7S0iLASvbCseyOq8jhR' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=0E-5zxlou6uHLQ4kmmlgC' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=jnp1SyqAiDl8Ncb9zvFoK' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=jnp1SyqAiDl8Ncb9zvFoK' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=jnp1SyqAiDl8Ncb9zvFoK' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=6A7S0iLASvbCseyOq8jhR' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=1EzCMQaFNghSRJZ0oqVjH' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=1EzCMQaFNghSRJZ0oqVjH' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=6A7S0iLASvbCseyOq8jhR' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=6A7S0iLASvbCseyOq8jhR' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=6A7S0iLASvbCseyOq8jhR' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=U-To6fo946nYu0GoMwNCV' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=mFz2nmiVdTInE-7BQSFrM' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=uFkA-ZUCrYyIPLjQV-tG4' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=mFz2nmiVdTInE-7BQSFrM' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=mFz2nmiVdTInE-7BQSFrM' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=WLhCFX3KQZ3GpcdlVjPmS' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=HYRgf4zq3dUJ59tb2ZlkD' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=RnGwID6BRjxi0IqZeAxlg' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=ZUNpC9QHidYV5IQJff12I' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=lUwPtMHN59a6SiXyOPicD' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=binOVKXVk_3WGK26178I7' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=uGPczPBWD4hDrVuaTndb_' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- mobile: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=7XgIVMLORDOCe4eWHVw33' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- mobile: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=GwrzJ-_qoKCNiz-zdPBba' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- mobile: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=eb9mUf_M5vewFJ3EgX2TR' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=d9LcQPAbuv7VSJiJEqAP6' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- mobile: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=eb9mUf_M5vewFJ3EgX2TR' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- mobile: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=If5GKiVTfxcv4xgv2mzyE' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- mobile: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=If5GKiVTfxcv4xgv2mzyE' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=uGPczPBWD4hDrVuaTndb_' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- mobile: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=If5GKiVTfxcv4xgv2mzyE' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- mobile: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=FMCcQckLmPkBmdZeOjpZn' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- mobile: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=FMCcQckLmPkBmdZeOjpZn' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=d9LcQPAbuv7VSJiJEqAP6' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- mobile: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=FMCcQckLmPkBmdZeOjpZn' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- mobile: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=VgIiMWLAYPAawFDSERhNK' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- mobile: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=VgIiMWLAYPAawFDSERhNK' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- mobile: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=1PDsB0RkpuUpL8c8BKgvQ' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=uGPczPBWD4hDrVuaTndb_' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=d9LcQPAbuv7VSJiJEqAP6' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- mobile: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=1PDsB0RkpuUpL8c8BKgvQ' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- mobile: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=1PDsB0RkpuUpL8c8BKgvQ' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=d9LcQPAbuv7VSJiJEqAP6' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=uGPczPBWD4hDrVuaTndb_' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=d9LcQPAbuv7VSJiJEqAP6' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=uGPczPBWD4hDrVuaTndb_' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=d9LcQPAbuv7VSJiJEqAP6' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=uGPczPBWD4hDrVuaTndb_' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- mobile: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=YPaPXMFcwovhSMXiYHOTN' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- mobile-430: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=jisFFqnyIWlga9lGUzZ_k' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- mobile-430: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=NNRKDQWUnH46BpEGFXphI' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- mobile-430: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=S_zD4MQq1m98EebromO-J' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- public: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=uGPczPBWD4hDrVuaTndb_' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- mobile-430: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=S_zD4MQq1m98EebromO-J' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- mobile-430: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=UFNR5n9yopjmXdH4euNoW' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- mobile: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=YPaPXMFcwovhSMXiYHOTN' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- mobile-430: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=7ZhnNhoK9anS3bdRZpLIs' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE
+- desktop: WebSocket connection to 'ws://127.0.0.1:3000/_next/webpack-hmr?id=d9LcQPAbuv7VSJiJEqAP6' failed: Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE

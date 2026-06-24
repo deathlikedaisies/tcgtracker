@@ -126,10 +126,14 @@ function getMatchupCoachLabel(matchup: {
   winRateValue: number;
 }) {
   if (matchup.matches < 6) {
+    const gamesNeeded = Math.max(6 - matchup.matches, 1);
     return {
       label: "Needs more data",
-      className: "bg-[#4F8CFF]/14 text-[#B8D1FF]",
-      action: `Too few games to read. Log ${Math.max(6 - matchup.matches, 1)} more before drawing conclusions.`,
+      className: "bg-[#F5C84C]/14 text-[#FFE28A]",
+      action:
+        matchup.matches <= 1
+          ? `Only ${matchup.matches} game logged. Log ${gamesNeeded} more before treating this matchup as a real trend.`
+          : `Small sample. Log ${gamesNeeded} more games before treating this matchup as a reliable read.`,
     };
   }
 
@@ -181,6 +185,25 @@ function getHeadlineSignal(matchup: {
   }
 
   return matchup.winRateValue <= 45 ? "Priority weakness" : "Needs more games";
+}
+
+function getHeadlineTone(matchup: {
+  matches: number;
+  winRateValue: number;
+} | null) {
+  if (!matchup || matchup.matches < 15 || matchup.winRateValue > 45) {
+    return {
+      iconClassName: "text-[#F5C84C]",
+      labelClassName: "text-[#FFE28A]",
+      valueClassName: "text-[#F5C84C]",
+    };
+  }
+
+  return {
+    iconClassName: "text-[#F43F5E]",
+    labelClassName: "text-rose-200",
+    valueClassName: "text-[#F43F5E]",
+  };
 }
 
 export default async function MatchupsPage({
@@ -447,6 +470,10 @@ export default async function MatchupsPage({
     totalMatches: filteredMatches.length,
     context: "Your matchup data",
   };
+  const worstMatchupCoachLabel = worstMatchup
+    ? getMatchupCoachLabel(worstMatchup)
+    : null;
+  const worstMatchupTone = getHeadlineTone(worstMatchup);
 
   return (
     <main className={appShell}>
@@ -504,8 +531,8 @@ export default async function MatchupsPage({
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex min-w-0 flex-wrap items-center gap-2.5">
                   <div className="flex items-center gap-1.5">
-                    <AlertTriangle className="size-4 text-[#F43F5E]" aria-hidden="true" />
-                    <p className="text-xs font-semibold uppercase tracking-[0.1em] text-rose-200">
+                    <AlertTriangle className={`size-4 ${worstMatchupTone.iconClassName}`} aria-hidden="true" />
+                    <p className={`text-xs font-semibold uppercase tracking-[0.1em] ${worstMatchupTone.labelClassName}`}>
                       {getHeadlineSignal(worstMatchup)}
                     </p>
                   </div>
@@ -516,7 +543,7 @@ export default async function MatchupsPage({
                     {worstMatchup?.opponentArchetype ?? "No matchup yet"}
                   </h2>
                 </div>
-                <p className="text-3xl font-bold text-[#F43F5E]">
+                <p className={`text-3xl font-bold ${worstMatchupTone.valueClassName}`}>
                   {worstMatchup?.winRate ?? "0%"}
                 </p>
               </div>
@@ -545,6 +572,11 @@ export default async function MatchupsPage({
                   </span>
                 </div>
               </div>
+              {worstMatchupCoachLabel ? (
+                <p className="mt-3 text-sm font-medium text-[#94A3B8]">
+                  {worstMatchupCoachLabel.action}
+                </p>
+              ) : null}
             </article>
 
             <aside className={`p-4 ${glassPanel}`}>
@@ -771,9 +803,11 @@ export default async function MatchupsPage({
                           style={{ width: `${matchup.winRateValue}%` }}
                         />
                       </div>
-                      {matchup.matches < 3 ? (
+                      {matchup.matches < 6 ? (
                         <p className="mt-2 text-xs font-medium text-[#94A3B8]/76">
-                          Low sample. Log 3+ games before trusting this rate.
+                          {matchup.matches <= 1
+                            ? "Only 1 game logged. Add more before trusting this rate."
+                            : "Small sample. Log more games before trusting this rate."}
                         </p>
                       ) : null}
                       <p className="mt-2 text-sm font-medium text-[#94A3B8]">

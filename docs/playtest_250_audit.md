@@ -36,7 +36,7 @@ User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 - /matches
 - /matches?page=2
 - /decks
-- /decks/fdf38baf-d650-4365-9632-79fb250b85e7
+- /decks/e5cd6abb-cd96-4605-b569-f8b91eba50dc
 - /matches/new
 - /profile
 
@@ -44,7 +44,7 @@ User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 
 - /dashboard
 - /decks
-- /decks/fdf38baf-d650-4365-9632-79fb250b85e7
+- /decks/e5cd6abb-cd96-4605-b569-f8b91eba50dc
 - /review
 - /matchups
 - /matches
@@ -118,12 +118,15 @@ User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 - results/playtest_250_screenshots/authenticated_post_save_reward_250.png
 - results/playtest_250_screenshots/desktop__dashboard.png
 - results/playtest_250_screenshots/desktop__decks.png
+- results/playtest_250_screenshots/desktop__decks_28de826e-26f4-42cb-9164-b37387e846ff.png
 - results/playtest_250_screenshots/desktop__decks_547bde5b-c76f-40aa-9390-fc3145355cf9.png
 - results/playtest_250_screenshots/desktop__decks_68dfa729-a7d7-48a7-903e-28f4250e2f91.png
+- results/playtest_250_screenshots/desktop__decks_890b7d89-ebd9-452f-942c-fec73bd3ce4f.png
 - results/playtest_250_screenshots/desktop__decks_9d3c1d32-9c41-4a8b-9156-92282aa29fc3.png
 - results/playtest_250_screenshots/desktop__decks_c6d10d22-3347-415b-8d94-85b3dfc9ba13.png
 - results/playtest_250_screenshots/desktop__decks_c8f8baa8-7d5e-4024-b5e2-f42f6fbfcbb1.png
 - results/playtest_250_screenshots/desktop__decks_db971151-af64-4a09-9aec-5c0d19a221a8.png
+- results/playtest_250_screenshots/desktop__decks_e5cd6abb-cd96-4605-b569-f8b91eba50dc.png
 - results/playtest_250_screenshots/desktop__decks_fdf38baf-d650-4365-9632-79fb250b85e7.png
 - results/playtest_250_screenshots/desktop__matches.png
 - results/playtest_250_screenshots/desktop__matches_new.png
@@ -139,10 +142,12 @@ User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 - results/playtest_250_screenshots/mobile__dashboard.png
 - results/playtest_250_screenshots/mobile__decks.png
 - results/playtest_250_screenshots/mobile__decks_547bde5b-c76f-40aa-9390-fc3145355cf9.png
+- results/playtest_250_screenshots/mobile__decks_890b7d89-ebd9-452f-942c-fec73bd3ce4f.png
 - results/playtest_250_screenshots/mobile__decks_9d3c1d32-9c41-4a8b-9156-92282aa29fc3.png
 - results/playtest_250_screenshots/mobile__decks_c6d10d22-3347-415b-8d94-85b3dfc9ba13.png
 - results/playtest_250_screenshots/mobile__decks_c8f8baa8-7d5e-4024-b5e2-f42f6fbfcbb1.png
 - results/playtest_250_screenshots/mobile__decks_db971151-af64-4a09-9aec-5c0d19a221a8.png
+- results/playtest_250_screenshots/mobile__decks_e5cd6abb-cd96-4605-b569-f8b91eba50dc.png
 - results/playtest_250_screenshots/mobile__decks_fdf38baf-d650-4365-9632-79fb250b85e7.png
 - results/playtest_250_screenshots/mobile__matches.png
 - results/playtest_250_screenshots/mobile__matches_new.png
@@ -186,14 +191,14 @@ User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 
 ## Performance summary
 
-- /decks/fdf38baf-d650-4365-9632-79fb250b85e7: 4892ms
-- /matchups: 2235ms
-- /matchups: 2148ms
-- /matches?page=2: 1580ms
-- /matches: 1232ms
-- /matches: 1163ms
-- /review: 1092ms
-- /decks/fdf38baf-d650-4365-9632-79fb250b85e7: 1016ms
+- /matches: 7781ms
+- /matches?page=2: 2588ms
+- /matchups: 2231ms
+- /matchups: 1853ms
+- /decks: 1614ms
+- /decks/e5cd6abb-cd96-4605-b569-f8b91eba50dc: 1592ms
+- /matches: 1458ms
+- /decks/e5cd6abb-cd96-4605-b569-f8b91eba50dc: 1394ms
 
 ## Production validation
 
