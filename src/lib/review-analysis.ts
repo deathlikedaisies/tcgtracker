@@ -63,6 +63,13 @@ type QualityField =
 
 const LOW_QUALITY_VALUES = new Set(["bad", "okay"]);
 const HIGH_QUALITY_VALUES = new Set(["good", "great"]);
+const BROAD_ISSUE_TAGS = new Set([
+  "missed setup",
+  "poor prize trade",
+  "tempo loss",
+  "bench pressure",
+  "matchup knowledge",
+]);
 
 function getSampleStatus(total: number) {
   if (total < 5) {
@@ -473,73 +480,212 @@ function buildIssueTagCard(
   matches: ReviewMatch[],
   context: ReviewFilterContext
 ): ScoredReviewInsightCard | null {
+  type IssueTagCandidate = {
+    tag: string;
+    count: number;
+    winsWithTag: number;
+    lossesWithTag: ReviewMatch[];
+    tagLossShare: number;
+    tagWinShare: number;
+    deckFocus: ReturnType<typeof getDominantGroupLabel>;
+    matchupFocus: ReturnType<typeof getDominantGroupLabel>;
+    focusedDeckLabel: string | null;
+    focusedMatchupLabel: string | null;
+    focusedDeckLosses: number;
+    focusedMatchupLosses: number;
+    focusedDeckCoverage: number;
+    focusedMatchupCoverage: number;
+    distinctDeckCount: number;
+    distinctMatchupCount: number;
+    score: number;
+  };
   const losses = matches.filter((match) => match.result === "loss");
-  const mostCommon = getMostCommonTag(losses, getIssueTags);
+  const wins = matches.filter((match) => match.result === "win");
+  const uniqueLossTags = Array.from(
+    new Set(losses.flatMap((match) => getIssueTags(match)))
+  );
 
-  if (!mostCommon || mostCommon[1] < 2 || losses.length < 3) {
+  if (!uniqueLossTags.length || losses.length < 3) {
     return null;
   }
 
-  const [tag, count] = mostCommon;
-  const wins = matches.filter((match) => match.result === "win");
-  const winsWithTag = wins.filter((match) => getIssueTags(match).includes(tag)).length;
-  const contextLabel = getContextLabel(context);
-  const lossesWithTag = losses.filter((match) => getIssueTags(match).includes(tag));
-  const tagLossShare = losses.length ? count / losses.length : 0;
-  const tagWinShare = wins.length ? winsWithTag / wins.length : 0;
-  const deckFocus = getDominantGroupLabel(lossesWithTag, (match) => match.deckName);
-  const matchupFocus = getDominantGroupLabel(
-    lossesWithTag,
-    (match) => match.opponentArchetype
+  const scoredCandidates = uniqueLossTags
+    .map((tag) => {
+      const lossesWithTag = losses.filter((match) =>
+        getIssueTags(match).includes(tag)
+      );
+      const count = lossesWithTag.length;
+
+      if (count < 2) {
+        return null;
+      }
+
+      const winsWithTag = wins.filter((match) =>
+        getIssueTags(match).includes(tag)
+      ).length;
+      const tagLossShare = losses.length ? count / losses.length : 0;
+      const tagWinShare = wins.length ? winsWithTag / wins.length : 0;
+      const deckFocus = getDominantGroupLabel(lossesWithTag, (match) => match.deckName);
+      const matchupFocus = getDominantGroupLabel(
+        lossesWithTag,
+        (match) => match.opponentArchetype
+      );
+      const focusedDeckLabel =
+        !context.deckId && deckFocus && deckFocus.share >= 0.55
+          ? deckFocus.label
+          : null;
+      const focusedMatchupLabel =
+        matchupFocus && matchupFocus.share >= 0.5 ? matchupFocus.label : null;
+      const focusedDeckLosses = focusedDeckLabel
+        ? losses.filter((match) => match.deckName === focusedDeckLabel).length
+        : 0;
+      const focusedMatchupLosses = focusedMatchupLabel
+        ? losses.filter((match) => match.opponentArchetype === focusedMatchupLabel)
+            .length
+        : 0;
+      const focusedDeckCoverage =
+        focusedDeckLabel && focusedDeckLosses
+          ? (deckFocus?.count ?? 0) / focusedDeckLosses
+          : 0;
+      const focusedMatchupCoverage =
+        focusedMatchupLabel && focusedMatchupLosses
+          ? (matchupFocus?.count ?? 0) / focusedMatchupLosses
+          : 0;
+      const distinctDeckCount = new Set(lossesWithTag.map((match) => match.deckName))
+        .size;
+      const distinctMatchupCount = new Set(
+        lossesWithTag.map((match) => match.opponentArchetype)
+      ).size;
+      const tagRateGap = Math.max(tagLossShare - tagWinShare, 0);
+      const matchupDominancePenalty =
+        distinctMatchupCount <= 2 && (matchupFocus?.share ?? 0) >= 0.72
+          ? 24
+          : (matchupFocus?.share ?? 0) >= 0.75
+            ? 12
+            : 0;
+      const crossContextBoost =
+        (distinctDeckCount >= 2 ? 18 : 0) +
+        (distinctMatchupCount >= 3 ? 18 : 0);
+      const cleanPatternBoost =
+        count >= 5 &&
+        winsWithTag === 0 &&
+        (focusedDeckCoverage >= 0.75 || focusedMatchupCoverage >= 0.75)
+          ? 30
+          : 0;
+      const concreteCrossContextBoost =
+        !BROAD_ISSUE_TAGS.has(tag.toLowerCase()) &&
+        count >= 10 &&
+        winsWithTag === 0 &&
+        (distinctDeckCount >= 2 || distinctMatchupCount >= 3)
+          ? 80
+          : 0;
+
+      return {
+        tag,
+        count,
+        winsWithTag,
+        lossesWithTag,
+        tagLossShare,
+        tagWinShare,
+        deckFocus,
+        matchupFocus,
+        focusedDeckLabel,
+        focusedMatchupLabel,
+        focusedDeckLosses,
+        focusedMatchupLosses,
+        focusedDeckCoverage,
+        focusedMatchupCoverage,
+        distinctDeckCount,
+        distinctMatchupCount,
+        score:
+          count * 2.2 +
+          tagRateGap * 28 +
+          (focusedDeckLabel ? 14 : 0) +
+          (focusedMatchupLabel ? 8 : 0) +
+          focusedDeckCoverage * 18 +
+          focusedMatchupCoverage * 14 +
+          crossContextBoost +
+          (winsWithTag === 0 ? 10 : 0) +
+          concreteCrossContextBoost +
+          cleanPatternBoost -
+          matchupDominancePenalty -
+          winsWithTag,
+      };
+    })
+    .filter((candidate): candidate is IssueTagCandidate => Boolean(candidate));
+
+  const hasConcreteRepeatedPattern = scoredCandidates.some(
+    (candidate) =>
+      !BROAD_ISSUE_TAGS.has(candidate.tag.toLowerCase()) &&
+      candidate.count >= 5 &&
+      candidate.winsWithTag === 0
   );
-  const focusedDeckLabel =
-    !context.deckId && deckFocus && deckFocus.share >= 0.55 ? deckFocus.label : null;
-  const focusedMatchupLabel =
-    matchupFocus && matchupFocus.share >= 0.5 ? matchupFocus.label : null;
+
+  const strongest = scoredCandidates
+    .map((candidate) => ({
+      ...candidate,
+      score:
+        candidate.score -
+        (hasConcreteRepeatedPattern &&
+        BROAD_ISSUE_TAGS.has(candidate.tag.toLowerCase())
+          ? 70
+          : 0),
+    }))
+    .sort((left, right) => right.score - left.score)[0];
+
+  if (!strongest) {
+    return null;
+  }
+
+  const contextLabel = getContextLabel(context);
   const tagEvidence = formatTaggedComparison(
-    tag,
-    winsWithTag,
+    strongest.tag,
+    strongest.winsWithTag,
     wins.length,
-    count,
+    strongest.count,
     losses.length
   );
-  const focusLine = focusedMatchupLabel
-    ? ` Most of those losses are into ${focusedMatchupLabel}.`
-    : focusedDeckLabel
-      ? ` Most of those losses are with ${focusedDeckLabel}.`
-      : "";
-  const confidenceLabel = getRateDifferenceLabel(
-    count,
-    tagLossShare,
-    tagWinShare
-  );
+  const focusLine =
+    strongest.focusedDeckLabel && strongest.focusedMatchupLabel
+      ? ` Most of those losses are with ${strongest.focusedDeckLabel} into ${strongest.focusedMatchupLabel}.`
+      : strongest.focusedMatchupLabel
+        ? ` Most of those losses are into ${strongest.focusedMatchupLabel}.`
+        : strongest.focusedDeckLabel
+          ? ` Most of those losses are with ${strongest.focusedDeckLabel}.`
+          : "";
+  const focusEvidence =
+    strongest.focusedDeckLabel && strongest.focusedDeckLosses
+      ? ` ${strongest.deckFocus?.count ?? 0} of ${strongest.focusedDeckLosses} ${strongest.focusedDeckLabel} losses include "${strongest.tag}".`
+      : strongest.focusedMatchupLabel && strongest.focusedMatchupLosses
+        ? ` ${strongest.matchupFocus?.count ?? 0} of ${strongest.focusedMatchupLosses} ${strongest.focusedMatchupLabel} losses include "${strongest.tag}".`
+        : "";
 
   return {
     key: "issue-tag",
-    title: focusedDeckLabel
-      ? `"${tag}" is showing up in ${focusedDeckLabel} losses`
-      : `"${tag}" is showing up in your losses`,
+    title: strongest.focusedDeckLabel
+      ? `"${strongest.tag}" is showing up in ${strongest.focusedDeckLabel} losses`
+      : `"${strongest.tag}" is showing up in your losses`,
     explanation: `${tagEvidence} In ${contextLabel}, that points to a possible failure pattern rather than a solved deck change.${focusLine}`,
-    evidence: `${formatTaggedFraction(count, losses.length)} losses tagged, ${formatTaggedFraction(
-      winsWithTag,
+    evidence: `${formatTaggedFraction(
+      strongest.count,
+      losses.length
+    )} losses tagged, ${formatTaggedFraction(
+      strongest.winsWithTag,
       wins.length
-    )} wins tagged.${getEarlySignalSuffix(losses.length + wins.length)}`,
+    )} wins tagged.${focusEvidence}${getEarlySignalSuffix(losses.length + wins.length)}`,
     recommendation:
-      `What to do next: in the next 5 games where "${tag}" happens, add one note saying what caused it and whether it was matchup pressure, a deck issue, sequencing, or an opening-hand problem.`,
-    confidenceLabel,
+      `What to do next: in the next 5 games where "${strongest.tag}" happens, add one note saying what caused it and whether it was matchup pressure, a deck issue, sequencing, or an opening-hand problem.`,
+    confidenceLabel: getRateDifferenceLabel(
+      strongest.count,
+      strongest.tagLossShare,
+      strongest.tagWinShare
+    ),
     tone: "rose",
     ctaLabel: "Review losses",
     ctaHref: buildBaseMatchesHref(context, {
       result: "loss",
     }),
-    score:
-      count * 2 +
-      tagLossShare * 18 +
-      (focusedDeckLabel ? 18 : 0) +
-      (focusedMatchupLabel ? 8 : 0) +
-      (deckFocus && deckFocus.count >= 6 ? 12 : 0) +
-      (winsWithTag === 0 ? 8 : 0) -
-      winsWithTag,
+    score: strongest.score,
   };
 }
 

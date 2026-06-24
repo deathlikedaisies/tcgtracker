@@ -8,9 +8,9 @@ User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 
 - Pre-clean decks: 8
 - Pre-clean versions: 18
-- Pre-clean matches: 251
-- Pre-clean match_tags: 461
-- Pre-clean shared_reports: 2
+- Pre-clean matches: 254
+- Pre-clean match_tags: 463
+- Pre-clean shared_reports: 6
 - Post-clean decks: 0
 - Post-clean versions: 0
 - Post-clean matches: 0

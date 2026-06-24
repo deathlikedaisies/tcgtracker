@@ -118,7 +118,7 @@ test.describe("authenticated routes", () => {
     await saveNowButton.click();
 
     await page.waitForURL(/\/matches\/new\?success=1/, { timeout: 30000 });
-    await expect(page.locator("body")).toContainText(/Logged\./i);
+    await expect(page.getByTestId("post-save-reward")).toContainText(/Logged\./i);
     await expectNoAppError(page);
   });
 
@@ -178,7 +178,7 @@ test.describe("authenticated routes", () => {
       .first()
       .locator("xpath=ancestor::section[1]");
 
-    await expect(coachHero).toContainText(/Item Lock|Sequencing|Mega Greninja/i);
+    await expect(coachHero).toContainText(/Item Lock|missed setup|Mega Greninja/i);
     await expect(coachHero).toContainText(/What to do next/i);
     await expect(page.locator("body")).toContainText(/wins tagged.*losses tagged|wins and .* losses/i);
     await expect(page.locator("body")).toContainText(

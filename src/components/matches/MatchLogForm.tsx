@@ -982,6 +982,9 @@ export function MatchLogForm({
       detail: "It still counts toward the sample.",
     };
   })();
+  const postSaveRewardLine =
+    postLogCoachLine?.line ??
+    (wasSuccessful ? "Logged. Match history updated." : null);
 
   const rewardPrimaryButtonClass =
     `${primaryButton} h-12 shadow-[0_14px_30px_rgba(79,140,255,0.16)]`;
@@ -1204,6 +1207,14 @@ export function MatchLogForm({
                 <p className="mt-3 text-[0.95rem] font-semibold leading-6 text-[#F8FAFC] sm:mt-4 sm:text-base sm:leading-7">
                   {postSaveSummary}
                 </p>
+                {postSaveRewardLine ? (
+                  <p
+                    data-testid="post-save-reward"
+                    className="mt-3 inline-flex w-fit items-center rounded-full bg-emerald-500/10 px-3 py-1.5 text-sm font-semibold text-emerald-100 shadow-[inset_0_0_0_1px_rgba(34,197,94,0.18)]"
+                  >
+                    {postSaveRewardLine}
+                  </p>
+                ) : null}
                 <p className="mt-2 text-sm leading-5 text-[#94A3B8]/76 sm:leading-6">
                   {!countedTowardMission
                     ? sessionCoach?.missionGuidanceMode === "priority_watchlist"
@@ -1247,13 +1258,10 @@ export function MatchLogForm({
                       TC
                     </span>
                     <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#94A3B8]/52">
-                      Coach says
+                      Saved signal
                     </span>
                   </div>
-                  <p className="mt-2 text-base font-semibold text-[#F8FAFC]">
-                    {postLogCoachLine.line}
-                  </p>
-                  <p className="mt-1 text-sm text-[#94A3B8]/76">
+                  <p className="mt-2 text-sm text-[#94A3B8]/76">
                     {postLogCoachLine.detail}
                   </p>
                 </div>

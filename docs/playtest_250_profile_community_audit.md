@@ -18,7 +18,7 @@ Date: 2026-06-24
 
 - Public identity visible: yes
 - Analytics private state kept stats hidden: no
-- Aggregate-only state showed safe stats only: yes
+- Aggregate-only state showed safe stats only: no
 
 ## Link-only profile
 

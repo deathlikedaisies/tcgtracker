@@ -6,11 +6,11 @@ User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 ## Seed setup summary
 
 - Test account: pokeleaguenl@gmail.com
-- Base URL audited: http://localhost:3000
+- Base URL audited: http://127.0.0.1:3000
 - Decks: 8
 - Versions: 18
 - Matches: 250
-- Shared reports after audit: 4
+- Shared reports after audit: 2
 
 ## Data patterns intentionally created
 
@@ -36,7 +36,7 @@ User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 - /matches
 - /matches?page=2
 - /decks
-- /decks/9d3c1d32-9c41-4a8b-9156-92282aa29fc3
+- /decks/fdf38baf-d650-4365-9632-79fb250b85e7
 - /matches/new
 - /profile
 
@@ -44,7 +44,7 @@ User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 
 - /dashboard
 - /decks
-- /decks/9d3c1d32-9c41-4a8b-9156-92282aa29fc3
+- /decks/fdf38baf-d650-4365-9632-79fb250b85e7
 - /review
 - /matchups
 - /matches
@@ -118,9 +118,13 @@ User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 - results/playtest_250_screenshots/authenticated_post_save_reward_250.png
 - results/playtest_250_screenshots/desktop__dashboard.png
 - results/playtest_250_screenshots/desktop__decks.png
+- results/playtest_250_screenshots/desktop__decks_547bde5b-c76f-40aa-9390-fc3145355cf9.png
 - results/playtest_250_screenshots/desktop__decks_68dfa729-a7d7-48a7-903e-28f4250e2f91.png
 - results/playtest_250_screenshots/desktop__decks_9d3c1d32-9c41-4a8b-9156-92282aa29fc3.png
+- results/playtest_250_screenshots/desktop__decks_c6d10d22-3347-415b-8d94-85b3dfc9ba13.png
+- results/playtest_250_screenshots/desktop__decks_c8f8baa8-7d5e-4024-b5e2-f42f6fbfcbb1.png
 - results/playtest_250_screenshots/desktop__decks_db971151-af64-4a09-9aec-5c0d19a221a8.png
+- results/playtest_250_screenshots/desktop__decks_fdf38baf-d650-4365-9632-79fb250b85e7.png
 - results/playtest_250_screenshots/desktop__matches.png
 - results/playtest_250_screenshots/desktop__matches_new.png
 - results/playtest_250_screenshots/desktop__matches_page_2.png
@@ -134,8 +138,12 @@ User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 - results/playtest_250_screenshots/mobile430__review.png
 - results/playtest_250_screenshots/mobile__dashboard.png
 - results/playtest_250_screenshots/mobile__decks.png
+- results/playtest_250_screenshots/mobile__decks_547bde5b-c76f-40aa-9390-fc3145355cf9.png
 - results/playtest_250_screenshots/mobile__decks_9d3c1d32-9c41-4a8b-9156-92282aa29fc3.png
+- results/playtest_250_screenshots/mobile__decks_c6d10d22-3347-415b-8d94-85b3dfc9ba13.png
+- results/playtest_250_screenshots/mobile__decks_c8f8baa8-7d5e-4024-b5e2-f42f6fbfcbb1.png
 - results/playtest_250_screenshots/mobile__decks_db971151-af64-4a09-9aec-5c0d19a221a8.png
+- results/playtest_250_screenshots/mobile__decks_fdf38baf-d650-4365-9632-79fb250b85e7.png
 - results/playtest_250_screenshots/mobile__matches.png
 - results/playtest_250_screenshots/mobile__matches_new.png
 - results/playtest_250_screenshots/mobile__matchups.png
@@ -158,7 +166,7 @@ User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 - positive_tag_enrichment: 13 of 15 Gardevoir wins are tagged key tech mattered.
 - turn_order_split: Charizard first=15-5-0 second=4-5-2.
 - pagination_depth: Audit includes /matches?page=2 to confirm deeper-page volume behavior.
-- post_save_reward: 1 temporary saved match cleaned back out after audit.
+- post_save_reward: Audit used the saved-state success route to verify the visible reward copy.
 
 ## Fixed now vs deferred
 
@@ -170,22 +178,22 @@ User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 - positive_tag_enrichment: no change required in this pass; current behavior matched the seeded expectation.
 - turn_order_split: no change required in this pass; current behavior matched the seeded expectation.
 - pagination_depth: no change required in this pass; current behavior matched the seeded expectation.
+- post_save_reward: no change required in this pass; current behavior matched the seeded expectation.
 
 ### Deferred
 
 - repeated_loss_issue: 10 of 10 control losses are tagged Item Lock.
-- post_save_reward: 1 temporary saved match cleaned back out after audit.
 
 ## Performance summary
 
-- /matches/new: 5338ms
-- /matchups: 2660ms
-- /matchups: 2300ms
-- /matches: 1946ms
-- /decks/9d3c1d32-9c41-4a8b-9156-92282aa29fc3: 1428ms
-- /review: 1427ms
-- /matches: 1395ms
-- /matches?page=2: 1390ms
+- /decks/fdf38baf-d650-4365-9632-79fb250b85e7: 4892ms
+- /matchups: 2235ms
+- /matchups: 2148ms
+- /matches?page=2: 1580ms
+- /matches: 1232ms
+- /matches: 1163ms
+- /review: 1092ms
+- /decks/fdf38baf-d650-4365-9632-79fb250b85e7: 1016ms
 
 ## Production validation
 

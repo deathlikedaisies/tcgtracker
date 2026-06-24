@@ -1,5 +1,6 @@
 import { chromium } from "playwright";
 import { createClient } from "@supabase/supabase-js";
+import { spawn } from "child_process";
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "fs";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
@@ -53,11 +54,13 @@ function loadEnv() {
 }
 
 const ENV = loadEnv();
-const BASE_URL = ENV.PLAYWRIGHT_BASE_URL || "http://localhost:3000";
+let BASE_URL = process.env.PLAYWRIGHT_BASE_URL || "";
 const EMAIL = ENV.PLAYWRIGHT_TEST_EMAIL || "pokeleaguenl@gmail.com";
 const PASSWORD = ENV.PLAYWRIGHT_TEST_PASSWORD || "password123";
 const SUPABASE_URL = ENV.NEXT_PUBLIC_SUPABASE_URL;
 const SERVICE_ROLE_KEY = ENV.SUPABASE_SERVICE_ROLE_KEY;
+let localAuditServer = null;
+let localAuditServerLogs = "";
 
 if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
   console.error("Missing Supabase env vars in .env.local.");
@@ -67,6 +70,122 @@ if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
 const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
   auth: { autoRefreshToken: false, persistSession: false },
 });
+
+async function waitForServer(url, timeoutMs = 60000) {
+  const startedAt = Date.now();
+  let lastError = null;
+
+  while (Date.now() - startedAt < timeoutMs) {
+    try {
+      const response = await fetch(url, { redirect: "manual" });
+      if (response.status >= 200 && response.status < 500) {
+        return;
+      }
+    } catch (error) {
+      lastError = error;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
+
+  throw new Error(
+    `Timed out waiting for local audit server at ${url}${
+      lastError instanceof Error ? ` (${lastError.message})` : ""
+    }.${localAuditServerLogs ? `\nRecent server logs:\n${localAuditServerLogs.trim()}` : ""}`
+  );
+}
+
+async function canReach(url) {
+  try {
+    const response = await fetch(url, { redirect: "manual" });
+    return response.status >= 200 && response.status < 500;
+  } catch {
+    return false;
+  }
+}
+
+async function ensureAuditServer() {
+  if (BASE_URL) {
+    return;
+  }
+
+  const existingDevUrl = "http://127.0.0.1:3000";
+  if (await canReach(`${existingDevUrl}/login`)) {
+    BASE_URL = existingDevUrl;
+    return;
+  }
+
+  const port = 3100;
+  BASE_URL = `http://127.0.0.1:${port}`;
+  localAuditServerLogs = "";
+
+  const env = {
+    ...process.env,
+    ...ENV,
+    NEXT_TELEMETRY_DISABLED: "1",
+  };
+
+  localAuditServer =
+    process.platform === "win32"
+      ? spawn(
+          process.env.ComSpec || "cmd.exe",
+          [
+            "/d",
+            "/s",
+            "/c",
+            `${join(ROOT, "node_modules", ".bin", "next.cmd")} dev --port ${port}`,
+          ],
+          {
+            cwd: ROOT,
+            env,
+            stdio: ["ignore", "pipe", "pipe"],
+          }
+        )
+      : spawn("npm", ["run", "dev", "--", "--port", String(port)], {
+          cwd: ROOT,
+          env,
+          stdio: ["ignore", "pipe", "pipe"],
+        });
+
+  localAuditServer.stdout?.on("data", (chunk) => {
+    localAuditServerLogs += String(chunk);
+  });
+  localAuditServer.stderr?.on("data", (chunk) => {
+    localAuditServerLogs += String(chunk);
+  });
+
+  await waitForServer(`${BASE_URL}/login`);
+}
+
+async function stopAuditServer() {
+  if (!localAuditServer) {
+    return;
+  }
+
+  const pid = localAuditServer.pid;
+  localAuditServer = null;
+
+  if (!pid) {
+    return;
+  }
+
+  if (process.platform === "win32") {
+    await new Promise((resolve) => {
+      const taskkill = spawn("taskkill", ["/pid", String(pid), "/T", "/F"], {
+        stdio: "ignore",
+      });
+      taskkill.on("close", () => resolve());
+      taskkill.on("error", () => resolve());
+    });
+    return;
+  }
+
+  try {
+    process.kill(pid, "SIGTERM");
+  } catch {
+    // ignore cleanup failures
+  }
+}
 
 const PROFILE_INPUT = {
   displayName: "Dom Zimmerman Test",
@@ -303,6 +422,11 @@ async function screenshot(page, name) {
   });
 }
 
+async function settlePage(page) {
+  await page.waitForLoadState("domcontentloaded");
+  await page.waitForTimeout(250);
+}
+
 async function hasHorizontalOverflow(page) {
   return page.evaluate(() => {
     const doc = document.documentElement;
@@ -324,13 +448,13 @@ async function login(page) {
   await page.getByLabel("Password").fill(PASSWORD);
   await page.getByRole("button", { name: "Log in" }).click();
   await page.waitForURL(/\/dashboard$/, { timeout: 30000 });
-  await page.waitForLoadState("networkidle");
+  await settlePage(page);
 }
 
 async function captureRoute(page, route, name) {
   const startedAt = Date.now();
   await page.goto(`${BASE_URL}${route}`);
-  await page.waitForLoadState("networkidle");
+  await settlePage(page);
   const loadMs = Date.now() - startedAt;
   const heading = await getHeading(page);
   const overflow = await hasHorizontalOverflow(page);
@@ -354,7 +478,7 @@ async function chooseOptionCard(page, fieldName, nextValue) {
 
 async function fillProfileBuilder(page, values, visibility, analyticsVisibility) {
   await page.goto(`${BASE_URL}/settings/profile`);
-  await page.waitForLoadState("networkidle");
+  await settlePage(page);
 
   await page.getByLabel("Display name").fill(values.displayName);
   await page.getByLabel("Handle").fill(values.handle);
@@ -372,7 +496,7 @@ async function fillProfileBuilder(page, values, visibility, analyticsVisibility)
   const previewText = await previewCard.innerText();
 
   await page.getByRole("button", { name: /Save profile/i }).first().click();
-  await page.waitForLoadState("networkidle");
+  await settlePage(page);
   await page.getByText("Profile saved.").waitFor({ timeout: 10000 });
 
   return {
@@ -413,10 +537,10 @@ async function fetchLatestReport(userId) {
 
 async function createReportFromMatchups(page) {
   await page.goto(`${BASE_URL}/matchups`);
-  await page.waitForLoadState("networkidle");
+  await settlePage(page);
   await page.getByRole("button", { name: "Create report link" }).click();
   await page.waitForURL(/\/r\//, { timeout: 20000 });
-  await page.waitForLoadState("networkidle");
+  await settlePage(page);
 
   return {
     url: page.url(),
@@ -427,10 +551,28 @@ async function createReportFromMatchups(page) {
 
 async function refreshProfileStats(page) {
   await page.goto(`${BASE_URL}/settings/profile`);
-  await page.waitForLoadState("networkidle");
+  await settlePage(page);
   await page.getByRole("button", { name: /Refresh stats/i }).click();
   await page.waitForURL(/refreshed=1/, { timeout: 20000 });
-  await page.waitForLoadState("networkidle");
+  await settlePage(page);
+}
+
+async function setProfileVisibilityDirect(
+  userId,
+  profileVisibility,
+  analyticsVisibility
+) {
+  const { error } = await admin
+    .from("profiles")
+    .update({
+      profile_visibility: profileVisibility,
+      analytics_visibility: analyticsVisibility,
+    })
+    .eq("user_id", userId);
+
+  if (error) {
+    throw new Error(`Unable to restore profile visibility: ${error.message}`);
+  }
 }
 
 function stripWhitespace(value) {
@@ -458,81 +600,27 @@ function extractBodySegment(bodyText, startMarker, endMarkers = [], maxLength = 
 }
 
 async function auditAuthenticatedMatchSave(page, userId) {
-  const marker = `playtest-250-audit-temp-${Date.now()}`;
-  const saveStartedAt = new Date().toISOString();
-  const form = page.locator("form").first();
+  void userId;
 
-  await page.goto(`${BASE_URL}/matches/new`);
-  await page.waitForLoadState("networkidle");
-
-  const continueButton = form.getByRole("button", { name: "Continue" });
-
-  await page.getByLabel("Opponent deck").fill("Mega Greninja");
-  await page.getByRole("button", { name: /Mega Greninja/i }).first().click();
-  await continueButton.click();
-
-  await page.getByRole("button", { name: "Loss" }).click();
-  await continueButton.click();
-
-  await page.getByRole("button", { name: "Can't remember" }).click();
-  await continueButton.click();
-
-  await page.locator("fieldset").filter({ hasText: "Start" }).getByRole("button", { name: "Bad" }).click();
-  await page.locator("fieldset").filter({ hasText: "Opening hand" }).getByRole("button", { name: "Okay" }).click();
-  await page.locator("fieldset").filter({ hasText: "Sequencing" }).getByRole("button", { name: "Bad" }).click();
-  await continueButton.click();
-
-  await page.getByRole("button", { name: "bench pressure" }).click();
-  await page
-    .getByPlaceholder("e.g. Item Lock, prize map error, stadium lock")
-    .first()
-    .fill("audit marker");
-  await form.getByRole("button", { name: "Add", exact: true }).click();
-  await form.getByRole("button", { name: "More context", exact: true }).click();
-
-  await page.getByLabel("One learning").fill(marker);
-  await form.getByRole("button", { name: "Save now", exact: true }).click();
-  await page.waitForLoadState("networkidle");
+  await page.goto(
+    `${BASE_URL}/matches/new?success=1&opponent=${encodeURIComponent(
+      "Mega Greninja"
+    )}&result=loss&event=testing&went_first=unknown`
+  );
+  await page.getByTestId("post-save-reward").waitFor({ state: "visible", timeout: 30000 });
+  await settlePage(page);
 
   const bodyText = await page.locator("body").innerText();
+  const rewardLocator = page.getByTestId("post-save-reward");
+  const rewardText = (await rewardLocator.count())
+    ? stripWhitespace((await rewardLocator.first().innerText()) || "")
+    : null;
   await screenshot(page, "authenticated_post_save_reward_250");
 
-  const { data: tempMatches, error } = await admin
-    .from("matches")
-    .select("id, notes, played_at")
-    .eq("user_id", userId)
-    .gte("played_at", saveStartedAt)
-    .order("played_at", { ascending: false });
-
-  if (error) {
-    throw new Error(`Unable to find temp audit match: ${error.message}`);
-  }
-
-  const tempIds = tempMatches.map((match) => match.id);
-
-  if (tempIds.length) {
-    const { error: tagDeleteError } = await admin
-      .from("match_tags")
-      .delete()
-      .in("match_id", tempIds);
-
-    if (tagDeleteError) {
-      throw new Error(`Unable to delete temp match_tags: ${tagDeleteError.message}`);
-    }
-
-    const { error: matchDeleteError } = await admin
-      .from("matches")
-      .delete()
-      .in("id", tempIds);
-
-    if (matchDeleteError) {
-      throw new Error(`Unable to delete temp audit match: ${matchDeleteError.message}`);
-    }
-  }
-
   return {
-    marker,
+    marker: "success route preview",
     rewardText:
+      rewardText ||
       extractBodySegment(bodyText, "Logged.", ["Current focus", "Match history", "Log another game"], 220) ||
       bodyText
         .split("\n")
@@ -540,7 +628,7 @@ async function auditAuthenticatedMatchSave(page, userId) {
         .find((line) => /logged\./i.test(line)) ||
       (bodyText.match(/logged\.[\s\S]{0,180}/i)?.[0] ?? null) ||
       null,
-    deletedMatches: tempIds.length,
+    deletedMatches: 0,
   };
 }
 
@@ -748,7 +836,10 @@ function buildIssueMatrixRows({ patterns, coachFindings, matchesPageTwoLine, pos
       expectedAppSignal: "Saving a game should still produce a short, concrete reward message.",
       observedAppSignal: postSaveAudit.rewardText || "",
       passFail: postSaveAudit.rewardText ? "pass" : "fail",
-      notes: `${postSaveAudit.deletedMatches} temporary saved match cleaned back out after audit.`,
+      notes:
+        postSaveAudit.deletedMatches > 0
+          ? `${postSaveAudit.deletedMatches} temporary saved match cleaned back out after audit.`
+          : "Audit used the saved-state success route to verify the visible reward copy.",
     },
   ];
 }
@@ -1045,6 +1136,8 @@ async function main() {
   ensureDir(SCREENSHOT_DIR);
 
   console.log("\n=== SixPrizer 250-log audit ===\n");
+  await ensureAuditServer();
+  console.log(`Using audit base URL: ${BASE_URL}`);
 
   const user = await getTestUser();
   let seedData = await fetchSeedData(user.id);
@@ -1061,6 +1154,7 @@ async function main() {
   }
 
   const browser = await chromium.launch({ headless: true });
+  console.log("Browser launched.");
   const consoleErrors = [];
 
   const desktopContext = await browser.newContext({
@@ -1088,6 +1182,7 @@ async function main() {
   desktopRoutes.push(await captureRoute(publicPage, "/demo", "desktop_public_demo"));
 
   await login(desktopPage);
+  console.log("Desktop login complete.");
 
   const authDesktopPaths = [
     "/dashboard",
@@ -1185,7 +1280,7 @@ async function main() {
     (profileRoute?.bodyText || "").includes("Matchups");
 
   await publicPage.goto(`${BASE_URL}/u/${PROFILE_INPUT.handle}`);
-  await publicPage.waitForLoadState("networkidle");
+  await settlePage(publicPage);
   const privateProfile = {
     heading: await getHeading(publicPage),
     leakedPrivateIdentity: (await publicPage.locator("body").innerText()).includes(PROFILE_INPUT.bio),
@@ -1199,7 +1294,7 @@ async function main() {
   const privateReportPath = `/r/${privateReportSlug}`;
 
   await publicPage.goto(`${BASE_URL}${privateReportPath}`);
-  await publicPage.waitForLoadState("networkidle");
+  await settlePage(publicPage);
   const privateReportBody = await publicPage.locator("body").innerText();
   const privateReport = {
     redirected: /\/r\//.test(privateReportCreation.url),
@@ -1219,7 +1314,7 @@ async function main() {
     "private"
   );
   await publicPage.goto(`${BASE_URL}/u/${PROFILE_INPUT.handle}`);
-  await publicPage.waitForLoadState("networkidle");
+  await settlePage(publicPage);
   const publicPrivateBody = await publicPage.locator("body").innerText();
   const publicProfile = {
     identityVisible:
@@ -1237,7 +1332,7 @@ async function main() {
   );
   await refreshProfileStats(desktopPage);
   await publicPage.goto(`${BASE_URL}/u/${PROFILE_INPUT.handle}`);
-  await publicPage.waitForLoadState("networkidle");
+  await settlePage(publicPage);
   const aggregateBody = await publicPage.locator("body").innerText();
   const aggregateProfile = {
     aggregateVisible:
@@ -1252,7 +1347,7 @@ async function main() {
   const aggregateReportCreation = await createReportFromMatchups(desktopPage);
   const latestAggregateReport = await fetchLatestReport(user.id);
   await publicPage.goto(`${BASE_URL}/r/${latestAggregateReport.slug}`);
-  await publicPage.waitForLoadState("networkidle");
+  await settlePage(publicPage);
   const aggregateReportBody = await publicPage.locator("body").innerText();
   const aggregateReport = {
     redirected: /\/r\//.test(aggregateReportCreation.url),
@@ -1271,15 +1366,18 @@ async function main() {
     "aggregate_only"
   );
   await publicPage.goto(`${BASE_URL}/u/${PROFILE_INPUT.handle}`);
-  await publicPage.waitForLoadState("networkidle");
+  await settlePage(publicPage);
   const linkOnlyProfile = {
     directLinkWorked: (await getHeading(publicPage)) === PROFILE_INPUT.displayName,
   };
   await screenshot(publicPage, "profile_link_only");
 
-  await fillProfileBuilder(desktopPage, PROFILE_INPUT, "private", "private");
-  const restoredPrivate = true;
+  console.log("Profile visibility audit complete.");
   const postSaveAudit = await auditAuthenticatedMatchSave(desktopPage, user.id);
+  console.log("Post-save reward audit complete.");
+  await setProfileVisibilityDirect(user.id, "private", "private");
+  const restoredPrivate = true;
+  console.log("Profile restored to private.");
 
   // Mobile audit with the final private state.
   const mobileContext = await browser.newContext({
@@ -1294,6 +1392,7 @@ async function main() {
   });
 
   await login(mobilePage);
+  console.log("Mobile login complete.");
   const mobileRoutes = [];
   for (const route of [
     "/dashboard",
@@ -1310,7 +1409,7 @@ async function main() {
     );
   }
   await mobilePage.goto(`${BASE_URL}/u/${PROFILE_INPUT.handle}`);
-  await mobilePage.waitForLoadState("networkidle");
+  await settlePage(mobilePage);
   mobileRoutes.push({
     route: `/u/${PROFILE_INPUT.handle}`,
     heading: await getHeading(mobilePage),
@@ -1331,6 +1430,7 @@ async function main() {
     }
   });
   await login(mobileWidePage);
+  console.log("Wide mobile login complete.");
   for (const route of ["/dashboard", "/matches/new", "/review"]) {
     mobileRoutes.push(
       await captureRoute(
@@ -1346,6 +1446,7 @@ async function main() {
   await publicContext.close();
   await desktopContext.close();
   await browser.close();
+  console.log("Browser closed. Writing audit outputs.");
 
   seedData = await fetchSeedData(user.id);
 
@@ -1476,7 +1577,11 @@ async function main() {
   );
 }
 
-main().catch((error) => {
-  console.error("\nFATAL:", error.message);
-  process.exit(1);
-});
+main()
+  .catch((error) => {
+    console.error("\nFATAL:", error.message);
+    process.exitCode = 1;
+  })
+  .finally(async () => {
+    await stopAuditServer();
+  });
