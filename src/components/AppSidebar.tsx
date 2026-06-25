@@ -4,6 +4,7 @@ import {
   ClipboardList,
   Gauge,
   Layers3,
+  MessageSquareWarning,
   PlusCircle,
   Settings2,
   Target,
@@ -25,7 +26,8 @@ type AppSection =
   | "log"
   | "matchups"
   | "review"
-  | "settings";
+  | "settings"
+  | "feedback";
 
 type AppSidebarProps = {
   current: AppSection;
@@ -45,6 +47,7 @@ const navItems = [
   { href: "/decks", label: "Decks", section: "decks" as const, icon: Layers3 },
   { href: "/matchups", label: "Matchups", section: "matchups" as const, icon: BarChart3 },
   { href: "/profile", label: "Profile", section: "settings" as const, icon: Settings2 },
+  { href: "/feedback", label: "Feedback", section: "feedback" as const, icon: MessageSquareWarning },
 ];
 
 export function AppSidebar({ current, deckLabel, insight }: AppSidebarProps) {

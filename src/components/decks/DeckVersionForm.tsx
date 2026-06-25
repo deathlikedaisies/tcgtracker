@@ -39,6 +39,7 @@ type DeckVersionFormProps = {
   description?: string;
   className?: string;
   submitLabel?: string;
+  notesPlaceholder?: string;
 };
 
 type DeckVersionStep = "decklist" | "review" | "details";
@@ -79,6 +80,7 @@ export function DeckVersionForm({
   description = "Paste a 60-card list, give the build a clear name, and choose whether it should become the active test version. You'll use this version when logging games.",
   className = "",
   submitLabel = "Create test version",
+  notesPlaceholder = "What changed in this build?",
 }: DeckVersionFormProps) {
   const router = useRouter();
   const [actionState, formAction] = useActionState(action, initialState);
@@ -544,7 +546,7 @@ export function DeckVersionForm({
                 rows={4}
                 value={notes}
                 onChange={(event) => setNotes(event.target.value)}
-                placeholder="What changed in this build?"
+                placeholder={notesPlaceholder}
                 className={textarea}
               />
             </div>

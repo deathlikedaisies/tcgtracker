@@ -20,4 +20,6 @@ Please post in the group or DM me if:
 
 Screenshots plus device/browser help a lot.
 
+There is also a `Feedback` page inside the app if you want to save a bug or suggestion there directly.
+
 It is still a beta, so rough edges are useful feedback.

@@ -8,7 +8,8 @@ type AppNavSection =
   | "log"
   | "matchups"
   | "review"
-  | "settings";
+  | "settings"
+  | "feedback";
 
 type AppNavProps = {
   current: AppNavSection;
@@ -27,6 +28,7 @@ const navItems: {
   { href: "/decks", label: "Decks", mobileLabel: "Decks", section: "decks" },
   { href: "/matchups", label: "Matchups", mobileLabel: "Matchups", section: "matchups" },
   { href: "/profile", label: "Profile", mobileLabel: "Profile", section: "settings" },
+  { href: "/feedback", label: "Feedback", mobileLabel: "Feedback", section: "feedback" },
 ];
 
 export function AppNav({ current }: AppNavProps) {

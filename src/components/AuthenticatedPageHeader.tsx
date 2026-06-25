@@ -12,7 +12,8 @@ type AppNavSection =
   | "log"
   | "matchups"
   | "review"
-  | "settings";
+  | "settings"
+  | "feedback";
 
 type AuthenticatedPageHeaderProps = {
   current: AppNavSection;

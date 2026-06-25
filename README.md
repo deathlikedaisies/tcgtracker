@@ -46,11 +46,60 @@ API calls at lower rate limits. If the public API is unavailable or rate limited
 deck list parsing, archetype suggestion, match logging, missions, and dashboards
 continue to run; only remote card resolution and legality warnings degrade.
 
-## Release Checks
+## Validation Tiers
 
 ```bash
 npm run lint
 npm run build
+git diff --check
+```
+
+Use the smallest tier that matches the change:
+
+### Small UI or copy change
+
+```bash
+npm run lint
+npm run build
+npm run test:e2e -- --project=desktop-chromium --workers=1
+git diff --check
+```
+
+### Core flow, auth, logging, or deck change
+
+```bash
+npm run lint
+npm run build
+npm run test:e2e -- --project=desktop-chromium --workers=1
+npm run test:e2e -- --project=mobile-chrome --workers=1
+git diff --check
+```
+
+### Review, matchups, coach, or pagination change
+
+```bash
+npm run lint
+npm run build
+npm run test:e2e -- --project=desktop-chromium --workers=1
+npm run test:e2e -- --project=mobile-chrome --workers=1
+node scripts/playtest_250_seed.mjs
+node scripts/playtest_250_audit.mjs
+git diff --check
+```
+
+### Final beta or release validation
+
+The 250-log and 1000-log workflows share the same disposable account, so they must be run as seed -> audit pairs in this exact order:
+
+```bash
+npm run lint
+npm run build
+npm run test:e2e -- --project=desktop-chromium --workers=1
+npm run test:e2e -- --project=mobile-chrome --workers=1
+node scripts/playtest_250_seed.mjs
+node scripts/playtest_250_audit.mjs
+node scripts/playtest_1000_seed.mjs
+node scripts/playtest_1000_audit.mjs
 git diff --check
 ```
 

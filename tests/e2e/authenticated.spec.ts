@@ -12,6 +12,7 @@ const authRoutes = [
   { path: "/decks", heading: "Deck Experiments" },
   { path: "/matchups", heading: "Matchup Intelligence" },
   { path: "/profile", heading: /Profile|Create your profile/i },
+  { path: "/feedback", heading: "Send feedback" },
 ];
 
 function makeFocusInsight(progressCompleted: number): SessionCoachInsight {
@@ -251,6 +252,28 @@ test.describe("authenticated routes", () => {
     await viewProfileLink.click();
     await page.waitForURL(/\/u\//, { timeout: 20000 });
     await expect(page.locator("body")).toContainText(/@domz_test/i);
+    await expectNoAppError(page);
+  });
+
+  test("/feedback saves beta feedback in-app", async ({ page }) => {
+    await page.goto("/feedback");
+
+    await expectHeadingVisible(page, "Send feedback");
+    await page.getByLabel("Type").selectOption("Bug");
+    await page.getByLabel("Page or area").selectOption("Review");
+    await page.getByLabel("Severity").selectOption("Annoying");
+    await page
+      .getByRole("textbox", { name: "Message" })
+      .fill("Review felt unclear after the first few games.");
+    await page
+      .getByLabel(/You can message me about this in WhatsApp if needed\./i)
+      .check();
+    await page.getByRole("button", { name: "Save feedback" }).click();
+
+    await expect(page.locator("body")).toContainText(
+      "Thanks. Your feedback was saved."
+    );
+    await expect(page.getByRole("textbox", { name: "Message" })).toHaveValue("");
     await expectNoAppError(page);
   });
 

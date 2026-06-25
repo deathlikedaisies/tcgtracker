@@ -9,15 +9,17 @@
 - Unconfirmed login shows the inbox/spam guidance.
 - Dashboard first-run cards are clickable.
 - Create deck -> add version -> log first game path works on mobile.
+- In-app `/feedback` form saves successfully.
 - Public/private profile modes behave correctly.
 - Shared report privacy behaves correctly.
 - Latest validation has passed:
-  - `npm run lint`
-  - `npm run build`
-  - desktop E2E
-  - mobile E2E
-  - `node scripts/playtest_250_seed.mjs`
-  - `node scripts/playtest_250_audit.mjs`
+  - use the correct validation tier from `README.md`
+  - for beta invite or release checks, use the final tier
+  - run seeded audits as ordered pairs:
+    - `node scripts/playtest_250_seed.mjs`
+    - `node scripts/playtest_250_audit.mjs`
+    - `node scripts/playtest_1000_seed.mjs`
+    - `node scripts/playtest_1000_audit.mjs`
 
 ## Deployment checklist
 
@@ -41,7 +43,8 @@ Run these after deploy:
 8. Log a match works.
 9. Post-save reward is visible.
 10. Dashboard, Matchups, Review, Decks, and Profile load.
-11. Public profile privacy still behaves as expected.
+11. Feedback page loads and saves a test note.
+12. Public profile privacy still behaves as expected.
 
 ## WhatsApp beta message template
 
@@ -57,6 +60,7 @@ Use the draft in `docs/whatsapp_beta_invite_message.md`.
 - mobile layout bugs
 - broken links or dead buttons
 - repeated reports that Review feels wrong or unclear
+- feedback form save failures
 - any privacy/reporting concern
 
 ## How to triage WhatsApp feedback
@@ -94,7 +98,7 @@ Tag severity:
 
 - Review top-read prioritization may still over-prefer matchup watchlists over repeated loss-tag patterns in some rich datasets.
 - Some setup and Review states are still denser than the match logging flow.
-- Feedback collection is WhatsApp-based, not an in-app support workflow.
+- WhatsApp is still the fastest place for screenshots and urgent bugs, even though the app now has a lightweight feedback form.
 
 ## Rollback plan
 

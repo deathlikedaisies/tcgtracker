@@ -18,6 +18,8 @@ Thanks for helping test SixPrizer. This beta is for competitive Pokemon TCG play
 
 After that, try to log at least 10 real testing games if you can. The more real games you log, the more useful Dashboard, Matchups, and Review become.
 
+If something feels off while you test, you can also open `Feedback` in the app and save a quick report there.
+
 ## What to look at after logging games
 
 - `Dashboard`
@@ -59,4 +61,4 @@ If possible, include:
 
 ## Feedback channel
 
-Send feedback in the WhatsApp beta group, or message the project owner directly if needed.
+Send feedback in the WhatsApp beta group for urgent bugs or screenshots, or use the in-app `Feedback` page if you want to save a report directly in SixPrizer.

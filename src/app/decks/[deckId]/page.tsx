@@ -738,6 +738,7 @@ export default async function DeckDetailPage({
                     submitLabel={
                       deckVersions.length ? "Create active test version" : "Create first version"
                     }
+                    notesPlaceholder="What are you testing with this build?"
                     className="border-white/8 bg-[linear-gradient(180deg,rgba(15,26,45,0.96),rgba(7,17,31,0.92))] p-0 shadow-none"
                   />
                 </div>
