@@ -3,6 +3,7 @@ import { login, getMissingAuthEnvReason } from "./helpers/auth";
 import { expectHeadingVisible, expectNoAppError } from "./helpers/assertions";
 import { buildPostSaveFocusSummary } from "@/lib/match-log-reward";
 import type { SessionCoachInsight } from "@/lib/session-coach";
+import { parseTcgLiveLog } from "@/lib/tcg-live-log-parser";
 
 const authRoutes = [
   { path: "/dashboard", heading: "Overview" },
@@ -88,6 +89,27 @@ test.describe("match log reward helpers", () => {
     expect(secondGame.missionCopy).toContain("3 more games");
     expect(secondGame.signalLine).toContain("2/5 games logged");
     expect(secondGame.signalLine).not.toContain("Logged games: 2/5");
+  });
+});
+
+test.describe("TCG Live log parser", () => {
+  test("extracts result, turn order, and opponent deck conservatively", async () => {
+    const parsed = parseTcgLiveLog(
+      [
+        "Your opponent chose to go first.",
+        "Your opponent played Mega Greninja ex.",
+        "Your opponent evolved Frogadier.",
+        "You won the match.",
+      ].join("\n"),
+      {
+        archetypeOptions: ["Mega Greninja", "Raging Bolt", "Dragapult"],
+      }
+    );
+
+    expect(parsed.result).toBe("win");
+    expect(parsed.turnOrder).toBe("second");
+    expect(parsed.opponentDeckGuess).toBe("Mega Greninja");
+    expect(parsed.confidence).toBeTruthy();
   });
 });
 
@@ -198,6 +220,45 @@ test.describe("authenticated routes", () => {
 
     await page.waitForURL(/\/matches\/new\?success=1/, { timeout: 30000 });
     await expect(page.getByTestId("post-save-reward")).toContainText(/Logged\./i);
+    await expectNoAppError(page);
+  });
+
+  test("/matches/new can autofill from a TCG Live log near the top of the flow", async ({
+    page,
+  }) => {
+    await page.goto("/matches/new");
+
+    await expectHeadingVisible(page, "Log a game");
+    await page
+      .getByLabel("TCG Live battle log")
+      .fill(
+        [
+          "Your opponent chose to go first.",
+          "Your opponent played Mega Greninja ex.",
+          "Your opponent evolved Frogadier.",
+          "You won the match.",
+        ].join("\n")
+      );
+    await page.getByRole("button", { name: "Autofill from log" }).click();
+
+    await expect(page.locator('input[name="result"]')).toHaveValue("win");
+    await expect(page.locator('input[name="went_first"]')).toHaveValue("false");
+    await expect(page.locator('input[name="opponent_archetype"]')).toHaveValue(
+      "Mega Greninja"
+    );
+    await expect(page.locator("body")).toContainText(/Updated result, turn order, opponent deck\./i);
+    await expect(page.locator("body")).toContainText(/Rate how the game felt/i);
+
+    await page.getByRole("button", { name: "Back" }).click();
+    await page.getByRole("button", { name: "Back" }).click();
+    await page.getByRole("button", { name: "Back" }).click();
+
+    const opponentSearch = page.getByLabel("Opponent deck");
+    await opponentSearch.fill("Raging");
+    await page.getByRole("button", { name: /Raging Bolt/i }).first().click();
+    await expect(page.locator('input[name="opponent_archetype"]')).toHaveValue(
+      "Raging Bolt"
+    );
     await expectNoAppError(page);
   });
 

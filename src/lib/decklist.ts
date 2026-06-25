@@ -579,6 +579,67 @@ function suggestArchetype(cards: ParsedDeckCard[]): ArchetypeSuggestion {
   };
 }
 
+function flattenArchetypeRuleCardNames(rule: ArchetypeRule) {
+  return [
+    ...(rule.requiredCoreCards ?? []),
+    ...(rule.optionalCoreCards ?? []),
+    ...(rule.optionalSupportCards ?? []),
+  ].flat();
+}
+
+export function suggestArchetypeFromLogText(
+  logText: string | null | undefined
+): ArchetypeSuggestion {
+  const normalizedLog = normalizeCardName(String(logText ?? ""));
+
+  if (!normalizedLog) {
+    return {
+      archetype: OTHER_ARCHETYPE,
+      confidence: "none",
+      confidenceLabel: getConfidenceLabel("none"),
+      isClearSuggestion: false,
+      score: 0,
+      reason: "No card names were found in this log.",
+      matchedCoreCards: [],
+      matchedSupportCards: [],
+    };
+  }
+
+  const matchedCards = Array.from(
+    new Set(
+      ARCHETYPE_RULES.flatMap((rule) =>
+        flattenArchetypeRuleCardNames(rule).flatMap((name) =>
+          normalizedLog.includes(normalizeCardName(name)) ? [name] : []
+        )
+      )
+    )
+  );
+
+  if (!matchedCards.length) {
+    return {
+      archetype: OTHER_ARCHETYPE,
+      confidence: "none",
+      confidenceLabel: getConfidenceLabel("none"),
+      isClearSuggestion: false,
+      score: 0,
+      reason: "No recognizable archetype cards were found in this log.",
+      matchedCoreCards: [],
+      matchedSupportCards: [],
+    };
+  }
+
+  return suggestArchetype(
+    matchedCards.map((name) => ({
+      quantity: 1,
+      name,
+      setCode: null,
+      number: null,
+      raw: name,
+      section: "unknown" as const,
+    }))
+  );
+}
+
 export function analyzeDeckList(decklist: string | null | undefined): DecklistAnalysis {
   const { cards, unresolved } = parseDeckList(decklist);
   const totalCards = cards.reduce((sum, card) => sum + card.quantity, 0);

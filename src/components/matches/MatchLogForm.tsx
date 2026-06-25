@@ -43,6 +43,7 @@ import {
   type SessionCoachInsight,
 } from "@/lib/session-coach";
 import { buildPostSaveFocusSummary } from "@/lib/match-log-reward";
+import { parseTcgLiveLog } from "@/lib/tcg-live-log-parser";
 
 type DeckOption = {
   id: string;
@@ -313,6 +314,40 @@ function mapLegacyTagsToIssueTags(tags: string[]) {
       })
     )
   );
+}
+
+function getNextIncompleteStep({
+  opponentArchetype,
+  result,
+  wentFirst,
+  startQuality,
+  openingHandQuality,
+  sequencingQuality,
+}: {
+  opponentArchetype: string;
+  result: StepResultValue;
+  wentFirst: StepWentFirstValue;
+  startQuality?: MatchStartQuality;
+  openingHandQuality?: MatchOpeningHandQuality;
+  sequencingQuality?: MatchSequencingQuality;
+}) {
+  if (!opponentArchetype.trim()) {
+    return 0;
+  }
+
+  if (!result) {
+    return 1;
+  }
+
+  if (!wentFirst) {
+    return 2;
+  }
+
+  if (!(startQuality && openingHandQuality && sequencingQuality)) {
+    return 3;
+  }
+
+  return 4;
 }
 
 function ChipInput({
@@ -973,45 +1008,65 @@ export function MatchLogForm({
       return;
     }
 
-    setNotes(log);
+    const parsed = parseTcgLiveLog(log, {
+      archetypeOptions: opponentArchetypeOptions,
+    });
 
-    const normalizedLog = normalize(log);
-    let detectedResult = "";
+    const nextResult = parsed.result ?? result;
+    const nextWentFirst =
+      parsed.turnOrder === "first"
+        ? "true"
+        : parsed.turnOrder === "second"
+          ? "false"
+          : parsed.turnOrder === "unknown"
+            ? "unknown"
+            : wentFirst;
+    const nextOpponentArchetype =
+      parsed.opponentDeckGuess ?? opponentArchetype;
 
-    if (
-      /\b(you won|you win|won the game|victory)\b/.test(normalizedLog) &&
-      !/\b(opponent won|opponent wins|you lost|defeat)\b/.test(normalizedLog)
-    ) {
-      setResult("win");
-      detectedResult = "Win";
-    } else if (
-      /\b(you lost|defeat|opponent won|opponent wins)\b/.test(normalizedLog)
-    ) {
-      setResult("loss");
-      detectedResult = "Loss";
+    if (parsed.result) {
+      setResult(parsed.result);
     }
 
-    const ownArchetype = normalize(selectedDeckArchetype);
-    const inferredOpponent = opponentArchetypeOptions
-      .filter((option) => normalize(option) !== ownArchetype)
-      .sort((first, second) => second.length - first.length)
-      .find((option) => normalizedLog.includes(normalize(option)));
-
-    if (inferredOpponent) {
-      setOpponentArchetype(inferredOpponent);
+    if (parsed.turnOrder === "first") {
+      setWentFirst("true");
+    } else if (parsed.turnOrder === "second") {
+      setWentFirst("false");
+    } else if (parsed.turnOrder === "unknown") {
+      setWentFirst("unknown");
     }
 
-    setTcgLiveLog("");
-    setCurrentStep(5);
-    setImportStatus(
-      `Imported to one learning.${
-        detectedResult || inferredOpponent
-          ? ` Detected: ${[detectedResult, inferredOpponent]
-              .filter(Boolean)
-              .join(" | ")}.`
-          : " Opponent/result not detected."
-      }`
+    if (parsed.opponentDeckGuess) {
+      setOpponentArchetype(parsed.opponentDeckGuess);
+    }
+
+    setCurrentStep(
+      getNextIncompleteStep({
+        opponentArchetype: nextOpponentArchetype,
+        result: nextResult,
+        wentFirst: nextWentFirst,
+        startQuality,
+        openingHandQuality,
+        sequencingQuality,
+      })
     );
+
+    const updatedFields = [
+      parsed.result ? "result" : null,
+      parsed.turnOrder ? "turn order" : null,
+      parsed.opponentDeckGuess ? "opponent deck" : null,
+    ].filter((field): field is string => Boolean(field));
+
+    setImportStatus(
+      updatedFields.length
+        ? `Updated ${updatedFields.join(", ")}. ${parsed.notes.join(" ")}`
+        : parsed.notes.join(" ")
+    );
+  }
+
+  function clearImportedLog() {
+    setTcgLiveLog("");
+    setImportStatus("");
   }
 
   const progressPercent = ((currentStep + 1) / stepOrder.length) * 100;
@@ -1416,6 +1471,51 @@ export function MatchLogForm({
               </aside>
 
               <section className="rounded-xl bg-[#07111F]/36 p-3.5 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.12)] sm:p-5">
+                <div className={`mb-3.5 grid gap-3 p-3 ${subCardClass} sm:mb-4 sm:p-4`}>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
+                      Import from TCG Live log
+                    </p>
+                    <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
+                      Paste a TCG Live battle log to prefill result, turn order, and opponent deck when possible. You can still edit everything before saving.
+                    </p>
+                  </div>
+                  <label htmlFor="tcg_live_log" className={label}>
+                    TCG Live battle log
+                  </label>
+                  <textarea
+                    id="tcg_live_log"
+                    value={tcgLiveLog}
+                    onChange={(event) => setTcgLiveLog(event.target.value)}
+                    rows={4}
+                    placeholder="Paste a TCG Live battle log"
+                    className={`${textarea} min-h-28`}
+                  />
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex flex-col gap-2 sm:flex-row">
+                      <button
+                        type="button"
+                        onClick={importTcgLiveLog}
+                        className={`${primaryButton} w-full sm:w-auto`}
+                      >
+                        Autofill from log
+                      </button>
+                      <button
+                        type="button"
+                        onClick={clearImportedLog}
+                        className={`${secondaryButton} w-full sm:w-auto`}
+                      >
+                        Clear import
+                      </button>
+                    </div>
+                    {importStatus ? (
+                      <p className="text-sm leading-6 text-[#94A3B8]/76 sm:max-w-md sm:text-right">
+                        {importStatus}
+                      </p>
+                    ) : null}
+                  </div>
+                </div>
+
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
@@ -2031,37 +2131,6 @@ export function MatchLogForm({
                           className={`${textarea} mt-2 min-h-24 transition-[min-height,border-color,background-color] focus:min-h-28`}
                         />
                       </div>
-
-                      <details className={subCardClass}>
-                        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold text-[#F8FAFC] marker:hidden">
-                          <span>Import TCG Live log</span>
-                          <span className="text-xs text-[#94A3B8]">
-                            Optional helper
-                          </span>
-                        </summary>
-                        <div className="mt-3 flex flex-col gap-2">
-                          <textarea
-                            id="tcg_live_log"
-                            value={tcgLiveLog}
-                            onChange={(event) => setTcgLiveLog(event.target.value)}
-                            rows={3}
-                            placeholder="Paste a TCG Live battle log"
-                            className={`${textarea} min-h-24`}
-                          />
-                          <button
-                            type="button"
-                            onClick={importTcgLiveLog}
-                            className="w-fit rounded-md bg-[#4F8CFF]/12 px-3 py-2 text-sm font-semibold text-[#F8FAFC] transition-colors hover:bg-[#4F8CFF]/20 active:scale-[0.98]"
-                          >
-                            Use log
-                          </button>
-                          {importStatus ? (
-                            <p className="text-xs font-medium text-[#94A3B8]">
-                              {importStatus}
-                            </p>
-                          ) : null}
-                        </div>
-                      </details>
                     </div>
                   ) : null}
                 </div>
