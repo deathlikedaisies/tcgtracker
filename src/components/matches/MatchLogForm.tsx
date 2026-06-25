@@ -93,6 +93,7 @@ const sessionKeys = {
   startQuality: "tcgtracker.matchLog.startQuality",
   openingHandQuality: "tcgtracker.matchLog.openingHandQuality",
   sequencingQuality: "tcgtracker.matchLog.sequencingQuality",
+  tcgLivePlayerName: "tcgtracker.matchLog.tcgLivePlayerName",
 };
 
 const subCardClass = `${premiumTile} p-2.5 sm:p-3`;
@@ -660,6 +661,13 @@ export function MatchLogForm({
   );
   const [notes, setNotes] = useState(initialNotes ?? "");
   const [tcgLiveLog, setTcgLiveLog] = useState("");
+  const [tcgLivePlayerName, setTcgLivePlayerName] = useState(() => {
+    if (typeof window === "undefined") {
+      return "";
+    }
+
+    return sessionStorage.getItem(sessionKeys.tcgLivePlayerName) ?? "";
+  });
   const [importStatus, setImportStatus] = useState("");
   const [isChangingDeck, setIsChangingDeck] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
@@ -752,6 +760,10 @@ export function MatchLogForm({
       sequencingQuality ?? ""
     );
   }, [sequencingQuality]);
+
+  useEffect(() => {
+    sessionStorage.setItem(sessionKeys.tcgLivePlayerName, tcgLivePlayerName);
+  }, [tcgLivePlayerName]);
 
   const readySummary = useMemo(() => {
     const parts: string[] = [];
@@ -1010,6 +1022,7 @@ export function MatchLogForm({
 
     const parsed = parseTcgLiveLog(log, {
       archetypeOptions: opponentArchetypeOptions,
+      playerName: tcgLivePlayerName,
     });
 
     const nextResult = parsed.result ?? result;
@@ -1051,17 +1064,7 @@ export function MatchLogForm({
       })
     );
 
-    const updatedFields = [
-      parsed.result ? "result" : null,
-      parsed.turnOrder ? "turn order" : null,
-      parsed.opponentDeckGuess ? "opponent deck" : null,
-    ].filter((field): field is string => Boolean(field));
-
-    setImportStatus(
-      updatedFields.length
-        ? `Updated ${updatedFields.join(", ")}. ${parsed.notes.join(" ")}`
-        : parsed.notes.join(" ")
-    );
+    setImportStatus(parsed.notes.join(" \u2022 "));
   }
 
   function clearImportedLog() {
@@ -1483,27 +1486,44 @@ export function MatchLogForm({
                   <label htmlFor="tcg_live_log" className={label}>
                     TCG Live battle log
                   </label>
-                  <textarea
+                  <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_220px]">
+                    <textarea
                     id="tcg_live_log"
                     value={tcgLiveLog}
                     onChange={(event) => setTcgLiveLog(event.target.value)}
                     rows={4}
                     placeholder="Paste a TCG Live battle log"
                     className={`${textarea} min-h-28`}
-                  />
+                    />
+                    <div className={`grid gap-2.5 p-3 ${premiumInset}`}>
+                      <label htmlFor="tcg_live_player_name" className={label}>
+                        Your TCG Live name
+                      </label>
+                      <input
+                        id="tcg_live_player_name"
+                        value={tcgLivePlayerName}
+                        onChange={(event) => setTcgLivePlayerName(event.target.value)}
+                        placeholder="Optional"
+                        className={inputH11}
+                      />
+                      <p className="text-xs leading-5 text-[#94A3B8]/72">
+                        Add this if the log uses usernames instead of &quot;You&quot;.
+                      </p>
+                    </div>
+                  </div>
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex flex-col gap-2 sm:flex-row">
                       <button
                         type="button"
                         onClick={importTcgLiveLog}
-                        className={`${primaryButton} w-full sm:w-auto`}
+                        className={`${primaryButton} w-full whitespace-nowrap sm:w-auto sm:min-w-[188px]`}
                       >
                         Autofill from log
                       </button>
                       <button
                         type="button"
                         onClick={clearImportedLog}
-                        className={`${secondaryButton} w-full sm:w-auto`}
+                        className={`${secondaryButton} w-full whitespace-nowrap sm:w-auto sm:min-w-[140px]`}
                       >
                         Clear import
                       </button>

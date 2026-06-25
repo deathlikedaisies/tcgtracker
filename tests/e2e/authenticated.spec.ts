@@ -93,23 +93,81 @@ test.describe("match log reward helpers", () => {
 });
 
 test.describe("TCG Live log parser", () => {
-  test("extracts result, turn order, and opponent deck conservatively", async () => {
+  const realStyleLog = [
+    "DommitronNL chose heads for the opening coin flip.",
+    "DommitronNL won the coin toss.",
+    "DommitronNL decided to go first.",
+    "DommitronNL played Dreepy to the Active Spot.",
+    "DommitronNL played Dragapult ex to the Bench.",
+    "DommitronNL played Blaziken ex to the Bench.",
+    "AlfonsoLarsen played Budew to the Active Spot.",
+    "AlfonsoLarsen played Chikorita to the Bench.",
+    "AlfonsoLarsen played Applin to the Bench.",
+    "AlfonsoLarsen evolved Chikorita to Bayleef on the Bench.",
+    "AlfonsoLarsen evolved Bayleef to Meganium on the Bench.",
+    "AlfonsoLarsen played Teal Mask Ogerpon ex to the Bench.",
+    "AlfonsoLarsen evolved Applin to Dipplin on the Bench.",
+    "AlfonsoLarsen played Tapu Bulu to the Bench.",
+    "AlfonsoLarsen played Fezandipiti ex to the Bench.",
+    "AlfonsoLarsen played Bug Catching Set.",
+    "AlfonsoLarsen played Forest of Vitality.",
+    "All Prize cards taken. DommitronNL wins.",
+  ].join("\n");
+
+  test("extracts result, turn order, and opponent deck from named-player logs", async () => {
     const parsed = parseTcgLiveLog(
-      [
-        "Your opponent chose to go first.",
-        "Your opponent played Mega Greninja ex.",
-        "Your opponent evolved Frogadier.",
-        "You won the match.",
-      ].join("\n"),
+      realStyleLog,
       {
-        archetypeOptions: ["Mega Greninja", "Raging Bolt", "Dragapult"],
+        archetypeOptions: [
+          "Mega Greninja",
+          "Raging Bolt",
+          "Dragapult Blaziken",
+          "Ogerpon Meganium Hydrapple",
+          "Ogerpon Meganium",
+        ],
+        playerName: "DommitronNL",
       }
     );
 
     expect(parsed.result).toBe("win");
-    expect(parsed.turnOrder).toBe("second");
-    expect(parsed.opponentDeckGuess).toBe("Mega Greninja");
+    expect(parsed.turnOrder).toBe("first");
+    expect(parsed.opponentName).toBe("AlfonsoLarsen");
+    expect(parsed.opponentDeckGuess).not.toBe("Dragapult Blaziken");
     expect(parsed.confidence).toBeTruthy();
+    expect(parsed.notes).toContain("Detected result: win");
+    expect(parsed.notes).toContain("Detected turn order: first");
+    expect(parsed.notes).toContain("Detected opponent: AlfonsoLarsen");
+  });
+
+  test("resolves named-player logs from the other side too", async () => {
+    const parsed = parseTcgLiveLog(realStyleLog, {
+      archetypeOptions: [
+        "Dragapult Blaziken",
+        "Ogerpon Meganium Hydrapple",
+        "Ogerpon Meganium",
+      ],
+      playerName: "AlfonsoLarsen",
+    });
+
+    expect(parsed.result).toBe("loss");
+    expect(parsed.turnOrder).toBe("second");
+    expect(parsed.opponentName).toBe("DommitronNL");
+  });
+
+  test("does not force win-loss or turn order without the user TCG Live name", async () => {
+    const parsed = parseTcgLiveLog(realStyleLog, {
+      archetypeOptions: [
+        "Dragapult Blaziken",
+        "Ogerpon Meganium Hydrapple",
+        "Ogerpon Meganium",
+      ],
+    });
+
+    expect(parsed.result).toBeUndefined();
+    expect(parsed.turnOrder).toBeUndefined();
+    expect(parsed.winnerName).toBe("DommitronNL");
+    expect(parsed.decidingPlayerName).toBe("DommitronNL");
+    expect(parsed.notes.join(" ")).toMatch(/Add your TCG Live name/i);
   });
 });
 
@@ -229,25 +287,38 @@ test.describe("authenticated routes", () => {
     await page.goto("/matches/new");
 
     await expectHeadingVisible(page, "Log a game");
+    await page.getByLabel("Your TCG Live name").fill("DommitronNL");
     await page
       .getByLabel("TCG Live battle log")
       .fill(
         [
-          "Your opponent chose to go first.",
-          "Your opponent played Mega Greninja ex.",
-          "Your opponent evolved Frogadier.",
-          "You won the match.",
+          "DommitronNL chose heads for the opening coin flip.",
+          "DommitronNL won the coin toss.",
+          "DommitronNL decided to go first.",
+          "DommitronNL played Dreepy to the Active Spot.",
+          "DommitronNL played Dragapult ex to the Bench.",
+          "DommitronNL played Blaziken ex to the Bench.",
+          "AlfonsoLarsen played Budew to the Active Spot.",
+          "AlfonsoLarsen played Chikorita to the Bench.",
+          "AlfonsoLarsen evolved Chikorita to Bayleef on the Bench.",
+          "AlfonsoLarsen evolved Bayleef to Meganium on the Bench.",
+          "AlfonsoLarsen played Teal Mask Ogerpon ex to the Bench.",
+          "AlfonsoLarsen evolved Applin to Dipplin on the Bench.",
+          "All Prize cards taken. DommitronNL wins.",
         ].join("\n")
       );
     await page.getByRole("button", { name: "Autofill from log" }).click();
 
     await expect(page.locator('input[name="result"]')).toHaveValue("win");
-    await expect(page.locator('input[name="went_first"]')).toHaveValue("false");
-    await expect(page.locator('input[name="opponent_archetype"]')).toHaveValue(
-      "Mega Greninja"
+    await expect(page.locator('input[name="went_first"]')).toHaveValue("true");
+    await expect(page.locator('input[name="opponent_archetype"]')).not.toHaveValue(
+      "Dragapult Blaziken"
     );
-    await expect(page.locator("body")).toContainText(/Updated result, turn order, opponent deck\./i);
+    await expect(page.locator("body")).toContainText(/Detected result: win/i);
+    await expect(page.locator("body")).toContainText(/Detected turn order: first/i);
+    await expect(page.locator("body")).toContainText(/Detected opponent: AlfonsoLarsen/i);
     await expect(page.locator("body")).toContainText(/Rate how the game felt/i);
+    await expect(page.getByRole("button", { name: "Autofill from log" })).toBeVisible();
 
     await page.getByRole("button", { name: "Back" }).click();
     await page.getByRole("button", { name: "Back" }).click();
