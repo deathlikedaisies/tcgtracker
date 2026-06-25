@@ -124,6 +124,12 @@ export default async function DashboardPage() {
     decks: deckRows,
     matches: matchRows,
   });
+  const currentDeck =
+    deckRows.find((deck) => deck.id === deckScope.deckId) ?? null;
+  const currentDeckActiveVersion =
+    currentDeck?.deck_versions?.find((version) => Boolean(version.is_active)) ??
+    currentDeck?.deck_versions?.[0] ??
+    null;
   const scopedMatchRows = deckScope.deckId
     ? matchRows.filter(
         (match) =>
@@ -182,6 +188,8 @@ export default async function DashboardPage() {
       firstDeckId={deckRows[0]?.id}
       currentDeckId={deckScope.deckId}
       currentDeckName={deckScope.deckName}
+      currentDeckArchetype={currentDeck?.archetype ?? null}
+      currentDeckVersionName={currentDeckActiveVersion?.name ?? null}
       reviewHref={
         deckScope.deckId
           ? `/review?deck_id=${encodeURIComponent(deckScope.deckId)}`

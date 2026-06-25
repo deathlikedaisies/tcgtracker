@@ -92,6 +92,8 @@ type DashboardContentProps = {
   firstDeckId?: string;
   currentDeckId?: string | null;
   currentDeckName?: string | null;
+  currentDeckArchetype?: string | null;
+  currentDeckVersionName?: string | null;
   reviewHref: string;
   stats: DashboardStats;
   recentMatches: RecentMatch[];
@@ -592,6 +594,62 @@ function NextSetupStepCard({
   );
 }
 
+function CurrentDeckSummaryCard({
+  deckName,
+  archetype,
+  versionName,
+  isAllDecks,
+}: {
+  deckName: string | null | undefined;
+  archetype: string | null | undefined;
+  versionName: string | null | undefined;
+  isAllDecks: boolean;
+}) {
+  const title = isAllDecks ? "All decks" : deckName ?? "No active deck yet";
+  const subtitle = isAllDecks
+    ? "Combined testing scope"
+    : archetype?.trim() || "Archetype not set yet";
+  const detail = isAllDecks
+    ? "Overview is combining logs across all decks because no single current deck is selected."
+    : versionName
+      ? `Testing: ${versionName}`
+      : "Add or activate a version to keep this deck focused.";
+
+  return (
+    <section className={`${glassPanel} p-3.5 sm:p-4`}>
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
+          {isAllDecks ? "Combined scope" : "Current test deck"}
+        </p>
+        <span className={`${metallicBadge} px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] leading-5 text-[#DCE8FF] whitespace-normal`}>
+          {isAllDecks ? "All decks" : "Active test"}
+        </span>
+      </div>
+
+      <div className="mt-3 flex items-center gap-3">
+        <span className="inline-flex shrink-0 rounded-[18px] bg-[radial-gradient(circle_at_top,rgba(79,140,255,0.18),rgba(11,16,32,0.12)_62%,transparent_100%)] p-2.5 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]">
+          <ArchetypeSprites
+            archetype={isAllDecks ? null : archetype}
+            size="lg"
+            className="shrink-0"
+          />
+        </span>
+        <div className="min-w-0">
+          <h2 className="text-lg font-semibold tracking-tight text-[#F8FAFC]">
+            {title}
+          </h2>
+          <p className="mt-1 text-sm font-medium text-[#D6E0F0]/84">
+            {subtitle}
+          </p>
+          <p className="mt-1.5 text-sm leading-5 text-[#94A3B8]/72">
+            {detail}
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function DashboardContent({
   email,
   decks,
@@ -603,6 +661,8 @@ export function DashboardContent({
   firstDeckId,
   currentDeckId,
   currentDeckName,
+  currentDeckArchetype,
+  currentDeckVersionName,
   reviewHref,
   stats,
   recentMatches,
@@ -846,25 +906,34 @@ export function DashboardContent({
             />
           ) : (
             <div className="grid gap-4 sm:gap-6">
-              <section className={`${glassPanel} p-3.5 sm:p-4`}>
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="min-w-0">
-                    <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
-                      Insight scope
-                    </p>
-                    <p className="mt-1 text-sm font-semibold text-[#F8FAFC]">
-                      {scopeLabel}
-                    </p>
-                    <p className="mt-1 text-sm leading-5 text-[#94A3B8]/72">
-                      {scopeDescription}
-                    </p>
+              <section className="grid gap-3 xl:grid-cols-[minmax(0,1.55fr)_320px]">
+                <section className={`${glassPanel} p-3.5 sm:p-4`}>
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
+                        Insight scope
+                      </p>
+                      <p className="mt-1 text-sm font-semibold text-[#F8FAFC]">
+                        {scopeLabel}
+                      </p>
+                      <p className="mt-1 text-sm leading-5 text-[#94A3B8]/72">
+                        {scopeDescription}
+                      </p>
+                    </div>
+                    {!currentDeckId ? (
+                      <Link href="/review?deck_id=all" className={`${secondaryButton} h-10 shrink-0`}>
+                        All decks view
+                      </Link>
+                    ) : null}
                   </div>
-                  {!currentDeckId ? (
-                    <Link href="/review?deck_id=all" className={`${secondaryButton} h-10 shrink-0`}>
-                      All decks view
-                    </Link>
-                  ) : null}
-                </div>
+                </section>
+
+                <CurrentDeckSummaryCard
+                  deckName={currentDeckName}
+                  archetype={currentDeckArchetype}
+                  versionName={currentDeckVersionName}
+                  isAllDecks={!currentDeckId}
+                />
               </section>
 
               {!hasScopedMatches && currentDeckName ? (

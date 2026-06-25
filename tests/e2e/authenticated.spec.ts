@@ -537,6 +537,8 @@ test.describe("authenticated routes", () => {
 
     await expect(page.locator("body")).toContainText(/Next best action|Current focus/i);
     await expect(page.locator("body")).toContainText(/Showing insights for:|Showing combined insights across all decks/i);
+    await expect(page.locator("body")).toContainText(/Current test deck|Combined scope/i);
+    await expect(page.locator("body")).toContainText(/Testing:|Combined testing scope|Archetype not set yet/i);
     await expect(page.locator("body")).toContainText(/Review details|Open review/i);
     await expect(page.locator("body")).not.toContainText(/good prize plan.*positive pattern/i);
     await expect(page.locator("body")).not.toContainText(/wins tagged.*losses tagged|3 of 14 wins tagged/i);
