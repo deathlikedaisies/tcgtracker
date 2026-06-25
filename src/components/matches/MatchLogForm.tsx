@@ -1495,63 +1495,63 @@ export function MatchLogForm({
                       Paste a TCG Live battle log to prefill result, turn order, and opponent deck when possible. You can still edit everything before saving.
                     </p>
                   </div>
-                  <label htmlFor="tcg_live_log" className={label}>
-                    TCG Live battle log
-                  </label>
-                  <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_220px]">
-                    <textarea
-                    id="tcg_live_log"
-                    value={tcgLiveLog}
-                    onChange={(event) => setTcgLiveLog(event.target.value)}
-                    rows={4}
-                    placeholder="Paste a TCG Live battle log"
-                    className={`${textarea} min-h-28`}
+                  <div className={`grid gap-2.5 p-3 ${premiumInset}`}>
+                    <label htmlFor="tcg_live_player_name" className={label}>
+                      Your TCG Live name
+                    </label>
+                    <input
+                      id="tcg_live_player_name"
+                      value={tcgLivePlayerName}
+                      onChange={(event) => {
+                        setTcgLivePlayerName(event.target.value);
+                        if (tcgLivePlayerNameError) {
+                          setTcgLivePlayerNameError("");
+                        }
+                      }}
+                      placeholder="DommitronNL"
+                      className={`${inputH11} ${
+                        tcgLivePlayerNameError
+                          ? "border-rose-400/70 shadow-[inset_0_0_0_1px_rgba(244,63,94,0.16)]"
+                          : ""
+                      }`}
                     />
-                    <div className={`grid gap-2.5 p-3 ${premiumInset}`}>
-                      <label htmlFor="tcg_live_player_name" className={label}>
-                        Your TCG Live name
-                      </label>
-                      <input
-                        id="tcg_live_player_name"
-                        value={tcgLivePlayerName}
-                        onChange={(event) => {
-                          setTcgLivePlayerName(event.target.value);
-                          if (tcgLivePlayerNameError) {
-                            setTcgLivePlayerNameError("");
-                          }
-                        }}
-                        placeholder="DommitronNL"
-                        className={`${inputH11} ${
-                          tcgLivePlayerNameError
-                            ? "border-rose-400/70 shadow-[inset_0_0_0_1px_rgba(244,63,94,0.16)]"
-                            : ""
-                        }`}
-                      />
-                      <p className="text-xs leading-5 text-[#94A3B8]/72">
-                        Required for import so SixPrizer knows which player is you.
+                    <p className="text-xs leading-5 text-[#94A3B8]/72">
+                      Required for import so SixPrizer knows which player is you.
+                    </p>
+                    {tcgLivePlayerNameError ? (
+                      <p className="text-xs font-medium text-rose-200">
+                        {tcgLivePlayerNameError}
                       </p>
-                      {tcgLivePlayerNameError ? (
-                        <p className="text-xs font-medium text-rose-200">
-                          {tcgLivePlayerNameError}
-                        </p>
-                      ) : null}
-                    </div>
+                    ) : null}
+                  </div>
+                  <div className="grid gap-2">
+                    <label htmlFor="tcg_live_log" className={label}>
+                      TCG Live battle log
+                    </label>
+                    <textarea
+                      id="tcg_live_log"
+                      value={tcgLiveLog}
+                      onChange={(event) => setTcgLiveLog(event.target.value)}
+                      rows={7}
+                      placeholder="Paste a TCG Live battle log"
+                      className={`${textarea} min-h-[180px] w-full`}
+                    />
                   </div>
                   <div className="flex flex-col gap-2 sm:flex-row">
-                      <button
-                        type="button"
-                        onClick={importTcgLiveLog}
-                        className={`${primaryButton} w-full whitespace-nowrap sm:w-auto sm:min-w-[188px]`}
-                      >
-                        Autofill from log
-                      </button>
-                      <button
-                        type="button"
-                        onClick={clearImportedLog}
-                        className={`${secondaryButton} w-full whitespace-nowrap sm:w-auto sm:min-w-[140px]`}
-                      >
-                        Clear import
-                      </button>
+                    <button
+                      type="button"
+                      onClick={importTcgLiveLog}
+                      className={`${primaryButton} w-full whitespace-nowrap sm:w-auto sm:min-w-[188px]`}
+                    >
+                      Autofill from log
+                    </button>
+                    <button
+                      type="button"
+                      onClick={clearImportedLog}
+                      className={`${secondaryButton} w-full whitespace-nowrap sm:w-auto sm:min-w-[140px]`}
+                    >
+                      Clear import
+                    </button>
                   </div>
                   {importStatus.length ? (
                     <div className={`grid gap-2 p-3 ${premiumInset}`}>
