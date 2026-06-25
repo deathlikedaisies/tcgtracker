@@ -266,7 +266,7 @@ test.describe("authenticated routes", () => {
       .getByRole("textbox", { name: "Message" })
       .fill("Review felt unclear after the first few games.");
     await page
-      .getByLabel(/You can message me about this in WhatsApp if needed\./i)
+      .getByLabel(/You can contact me about this if needed\./i)
       .check();
     await page.getByRole("button", { name: "Save feedback" }).click();
 

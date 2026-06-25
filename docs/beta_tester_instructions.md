@@ -31,7 +31,7 @@ If something feels off while you test, you can also open `Feedback` in the app a
 - `Decks`
   - version tracking and deck setup
 
-## What feedback to send in WhatsApp
+## What feedback to send
 
 Please report:
 
@@ -61,4 +61,4 @@ If possible, include:
 
 ## Feedback channel
 
-Send feedback in the WhatsApp beta group for urgent bugs or screenshots, or use the in-app `Feedback` page if you want to save a report directly in SixPrizer.
+Use the in-app `Feedback` page to save a report directly in SixPrizer. For urgent bugs or broken layouts, send a direct message as well so it can be checked faster.

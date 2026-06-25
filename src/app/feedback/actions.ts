@@ -97,7 +97,7 @@ export async function submitFeedbackAction(
     return {
       success: null,
       error:
-        "Could not save feedback. Please try again, or send it in the WhatsApp group.",
+        "Could not save feedback. Please try again, or send it directly.",
       fieldErrors: {},
       submittedAt: null,
     };

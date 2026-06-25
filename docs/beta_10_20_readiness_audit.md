@@ -81,28 +81,28 @@ Risk level:
 - Medium for product quality
 - Low for route stability
 
-## 4. WhatsApp feedback readiness
+## 4. Feedback readiness
 
-Status: operationally ready, in-app link deferred
+Status: pass
 
 Current decision:
 
-- Feedback collection for this beta should happen through the local WhatsApp group.
-- No in-app feedback link was added in this pass.
+- The app now includes an authenticated in-app `Feedback` page.
+- Testers can save reports directly in SixPrizer without relying on any group-specific channel.
 
 Reason:
 
-- No safe configured `NEXT_PUBLIC_BETA_FEEDBACK_URL` or other approved public feedback destination was found in repo config.
-- Hard-coding a private WhatsApp link into the product is unnecessary risk for this beta stage.
+- The in-app feedback page is lower risk than a hard-coded external group link.
+- Testers can still send direct messages for urgent issues when needed.
 
 Operational guidance:
 
-- Use the WhatsApp group as the primary feedback channel.
+- Use the in-app `Feedback` page as the default reporting path.
 - Ask testers to include route, device, browser, and screenshots when possible.
 
 Risk level:
 
-- Low, as long as the owner posts clear instructions in WhatsApp.
+- Low, as long as the owner posts clear tester instructions and follow-up guidance.
 
 ## 5. Privacy and data safety
 
@@ -228,23 +228,16 @@ Risk level:
   - not a blocker for auth, onboarding, logging, navigation, privacy, or mobile stability
   - needs a deliberate scoring/product decision rather than a rushed beta patch
 
-### 2. In-app WhatsApp feedback link
+### 2. Remaining text density in some setup/review states
 
 - Severity: low
 - Why deferred:
-  - no configured safe URL was found
-  - documentation-only guidance is lower risk than shipping a placeholder or private hard-coded link
-
-### 3. Remaining text density in some setup/review states
-
-- Severity: low
-- Why deferred:
-  - acceptable for a controlled WhatsApp beta
+  - acceptable for a controlled beta
   - better tuned after real tester feedback
 
 ## Final verdict
 
-Verdict: ready for a controlled 10-20 user WhatsApp beta with known caveats
+Verdict: ready for a controlled 10-20 user beta with known caveats
 
 Why this is acceptable now:
 
@@ -258,9 +251,9 @@ Why this is acceptable now:
 Why this should still stay controlled:
 
 - Review top-read prioritization still has one known seeded-data caveat
-- feedback collection is operationally lightweight and depends on WhatsApp coordination rather than an in-app system
+- feedback collection is lightweight and now available in-app, with direct follow-up still useful for urgent issues
 
 Recommendation:
 
-- Invite the 10-20 local WhatsApp testers now.
+- Invite the 10-20 local beta testers now.
 - Keep the group controlled, ask for screenshots and device/browser info, and treat Review prioritization feedback as a top post-beta triage topic.

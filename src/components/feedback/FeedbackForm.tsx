@@ -164,7 +164,7 @@ export function FeedbackForm() {
           className="mt-1 h-4 w-4 rounded border-white/20 accent-[#F5C84C]"
         />
         <span className="text-sm leading-6 text-[#D6E0F0]">
-          You can message me about this in WhatsApp if needed.
+          You can contact me about this if needed.
         </span>
       </label>
 
@@ -182,7 +182,7 @@ export function FeedbackForm() {
 
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <p className={sectionCopy}>
-          For urgent bugs or screenshots, the WhatsApp group is still the fastest path.
+          For urgent bugs or broken layouts, send a direct message as well so it can be checked faster.
         </p>
         <div className="flex flex-col gap-2 sm:flex-row">
           <a href="#feedback-message" className={`${secondaryButton} w-full sm:w-auto`}>

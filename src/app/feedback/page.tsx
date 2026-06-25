@@ -57,7 +57,7 @@ export default async function FeedbackPage() {
                     "Route or area where it happened",
                     "What felt broken, confusing, or slow",
                     "What you expected instead",
-                    "Screenshot if you already shared one in WhatsApp",
+                    "Mention if you have a screenshot available",
                   ].map((item) => (
                     <div key={item} className="flex items-start gap-3">
                       <span className="mt-2 inline-flex size-2 shrink-0 rounded-full bg-[#4F8CFF]/76" />
@@ -75,7 +75,7 @@ export default async function FeedbackPage() {
                   <div>
                     <h2 className={sectionTitle}>Urgent issues</h2>
                     <p className={`mt-1 ${sectionCopy}`}>
-                      If something blocks logging or a mobile layout is broken, post it in the WhatsApp beta group too. That is still the fastest channel for screenshots and quick follow-up.
+                      If something blocks logging or a mobile layout is broken, send a direct message as well so it can be checked faster.
                     </p>
                   </div>
                 </div>

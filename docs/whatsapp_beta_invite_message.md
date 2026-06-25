@@ -11,7 +11,7 @@ If you try it:
 - log some real testing games if you can
 - check Dashboard, Matchups, and Review after you have a few games in
 
-Please post in the group or DM me if:
+Please use the in-app `Feedback` page, or message me directly if:
 
 - something breaks
 - mobile layout looks wrong

@@ -27,7 +27,7 @@
 - Confirm confirmation-email flow is using the intended production URLs.
 - Confirm public profile links use the correct site URL.
 - Confirm no debug/test-only banners or seeded test data appear in production.
-- Confirm no private WhatsApp URL is hard-coded into the product.
+- Confirm no private group or direct-message URL is hard-coded into the product.
 
 ## Smoke test checklist
 
@@ -63,7 +63,7 @@ Use the draft in `docs/whatsapp_beta_invite_message.md`.
 - feedback form save failures
 - any privacy/reporting concern
 
-## How to triage WhatsApp feedback
+## How to triage beta feedback
 
 Collect:
 
@@ -98,7 +98,7 @@ Tag severity:
 
 - Review top-read prioritization may still over-prefer matchup watchlists over repeated loss-tag patterns in some rich datasets.
 - Some setup and Review states are still denser than the match logging flow.
-- WhatsApp is still the fastest place for screenshots and urgent bugs, even though the app now has a lightweight feedback form.
+- The in-app feedback form should be the default reporting path, but urgent bugs may still come in through direct messages.
 
 ## Rollback plan
 
