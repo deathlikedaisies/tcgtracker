@@ -1,6 +1,8 @@
 import { expect, test } from "@playwright/test";
 import { login, getMissingAuthEnvReason } from "./helpers/auth";
 import { expectHeadingVisible, expectNoAppError } from "./helpers/assertions";
+import { buildPostSaveFocusSummary } from "@/lib/match-log-reward";
+import type { SessionCoachInsight } from "@/lib/session-coach";
 
 const authRoutes = [
   { path: "/dashboard", heading: "Overview" },
@@ -11,6 +13,82 @@ const authRoutes = [
   { path: "/matchups", heading: "Matchup Intelligence" },
   { path: "/profile", heading: /Profile|Create your profile/i },
 ];
+
+function makeFocusInsight(progressCompleted: number): SessionCoachInsight {
+  return {
+    archetype: "Mega Greninja",
+    confidence: "Needs games",
+    ctaLabel: "Log next game",
+    completionStatus: null,
+    completionSummary: null,
+    whyThisMatters: "Watch the matchup.",
+    rewardLabel: "Unlock first coach read",
+    completionLesson: null,
+    commonIssue: null,
+    criteria: "Counts focused games.",
+    duringRecord: "0-0-0",
+    evidence: "Focused sample: 1 game.",
+    headline: "Mega Greninja is your priority watchlist.",
+    improvementDelta: null,
+    issueTrend: null,
+    missionState: "active",
+    missionType: "matchup",
+    missionTypeLabel: "Priority watchlist",
+    missionGuidanceMode: "focused_test",
+    missionGuidanceLabel: "Focused test",
+    missionStatus: "needs_games",
+    missionStatusLabel: "Needs games",
+    missionStatusReason: "Keep logging.",
+    missionTitle: "Mega Greninja is your priority watchlist.",
+    missionSkill: "Mega Greninja is your priority watchlist.",
+    missionProgress: progressCompleted,
+    missionTargetCount: 5,
+    missionContextLabel: "Logged games",
+    missionContextSeenCount: progressCompleted,
+    missionContextTargetCount: 5,
+    missionFocusOpponent: "Mega Greninja",
+    missionFocusTurnContext: null,
+    missionFocusTag: null,
+    missionFocusDeckVersionIds: [],
+    missionReason: "Mega Greninja is the clearest problem.",
+    missionConfidence: "Needs games",
+    missionNextAction: "Log next game",
+    missionResults: [],
+    nextAction: "Keep logging.",
+    previousRecord: null,
+    weakMatchup: "Mega Greninja",
+    condition: "Record: 0-1",
+    context: "Focus sample.",
+    exactTest: "Log the next game.",
+    nextTest: "After 5 games, review again.",
+    progressCompleted,
+    progressGoal: 5,
+    progressFeedback: "Counts toward your focused test.",
+    reasoning: "Focused sample.",
+    focus: "Keep logging.",
+    record: "0-1-0",
+    eventType: "testing",
+    continueHref: "/review",
+  };
+}
+
+test.describe("match log reward helpers", () => {
+  test("post-save focus progress counts the saved game exactly once", async () => {
+    const firstGame = buildPostSaveFocusSummary(makeFocusInsight(1), true, true);
+    expect(firstGame.missionProgress).toBe(1);
+    expect(firstGame.remaining).toBe(4);
+    expect(firstGame.missionCopy).toContain("4 more games");
+    expect(firstGame.signalLine).toContain("1/5 games logged");
+    expect(firstGame.signalLine).not.toContain("Logged games: 1/5");
+
+    const secondGame = buildPostSaveFocusSummary(makeFocusInsight(2), true, true);
+    expect(secondGame.missionProgress).toBe(2);
+    expect(secondGame.remaining).toBe(3);
+    expect(secondGame.missionCopy).toContain("3 more games");
+    expect(secondGame.signalLine).toContain("2/5 games logged");
+    expect(secondGame.signalLine).not.toContain("Logged games: 2/5");
+  });
+});
 
 function getExpectedOrigin(page: import("@playwright/test").Page) {
   const configuredUrl =

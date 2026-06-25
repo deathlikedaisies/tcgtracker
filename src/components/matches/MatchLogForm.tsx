@@ -42,6 +42,7 @@ import {
   matchCountsTowardMissionContext,
   type SessionCoachInsight,
 } from "@/lib/session-coach";
+import { buildPostSaveFocusSummary } from "@/lib/match-log-reward";
 
 type DeckOption = {
   id: string;
@@ -799,26 +800,15 @@ export function MatchLogForm({
   const secondaryTagOptions =
     result === "win" ? MATCH_ISSUE_TAG_OPTIONS : MATCH_POSITIVE_TAG_OPTIONS;
   const postSaveSummary = readySummary || "Your match log is ready for review.";
-  const postSaveMissionProgress = sessionCoach
-    ? Math.min(
-        sessionCoach.progressCompleted + (countedTowardMission ? 1 : 0),
-        sessionCoach.progressGoal
+  const postSaveFocusSummary = sessionCoach
+    ? buildPostSaveFocusSummary(
+        sessionCoach,
+        countedTowardMission,
+        countedTowardContext
       )
     : null;
-  const postSaveFocusProgress = sessionCoach
-    ? Math.min(
-        sessionCoach.missionContextSeenCount + (countedTowardContext ? 1 : 0),
-        sessionCoach.missionContextTargetCount
-      )
-    : null;
-  const postSaveSignalLine =
-    sessionCoach && postSaveMissionProgress !== null
-      ? `${sessionCoach.missionTitle}: ${postSaveMissionProgress}/${sessionCoach.progressGoal} games logged.${
-          countedTowardContext && postSaveFocusProgress !== null
-            ? ` ${sessionCoach.missionContextLabel}: ${postSaveFocusProgress}/${sessionCoach.missionContextTargetCount}.`
-            : ""
-        }`
-      : null;
+  const postSaveMissionProgress = postSaveFocusSummary?.missionProgress ?? null;
+  const postSaveSignalLine = postSaveFocusSummary?.signalLine ?? null;
   const postSaveStatusBadge = sessionCoach
     ? !countedTowardMission
       ? sessionCoach.missionGuidanceMode === "priority_watchlist"
@@ -828,25 +818,9 @@ export function MatchLogForm({
         ? sessionCoach.completionStatus
         : sessionCoach.missionStatusLabel
     : "Game logged";
-  const remaining = sessionCoach
-    ? Math.max(sessionCoach.progressGoal - (postSaveMissionProgress ?? 0), 0)
-    : 0;
   const postSaveMissionCopy = sessionCoach
-    ? !countedTowardMission
-      ? "This game is outside the current focus, but it still updates your wider history."
-      : sessionCoach.completionLesson
-        ? sessionCoach.completionLesson
-        : sessionCoach.missionGuidanceMode === "investigation"
-          ? remaining > 0
-            ? `${remaining} more log${remaining === 1 ? "" : "s"} will tell us whether this is a real pattern.`
-            : "This pattern is strong enough to review."
-          : sessionCoach.missionGuidanceMode === "priority_watchlist"
-            ? remaining > 0
-              ? `${remaining} more watchlist game${remaining === 1 ? "" : "s"} until the read is ready.`
-              : "This is strong enough to review before changing your list."
-            : remaining > 0
-              ? `${remaining} more game${remaining === 1 ? "" : "s"} until this read is ready.`
-              : "This focused sample is ready to review."
+    ? postSaveFocusSummary?.missionCopy ??
+      "This result was added to your matchup history."
     : "This result was added to your matchup history.";
   const postSaveProgressPercent =
     sessionCoach && sessionCoach.progressGoal > 0 && postSaveMissionProgress !== null
