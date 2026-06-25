@@ -668,7 +668,8 @@ export function MatchLogForm({
 
     return sessionStorage.getItem(sessionKeys.tcgLivePlayerName) ?? "";
   });
-  const [importStatus, setImportStatus] = useState("");
+  const [importStatus, setImportStatus] = useState<string[]>([]);
+  const [tcgLivePlayerNameError, setTcgLivePlayerNameError] = useState("");
   const [isChangingDeck, setIsChangingDeck] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [moreIssueTagsOpen, setMoreIssueTagsOpen] = useState(() =>
@@ -1014,15 +1015,25 @@ export function MatchLogForm({
 
   function importTcgLiveLog() {
     const log = tcgLiveLog.trim();
+    const playerName = tcgLivePlayerName.trim();
 
     if (!log) {
-      setImportStatus("Paste a TCG Live log first.");
+      setImportStatus(["Paste a TCG Live log first."]);
+      setTcgLivePlayerNameError("");
       return;
     }
 
+    if (!playerName) {
+      setTcgLivePlayerNameError("Add your TCG Live name to autofill this log.");
+      setImportStatus([]);
+      return;
+    }
+
+    setTcgLivePlayerNameError("");
+
     const parsed = parseTcgLiveLog(log, {
       archetypeOptions: opponentArchetypeOptions,
-      playerName: tcgLivePlayerName,
+      playerName,
     });
 
     const nextResult = parsed.result ?? result;
@@ -1064,12 +1075,13 @@ export function MatchLogForm({
       })
     );
 
-    setImportStatus(parsed.notes.join(" \u2022 "));
+    setImportStatus(parsed.notes);
   }
 
   function clearImportedLog() {
     setTcgLiveLog("");
-    setImportStatus("");
+    setImportStatus([]);
+    setTcgLivePlayerNameError("");
   }
 
   const progressPercent = ((currentStep + 1) / stepOrder.length) * 100;
@@ -1502,17 +1514,30 @@ export function MatchLogForm({
                       <input
                         id="tcg_live_player_name"
                         value={tcgLivePlayerName}
-                        onChange={(event) => setTcgLivePlayerName(event.target.value)}
-                        placeholder="Optional"
-                        className={inputH11}
+                        onChange={(event) => {
+                          setTcgLivePlayerName(event.target.value);
+                          if (tcgLivePlayerNameError) {
+                            setTcgLivePlayerNameError("");
+                          }
+                        }}
+                        placeholder="DommitronNL"
+                        className={`${inputH11} ${
+                          tcgLivePlayerNameError
+                            ? "border-rose-400/70 shadow-[inset_0_0_0_1px_rgba(244,63,94,0.16)]"
+                            : ""
+                        }`}
                       />
                       <p className="text-xs leading-5 text-[#94A3B8]/72">
-                        Add this if the log uses usernames instead of &quot;You&quot;.
+                        Required for import so SixPrizer knows which player is you.
                       </p>
+                      {tcgLivePlayerNameError ? (
+                        <p className="text-xs font-medium text-rose-200">
+                          {tcgLivePlayerNameError}
+                        </p>
+                      ) : null}
                     </div>
                   </div>
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="flex flex-col gap-2 sm:flex-row">
+                  <div className="flex flex-col gap-2 sm:flex-row">
                       <button
                         type="button"
                         onClick={importTcgLiveLog}
@@ -1527,13 +1552,19 @@ export function MatchLogForm({
                       >
                         Clear import
                       </button>
-                    </div>
-                    {importStatus ? (
-                      <p className="text-sm leading-6 text-[#94A3B8]/76 sm:max-w-md sm:text-right">
-                        {importStatus}
-                      </p>
-                    ) : null}
                   </div>
+                  {importStatus.length ? (
+                    <div className={`grid gap-2 p-3 ${premiumInset}`}>
+                      {importStatus.map((note) => (
+                        <p
+                          key={note}
+                          className="text-sm leading-6 text-[#D6E0F0]"
+                        >
+                          {note}
+                        </p>
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
 
                 <div className="flex flex-col gap-2">

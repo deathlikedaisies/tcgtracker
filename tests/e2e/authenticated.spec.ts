@@ -333,6 +333,45 @@ test.describe("authenticated routes", () => {
     await expectNoAppError(page);
   });
 
+  test("/matches/new requires a TCG Live name before autofill on named-player logs", async ({
+    page,
+  }) => {
+    await page.goto("/matches/new");
+
+    await page
+      .getByLabel("TCG Live battle log")
+      .fill(
+        [
+          "DommitronNL decided to go first.",
+          "All Prize cards taken. DommitronNL wins.",
+        ].join("\n")
+      );
+    await page.getByRole("button", { name: "Autofill from log" }).click();
+
+    await expect(page.locator("body")).toContainText(
+      "Add your TCG Live name to autofill this log."
+    );
+    await expect(page.locator('input[name="result"]')).toHaveValue("");
+    await expect(page.locator('input[name="went_first"]')).toHaveValue("");
+    await expect(page.locator("body")).not.toContainText(/Detected winner:/i);
+    await expect(page.locator("body")).not.toContainText(
+      /Detected turn choice:/i
+    );
+    await expectNoAppError(page);
+  });
+
+  test("/matches/new requires a pasted log before autofill", async ({ page }) => {
+    await page.goto("/matches/new");
+
+    await page.getByLabel("Your TCG Live name").fill("DommitronNL");
+    await page.getByRole("button", { name: "Autofill from log" }).click();
+
+    await expect(page.locator("body")).toContainText(
+      "Paste a TCG Live log first."
+    );
+    await expectNoAppError(page);
+  });
+
   test("/matchups can create a persisted matchup report", async ({ page }) => {
     await page.goto("/matchups");
 
