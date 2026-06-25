@@ -1,4 +1,5 @@
 import { DashboardContent } from "@/components/auth/DashboardContent";
+import { resolveCurrentDeckScope } from "@/lib/current-deck-scope";
 import {
   buildSessionCoachInsight,
   buildTrainingProgressSummary,
@@ -119,23 +120,35 @@ export default async function DashboardPage() {
 
   const matchRows = (matches ?? []) as unknown as MatchRow[];
   const deckRows = (decks ?? []) as unknown as DeckRow[];
+  const deckScope = resolveCurrentDeckScope({
+    decks: deckRows,
+    matches: matchRows,
+  });
+  const scopedMatchRows = deckScope.deckId
+    ? matchRows.filter(
+        (match) =>
+          deckScope.versionToDeckId.get(match.deck_version_id) === deckScope.deckId
+      )
+    : matchRows;
   const hasAnyDeckVersions = deckRows.some(
     (deck) => (deck.deck_versions ?? []).length > 0
   );
-  const sessionCoach = buildSessionCoachInsight(matchRows as unknown as CoachMatch[]);
-  const trainingProgress = buildTrainingProgressSummary(matchRows);
-  const totalRecord = getRecord(matchRows);
+  const sessionCoach = buildSessionCoachInsight(
+    scopedMatchRows as unknown as CoachMatch[]
+  );
+  const trainingProgress = buildTrainingProgressSummary(scopedMatchRows);
+  const totalRecord = getRecord(scopedMatchRows);
   const wentFirstRecord = getRecord(
-    matchRows.filter((match) => match.went_first === true),
+    scopedMatchRows.filter((match) => match.went_first === true),
     "N/A"
   );
   const wentSecondRecord = getRecord(
-    matchRows.filter((match) => match.went_first === false),
+    scopedMatchRows.filter((match) => match.went_first === false),
     "N/A"
   );
 
   const matchupSummary = Array.from(
-    matchRows
+    scopedMatchRows
       .reduce((summary, match) => {
         const current = summary.get(match.opponent_archetype) ?? [];
         current.push(match);
@@ -150,7 +163,7 @@ export default async function DashboardPage() {
     }))
     .sort((first, second) => second.matches - first.matches);
 
-  const recentMatches = matchRows.slice(0, 10).map((match) => ({
+  const recentMatches = scopedMatchRows.slice(0, 10).map((match) => ({
     id: match.id,
     playedAt: match.played_at,
     deckVersionName: getDeckVersionName(match),
@@ -164,8 +177,16 @@ export default async function DashboardPage() {
       email={user.email ?? "Unknown email"}
       decks={deckRows}
       hasAnyMatches={matchRows.length > 0}
+      hasScopedMatches={scopedMatchRows.length > 0}
       hasAnyDeckVersions={hasAnyDeckVersions}
       firstDeckId={deckRows[0]?.id}
+      currentDeckId={deckScope.deckId}
+      currentDeckName={deckScope.deckName}
+      reviewHref={
+        deckScope.deckId
+          ? `/review?deck_id=${encodeURIComponent(deckScope.deckId)}`
+          : "/review?deck_id=all"
+      }
       stats={{
         totalMatches: totalRecord.matches,
         totalWins: totalRecord.wins,

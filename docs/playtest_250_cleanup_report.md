@@ -1,16 +1,16 @@
 # Playtest 250 Cleanup Report
 
-Date: 2026-06-24
+Date: 2026-06-25
 User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 
 ## Deleted rows
 
-- Matches deleted: 252
-- Match tags deleted: 461
-- Deck versions deleted: 18
-- Decks deleted: 8
+- Matches deleted: 1266
+- Match tags deleted: 1783
+- Deck versions deleted: 51
+- Decks deleted: 20
 - Matchup notes deleted: 0
-- Shared reports deleted: 2
+- Shared reports deleted: 16
 
 ## Post-clean scoped counts
 

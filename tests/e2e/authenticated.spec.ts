@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import { login, getMissingAuthEnvReason } from "./helpers/auth";
 import { expectHeadingVisible, expectNoAppError } from "./helpers/assertions";
 import { buildPostSaveFocusSummary } from "@/lib/match-log-reward";
+import { resolveCurrentDeckScope } from "@/lib/current-deck-scope";
 import type { SessionCoachInsight } from "@/lib/session-coach";
 import { parseTcgLiveLog } from "@/lib/tcg-live-log-parser";
 
@@ -168,6 +169,61 @@ test.describe("TCG Live log parser", () => {
     expect(parsed.winnerName).toBe("DommitronNL");
     expect(parsed.decidingPlayerName).toBe("DommitronNL");
     expect(parsed.notes.join(" ")).toMatch(/Add your TCG Live name/i);
+  });
+});
+
+test.describe("current deck scope resolver", () => {
+  test("defaults dashboard and review to the active deck instead of pooling old logs", async () => {
+    const resolved = resolveCurrentDeckScope({
+      decks: [
+        {
+          id: "deck-a",
+          name: "Deck A",
+          created_at: "2026-06-20T10:00:00.000Z",
+          deck_versions: [{ id: "version-a", is_active: false }],
+        },
+        {
+          id: "deck-b",
+          name: "Deck B",
+          created_at: "2026-06-24T10:00:00.000Z",
+          deck_versions: [{ id: "version-b", is_active: true }],
+        },
+      ],
+      matches: [
+        {
+          deck_version_id: "version-b",
+          played_at: "2026-06-24T11:00:00.000Z",
+        },
+        {
+          deck_version_id: "version-a",
+          played_at: "2026-06-22T11:00:00.000Z",
+        },
+      ],
+    });
+
+    expect(resolved.deckId).toBe("deck-b");
+    expect(resolved.deckName).toBe("Deck B");
+    expect(resolved.showAllDecks).toBe(false);
+    expect(resolved.source).toBe("active_version");
+  });
+
+  test("keeps all decks explicit instead of the implicit default", async () => {
+    const resolved = resolveCurrentDeckScope({
+      decks: [
+        {
+          id: "deck-a",
+          name: "Deck A",
+          created_at: "2026-06-20T10:00:00.000Z",
+          deck_versions: [{ id: "version-a", is_active: true }],
+        },
+      ],
+      matches: [],
+      explicitDeckId: "all",
+    });
+
+    expect(resolved.deckId).toBeNull();
+    expect(resolved.showAllDecks).toBe(true);
+    expect(resolved.source).toBe("all_decks");
   });
 });
 
@@ -455,10 +511,15 @@ test.describe("authenticated routes", () => {
       .getByText(/Top coach read|What to do next/i)
       .first()
       .locator("xpath=ancestor::section[1]");
+    const deckFilter = page.getByLabel("Deck");
 
-    await expect(coachHero).toContainText(/Item Lock|missed setup|Mega Greninja/i);
+    await expect(deckFilter).not.toHaveValue("all");
+    await expect(page.locator("body")).toContainText(/Showing insights for:/i);
+    await expect(coachHero).toContainText(
+      /Item Lock|missed setup|Mega Greninja|version|stronger so far/i
+    );
     await expect(coachHero).toContainText(/What to do next/i);
-    await expect(page.locator("body")).toContainText(/wins tagged.*losses tagged|wins and .* losses/i);
+    await expect(coachHero).toContainText(/Evidence|Confidence/i);
     await expect(page.locator("body")).toContainText(
       /Strong enough to review|Worth testing next|Early signal|Needs more games/i
     );
@@ -475,10 +536,44 @@ test.describe("authenticated routes", () => {
     await page.goto("/dashboard");
 
     await expect(page.locator("body")).toContainText(/Next best action|Current focus/i);
-    await expect(page.locator("body")).toContainText(/Review details|Review all insights/i);
+    await expect(page.locator("body")).toContainText(/Showing insights for:|Showing combined insights across all decks/i);
+    await expect(page.locator("body")).toContainText(/Review details|Open review/i);
     await expect(page.locator("body")).not.toContainText(/good prize plan.*positive pattern/i);
     await expect(page.locator("body")).not.toContainText(/wins tagged.*losses tagged|3 of 14 wins tagged/i);
     await expect(page.locator("body")).not.toContainText(/Detailed analytics|Recent form.*Deck versions|Turn-order split.*Tag pressure/i);
+    await expectNoAppError(page);
+  });
+
+  test("/dashboard opens Review with the same current-deck scope", async ({ page }) => {
+    await page.goto("/dashboard");
+
+    const reviewLink = page.getByRole("link", { name: "Open review" }).first();
+    const href = await reviewLink.getAttribute("href");
+
+    expect(href).toBeTruthy();
+    expect(href).toMatch(/^\/review(\?deck_id=.+)?$/);
+
+    await reviewLink.click();
+    await page.waitForURL(/\/review/, { timeout: 20000 });
+
+    const url = new URL(page.url());
+    const deckIdFromUrl = url.searchParams.get("deck_id");
+    const deckFilter = page.getByLabel("Deck");
+
+    if (deckIdFromUrl) {
+      await expect(deckFilter).toHaveValue(deckIdFromUrl);
+      await expect(page.locator("body")).toContainText(/Showing insights for:/i);
+    } else {
+      await expect(deckFilter).not.toHaveValue("all");
+      await expect(page.locator("body")).toContainText(/Showing insights for:/i);
+    }
+
+    await deckFilter.selectOption("all");
+    await page.getByRole("button", { name: "Apply" }).click();
+    await expect(page).toHaveURL(/deck_id=all/);
+    await expect(page.locator("body")).toContainText(
+      /Showing combined insights across all decks/i
+    );
     await expectNoAppError(page);
   });
 

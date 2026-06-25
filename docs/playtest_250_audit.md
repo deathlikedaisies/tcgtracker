@@ -1,12 +1,12 @@
 # Playtest 250 Audit
 
-Date: 2026-06-24
+Date: 2026-06-25
 User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 
 ## Seed setup summary
 
 - Test account: pokeleaguenl@gmail.com
-- Base URL audited: http://127.0.0.1:3000
+- Base URL audited: http://127.0.0.1:3100
 - Decks: 8
 - Versions: 18
 - Matches: 250
@@ -36,7 +36,7 @@ User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 - /matches
 - /matches?page=2
 - /decks
-- /decks/a33ee642-08e9-4f86-821a-e000d3fdd78c
+- /decks/cfeab7be-c4c9-4bdd-a802-31946e5e668e
 - /matches/new
 - /profile
 
@@ -44,7 +44,7 @@ User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 
 - /dashboard
 - /decks
-- /decks/a33ee642-08e9-4f86-821a-e000d3fdd78c
+- /decks/cfeab7be-c4c9-4bdd-a802-31946e5e668e
 - /review
 - /matchups
 - /matches
@@ -66,10 +66,10 @@ User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 
 ### review: Primary insight
 
-- Severity: low
-- Problem: No blocking issue found in this audit pass.
+- Severity: medium
+- Problem: Review should surface specific patterns, an evidence line, a next-test prompt, and a confidence cue.
 - Suggested fix: Use the filtered review surfaces to decide what to re-test next.
-- Fix now or defer: defer
+- Fix now or defer: fix now if confirmed in product review
 
 ### matchups: Weakest actionable matchup
 
@@ -119,6 +119,7 @@ User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 - results/playtest_250_screenshots/desktop__dashboard.png
 - results/playtest_250_screenshots/desktop__decks.png
 - results/playtest_250_screenshots/desktop__decks_28de826e-26f4-42cb-9164-b37387e846ff.png
+- results/playtest_250_screenshots/desktop__decks_31678992-b236-4bc1-9690-3d00868b076f.png
 - results/playtest_250_screenshots/desktop__decks_547bde5b-c76f-40aa-9390-fc3145355cf9.png
 - results/playtest_250_screenshots/desktop__decks_5f09f158-cd16-446d-ad11-3c3fea7760ac.png
 - results/playtest_250_screenshots/desktop__decks_68dfa729-a7d7-48a7-903e-28f4250e2f91.png
@@ -127,6 +128,8 @@ User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 - results/playtest_250_screenshots/desktop__decks_a33ee642-08e9-4f86-821a-e000d3fdd78c.png
 - results/playtest_250_screenshots/desktop__decks_c6d10d22-3347-415b-8d94-85b3dfc9ba13.png
 - results/playtest_250_screenshots/desktop__decks_c8f8baa8-7d5e-4024-b5e2-f42f6fbfcbb1.png
+- results/playtest_250_screenshots/desktop__decks_ccfc65cc-a580-4b71-8291-1979179480be.png
+- results/playtest_250_screenshots/desktop__decks_cfeab7be-c4c9-4bdd-a802-31946e5e668e.png
 - results/playtest_250_screenshots/desktop__decks_db971151-af64-4a09-9aec-5c0d19a221a8.png
 - results/playtest_250_screenshots/desktop__decks_e5cd6abb-cd96-4605-b569-f8b91eba50dc.png
 - results/playtest_250_screenshots/desktop__decks_fdf38baf-d650-4365-9632-79fb250b85e7.png
@@ -143,6 +146,7 @@ User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 - results/playtest_250_screenshots/mobile430__review.png
 - results/playtest_250_screenshots/mobile__dashboard.png
 - results/playtest_250_screenshots/mobile__decks.png
+- results/playtest_250_screenshots/mobile__decks_31678992-b236-4bc1-9690-3d00868b076f.png
 - results/playtest_250_screenshots/mobile__decks_547bde5b-c76f-40aa-9390-fc3145355cf9.png
 - results/playtest_250_screenshots/mobile__decks_5f09f158-cd16-446d-ad11-3c3fea7760ac.png
 - results/playtest_250_screenshots/mobile__decks_890b7d89-ebd9-452f-942c-fec73bd3ce4f.png
@@ -150,6 +154,8 @@ User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 - results/playtest_250_screenshots/mobile__decks_a33ee642-08e9-4f86-821a-e000d3fdd78c.png
 - results/playtest_250_screenshots/mobile__decks_c6d10d22-3347-415b-8d94-85b3dfc9ba13.png
 - results/playtest_250_screenshots/mobile__decks_c8f8baa8-7d5e-4024-b5e2-f42f6fbfcbb1.png
+- results/playtest_250_screenshots/mobile__decks_ccfc65cc-a580-4b71-8291-1979179480be.png
+- results/playtest_250_screenshots/mobile__decks_cfeab7be-c4c9-4bdd-a802-31946e5e668e.png
 - results/playtest_250_screenshots/mobile__decks_db971151-af64-4a09-9aec-5c0d19a221a8.png
 - results/playtest_250_screenshots/mobile__decks_e5cd6abb-cd96-4605-b569-f8b91eba50dc.png
 - results/playtest_250_screenshots/mobile__decks_fdf38baf-d650-4365-9632-79fb250b85e7.png
@@ -195,14 +201,14 @@ User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 
 ## Performance summary
 
-- /decks/a33ee642-08e9-4f86-821a-e000d3fdd78c: 5679ms
-- /matchups: 2153ms
-- /matchups: 1934ms
-- /matches?page=2: 1179ms
-- /matches: 1171ms
-- /matches: 1150ms
-- /review: 1073ms
-- /decks/a33ee642-08e9-4f86-821a-e000d3fdd78c: 1035ms
+- /decks/cfeab7be-c4c9-4bdd-a802-31946e5e668e: 4279ms
+- /matchups: 2186ms
+- /review: 2001ms
+- /matches: 1974ms
+- /: 1883ms
+- /matchups: 1799ms
+- /decks: 1478ms
+- /matches?page=2: 1284ms
 
 ## Production validation
 

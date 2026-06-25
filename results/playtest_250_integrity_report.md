@@ -1,16 +1,16 @@
 # Playtest 250 Integrity Report
 
-Date: 2026-06-24
+Date: 2026-06-25
 Test user: pokeleaguenl@gmail.com
 User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 
 ## Cleanup scope
 
-- Pre-clean decks: 8
-- Pre-clean versions: 18
-- Pre-clean matches: 252
-- Pre-clean match_tags: 461
-- Pre-clean shared_reports: 2
+- Pre-clean decks: 20
+- Pre-clean versions: 51
+- Pre-clean matches: 1266
+- Pre-clean match_tags: 1783
+- Pre-clean shared_reports: 16
 - Post-clean decks: 0
 - Post-clean versions: 0
 - Post-clean matches: 0

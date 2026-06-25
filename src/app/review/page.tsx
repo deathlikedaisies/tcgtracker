@@ -26,6 +26,7 @@ import {
   getMostCommonTag,
   type ReviewMatch,
 } from "@/lib/review-analysis";
+import { resolveCurrentDeckScope } from "@/lib/current-deck-scope";
 import {
   countMatchResults,
   formatMatchRecord,
@@ -38,6 +39,7 @@ import { createServerSupabaseClient } from "@/lib/supabase-server";
 type ReviewPageProps = {
   searchParams: Promise<{
     deck_id?: string;
+    deckId?: string;
     version_filter?: string;
   }>;
 };
@@ -45,6 +47,7 @@ type ReviewPageProps = {
 type DeckWithVersions = {
   id: string;
   name: string;
+  created_at: string;
   deck_versions: {
     id: string;
     name: string;
@@ -174,7 +177,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
   ] = await Promise.all([
     supabase
       .from("decks")
-      .select("id, name, deck_versions(id, name, is_active)")
+      .select("id, name, created_at, deck_versions(id, name, is_active)")
       .eq("user_id", user.id)
       .order("name", { ascending: true })
       .order("is_active", {
@@ -204,8 +207,15 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
 
   const userDecks = (decks ?? []) as DeckWithVersions[];
   const allMatches = (matches ?? []) as MatchRow[];
-
-  const selectedDeck = userDecks.find((deck) => deck.id === params.deck_id) ?? null;
+  const requestedDeckId = params.deck_id ?? params.deckId ?? null;
+  const deckScope = resolveCurrentDeckScope({
+    decks: userDecks,
+    matches: allMatches,
+    explicitDeckId: requestedDeckId,
+  });
+  const selectedDeck =
+    userDecks.find((deck) => deck.id === deckScope.deckId) ?? null;
+  const showAllDecks = deckScope.showAllDecks;
   const selectedVersionFilter = params.version_filter ?? "";
   const activeVersionId =
     selectedDeck?.deck_versions.find((version) => version.is_active)?.id ?? null;
@@ -229,7 +239,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
   });
 
   const filteredMatches = normalizedMatches.filter((match) => {
-    if (selectedDeck && match.deckId !== selectedDeck.id) {
+    if (!showAllDecks && selectedDeck && match.deckId !== selectedDeck.id) {
       return false;
     }
 
@@ -250,8 +260,8 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
       : null;
 
   const analysis = buildReviewAnalysis(filteredMatches, {
-    deckId: selectedDeck?.id ?? null,
-    deckName: selectedDeck?.name ?? null,
+    deckId: showAllDecks ? null : selectedDeck?.id ?? null,
+    deckName: showAllDecks ? null : selectedDeck?.name ?? null,
     deckVersionId:
       selectedVersionFilter === "active"
         ? activeVersionId
@@ -589,10 +599,10 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
                 <select
                   id="deck_id"
                   name="deck_id"
-                  defaultValue={selectedDeck?.id ?? ""}
+                  defaultValue={showAllDecks ? "all" : selectedDeck?.id ?? "all"}
                   className={inputH10}
                 >
-                  <option value="">All decks</option>
+                  <option value="all">All decks</option>
                   {userDecks.map((deck) => (
                     <option key={deck.id} value={deck.id}>
                       {deck.name}
@@ -627,7 +637,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
                   Apply
                 </button>
                 <Link href="/review" className={secondaryButton}>
-                  Clear
+                  Reset
                 </Link>
               </div>
             </div>
@@ -663,8 +673,10 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
               <div className="flex flex-wrap items-center gap-2">
                 <span className={subtlePill}>{analysis.sampleSummary}</span>
                 <span className={subtlePill}>{analysis.sampleStatusLabel}</span>
-                {selectedDeck ? (
-                  <span className={subtlePill}>{selectedDeck.name}</span>
+                {showAllDecks ? (
+                  <span className={subtlePill}>Showing combined insights across all decks</span>
+                ) : selectedDeck ? (
+                  <span className={subtlePill}>Showing insights for: {selectedDeck.name}</span>
                 ) : null}
                 {selectedVersionFilter === "active" ? (
                   <span className={subtlePill}>Active version only</span>

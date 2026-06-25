@@ -85,10 +85,14 @@ type DashboardContentProps = {
   email: string;
   decks: DeckSummary[];
   hasAnyMatches: boolean;
+  hasScopedMatches: boolean;
   hasAnyDeckVersions: boolean;
   hasProfile: boolean;
   profileIsPrivate: boolean;
   firstDeckId?: string;
+  currentDeckId?: string | null;
+  currentDeckName?: string | null;
+  reviewHref: string;
   stats: DashboardStats;
   recentMatches: RecentMatch[];
   matchupSummary: MatchupSummary[];
@@ -275,10 +279,12 @@ function MissionHeroCard({
   insight,
   nextActionTitle,
   nextActionCopy,
+  reviewHref,
 }: {
   insight: SessionCoachInsight;
   nextActionTitle: string;
   nextActionCopy: string;
+  reviewHref: string;
 }) {
   const badge = getMissionBadge(insight);
   const progressPercent = Math.min(
@@ -420,7 +426,7 @@ function MissionHeroCard({
             {primaryLabel}
             <ArrowRight className="ml-2 size-4" aria-hidden="true" />
           </Link>
-          <Link href="/review" className={`${secondaryButton} h-11`}>
+          <Link href={reviewHref} className={`${secondaryButton} h-11`}>
             Open review
           </Link>
         </div>
@@ -590,10 +596,14 @@ export function DashboardContent({
   email,
   decks,
   hasAnyMatches,
+  hasScopedMatches,
   hasAnyDeckVersions,
   hasProfile,
   profileIsPrivate,
   firstDeckId,
+  currentDeckId,
+  currentDeckName,
+  reviewHref,
   stats,
   recentMatches,
   matchupSummary,
@@ -806,6 +816,12 @@ export function DashboardContent({
         copy: "A few more games will unlock a real coaching loop.",
         href: "/matches/new",
       };
+  const scopeLabel = currentDeckName
+    ? `Showing insights for: ${currentDeckName}`
+    : "Showing combined insights across all decks";
+  const scopeDescription = currentDeckName
+    ? "Overview follows your current deck by default so older list experiments do not pollute the read."
+    : "No current deck is pinned, so this overview is combining logs across all decks.";
 
   return (
     <main className={appShell}>
@@ -830,64 +846,111 @@ export function DashboardContent({
             />
           ) : (
             <div className="grid gap-4 sm:gap-6">
-              {sessionCoach ? (
+              <section className={`${glassPanel} p-3.5 sm:p-4`}>
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
+                      Insight scope
+                    </p>
+                    <p className="mt-1 text-sm font-semibold text-[#F8FAFC]">
+                      {scopeLabel}
+                    </p>
+                    <p className="mt-1 text-sm leading-5 text-[#94A3B8]/72">
+                      {scopeDescription}
+                    </p>
+                  </div>
+                  {!currentDeckId ? (
+                    <Link href="/review?deck_id=all" className={`${secondaryButton} h-10 shrink-0`}>
+                      All decks view
+                    </Link>
+                  ) : null}
+                </div>
+              </section>
+
+              {!hasScopedMatches && currentDeckName ? (
+                <section className={emptyCard}>
+                  <p className="text-sm font-semibold text-[#4F8CFF]">Current deck</p>
+                  <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[#F8FAFC]">
+                    {currentDeckName} needs games.
+                  </h2>
+                  <p className="mt-2 max-w-2xl text-sm leading-6 text-[#94A3B8]/72">
+                    This overview is scoped to your current deck. Log a few games with {currentDeckName} before SixPrizer starts surfacing reliable patterns.
+                  </p>
+                  <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                    <Link href="/matches/new" className={`${primaryButton} h-11`}>
+                      Log first game
+                      <ArrowRight className="ml-2 size-4" aria-hidden="true" />
+                    </Link>
+                    <Link href={reviewHref} className={`${secondaryButton} h-11`}>
+                      Open review
+                    </Link>
+                  </div>
+                </section>
+              ) : null}
+
+              {sessionCoach && hasScopedMatches ? (
                 <MissionHeroCard
                   insight={sessionCoach}
                   nextActionTitle={nextAction.title}
                   nextActionCopy={nextAction.copy}
+                  reviewHref={reviewHref}
                 />
               ) : null}
               {nextSetupStep ? <NextSetupStepCard {...nextSetupStep} /> : null}
 
-              <section className="grid gap-2.5 sm:gap-3 lg:grid-cols-3">
-                <KpiCard
-                  icon={Activity}
-                  label="Recent form"
-                  value={recentFormValue}
-                  helper={`Last ${Math.min(recentMatches.length, 5)} logged matches`}
-                  tone="green"
-                >
-                  <RecentFormDots matches={recentMatches} />
-                </KpiCard>
-                <KpiCard
-                  icon={ShieldAlert}
-                  label="Biggest actionable matchup"
-                  value={actionableMatchupTitle}
-                  helper={actionableMatchupDetail}
-                  tone={actionableMatchupTone}
-                />
-                <ChangeCard
-                  label={whatChangedCard.label}
-                  title={whatChangedCard.title}
-                  detail={whatChangedCard.detail}
-                  tone={whatChangedCard.tone}
-                />
-              </section>
+              {hasScopedMatches ? (
+                <>
+                  <section className="grid gap-2.5 sm:gap-3 lg:grid-cols-3">
+                    <KpiCard
+                      icon={Activity}
+                      label="Recent form"
+                      value={recentFormValue}
+                      helper={`Last ${Math.min(recentMatches.length, 5)} logged matches`}
+                      tone="green"
+                    >
+                      <RecentFormDots matches={recentMatches} />
+                    </KpiCard>
+                    <KpiCard
+                      icon={ShieldAlert}
+                      label="Biggest actionable matchup"
+                      value={actionableMatchupTitle}
+                      helper={actionableMatchupDetail}
+                      tone={actionableMatchupTone}
+                    />
+                    <ChangeCard
+                      label={whatChangedCard.label}
+                      title={whatChangedCard.title}
+                      detail={whatChangedCard.detail}
+                      tone={whatChangedCard.tone}
+                    />
+                  </section>
 
-              <section className={`${glassPanel} p-3.5 sm:p-5`}>
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-                  <div className="min-w-0">
-                    <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
-                      Review details
-                    </p>
-                    <h2 className="mt-1 text-lg font-semibold text-[#F8FAFC]">
-                      Use Review for supporting evidence
-                    </h2>
-                    <p className="mt-1.5 text-sm leading-5 text-[#94A3B8]/72 sm:mt-2 sm:leading-6">
-                      Overview stays focused on what to do now. Open Review to inspect matchup pressure, repeated tags, and other supporting patterns from your logs.
-                    </p>
-                  </div>
-                  <div className="flex flex-col gap-2 sm:flex-row">
-                    <Link href={nextAction.href} className={`${primaryButton} h-11`}>
-                      {nextAction.title}
-                      <ArrowRight className="ml-2 size-4" aria-hidden="true" />
-                    </Link>
-                    <Link href="/review" className={`${secondaryButton} h-11`}>
-                      Review all insights
-                    </Link>
-                  </div>
-                </div>
-              </section>
+                  <section className={`${glassPanel} p-3.5 sm:p-5`}>
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
+                          Review details
+                        </p>
+                        <h2 className="mt-1 text-lg font-semibold text-[#F8FAFC]">
+                          Use Review for supporting evidence
+                        </h2>
+                        <p className="mt-1.5 text-sm leading-5 text-[#94A3B8]/72 sm:mt-2 sm:leading-6">
+                          Overview stays focused on what to do now. Open Review to inspect matchup pressure, repeated tags, and other supporting patterns from your logs.
+                        </p>
+                      </div>
+                      <div className="flex flex-col gap-2 sm:flex-row">
+                        <Link href={nextAction.href} className={`${primaryButton} h-11`}>
+                          {nextAction.title}
+                          <ArrowRight className="ml-2 size-4" aria-hidden="true" />
+                        </Link>
+                        <Link href={reviewHref} className={`${secondaryButton} h-11`}>
+                          Open review
+                        </Link>
+                      </div>
+                    </div>
+                  </section>
+                </>
+              ) : null}
             </div>
           )}
         </div>
