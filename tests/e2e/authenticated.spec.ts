@@ -289,6 +289,8 @@ test.describe("deck lab summary", () => {
     expect(summary.versionReadSummary).toMatch(/first version/i);
     expect(summary.recommendation).toMatch(/Log 7 more games before making your first change\./i);
     expect(summary.currentVersionSampleSummary).toMatch(/Keep testing before changing the list\./i);
+    expect(summary.versionConclusion).toMatch(/Too early to call/i);
+    expect(summary.comparisonRows).toHaveLength(0);
     expect(summary.versionReadSummary).not.toMatch(/baseline ready/i);
   });
 
@@ -328,6 +330,7 @@ test.describe("deck lab summary", () => {
     expect(summary.cleanLogDisplay).toBe("20 of 20");
     expect(summary.cleanLogSummary).toBe("20-game clean streak");
     expect(summary.versionReadSummary).toMatch(/enough games to use as a baseline/i);
+    expect(summary.versionConclusion).toMatch(/baseline/i);
     expect(summary.versionPatienceSummary).toMatch(
       /Good baseline\. Future versions can be compared against this sample\./i
     );
@@ -389,9 +392,10 @@ test.describe("deck lab summary", () => {
 
     expect(summary.versionReadStatus).toBe("needs_games");
     expect(summary.versionReadSummary).toMatch(/not enough games/i);
+    expect(summary.versionConclusion).toMatch(/Too little data to compare versions cleanly/i);
   });
 
-  test("detects setup improvement and excludes the active archetype from the watchlist", async () => {
+  test("detects setup improvement, changed-too-soon warning, and excludes the active archetype from the watchlist", async () => {
     const summary = buildDeckLabSummary({
       deckArchetype: "Dragapult Blaziken",
       versions: [
@@ -502,6 +506,95 @@ test.describe("deck lab summary", () => {
       )
     ).toBe(false);
     expect(summary.versionReadStatus).toBe("early_read");
+    expect(summary.changedTooSoonWarning).toMatch(/before building a clear sample/i);
+    expect(summary.comparisonRows.some((row) => row.label === "Setup quality")).toBe(true);
+    expect(summary.nextObservation).toBeTruthy();
+  });
+
+  test("flags missing details and labels watchlist priority conservatively", async () => {
+    const summary = buildDeckLabSummary({
+      deckArchetype: "Mega Greninja",
+      versions: [
+        {
+          id: "v1",
+          name: "baseline",
+          created_at: "2026-06-20T10:00:00.000Z",
+          is_active: false,
+        },
+        {
+          id: "v2",
+          name: "test",
+          created_at: "2026-06-24T10:00:00.000Z",
+          is_active: true,
+        },
+      ],
+      activeVersionId: "v2",
+      matches: [
+        {
+          deck_version_id: "v1",
+          opponent_archetype: "N's Zoroark",
+          result: "loss",
+          went_first: false,
+          played_at: "2026-06-20T10:00:00.000Z",
+          metadata: {
+            start_quality: "bad",
+            opening_hand_quality: "bad",
+            sequencing_quality: "bad",
+            issue_tags: ["slow setup"],
+          },
+        },
+        {
+          deck_version_id: "v1",
+          opponent_archetype: "Dragapult Dusknoir",
+          result: "win",
+          went_first: true,
+          played_at: "2026-06-21T10:00:00.000Z",
+          metadata: {
+            start_quality: "good",
+            opening_hand_quality: "good",
+            sequencing_quality: "good",
+            positive_tags: ["strong setup"],
+          },
+        },
+        {
+          deck_version_id: "v2",
+          opponent_archetype: "N's Zoroark",
+          result: "loss",
+          went_first: false,
+          played_at: "2026-06-24T10:00:00.000Z",
+          metadata: {
+            start_quality: "bad",
+          },
+        },
+        {
+          deck_version_id: "v2",
+          opponent_archetype: "Dragapult Dusknoir",
+          result: "win",
+          went_first: true,
+          played_at: "2026-06-25T10:00:00.000Z",
+          metadata: {
+            opening_hand_quality: "good",
+            positive_tags: ["strong setup"],
+          },
+        },
+        {
+          deck_version_id: "v2",
+          opponent_archetype: "Raging Bolt",
+          result: "loss",
+          went_first: null,
+          played_at: "2026-06-26T10:00:00.000Z",
+          metadata: {
+            sequencing_quality: "okay",
+            issue_tags: ["tempo loss"],
+          },
+        },
+      ],
+    });
+
+    expect(summary.logQualityCallout).toMatch(/missing quality or reason details/i);
+    expect(summary.disciplineHabits.some((habit) => habit.label === "Clean logger")).toBe(true);
+    expect(summary.metaWatchlist[0]?.priorityLabel).toMatch(/High priority|Watch/i);
+    expect(summary.metaWatchlist.some((item) => item.priorityLabel === "Enough for now")).toBe(false);
   });
 });
 
@@ -912,7 +1005,7 @@ test.describe("authenticated routes", () => {
 
     await expect(page.locator("body")).toContainText(/Deck Lab/i);
     await expect(page.locator("body")).toContainText(
-      /Version read|Testing discipline|Meta watchlist/i
+      /Version read|Version comparison|Testing discipline|Meta watchlist/i
     );
     await expect(page.locator("body")).toContainText(/Version evidence|Version signal/i);
     await expect(page.locator("body")).toContainText(/v1|v2|v3/i);

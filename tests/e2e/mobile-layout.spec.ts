@@ -83,7 +83,7 @@ test.describe("mobile layout", () => {
 
       await expect(page.locator("body")).toContainText(/Deck Lab/i);
       await expect(page.locator("body")).toContainText(
-        /Version read|Testing discipline|Meta watchlist/i
+        /Version read|Version comparison|Testing discipline|Meta watchlist/i
       );
       await expectNoAppError(page);
       await expectNoHorizontalOverflow(page);

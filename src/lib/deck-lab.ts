@@ -45,12 +45,29 @@ type DeckLabVersionSignal = {
   tone: DeckLabStatusTone;
 };
 
+export type DeckLabComparisonRow = {
+  label: string;
+  current: string;
+  previous: string;
+  insight: string;
+  tone: DeckLabStatusTone;
+};
+
+export type DeckLabHabit = {
+  label: string;
+  statusLabel: string;
+  tone: DeckLabStatusTone;
+};
+
 export type DeckLabMetaWatchItem = {
   archetype: string;
   count: number;
   status: DeckLabMetaSampleStatus;
   statusLabel: string;
   tone: DeckLabStatusTone;
+  priorityLabel: string;
+  priorityTone: DeckLabStatusTone;
+  recentLabel: string;
 };
 
 export type DeckLabSummary = {
@@ -66,7 +83,11 @@ export type DeckLabSummary = {
   versionReadLabel: string;
   versionReadTone: DeckLabStatusTone;
   versionReadSummary: string;
+  versionConclusion: string;
+  nextObservation: string;
   sampleCaution: string;
+  changedTooSoonWarning: string | null;
+  comparisonRows: DeckLabComparisonRow[];
   improvements: DeckLabVersionSignal[];
   regressions: DeckLabVersionSignal[];
   cleanLogCount: number;
@@ -77,6 +98,8 @@ export type DeckLabSummary = {
   versionPatienceLabel: string;
   versionPatienceTone: DeckLabStatusTone;
   versionPatienceSummary: string;
+  disciplineHabits: DeckLabHabit[];
+  logQualityCallout: string | null;
   metaWatchlist: DeckLabMetaWatchItem[];
   recommendation: string;
 };
@@ -194,6 +217,32 @@ function getMetaWatchStatus(count: number): {
   }
 
   return { status: "useful_sample", label: "Useful sample", tone: "emerald" };
+}
+
+function getMetaWatchPriority(
+  count: number,
+  orderIndex: number
+): {
+  label: string;
+  tone: DeckLabStatusTone;
+} {
+  if (count >= 5) {
+    return { label: "Enough for now", tone: "emerald" };
+  }
+
+  if (count === 0 || (count <= 2 && orderIndex <= 1)) {
+    return { label: "High priority", tone: "gold" };
+  }
+
+  return { label: "Watch", tone: "blue" };
+}
+
+function formatPercent(value: number | null) {
+  return value === null ? "No data" : `${value}%`;
+}
+
+function formatLossTag(value: { tag: string; count: number } | null) {
+  return value ? `${value.tag} (${value.count})` : "No repeat yet";
 }
 
 function getVersionReadMeta(
@@ -329,9 +378,12 @@ export function buildDeckLabSummary({
     previousMatches,
     "sequencing_quality"
   );
+  const currentGoingFirst = getTurnSplit(currentMatches, true);
+  const previousGoingFirst = getTurnSplit(previousMatches, true);
   const currentGoingSecond = getTurnSplit(currentMatches, false);
   const previousGoingSecond = getTurnSplit(previousMatches, false);
   const repeatedLossTag = getRepeatedLossTag(currentMatches);
+  const previousRepeatedLossTag = getRepeatedLossTag(previousMatches);
 
   const improvements: DeckLabVersionSignal[] = [];
   const regressions: DeckLabVersionSignal[] = [];
@@ -511,6 +563,305 @@ export function buildDeckLabSummary({
       : currentSampleSize > 0
         ? `${currentSampleSize} total games`
         : "Start a clean-log streak";
+  const changedTooSoonWarning =
+    previousVersion && previousSampleSize > 0 && previousSampleSize < 5
+      ? "You changed from the previous version before building a clear sample."
+      : null;
+  const incompleteLogCount = Math.max(currentSampleSize - cleanLogCount, 0);
+  const logQualityCallout =
+    incompleteLogCount >= 2
+      ? "Some games are missing quality or reason details, so Deck Lab has less to work with."
+      : null;
+  const versionConclusion = (() => {
+    if (!previousVersion) {
+      return currentSampleSize >= currentVersionTarget
+        ? "This version is your baseline. Future changes can be compared against it."
+        : "Too early to call. Let this version build a cleaner sample first.";
+    }
+
+    if (versionReadMeta.status === "needs_games") {
+      return "Too little data to compare versions cleanly.";
+    }
+
+    if (improvements[0] && !regressions[0]) {
+      return "This version looks better so far, mostly because the cleaner signals are holding up.";
+    }
+
+    if (improvements[0] && regressions[0]) {
+      return "The version looks better in one area, but the main weakness still needs more testing.";
+    }
+
+    if (regressions[0]) {
+      return "The version is not clearly better yet. Keep testing before changing again.";
+    }
+
+    return "No clear version edge yet. Keep testing before you swap the list again.";
+  })();
+  const nextObservation = (() => {
+    if (currentSampleSize < 5) {
+      return "Log a few more clean games before making another change.";
+    }
+
+    if (repeatedLossTag) {
+      return `Watch whether ${repeatedLossTag.tag.toLowerCase()} keeps causing losses.`;
+    }
+
+    if (
+      currentGoingSecond.total >= 2 &&
+      currentGoingSecond.winRate !== null &&
+      currentGoingSecond.winRate <= 40
+    ) {
+      return "Watch going-second games before changing the list.";
+    }
+
+    if (
+      currentOpeningQuality.percent !== null &&
+      currentOpeningQuality.percent <= 50
+    ) {
+      return "Keep an eye on opening hand quality before you change again.";
+    }
+
+    if (
+      currentSequencingQuality.percent !== null &&
+      currentSequencingQuality.percent <= 50
+    ) {
+      return "Watch whether sequencing keeps deciding your losses.";
+    }
+
+    return "Keep logging clean games before making another list change.";
+  })();
+  const disciplineHabits: DeckLabHabit[] = [
+    {
+      label: "Clean logger",
+      statusLabel:
+        cleanLogCount >= Math.max(3, Math.ceil(currentSampleSize * 0.7))
+          ? "Strong recent logs"
+          : cleanLogCount > 0
+            ? "Needs cleaner logs"
+            : "No clean sample yet",
+      tone:
+        cleanLogCount >= Math.max(3, Math.ceil(currentSampleSize * 0.7))
+          ? "emerald"
+          : cleanLogCount > 0
+            ? "gold"
+            : "blue",
+    },
+    {
+      label: "Sample builder",
+      statusLabel:
+        currentSampleSize >= currentVersionTarget
+          ? "Baseline ready"
+          : currentSampleSize >= 5
+            ? "Good sample forming"
+            : "Building sample",
+      tone:
+        currentSampleSize >= currentVersionTarget
+          ? "emerald"
+          : currentSampleSize >= 5
+            ? "blue"
+            : "gold",
+    },
+    {
+      label: "Version discipline",
+      statusLabel: changedTooSoonWarning ? "Changed too soon" : "Patient testing",
+      tone: changedTooSoonWarning ? "gold" : "emerald",
+    },
+    {
+      label: "Going-second tracker",
+      statusLabel:
+        currentGoingSecond.total >= 3 ? "Useful sample" : "Needs more data",
+      tone: currentGoingSecond.total >= 3 ? "emerald" : "blue",
+    },
+    {
+      label: "Meta watcher",
+      statusLabel:
+        currentMatches.length > 0 &&
+        new Set(
+          currentMatches
+            .map((match) => normalizeText(match.opponent_archetype))
+            .filter(Boolean)
+        ).size >= 3
+          ? "Coverage building"
+          : "Watchlist still thin",
+      tone:
+        currentMatches.length > 0 &&
+        new Set(
+          currentMatches
+            .map((match) => normalizeText(match.opponent_archetype))
+            .filter(Boolean)
+        ).size >= 3
+          ? "emerald"
+          : "blue",
+    },
+  ];
+  const comparisonRows: DeckLabComparisonRow[] = previousVersion
+    ? [
+        {
+          label: "Win rate",
+          current: formatPercent(currentWinRate),
+          previous: formatPercent(previousWinRate),
+          insight:
+            currentWinRate !== null && previousWinRate !== null
+              ? currentWinRate > previousWinRate
+                ? "Up so far"
+                : currentWinRate < previousWinRate
+                  ? "Still behind"
+                  : "Flat"
+              : "Too early",
+          tone:
+            currentWinRate !== null &&
+            previousWinRate !== null &&
+            currentWinRate > previousWinRate
+              ? "emerald"
+              : currentWinRate !== null &&
+                  previousWinRate !== null &&
+                  currentWinRate < previousWinRate
+                ? "rose"
+                : "blue",
+        },
+        {
+          label: "Setup quality",
+          current: formatPercent(currentStartQuality.percent),
+          previous: formatPercent(previousStartQuality.percent),
+          insight:
+            currentStartQuality.percent !== null &&
+            previousStartQuality.percent !== null
+              ? currentStartQuality.percent > previousStartQuality.percent
+                ? "Better"
+                : currentStartQuality.percent < previousStartQuality.percent
+                  ? "Worse"
+                  : "Stable"
+              : "Too early",
+          tone:
+            currentStartQuality.percent !== null &&
+            previousStartQuality.percent !== null &&
+            currentStartQuality.percent > previousStartQuality.percent
+              ? "emerald"
+              : currentStartQuality.percent !== null &&
+                  previousStartQuality.percent !== null &&
+                  currentStartQuality.percent < previousStartQuality.percent
+                ? "rose"
+                : "blue",
+        },
+        {
+          label: "Opening hand",
+          current: formatPercent(currentOpeningQuality.percent),
+          previous: formatPercent(previousOpeningQuality.percent),
+          insight:
+            currentOpeningQuality.percent !== null &&
+            previousOpeningQuality.percent !== null
+              ? currentOpeningQuality.percent > previousOpeningQuality.percent
+                ? "Better"
+                : currentOpeningQuality.percent < previousOpeningQuality.percent
+                  ? "Worse"
+                  : "Stable"
+              : "Too early",
+          tone:
+            currentOpeningQuality.percent !== null &&
+            previousOpeningQuality.percent !== null &&
+            currentOpeningQuality.percent > previousOpeningQuality.percent
+              ? "emerald"
+              : currentOpeningQuality.percent !== null &&
+                  previousOpeningQuality.percent !== null &&
+                  currentOpeningQuality.percent < previousOpeningQuality.percent
+                ? "rose"
+                : "blue",
+        },
+        {
+          label: "Sequencing",
+          current: formatPercent(currentSequencingQuality.percent),
+          previous: formatPercent(previousSequencingQuality.percent),
+          insight:
+            currentSequencingQuality.percent !== null &&
+            previousSequencingQuality.percent !== null
+              ? currentSequencingQuality.percent > previousSequencingQuality.percent
+                ? "Better"
+                : currentSequencingQuality.percent < previousSequencingQuality.percent
+                  ? "Worse"
+                  : "Stable"
+              : "Too early",
+          tone:
+            currentSequencingQuality.percent !== null &&
+            previousSequencingQuality.percent !== null &&
+            currentSequencingQuality.percent > previousSequencingQuality.percent
+              ? "emerald"
+              : currentSequencingQuality.percent !== null &&
+                  previousSequencingQuality.percent !== null &&
+                  currentSequencingQuality.percent < previousSequencingQuality.percent
+                ? "rose"
+                : "blue",
+        },
+        {
+          label: "Going first",
+          current: formatPercent(currentGoingFirst.winRate),
+          previous: formatPercent(previousGoingFirst.winRate),
+          insight:
+            currentGoingFirst.total >= 2 && previousGoingFirst.total >= 2
+              ? currentGoingFirst.winRate !== null &&
+                previousGoingFirst.winRate !== null &&
+                currentGoingFirst.winRate > previousGoingFirst.winRate
+                ? "Stronger"
+                : currentGoingFirst.winRate !== null &&
+                    previousGoingFirst.winRate !== null &&
+                    currentGoingFirst.winRate < previousGoingFirst.winRate
+                  ? "Softer"
+                  : "Stable"
+              : "Thin sample",
+          tone:
+            currentGoingFirst.total >= 2 &&
+            previousGoingFirst.total >= 2 &&
+            currentGoingFirst.winRate !== null &&
+            previousGoingFirst.winRate !== null &&
+            currentGoingFirst.winRate > previousGoingFirst.winRate
+              ? "emerald"
+              : currentGoingFirst.total >= 2 &&
+                  previousGoingFirst.total >= 2 &&
+                  currentGoingFirst.winRate !== null &&
+                  previousGoingFirst.winRate !== null &&
+                  currentGoingFirst.winRate < previousGoingFirst.winRate
+                ? "rose"
+                : "blue",
+        },
+        {
+          label: "Going second",
+          current: formatPercent(currentGoingSecond.winRate),
+          previous: formatPercent(previousGoingSecond.winRate),
+          insight:
+            currentGoingSecond.total >= 2 && previousGoingSecond.total >= 2
+              ? currentGoingSecond.winRate !== null &&
+                previousGoingSecond.winRate !== null &&
+                currentGoingSecond.winRate > previousGoingSecond.winRate
+                ? "Holding better"
+                : currentGoingSecond.winRate !== null &&
+                    previousGoingSecond.winRate !== null &&
+                    currentGoingSecond.winRate < previousGoingSecond.winRate
+                  ? "Still weak"
+                  : "Stable"
+              : "Thin sample",
+          tone:
+            currentGoingSecond.total >= 2 &&
+            previousGoingSecond.total >= 2 &&
+            currentGoingSecond.winRate !== null &&
+            previousGoingSecond.winRate !== null &&
+            currentGoingSecond.winRate > previousGoingSecond.winRate
+              ? "emerald"
+              : currentGoingSecond.total >= 2 &&
+                  previousGoingSecond.total >= 2 &&
+                  currentGoingSecond.winRate !== null &&
+                  previousGoingSecond.winRate !== null &&
+                  currentGoingSecond.winRate < previousGoingSecond.winRate
+                ? "rose"
+                : "blue",
+        },
+        {
+          label: "Main loss issue",
+          current: formatLossTag(repeatedLossTag),
+          previous: formatLossTag(previousRepeatedLossTag),
+          insight: repeatedLossTag ? "Watch this" : "No repeat yet",
+          tone: repeatedLossTag ? "rose" : "blue",
+        },
+      ]
+    : [];
 
   const currentArchetypeNormalized = normalizeText(deckArchetype);
   const watchlistSource = Array.from(
@@ -532,9 +883,18 @@ export function buildDeckLabSummary({
     counts.set(key, (counts.get(key) ?? 0) + 1);
     return counts;
   }, new Map<string, number>());
-  const metaWatchlist = watchlistSource.map((archetype) => {
+  const now = Date.now();
+  const metaWatchlist = watchlistSource.map((archetype, index) => {
     const count = opponentCounts.get(normalizeText(archetype)) ?? 0;
     const status = getMetaWatchStatus(count);
+    const priority = getMetaWatchPriority(count, index);
+    const seenRecently = currentMatches.some((match) => {
+      if (normalizeText(match.opponent_archetype) !== normalizeText(archetype)) {
+        return false;
+      }
+
+      return now - new Date(match.played_at).getTime() <= 1000 * 60 * 60 * 24 * 14;
+    });
 
     return {
       archetype,
@@ -542,6 +902,9 @@ export function buildDeckLabSummary({
       status: status.status,
       statusLabel: status.label,
       tone: status.tone,
+      priorityLabel: priority.label,
+      priorityTone: priority.tone,
+      recentLabel: seenRecently ? "Seen recently" : "No recent games",
     };
   });
 
@@ -592,7 +955,11 @@ export function buildDeckLabSummary({
     versionReadLabel: versionReadMeta.label,
     versionReadTone: versionReadMeta.tone,
     versionReadSummary,
+    versionConclusion,
+    nextObservation,
     sampleCaution: versionReadMeta.caution,
+    changedTooSoonWarning,
+    comparisonRows,
     improvements: improvements.slice(0, 3),
     regressions: regressions.slice(0, 3),
     cleanLogCount,
@@ -603,6 +970,8 @@ export function buildDeckLabSummary({
     versionPatienceLabel,
     versionPatienceTone,
     versionPatienceSummary,
+    disciplineHabits,
+    logQualityCallout,
     metaWatchlist,
     recommendation,
   };
