@@ -59,6 +59,14 @@ test.describe("mobile layout", () => {
           await expect(page.getByRole("button", { name: "Sign out" })).toBeVisible();
           await expect(page.locator("body")).toContainText(/Next best action|Current focus/i);
         }
+        if (route.path === "/matches/new") {
+          await expect(page.locator("body")).toContainText(/Active test/i);
+          await expect(page.locator("body")).toContainText(/Quick log/i);
+          await expect(page.getByLabel("Opponent deck")).toBeVisible();
+          await expect(
+            page.getByRole("button", { name: /Continue|Save now|Save game/i }).first()
+          ).toBeVisible();
+        }
         await expect(page.getByLabel("Email")).toHaveCount(0);
         await expectNoAppError(page);
         await expectNoHorizontalOverflow(page);

@@ -96,7 +96,7 @@ const sessionKeys = {
   tcgLivePlayerName: "tcgtracker.matchLog.tcgLivePlayerName",
 };
 
-const subCardClass = `${premiumTile} p-2.5 sm:p-3`;
+const subCardClass = `${premiumTile} min-w-0 p-2.5 sm:p-3`;
 
 const largeToggleClass =
   "group relative flex min-h-12 w-full min-w-0 items-center justify-center overflow-hidden rounded-xl border border-[#23314A] bg-[linear-gradient(180deg,rgba(11,16,32,0.96),rgba(7,17,31,0.88))] px-3 text-center text-sm font-semibold text-[#D7E0EF] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-transform transition-colors duration-150 ease-out hover:-translate-y-0.5 hover:border-[#35507D] hover:bg-[#0D1830] hover:text-[#F8FAFC] hover:shadow-[0_12px_24px_rgba(0,0,0,0.18),inset_0_0_0_1px_rgba(79,140,255,0.12)] active:translate-y-0 active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C84C]/65 focus-visible:ring-offset-2 focus-visible:ring-offset-[#07111F] sm:min-h-14 sm:rounded-2xl sm:text-base";
@@ -1180,10 +1180,10 @@ export function MatchLogForm({
   );
 
   return (
-    <div className="mt-5 grid gap-4">
+    <div className="mt-5 grid min-w-0 gap-4">
       <form
         action={formAction}
-      className={`w-full max-w-full min-w-0 overflow-x-hidden p-2.5 sm:p-5 ${glassPanelStrong}`}
+        className={`w-full max-w-full min-w-0 overflow-x-hidden p-2.5 sm:p-5 ${glassPanelStrong}`}
       >
         <input type="hidden" name="deck_version_id" value={deckVersionId} />
         <input
@@ -1450,10 +1450,10 @@ export function MatchLogForm({
           ) : null}
 
           {!wasSuccessful ? (
-            <div className="grid gap-3.5 sm:gap-4">
-              <section className="rounded-[22px] bg-[linear-gradient(180deg,rgba(14,24,42,0.94),rgba(8,17,31,0.90))] p-3.5 shadow-[0_18px_36px_rgba(0,0,0,0.18),inset_0_0_0_1px_rgba(148,163,184,0.10)] sm:p-4">
+            <div className="grid min-w-0 gap-3.5 sm:gap-4">
+              <section className="min-w-0 rounded-[22px] bg-[linear-gradient(180deg,rgba(14,24,42,0.94),rgba(8,17,31,0.90))] p-3.5 shadow-[0_18px_36px_rgba(0,0,0,0.18),inset_0_0_0_1px_rgba(148,163,184,0.10)] sm:p-4">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex min-w-0 items-center gap-3">
+                  <div className="flex min-w-0 items-center gap-3 overflow-hidden">
                     <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[20px] bg-[radial-gradient(circle_at_top,rgba(79,140,255,0.20),rgba(11,16,32,0.92))] shadow-[0_18px_32px_rgba(0,0,0,0.24),inset_0_0_0_1px_rgba(79,140,255,0.16)] sm:h-[72px] sm:w-[72px]">
                       <ArchetypeSprites
                         archetype={selectedDeckSuggestion || selectedDeckArchetype}
@@ -1476,10 +1476,10 @@ export function MatchLogForm({
                       </p>
                     </div>
                   </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="rounded-full bg-[#07111F]/58 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]">
-                      Step {currentStep + 1} of {stepOrder.length}
-                    </span>
+                    <div className="flex min-w-0 flex-wrap items-center gap-2">
+                      <span className="rounded-full bg-[#07111F]/58 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]">
+                        Step {currentStep + 1} of {stepOrder.length}
+                      </span>
                     <span className="rounded-full bg-[#4F8CFF]/12 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.18)]">
                       {stepOrder[currentStep]?.label}
                     </span>
@@ -1487,9 +1487,9 @@ export function MatchLogForm({
                 </div>
               </section>
 
-              <div className="grid gap-3.5 sm:gap-4 xl:grid-cols-[minmax(0,1fr)_240px]">
-                <div className="grid gap-3.5 sm:gap-4">
-                  <section className="rounded-[18px] bg-[#07111F]/30 p-3 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.10)] sm:p-3.5">
+              <div className="grid min-w-0 gap-3.5 sm:gap-4 xl:grid-cols-[minmax(0,1fr)_240px]">
+                <div className="grid min-w-0 gap-3.5 sm:gap-4">
+                  <section className="min-w-0 rounded-[18px] bg-[#07111F]/30 p-3 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.10)] sm:p-3.5">
                     <div className="flex flex-col gap-2">
                       <div className="flex items-center justify-between gap-3">
                         <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
@@ -1505,7 +1505,7 @@ export function MatchLogForm({
                           style={{ width: `${progressPercent}%` }}
                         />
                       </div>
-                      <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+                      <div className="grid grid-cols-2 gap-2 sm:grid-cols-6">
                         {stepOrder.map((step, index) => {
                           const isCurrent = index === currentStep;
                           const isDone = index < currentStep;
@@ -1519,7 +1519,7 @@ export function MatchLogForm({
                                   setCurrentStep(index);
                                 }
                               }}
-                              className={`rounded-xl px-2 py-2 text-left transition-colors ${
+                              className={`min-w-0 rounded-xl px-2 py-2 text-left transition-colors ${
                                 isCurrent
                                   ? "bg-[#4F8CFF]/16 text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.22)]"
                                   : isDone
@@ -1530,7 +1530,7 @@ export function MatchLogForm({
                               <span className="block text-[11px] font-bold">
                                 {step.shortLabel}
                               </span>
-                              <span className="mt-1 block text-xs font-semibold leading-4">
+                              <span className="mt-1 block text-xs font-semibold leading-4 break-words">
                                 {step.label}
                               </span>
                             </button>
@@ -1540,13 +1540,13 @@ export function MatchLogForm({
                     </div>
                   </section>
 
-                  <section className="rounded-[18px] bg-[#07111F]/30 p-3 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.10)] sm:p-3.5">
+                  <section className="min-w-0 rounded-[18px] bg-[#07111F]/30 p-3 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.10)] sm:p-3.5">
                     <button
                       type="button"
                       onClick={() => setImportExpanded((current) => !current)}
-                      className="flex w-full items-center justify-between gap-3 text-left"
+                      className="flex w-full min-w-0 items-center justify-between gap-3 text-left"
                     >
-                      <div>
+                      <div className="min-w-0">
                         <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
                           Import from TCG Live log
                         </p>
@@ -1554,13 +1554,13 @@ export function MatchLogForm({
                           Paste a battle log to prefill result, turn order, and opponent deck when possible.
                         </p>
                       </div>
-                      <span className="rounded-full bg-[#0B1020]/66 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]">
+                      <span className="shrink-0 rounded-full bg-[#0B1020]/66 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]">
                         {importExpanded ? "Hide" : "Open"}
                       </span>
                     </button>
 
                     {importExpanded ? (
-                      <div className="mt-3.5 grid gap-3">
+                      <div className="mt-3.5 grid min-w-0 gap-3">
                         <div className={`grid gap-2.5 p-3 ${premiumInset}`}>
                           <label htmlFor="tcg_live_player_name" className={label}>
                             Your TCG Live name
@@ -1604,7 +1604,7 @@ export function MatchLogForm({
                             }}
                             rows={7}
                             placeholder="Paste a TCG Live battle log"
-                            className={`${textarea} min-h-[180px] w-full`}
+                            className={`${textarea} min-h-[180px] w-full max-w-full min-w-0`}
                           />
                         </div>
                         <div className="flex flex-col gap-2 sm:flex-row">
@@ -1639,7 +1639,7 @@ export function MatchLogForm({
                     ) : null}
                   </section>
 
-                  <section className="rounded-xl bg-[#07111F]/36 p-3.5 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.12)] sm:p-5">
+                  <section className="min-w-0 rounded-xl bg-[#07111F]/36 p-3.5 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.12)] sm:p-5">
                     <div className="flex items-center justify-between gap-3">
                       <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
                         Current step
@@ -1649,7 +1649,7 @@ export function MatchLogForm({
                       </p>
                     </div>
 
-                    <div className="mt-3.5 rounded-xl bg-[#0B1020]/52 p-3.5 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)] sm:mt-4 sm:p-4">
+                    <div className="mt-3.5 min-w-0 rounded-xl bg-[#0B1020]/52 p-3.5 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)] sm:mt-4 sm:p-4">
                   {currentStep === 0 ? (
                     <div className="grid gap-3.5 sm:gap-4">
                       <div>
@@ -1665,7 +1665,7 @@ export function MatchLogForm({
                       </div>
 
                       <div className={subCardClass}>
-                        <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
+                        <div className="flex min-w-0 flex-col items-start gap-3 sm:flex-row sm:items-start sm:justify-between">
                           <div className="min-w-0 flex-1">
                             <p className="text-xs font-medium uppercase tracking-[0.08em] text-[#94A3B8]/72">
                               Your deck
@@ -1690,7 +1690,7 @@ export function MatchLogForm({
                           <button
                             type="button"
                             onClick={() => setIsChangingDeck((current) => !current)}
-                            className="rounded-md bg-[#4F8CFF]/10 px-3 py-2 text-xs font-semibold text-[#F8FAFC] transition hover:bg-[#4F8CFF]/16 active:scale-[0.98]"
+                            className="w-full rounded-md bg-[#4F8CFF]/10 px-3 py-2 text-xs font-semibold text-[#F8FAFC] transition hover:bg-[#4F8CFF]/16 active:scale-[0.98] sm:w-auto"
                           >
                             {isChangingDeck ? "Done" : "Change deck"}
                           </button>
