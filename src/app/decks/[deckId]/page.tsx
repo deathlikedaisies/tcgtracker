@@ -351,6 +351,74 @@ export default async function DeckDetailPage({
     activeVersionId: activeVersion?.id ?? null,
     matches: normalizedMatchRows,
   });
+  const showVersionComparison = Boolean(
+    deckLab.previousVersionName && deckLab.comparisonRows.length
+  );
+  const deckLabVisibleSignal =
+    deckLab.regressions[0] ?? deckLab.improvements[0] ?? null;
+  const visibleDisciplineHabits = (() => {
+    const warningHabit = deckLab.disciplineHabits.find(
+      (habit) => habit.tone === "gold" || habit.tone === "rose"
+    );
+    const positiveHabit = deckLab.disciplineHabits.find(
+      (habit) => habit.tone === "emerald"
+    );
+    const sampleHabit =
+      deckLab.disciplineHabits.find((habit) => habit.label === "Sample builder") ??
+      deckLab.disciplineHabits.find((habit) => habit.label === "Version discipline") ??
+      null;
+
+    return [warningHabit, positiveHabit, sampleHabit]
+      .filter((habit, index, habits): habit is NonNullable<typeof habit> =>
+        Boolean(habit) && habits.findIndex((candidate) => candidate?.label === habit?.label) === index
+      )
+      .slice(0, 3);
+  })();
+  const hiddenHabitCount = Math.max(
+    deckLab.disciplineHabits.length - visibleDisciplineHabits.length,
+    0
+  );
+  const formatDisciplineHabit = (label: string, statusLabel: string) => {
+    if (label === "Clean logger") {
+      return statusLabel;
+    }
+
+    if (label === "Sample builder") {
+      return statusLabel;
+    }
+
+    if (label === "Version discipline") {
+      return statusLabel === "Patient testing" ? "Version discipline" : statusLabel;
+    }
+
+    if (label === "Going-second tracker") {
+      return statusLabel === "Needs more data" ? "Going second: thin" : "Going second ready";
+    }
+
+    if (label === "Meta watcher") {
+      return statusLabel === "Coverage building" ? "Meta coverage" : "Watchlist thin";
+    }
+
+    return statusLabel;
+  };
+  const getMetaRowChip = (item: (typeof deckLab.metaWatchlist)[number]) => {
+    if (item.count >= 5) {
+      return { label: "Enough for now", tone: "emerald" as const };
+    }
+
+    if (item.count === 0) {
+      return { label: "High priority", tone: "gold" as const };
+    }
+
+    if (item.count <= 2) {
+      return {
+        label: item.priorityLabel === "High priority" ? "High priority" : "Needs more",
+        tone: item.priorityLabel === "High priority" ? ("gold" as const) : ("blue" as const),
+      };
+    }
+
+    return { label: "Watch", tone: "blue" as const };
+  };
   const activeVersionName = activeVersion
     ? safeText(activeVersion.name, "Untitled version")
     : "No active version";
@@ -641,7 +709,11 @@ export default async function DeckDetailPage({
               </span>
             </div>
 
-            <div className="mt-4 grid gap-4 xl:grid-cols-2">
+            <div
+              className={`mt-4 grid gap-4 ${
+                showVersionComparison ? "xl:grid-cols-2" : "xl:grid-cols-3"
+              }`}
+            >
               <article className={`${premiumInset} min-w-0 p-4`}>
                 <div className="flex flex-wrap items-center gap-2">
                   <p className="text-sm font-semibold text-[#F8FAFC]">Version read</p>
@@ -684,28 +756,15 @@ export default async function DeckDetailPage({
                     {deckLab.changedTooSoonWarning}
                   </p>
                 ) : null}
-                {deckLab.improvements.length || deckLab.regressions.length ? (
+                {deckLabVisibleSignal ? (
                   <div className="mt-3 flex flex-wrap gap-2">
-                    {deckLab.improvements.map((signal) => (
-                      <span
-                        key={signal.label}
-                        className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${getDeckLabToneClasses(
-                          signal.tone
-                        )}`}
-                      >
-                        {signal.label}
-                      </span>
-                    ))}
-                    {deckLab.regressions.map((signal) => (
-                      <span
-                        key={signal.label}
-                        className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${getDeckLabToneClasses(
-                          signal.tone
-                        )}`}
-                      >
-                        {signal.label}
-                      </span>
-                    ))}
+                    <span
+                      className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${getDeckLabToneClasses(
+                        deckLabVisibleSignal.tone
+                      )}`}
+                    >
+                      {deckLabVisibleSignal.label}
+                    </span>
                   </div>
                 ) : null}
                 <div className={`${statCard} mt-3 p-3`}>
@@ -721,18 +780,16 @@ export default async function DeckDetailPage({
                 </p>
               </article>
 
-              <article className={`${premiumInset} min-w-0 p-4`}>
-                <div className="flex flex-wrap items-center gap-2">
-                  <p className="text-sm font-semibold text-[#F8FAFC]">
-                    Version comparison
-                  </p>
-                  {deckLab.previousVersionName ? (
+              {showVersionComparison ? (
+                <article className={`${premiumInset} min-w-0 p-4`}>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-sm font-semibold text-[#F8FAFC]">
+                      Version comparison
+                    </p>
                     <span className="rounded-full bg-[#0B1020]/62 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]">
                       {deckLab.activeVersionName} vs {deckLab.previousVersionName}
                     </span>
-                  ) : null}
-                </div>
-                {deckLab.comparisonRows.length ? (
+                  </div>
                   <div className="mt-3 grid gap-2">
                     {deckLab.comparisonRows.map((row) => (
                       <div
@@ -758,14 +815,8 @@ export default async function DeckDetailPage({
                       </div>
                     ))}
                   </div>
-                ) : (
-                  <p className="mt-3 text-sm leading-6 text-[#94A3B8]/72">
-                    {deckLab.versionReadStatus === "baseline_ready"
-                      ? "This baseline is ready for future version comparisons."
-                      : "Add another version and build samples on both lists before expecting a clean compare."}
-                  </p>
-                )}
-              </article>
+                </article>
+              ) : null}
 
               <article className={`${premiumInset} min-w-0 p-4`}>
                 <div className="flex flex-wrap items-center gap-2">
@@ -805,17 +856,22 @@ export default async function DeckDetailPage({
                   </div>
                 </div>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  {deckLab.disciplineHabits.map((habit) => (
+                  {visibleDisciplineHabits.map((habit) => (
                     <span
                       key={habit.label}
                       className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${getDeckLabToneClasses(
                         habit.tone
                       )}`}
                     >
-                      {habit.label}: {habit.statusLabel}
+                      {formatDisciplineHabit(habit.label, habit.statusLabel)}
                     </span>
                   ))}
                 </div>
+                {hiddenHabitCount > 0 ? (
+                  <p className="mt-2 text-[11px] text-[#94A3B8]/72">
+                    +{hiddenHabitCount} more habit{hiddenHabitCount === 1 ? "" : "s"}
+                  </p>
+                ) : null}
                 <p className="mt-3 text-sm leading-6 text-[#D6E0F0]/86">
                   {deckLab.versionPatienceSummary}
                 </p>
@@ -854,22 +910,18 @@ export default async function DeckDetailPage({
                           {item.count === 1 ? "1 game" : `${item.count} games`} · {item.recentLabel}
                         </p>
                       </div>
-                      <div className="flex shrink-0 flex-col items-end gap-2">
-                        <span
-                          className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${getDeckLabToneClasses(
-                            item.priorityTone
-                          )}`}
-                        >
-                          {item.priorityLabel}
-                        </span>
-                        <span
-                          className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${getDeckLabToneClasses(
-                            item.tone
-                          )}`}
-                        >
-                          {item.statusLabel}
-                        </span>
-                      </div>
+                      {(() => {
+                        const rowChip = getMetaRowChip(item);
+                        return (
+                          <span
+                            className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${getDeckLabToneClasses(
+                              rowChip.tone
+                            )}`}
+                          >
+                            {rowChip.label}
+                          </span>
+                        );
+                      })()}
                     </div>
                   ))}
                 </div>
