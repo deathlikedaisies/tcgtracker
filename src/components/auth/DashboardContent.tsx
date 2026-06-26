@@ -609,14 +609,14 @@ function CurrentDeckSummaryCard({
   const subtitle = isAllDecks
     ? "Combined testing scope"
     : archetype?.trim() || "Archetype not set yet";
-  const detail = isAllDecks
-    ? "Overview is combining logs across all decks because no single current deck is selected."
-    : versionName
-      ? `Testing: ${versionName}`
+  const detail = versionName
+    ? `Testing: ${versionName}`
+    : isAllDecks
+      ? "Review all active logs together."
       : "Add or activate a version to keep this deck focused.";
 
   return (
-    <section className={`${glassPanel} p-3.5 sm:p-4`}>
+    <section className={`${glassPanel} overflow-hidden p-3.5 sm:p-4`}>
       <div className="flex items-center justify-between gap-3">
         <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
           {isAllDecks ? "Combined scope" : "Current test deck"}
@@ -626,16 +626,18 @@ function CurrentDeckSummaryCard({
         </span>
       </div>
 
-      <div className="mt-3 flex items-center gap-3">
-        <span className="inline-flex shrink-0 rounded-[18px] bg-[radial-gradient(circle_at_top,rgba(79,140,255,0.18),rgba(11,16,32,0.12)_62%,transparent_100%)] p-2.5 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]">
+      <div className="mt-3 flex items-center gap-4">
+        <span className="inline-flex shrink-0 rounded-[20px] bg-[radial-gradient(circle_at_top,rgba(79,140,255,0.28),rgba(11,16,32,0.16)_62%,transparent_100%)] p-3 shadow-[0_16px_34px_rgba(0,0,0,0.20),inset_0_0_0_1px_rgba(148,163,184,0.10)]">
           <ArchetypeSprites
             archetype={isAllDecks ? null : archetype}
             size="lg"
+            variant="bare"
             className="shrink-0"
+            imageClassName="scale-[1.08]"
           />
         </span>
         <div className="min-w-0">
-          <h2 className="text-lg font-semibold tracking-tight text-[#F8FAFC]">
+          <h2 className="text-lg font-semibold tracking-tight text-[#F8FAFC] sm:text-[1.15rem]">
             {title}
           </h2>
           <p className="mt-1 text-sm font-medium text-[#D6E0F0]/84">
@@ -879,9 +881,6 @@ export function DashboardContent({
   const scopeLabel = currentDeckName
     ? `Showing insights for: ${currentDeckName}`
     : "Showing combined insights across all decks";
-  const scopeDescription = currentDeckName
-    ? "Overview follows your current deck by default so older list experiments do not pollute the read."
-    : "No current deck is pinned, so this overview is combining logs across all decks.";
 
   return (
     <main className={appShell}>
@@ -915,9 +914,6 @@ export function DashboardContent({
                       </p>
                       <p className="mt-1 text-sm font-semibold text-[#F8FAFC]">
                         {scopeLabel}
-                      </p>
-                      <p className="mt-1 text-sm leading-5 text-[#94A3B8]/72">
-                        {scopeDescription}
                       </p>
                     </div>
                     {!currentDeckId ? (
@@ -1008,10 +1004,6 @@ export function DashboardContent({
                         </p>
                       </div>
                       <div className="flex flex-col gap-2 sm:flex-row">
-                        <Link href={nextAction.href} className={`${primaryButton} h-11`}>
-                          {nextAction.title}
-                          <ArrowRight className="ml-2 size-4" aria-hidden="true" />
-                        </Link>
                         <Link href={reviewHref} className={`${secondaryButton} h-11`}>
                           Open review
                         </Link>
