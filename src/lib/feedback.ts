@@ -11,7 +11,7 @@ export const FEEDBACK_TYPES = [
 export const FEEDBACK_PAGE_AREAS = [
   "Dashboard",
   "Log game",
-  "Logs",
+  "Match history",
   "Decks",
   "Matchups",
   "Review",

@@ -19,7 +19,7 @@ const authenticatedRoutes = [
   { path: "/dashboard", heading: "Overview" },
   { path: "/matches/new", heading: "Log a game" },
   { path: "/review", heading: "Review" },
-  { path: "/matches", heading: "Matches" },
+  { path: "/matches", heading: "Match history" },
   { path: "/decks", heading: "Deck Experiments" },
   { path: "/matchups", heading: "Matchup Intelligence" },
   { path: "/profile", heading: /Profile|Create your profile/i },

@@ -43,7 +43,7 @@ const navItems = [
   { href: "/dashboard", label: "Overview", section: "dashboard" as const, icon: Gauge },
   { href: "/matches/new", label: "Log game", section: "log" as const, icon: PlusCircle },
   { href: "/review", label: "Review", section: "review" as const, icon: Target },
-  { href: "/matches", label: "Logs", section: "matches" as const, icon: ClipboardList },
+  { href: "/matches", label: "Match history", section: "matches" as const, icon: ClipboardList },
   { href: "/decks", label: "Decks", section: "decks" as const, icon: Layers3 },
   { href: "/matchups", label: "Matchups", section: "matchups" as const, icon: BarChart3 },
   { href: "/profile", label: "Profile", section: "settings" as const, icon: Settings2 },
@@ -77,13 +77,21 @@ export function AppSidebar({ current, deckLabel, insight }: AppSidebarProps) {
           {navItems.map((item) => {
             const Icon = item.icon;
             const active = item.section === current;
+            const isLogAction = item.section === "log";
+            const className = active
+              ? isLogAction
+                ? "inline-flex h-11 items-center gap-3 rounded-[14px] bg-[linear-gradient(180deg,#F7D365,#F5C84C)] px-3 text-sm font-semibold text-[#07111F] shadow-[0_12px_24px_rgba(245,200,76,0.18),inset_0_1px_0_rgba(255,255,255,0.32),0_0_0_1px_rgba(245,200,76,0.18)]"
+                : navItemActive
+              : isLogAction
+                ? "inline-flex h-11 items-center gap-3 rounded-[14px] bg-[linear-gradient(180deg,#F7D365,#F5C84C)] px-3 text-sm font-semibold text-[#07111F] shadow-[0_10px_22px_rgba(245,200,76,0.16),inset_0_1px_0_rgba(255,255,255,0.28)] transition-transform transition-colors hover:-translate-y-0.5 hover:bg-[linear-gradient(180deg,#ffe082,#f6cf59)] hover:shadow-[0_18px_34px_rgba(245,200,76,0.24),inset_0_1px_0_rgba(255,255,255,0.32)]"
+                : navItem;
 
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 aria-current={active ? "page" : undefined}
-                className={active ? navItemActive : navItem}
+                className={className}
               >
                 <Icon className="size-4 shrink-0" aria-hidden="true" />
                 {item.label}

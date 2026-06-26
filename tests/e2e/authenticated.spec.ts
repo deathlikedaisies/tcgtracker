@@ -10,7 +10,7 @@ const authRoutes = [
   { path: "/dashboard", heading: "Overview" },
   { path: "/matches/new", heading: "Log a game" },
   { path: "/review", heading: "Review" },
-  { path: "/matches", heading: "Matches" },
+  { path: "/matches", heading: "Match history" },
   { path: "/decks", heading: "Deck Experiments" },
   { path: "/matchups", heading: "Matchup Intelligence" },
   { path: "/profile", heading: /Profile|Create your profile/i },
@@ -274,6 +274,12 @@ test.describe("authenticated routes", () => {
       await expectHeadingVisible(page, route.heading);
       await expect(page.locator("body")).toContainText("SixPrizer");
       await expect(page.getByRole("link", { name: "Decks" }).first()).toBeVisible();
+      await expect(
+        page.getByRole("link", { name: /^Match history$/ }).first()
+      ).toBeVisible();
+      await expect(
+        page.getByRole("link", { name: /^Log game$/ }).first()
+      ).toBeVisible();
       await expect(page.getByLabel("Email")).toHaveCount(0);
       await expectNoAppError(page);
     });
@@ -562,6 +568,11 @@ test.describe("authenticated routes", () => {
   test("/dashboard stays focused on next action and review CTA", async ({ page }) => {
     await page.goto("/dashboard");
 
+    await expect(page.getByRole("link", { name: /^Log game$/ }).first()).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: /^Match history$/ }).first()
+    ).toBeVisible();
+    await expect(page.locator("body")).not.toContainText(/^Logs$/m);
     await expect(page.locator("body")).toContainText(/Next best action|Current focus/i);
     await expect(page.locator("body")).toContainText(
       /Showing insights for this deck|Showing combined insights across all decks/i

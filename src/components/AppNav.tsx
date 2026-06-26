@@ -21,10 +21,10 @@ const navItems: {
   mobileLabel: string;
   section: AppNavSection;
 }[] = [
-  { href: "/dashboard", label: "Home", mobileLabel: "Home", section: "dashboard" },
-  { href: "/matches/new", label: "Log", mobileLabel: "Log", section: "log" },
+  { href: "/dashboard", label: "Overview", mobileLabel: "Overview", section: "dashboard" },
+  { href: "/matches/new", label: "Log game", mobileLabel: "Log game", section: "log" },
   { href: "/review", label: "Review", mobileLabel: "Review", section: "review" },
-  { href: "/matches", label: "Logs", mobileLabel: "Logs", section: "matches" },
+  { href: "/matches", label: "Match history", mobileLabel: "Match history", section: "matches" },
   { href: "/decks", label: "Decks", mobileLabel: "Decks", section: "decks" },
   { href: "/matchups", label: "Matchups", mobileLabel: "Matchups", section: "matchups" },
   { href: "/profile", label: "Profile", mobileLabel: "Profile", section: "settings" },

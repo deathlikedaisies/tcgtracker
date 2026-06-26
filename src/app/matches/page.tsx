@@ -366,7 +366,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
         <div className={`${appMain} mx-auto w-full max-w-7xl`}>
         <AuthenticatedPageHeader
           current="matches"
-          title="Matches"
+          title="Match history"
           subtitle="Browse, filter, edit, and remove logged matches."
           userEmail={user.email ?? "Unknown email"}
         />
