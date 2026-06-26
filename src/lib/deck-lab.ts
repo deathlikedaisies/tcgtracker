@@ -60,6 +60,8 @@ export type DeckLabSummary = {
   previousSampleSize: number;
   currentVersionSampleDisplay: string;
   currentVersionSampleSummary: string;
+  cleanLogDisplay: string;
+  cleanLogSummary: string;
   versionReadStatus: DeckLabVersionReadStatus;
   versionReadLabel: string;
   versionReadTone: DeckLabStatusTone;
@@ -206,7 +208,7 @@ function getVersionReadMeta(
         status: "baseline_ready" as const,
         label: "Baseline ready",
         tone: "emerald" as const,
-        caution: "You have a usable baseline for future version tests.",
+        caution: "Future versions can now be compared against this sample.",
       };
     }
 
@@ -502,6 +504,13 @@ export function buildDeckLabSummary({
       : currentSampleSize >= currentVersionTarget
         ? "Target reached."
         : "Keep testing before changing the list.";
+  const cleanLogDisplay = `${cleanLogCount} of ${currentSampleSize}`;
+  const cleanLogSummary =
+    cleanLogStreak > 0
+      ? `${cleanLogStreak}-game clean streak`
+      : currentSampleSize > 0
+        ? `${currentSampleSize} total games`
+        : "Start a clean-log streak";
 
   const currentArchetypeNormalized = normalizeText(deckArchetype);
   const watchlistSource = Array.from(
@@ -543,7 +552,7 @@ export function buildDeckLabSummary({
     if (!previousVersion) {
       return remainingToTarget > 0
         ? `Log ${remainingToTarget} more game${remainingToTarget === 1 ? "" : "s"} before making your first change.`
-        : "You have a usable baseline. Create a new version when you have a specific list change to test.";
+        : "Create a new version when you have a specific list change to test.";
     }
 
     if (currentSampleSize < 5 || previousSampleSize < 5) {
@@ -577,6 +586,8 @@ export function buildDeckLabSummary({
     previousSampleSize,
     currentVersionSampleDisplay,
     currentVersionSampleSummary,
+    cleanLogDisplay,
+    cleanLogSummary,
     versionReadStatus: versionReadMeta.status,
     versionReadLabel: versionReadMeta.label,
     versionReadTone: versionReadMeta.tone,

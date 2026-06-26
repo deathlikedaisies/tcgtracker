@@ -325,11 +325,16 @@ test.describe("deck lab summary", () => {
     expect(summary.versionReadLabel).toBe("Baseline ready");
     expect(summary.currentVersionSampleDisplay).toBe("20 games");
     expect(summary.currentVersionSampleSummary).toBe("Baseline ready.");
+    expect(summary.cleanLogDisplay).toBe("20 of 20");
+    expect(summary.cleanLogSummary).toBe("20-game clean streak");
     expect(summary.versionReadSummary).toMatch(/enough games to use as a baseline/i);
     expect(summary.versionPatienceSummary).toMatch(
       /Good baseline\. Future versions can be compared against this sample\./i
     );
-    expect(summary.recommendation).toMatch(/usable baseline/i);
+    expect(summary.sampleCaution).toMatch(/Future versions can now be compared against this sample\./i);
+    expect(summary.recommendation).toBe(
+      "Create a new version when you have a specific list change to test."
+    );
     expect(summary.versionReadSummary).not.toMatch(/build a clean sample/i);
     expect(summary.versionPatienceSummary).not.toMatch(/keep testing before changing the list/i);
   });

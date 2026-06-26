@@ -735,12 +735,10 @@ export default async function DeckDetailPage({
                       Clean logs
                     </p>
                     <p className="mt-2 text-lg font-semibold text-[#F8FAFC]">
-                      {deckLab.cleanLogCount}/{deckLab.cleanLogTotal || 0}
+                      {deckLab.cleanLogDisplay}
                     </p>
                     <p className="mt-1 text-[11px] text-[#94A3B8]/72">
-                      {deckLab.cleanLogStreak > 0
-                        ? `${deckLab.cleanLogStreak} straight clean logs`
-                        : "Start a clean-log streak"}
+                      {deckLab.cleanLogSummary}
                     </p>
                   </div>
                 </div>
