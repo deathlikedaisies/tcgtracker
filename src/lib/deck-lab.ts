@@ -447,7 +447,7 @@ export function buildDeckLabSummary({
   if (repeatedLossTag) {
     pushSignal(
       regressions,
-      `"${repeatedLossTag.tag}" keeps showing up in losses`,
+      `Watch ${repeatedLossTag.tag.toLowerCase()} losses`,
       "rose"
     );
   }
@@ -570,7 +570,7 @@ export function buildDeckLabSummary({
   const incompleteLogCount = Math.max(currentSampleSize - cleanLogCount, 0);
   const logQualityCallout =
     incompleteLogCount >= 2
-      ? "Some games are missing quality or reason details, so Deck Lab has less to work with."
+      ? "Some logs are missing quality or reason details."
       : null;
   const versionConclusion = (() => {
     if (!previousVersion) {

@@ -591,9 +591,9 @@ test.describe("deck lab summary", () => {
       ],
     });
 
-    expect(summary.logQualityCallout).toMatch(/missing quality or reason details/i);
+    expect(summary.logQualityCallout).toMatch(/Some logs are missing quality or reason details\./i);
     expect(summary.disciplineHabits.some((habit) => habit.label === "Clean logger")).toBe(true);
-    expect(summary.metaWatchlist[0]?.priorityLabel).toMatch(/High priority|Watch/i);
+    expect(summary.metaWatchlist[0]?.statusLabel).toMatch(/No data|Needs more|Early read|Useful sample/i);
     expect(summary.metaWatchlist.some((item) => item.priorityLabel === "Enough for now")).toBe(false);
   });
 });

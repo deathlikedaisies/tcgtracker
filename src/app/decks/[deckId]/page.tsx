@@ -360,19 +360,23 @@ export default async function DeckDetailPage({
     const warningHabit = deckLab.disciplineHabits.find(
       (habit) => habit.tone === "gold" || habit.tone === "rose"
     );
-    const positiveHabit = deckLab.disciplineHabits.find(
+    const positiveOrSampleHabit =
+      deckLab.disciplineHabits.find(
+        (habit) => habit.label === "Sample builder"
+      ) ??
+      deckLab.disciplineHabits.find(
+        (habit) => habit.label === "Version discipline"
+      ) ??
+      deckLab.disciplineHabits.find(
       (habit) => habit.tone === "emerald"
-    );
-    const sampleHabit =
-      deckLab.disciplineHabits.find((habit) => habit.label === "Sample builder") ??
-      deckLab.disciplineHabits.find((habit) => habit.label === "Version discipline") ??
+      ) ??
       null;
 
-    return [warningHabit, positiveHabit, sampleHabit]
+    return [positiveOrSampleHabit, warningHabit]
       .filter((habit, index, habits): habit is NonNullable<typeof habit> =>
         Boolean(habit) && habits.findIndex((candidate) => candidate?.label === habit?.label) === index
       )
-      .slice(0, 3);
+      .slice(0, 2);
   })();
   const hiddenHabitCount = Math.max(
     deckLab.disciplineHabits.length - visibleDisciplineHabits.length,
@@ -407,17 +411,18 @@ export default async function DeckDetailPage({
     }
 
     if (item.count === 0) {
-      return { label: "High priority", tone: "gold" as const };
+      return { label: "No data", tone: "blue" as const };
     }
 
     if (item.count <= 2) {
-      return {
-        label: item.priorityLabel === "High priority" ? "High priority" : "Needs more",
-        tone: item.priorityLabel === "High priority" ? ("gold" as const) : ("blue" as const),
-      };
+      return { label: "Needs more", tone: "gold" as const };
     }
 
-    return { label: "Watch", tone: "blue" as const };
+    if (item.count <= 4) {
+      return { label: "Early read", tone: "blue" as const };
+    }
+
+    return { label: item.statusLabel, tone: item.tone };
   };
   const activeVersionName = activeVersion
     ? safeText(activeVersion.name, "Untitled version")
