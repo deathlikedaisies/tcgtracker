@@ -229,7 +229,7 @@ test.describe("current deck scope resolver", () => {
 });
 
 test.describe("deck lab summary", () => {
-  test("treats the first version as a first-version sample", async () => {
+  test("keeps a low-sample first version in build-sample mode", async () => {
     const summary = buildDeckLabSummary({
       deckArchetype: "Dragapult Blaziken",
       versions: [
@@ -241,12 +241,97 @@ test.describe("deck lab summary", () => {
         },
       ],
       activeVersionId: "v1",
-      matches: [],
+      matches: [
+        {
+          deck_version_id: "v1",
+          opponent_archetype: "Mega Greninja",
+          result: "loss",
+          went_first: false,
+          played_at: "2026-06-20T10:00:00.000Z",
+          metadata: {
+            start_quality: "bad",
+            opening_hand_quality: "bad",
+            sequencing_quality: "okay",
+            issue_tags: ["missed setup"],
+          },
+        },
+        {
+          deck_version_id: "v1",
+          opponent_archetype: "Raging Bolt",
+          result: "win",
+          went_first: true,
+          played_at: "2026-06-21T10:00:00.000Z",
+          metadata: {
+            start_quality: "good",
+            opening_hand_quality: "good",
+            sequencing_quality: "good",
+            positive_tags: ["strong setup"],
+          },
+        },
+        {
+          deck_version_id: "v1",
+          opponent_archetype: "N's Zoroark",
+          result: "loss",
+          went_first: true,
+          played_at: "2026-06-22T10:00:00.000Z",
+          metadata: {
+            start_quality: "okay",
+            opening_hand_quality: "bad",
+            sequencing_quality: "okay",
+            issue_tags: ["tempo loss"],
+          },
+        },
+      ],
     });
 
     expect(summary.versionReadStatus).toBe("first_version");
+    expect(summary.currentVersionSampleDisplay).toBe("3/10 games");
     expect(summary.versionReadSummary).toMatch(/first version/i);
-    expect(summary.recommendation).toMatch(/before changing the list/i);
+    expect(summary.recommendation).toMatch(/Log 7 more games before making your first change\./i);
+    expect(summary.currentVersionSampleSummary).toMatch(/Keep testing before changing the list\./i);
+    expect(summary.versionReadSummary).not.toMatch(/baseline ready/i);
+  });
+
+  test("treats a high-sample first version as a usable baseline", async () => {
+    const summary = buildDeckLabSummary({
+      deckArchetype: "Dragapult Blaziken",
+      versions: [
+        {
+          id: "v1",
+          name: "v1",
+          created_at: "2026-06-20T10:00:00.000Z",
+          is_active: true,
+        },
+      ],
+      activeVersionId: "v1",
+      matches: Array.from({ length: 20 }, (_, index) => ({
+        deck_version_id: "v1",
+        opponent_archetype:
+          index % 2 === 0 ? "Mega Greninja" : "Ogerpon Meganium",
+        result: index % 3 === 0 ? ("loss" as const) : ("win" as const),
+        went_first: index % 4 === 0 ? false : true,
+        played_at: new Date(Date.UTC(2026, 5, 1 + index)).toISOString(),
+        metadata: {
+          start_quality: index % 3 === 0 ? "okay" : "good",
+          opening_hand_quality: index % 4 === 0 ? "okay" : "good",
+          sequencing_quality: index % 5 === 0 ? "okay" : "good",
+          issue_tags: index % 3 === 0 ? ["tempo loss"] : [],
+          positive_tags: index % 3 === 0 ? [] : ["strong setup"],
+        },
+      })),
+    });
+
+    expect(summary.versionReadStatus).toBe("baseline_ready");
+    expect(summary.versionReadLabel).toBe("Baseline ready");
+    expect(summary.currentVersionSampleDisplay).toBe("20 games");
+    expect(summary.currentVersionSampleSummary).toBe("Baseline ready.");
+    expect(summary.versionReadSummary).toMatch(/enough games to use as a baseline/i);
+    expect(summary.versionPatienceSummary).toMatch(
+      /Good baseline\. Future versions can be compared against this sample\./i
+    );
+    expect(summary.recommendation).toMatch(/usable baseline/i);
+    expect(summary.versionReadSummary).not.toMatch(/build a clean sample/i);
+    expect(summary.versionPatienceSummary).not.toMatch(/keep testing before changing the list/i);
   });
 
   test("keeps low-sample compares conservative", async () => {
@@ -411,6 +496,7 @@ test.describe("deck lab summary", () => {
         (item) => item.archetype === "Dragapult Blaziken"
       )
     ).toBe(false);
+    expect(summary.versionReadStatus).toBe("early_read");
   });
 });
 

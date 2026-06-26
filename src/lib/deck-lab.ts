@@ -29,10 +29,15 @@ type DeckLabMatch = {
 type DeckLabStatusTone = "blue" | "gold" | "emerald" | "rose";
 type DeckLabVersionReadStatus =
   | "first_version"
+  | "baseline_ready"
   | "needs_games"
   | "early_read"
   | "useful_read";
-type DeckLabPatienceStatus = "build_sample" | "switched_early" | "good_sample";
+type DeckLabPatienceStatus =
+  | "build_sample"
+  | "switched_early"
+  | "good_sample"
+  | "baseline_ready";
 type DeckLabMetaSampleStatus = "no_data" | "needs_more" | "early_read" | "useful_sample";
 
 type DeckLabVersionSignal = {
@@ -53,6 +58,8 @@ export type DeckLabSummary = {
   previousVersionName: string | null;
   currentSampleSize: number;
   previousSampleSize: number;
+  currentVersionSampleDisplay: string;
+  currentVersionSampleSummary: string;
   versionReadStatus: DeckLabVersionReadStatus;
   versionReadLabel: string;
   versionReadTone: DeckLabStatusTone;
@@ -190,9 +197,19 @@ function getMetaWatchStatus(count: number): {
 function getVersionReadMeta(
   currentSampleSize: number,
   previousSampleSize: number,
-  hasPreviousVersion: boolean
+  hasPreviousVersion: boolean,
+  currentVersionTarget: number
 ) {
   if (!hasPreviousVersion) {
+    if (currentSampleSize >= currentVersionTarget) {
+      return {
+        status: "baseline_ready" as const,
+        label: "Baseline ready",
+        tone: "emerald" as const,
+        caution: "You have a usable baseline for future version tests.",
+      };
+    }
+
     return {
       status: "first_version" as const,
       label: "First version",
@@ -277,11 +294,13 @@ export function buildDeckLabSummary({
   const previousRecord = countMatchResults(previousMatches);
   const currentSampleSize = currentRecord.total;
   const previousSampleSize = previousRecord.total;
+  const currentVersionTarget = 10;
 
   const versionReadMeta = getVersionReadMeta(
     currentSampleSize,
     previousSampleSize,
-    Boolean(previousVersion)
+    Boolean(previousVersion),
+    currentVersionTarget
   );
 
   const currentWinRate = currentSampleSize
@@ -401,6 +420,10 @@ export function buildDeckLabSummary({
 
   const versionReadSummary = (() => {
     if (!previousVersion) {
+      if (currentSampleSize >= currentVersionTarget) {
+        return "This first version now has enough games to use as a baseline.";
+      }
+
       return "This is your first version. Build a clean sample before changing the list.";
     }
 
@@ -438,31 +461,47 @@ export function buildDeckLabSummary({
       return count + 1;
     }, 0);
 
-  const currentVersionTarget = 10;
   const versionPatienceStatus: DeckLabPatienceStatus =
-    currentSampleSize >= 5
+    !previousVersion && currentSampleSize >= currentVersionTarget
+      ? "baseline_ready"
+      : currentSampleSize >= 5
       ? "good_sample"
       : previousVersion && previousSampleSize < 5 && currentSampleSize < 5
         ? "switched_early"
         : "build_sample";
   const versionPatienceLabel =
-    versionPatienceStatus === "good_sample"
+    versionPatienceStatus === "baseline_ready"
+      ? "Baseline ready"
+      : versionPatienceStatus === "good_sample"
       ? "Good sample forming"
       : versionPatienceStatus === "switched_early"
         ? "Changed quickly"
         : "Keep testing";
   const versionPatienceTone: DeckLabStatusTone =
+    versionPatienceStatus === "baseline_ready" ||
     versionPatienceStatus === "good_sample"
       ? "emerald"
       : versionPatienceStatus === "switched_early"
         ? "gold"
         : "blue";
   const versionPatienceSummary =
-    versionPatienceStatus === "good_sample"
+    versionPatienceStatus === "baseline_ready"
+      ? "Good baseline. Future versions can be compared against this sample."
+      : versionPatienceStatus === "good_sample"
       ? "You have enough games on this version to start trusting the pattern."
       : versionPatienceStatus === "switched_early"
         ? "You changed versions before building a clear sample. Give this list more time."
         : "Keep testing before changing the list again.";
+  const currentVersionSampleDisplay =
+    currentSampleSize >= currentVersionTarget
+      ? `${currentSampleSize} games`
+      : `${currentSampleSize}/${currentVersionTarget} games`;
+  const currentVersionSampleSummary =
+    !previousVersion && currentSampleSize >= currentVersionTarget
+      ? "Baseline ready."
+      : currentSampleSize >= currentVersionTarget
+        ? "Target reached."
+        : "Keep testing before changing the list.";
 
   const currentArchetypeNormalized = normalizeText(deckArchetype);
   const watchlistSource = Array.from(
@@ -503,8 +542,8 @@ export function buildDeckLabSummary({
 
     if (!previousVersion) {
       return remainingToTarget > 0
-        ? `Keep this version for ${remainingToTarget} more games before changing the list.`
-        : "You have enough games on this first version to decide whether the next change is worth testing.";
+        ? `Log ${remainingToTarget} more game${remainingToTarget === 1 ? "" : "s"} before making your first change.`
+        : "You have a usable baseline. Create a new version when you have a specific list change to test.";
     }
 
     if (currentSampleSize < 5 || previousSampleSize < 5) {
@@ -536,6 +575,8 @@ export function buildDeckLabSummary({
     previousVersionName,
     currentSampleSize,
     previousSampleSize,
+    currentVersionSampleDisplay,
+    currentVersionSampleSummary,
     versionReadStatus: versionReadMeta.status,
     versionReadLabel: versionReadMeta.label,
     versionReadTone: versionReadMeta.tone,

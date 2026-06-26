@@ -627,7 +627,10 @@ export default async function DeckDetailPage({
                   Deck Lab
                 </p>
                 <h2 className="mt-2 text-xl font-semibold text-[#F8FAFC]">
-                  Test this version before changing the list.
+                  {deckLab.versionReadStatus === "baseline_ready" &&
+                  !deckLab.previousVersionName
+                    ? "You have a usable baseline."
+                    : "Test this version before changing the list."}
                 </h2>
                 <p className="mt-1 text-sm leading-6 text-[#94A3B8]/72">
                   {deckLab.recommendation}
@@ -721,10 +724,10 @@ export default async function DeckDetailPage({
                       Current version sample
                     </p>
                     <p className="mt-2 text-lg font-semibold text-[#F8FAFC]">
-                      {deckLab.currentSampleSize}/{deckLab.currentVersionTarget}
+                      {deckLab.currentVersionSampleDisplay}
                     </p>
                     <p className="mt-1 text-[11px] text-[#94A3B8]/72">
-                      Keep testing before changing the list.
+                      {deckLab.currentVersionSampleSummary}
                     </p>
                   </div>
                   <div className={`${statCard} p-3`}>
