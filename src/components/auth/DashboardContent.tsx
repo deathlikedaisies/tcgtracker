@@ -619,38 +619,48 @@ function CurrentDeckSummaryCard({
     : isAllDecks
       ? "Review all active logs together."
       : "Add or activate a version to keep this deck focused.";
+  const scopeIndicator = isAllDecks
+    ? "Showing combined insights across all decks"
+    : "Showing insights for this deck";
 
   return (
-    <section className={`${glassPanel} overflow-hidden p-3.5 sm:p-4`}>
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
-          {isAllDecks ? "Combined scope" : "Current test deck"}
-        </p>
-        <span className={`${metallicBadge} px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] leading-5 text-[#DCE8FF] whitespace-normal`}>
-          {isAllDecks ? "All decks" : "Active test"}
-        </span>
-      </div>
+    <section className={`${glassPanel} overflow-hidden p-4 sm:p-5`}>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 items-start gap-4 sm:gap-5">
+          <span className="inline-flex shrink-0 rounded-[22px] bg-[radial-gradient(circle_at_top,rgba(79,140,255,0.28),rgba(11,16,32,0.16)_62%,transparent_100%)] p-3.5 shadow-[0_18px_38px_rgba(0,0,0,0.20),inset_0_0_0_1px_rgba(148,163,184,0.10)]">
+            <ArchetypeSprites
+              archetype={isAllDecks ? null : archetype}
+              size="lg"
+              variant="bare"
+              className="shrink-0"
+              imageClassName="scale-[1.08]"
+            />
+          </span>
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
+                {isAllDecks ? "Current test scope" : "Current test deck"}
+              </p>
+              <span className={`${metallicBadge} px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] leading-5 text-[#DCE8FF] whitespace-normal`}>
+                {isAllDecks ? "All decks" : "Active test"}
+              </span>
+            </div>
+            <h2 className="mt-2 text-xl font-semibold tracking-tight text-[#F8FAFC] sm:text-[1.35rem]">
+              {title}
+            </h2>
+            <p className="mt-1 text-sm font-medium text-[#D6E0F0]/84 sm:text-base">
+              {subtitle}
+            </p>
+            <p className="mt-2 text-sm leading-5 text-[#94A3B8]/72">
+              {detail}
+            </p>
+          </div>
+        </div>
 
-      <div className="mt-3 flex items-center gap-4">
-        <span className="inline-flex shrink-0 rounded-[20px] bg-[radial-gradient(circle_at_top,rgba(79,140,255,0.28),rgba(11,16,32,0.16)_62%,transparent_100%)] p-3 shadow-[0_16px_34px_rgba(0,0,0,0.20),inset_0_0_0_1px_rgba(148,163,184,0.10)]">
-          <ArchetypeSprites
-            archetype={isAllDecks ? null : archetype}
-            size="lg"
-            variant="bare"
-            className="shrink-0"
-            imageClassName="scale-[1.08]"
-          />
-        </span>
-        <div className="min-w-0">
-          <h2 className="text-lg font-semibold tracking-tight text-[#F8FAFC] sm:text-[1.15rem]">
-            {title}
-          </h2>
-          <p className="mt-1 text-sm font-medium text-[#D6E0F0]/84">
-            {subtitle}
-          </p>
-          <p className="mt-1.5 text-sm leading-5 text-[#94A3B8]/72">
-            {detail}
-          </p>
+        <div className="flex shrink-0 flex-wrap items-center gap-2 sm:max-w-[240px] sm:justify-end">
+          <span className={`${premiumInset} inline-flex rounded-full px-3 py-1.5 text-xs font-semibold text-[#DCE8FF]`}>
+            {scopeIndicator}
+          </span>
         </div>
       </div>
     </section>
@@ -884,10 +894,6 @@ export function DashboardContent({
         copy: "A few more games will unlock a real coaching loop.",
         href: "/matches/new",
       };
-  const scopeLabel = currentDeckName
-    ? `Showing insights for: ${currentDeckName}`
-    : "Showing combined insights across all decks";
-
   return (
     <main className={appShell}>
       <section className={`${appFrame} sixprizer-fade-in`}>
@@ -911,25 +917,7 @@ export function DashboardContent({
             />
           ) : (
             <div className="grid gap-4 sm:gap-6">
-              <section className="grid gap-3 xl:grid-cols-[minmax(0,1.15fr)_320px] xl:items-stretch">
-                <section className={`${glassPanel} p-3 sm:p-3.5`}>
-                  <div className="flex flex-col gap-1.5">
-                    <div className="min-w-0">
-                      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
-                        Insight scope
-                      </p>
-                      <p className="mt-0.5 text-sm font-semibold text-[#F8FAFC]">
-                        {scopeLabel}
-                      </p>
-                    </div>
-                    {!currentDeckId ? (
-                      <Link href="/review?deck_id=all" className={`${secondaryButton} h-10 w-full sm:w-auto shrink-0`}>
-                        All decks view
-                      </Link>
-                    ) : null}
-                  </div>
-                </section>
-
+              <section className="grid gap-3">
                 <CurrentDeckSummaryCard
                   deckName={currentDeckName}
                   archetype={currentDeckArchetype}
