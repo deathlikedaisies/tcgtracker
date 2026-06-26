@@ -3,6 +3,7 @@ import { login, getMissingAuthEnvReason } from "./helpers/auth";
 import { expectHeadingVisible, expectNoAppError } from "./helpers/assertions";
 import { buildPostSaveFocusSummary } from "@/lib/match-log-reward";
 import { resolveCurrentDeckScope } from "@/lib/current-deck-scope";
+import { buildDeckLabSummary } from "@/lib/deck-lab";
 import type { SessionCoachInsight } from "@/lib/session-coach";
 import { parseTcgLiveLog } from "@/lib/tcg-live-log-parser";
 
@@ -224,6 +225,192 @@ test.describe("current deck scope resolver", () => {
     expect(resolved.deckId).toBeNull();
     expect(resolved.showAllDecks).toBe(true);
     expect(resolved.source).toBe("all_decks");
+  });
+});
+
+test.describe("deck lab summary", () => {
+  test("treats the first version as a first-version sample", async () => {
+    const summary = buildDeckLabSummary({
+      deckArchetype: "Dragapult Blaziken",
+      versions: [
+        {
+          id: "v1",
+          name: "v1",
+          created_at: "2026-06-20T10:00:00.000Z",
+          is_active: true,
+        },
+      ],
+      activeVersionId: "v1",
+      matches: [],
+    });
+
+    expect(summary.versionReadStatus).toBe("first_version");
+    expect(summary.versionReadSummary).toMatch(/first version/i);
+    expect(summary.recommendation).toMatch(/before changing the list/i);
+  });
+
+  test("keeps low-sample compares conservative", async () => {
+    const summary = buildDeckLabSummary({
+      deckArchetype: "Dragapult Blaziken",
+      versions: [
+        {
+          id: "v1",
+          name: "v1",
+          created_at: "2026-06-20T10:00:00.000Z",
+          is_active: false,
+        },
+        {
+          id: "v2",
+          name: "v2",
+          created_at: "2026-06-24T10:00:00.000Z",
+          is_active: true,
+        },
+      ],
+      activeVersionId: "v2",
+      matches: [
+        {
+          deck_version_id: "v1",
+          opponent_archetype: "Mega Greninja",
+          result: "loss",
+          went_first: false,
+          played_at: "2026-06-21T10:00:00.000Z",
+          metadata: {
+            start_quality: "bad",
+            opening_hand_quality: "bad",
+            sequencing_quality: "okay",
+            issue_tags: ["missed setup"],
+          },
+        },
+        {
+          deck_version_id: "v2",
+          opponent_archetype: "Mega Greninja",
+          result: "win",
+          went_first: true,
+          played_at: "2026-06-25T10:00:00.000Z",
+          metadata: {
+            start_quality: "great",
+            opening_hand_quality: "good",
+            sequencing_quality: "good",
+            positive_tags: ["strong setup"],
+          },
+        },
+      ],
+    });
+
+    expect(summary.versionReadStatus).toBe("needs_games");
+    expect(summary.versionReadSummary).toMatch(/not enough games/i);
+  });
+
+  test("detects setup improvement and excludes the active archetype from the watchlist", async () => {
+    const summary = buildDeckLabSummary({
+      deckArchetype: "Dragapult Blaziken",
+      versions: [
+        {
+          id: "v1",
+          name: "v1",
+          created_at: "2026-06-20T10:00:00.000Z",
+          is_active: false,
+        },
+        {
+          id: "v2",
+          name: "v2",
+          created_at: "2026-06-24T10:00:00.000Z",
+          is_active: true,
+        },
+      ],
+      activeVersionId: "v2",
+      matches: [
+        {
+          deck_version_id: "v1",
+          opponent_archetype: "Mega Greninja",
+          result: "loss",
+          went_first: false,
+          played_at: "2026-06-20T10:00:00.000Z",
+          metadata: {
+            start_quality: "bad",
+            opening_hand_quality: "bad",
+            sequencing_quality: "bad",
+            issue_tags: ["missed setup"],
+          },
+        },
+        {
+          deck_version_id: "v1",
+          opponent_archetype: "N's Zoroark",
+          result: "loss",
+          went_first: false,
+          played_at: "2026-06-21T10:00:00.000Z",
+          metadata: {
+            start_quality: "okay",
+            opening_hand_quality: "bad",
+            sequencing_quality: "okay",
+            issue_tags: ["missed setup"],
+          },
+        },
+        {
+          deck_version_id: "v1",
+          opponent_archetype: "Mega Greninja",
+          result: "win",
+          went_first: true,
+          played_at: "2026-06-22T10:00:00.000Z",
+          metadata: {
+            start_quality: "good",
+            opening_hand_quality: "okay",
+            sequencing_quality: "good",
+            positive_tags: ["strong setup"],
+          },
+        },
+        {
+          deck_version_id: "v2",
+          opponent_archetype: "Mega Greninja",
+          result: "win",
+          went_first: true,
+          played_at: "2026-06-24T10:00:00.000Z",
+          metadata: {
+            start_quality: "great",
+            opening_hand_quality: "good",
+            sequencing_quality: "good",
+            positive_tags: ["strong setup"],
+          },
+        },
+        {
+          deck_version_id: "v2",
+          opponent_archetype: "Ogerpon Meganium",
+          result: "win",
+          went_first: true,
+          played_at: "2026-06-25T10:00:00.000Z",
+          metadata: {
+            start_quality: "great",
+            opening_hand_quality: "good",
+            sequencing_quality: "great",
+            positive_tags: ["strong setup"],
+          },
+        },
+        {
+          deck_version_id: "v2",
+          opponent_archetype: "Raging Bolt",
+          result: "loss",
+          went_first: false,
+          played_at: "2026-06-26T10:00:00.000Z",
+          metadata: {
+            start_quality: "good",
+            opening_hand_quality: "good",
+            sequencing_quality: "good",
+            issue_tags: ["poor prize trade"],
+          },
+        },
+      ],
+    });
+
+    expect(
+      summary.improvements.some((signal) =>
+        signal.label.toLowerCase().includes("starts look cleaner")
+      )
+    ).toBe(true);
+    expect(
+      summary.metaWatchlist.some(
+        (item) => item.archetype === "Dragapult Blaziken"
+      )
+    ).toBe(false);
   });
 });
 
@@ -632,6 +819,10 @@ test.describe("authenticated routes", () => {
       .click();
     await page.waitForURL(/\/decks\//, { timeout: 20000 });
 
+    await expect(page.locator("body")).toContainText(/Deck Lab/i);
+    await expect(page.locator("body")).toContainText(
+      /Version read|Testing discipline|Meta watchlist/i
+    );
     await expect(page.locator("body")).toContainText(/Version evidence|Version signal/i);
     await expect(page.locator("body")).toContainText(/v1|v2|v3/i);
     await expect(page.locator("body")).toContainText(

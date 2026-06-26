@@ -40,6 +40,10 @@ import {
   type DecklistAnalysis,
   isClearArchetypeSuggestion,
 } from "@/lib/decklist";
+import {
+  buildDeckLabSummary,
+  getDeckLabToneClasses,
+} from "@/lib/deck-lab";
 import { LATEST_FORMAT } from "@/lib/formats";
 import { buildSessionCoachInsight } from "@/lib/session-coach";
 import {
@@ -282,24 +286,24 @@ export default async function DeckDetailPage({
     metadata: MatchMetadata | Record<string, unknown> | null;
     match_tags: { tag: string }[] | null;
   }[];
+  const normalizedMatchRows = matchRows.map((match) => ({
+    ...match,
+    metadata: parseMatchMetadata(match.metadata),
+  }));
 
   const sessionCoach = buildSessionCoachInsight(matchRows);
   const versionInsights = deckVersions.map((version) => {
       const { analysis, parseError } = safeAnalyzeDeckList(version.decklist);
-      const versionMatches = matchRows.filter(
+      const versionMatches = normalizedMatchRows.filter(
         (match) => match.deck_version_id === version.id
       );
-      const normalizedMatches = versionMatches.map((match) => ({
-        ...match,
-        metadata: parseMatchMetadata(match.metadata),
-      }));
       const performance = countMatchResults(versionMatches);
       const openingQuality = getQualityRate(
-        normalizedMatches,
+        versionMatches,
         "opening_hand_quality"
       );
       const sequencingQuality = getQualityRate(
-        normalizedMatches,
+        versionMatches,
         "sequencing_quality"
       );
       const topLossTag = getMostCommonLossTag(versionMatches);
@@ -308,7 +312,7 @@ export default async function DeckDetailPage({
         versionId: version.id,
         analysis,
         parseError,
-        versionMatches: normalizedMatches,
+        versionMatches,
         performance,
         openingQuality,
         sequencingQuality,
@@ -341,6 +345,12 @@ export default async function DeckDetailPage({
   const deckArchetype = safeText(deck.archetype, "Unknown archetype");
   const activeVersion =
     deckVersions.find((version) => version.is_active) ?? deckVersions[0] ?? null;
+  const deckLab = buildDeckLabSummary({
+    deckArchetype: deck.archetype,
+    versions: deckVersions,
+    activeVersionId: activeVersion?.id ?? null,
+    matches: normalizedMatchRows,
+  });
   const activeVersionName = activeVersion
     ? safeText(activeVersion.name, "Untitled version")
     : "No active version";
@@ -609,6 +619,174 @@ export default async function DeckDetailPage({
               </p>
             </div>
           ) : null}
+
+          <section className={`p-4 sm:p-5 ${glassPanel}`}>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0">
+                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
+                  Deck Lab
+                </p>
+                <h2 className="mt-2 text-xl font-semibold text-[#F8FAFC]">
+                  Test this version before changing the list.
+                </h2>
+                <p className="mt-1 text-sm leading-6 text-[#94A3B8]/72">
+                  {deckLab.recommendation}
+                </p>
+              </div>
+              <span className="w-fit rounded-full bg-[#0B1020]/62 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]">
+                Active version: {deckLab.activeVersionName}
+              </span>
+            </div>
+
+            <div className="mt-4 grid gap-4 xl:grid-cols-3">
+              <article className={`${premiumInset} min-w-0 p-4`}>
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="text-sm font-semibold text-[#F8FAFC]">Version read</p>
+                  <span
+                    className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${getDeckLabToneClasses(
+                      deckLab.versionReadTone
+                    )}`}
+                  >
+                    {deckLab.versionReadLabel}
+                  </span>
+                </div>
+                <p className="mt-3 text-sm leading-6 text-[#D6E0F0]/86">
+                  {deckLab.versionReadSummary}
+                </p>
+                <div className="mt-3 grid gap-3 min-[430px]:grid-cols-2">
+                  <div className={`${statCard} p-3`}>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                      Current sample
+                    </p>
+                    <p className="mt-2 text-sm font-semibold text-[#F8FAFC]">
+                      {deckLab.currentSampleSize} games
+                    </p>
+                  </div>
+                  <div className={`${statCard} p-3`}>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                      Previous version
+                    </p>
+                    <p className="mt-2 text-sm font-semibold text-[#F8FAFC]">
+                      {deckLab.previousVersionName
+                        ? `${deckLab.previousVersionName} • ${deckLab.previousSampleSize} games`
+                        : "No previous version"}
+                    </p>
+                  </div>
+                </div>
+                {deckLab.improvements.length || deckLab.regressions.length ? (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {deckLab.improvements.map((signal) => (
+                      <span
+                        key={signal.label}
+                        className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${getDeckLabToneClasses(
+                          signal.tone
+                        )}`}
+                      >
+                        {signal.label}
+                      </span>
+                    ))}
+                    {deckLab.regressions.map((signal) => (
+                      <span
+                        key={signal.label}
+                        className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${getDeckLabToneClasses(
+                          signal.tone
+                        )}`}
+                      >
+                        {signal.label}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+                <p className="mt-3 text-xs leading-5 text-[#94A3B8]/72">
+                  {deckLab.sampleCaution}
+                </p>
+              </article>
+
+              <article className={`${premiumInset} min-w-0 p-4`}>
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="text-sm font-semibold text-[#F8FAFC]">
+                    Testing discipline
+                  </p>
+                  <span
+                    className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${getDeckLabToneClasses(
+                      deckLab.versionPatienceTone
+                    )}`}
+                  >
+                    {deckLab.versionPatienceLabel}
+                  </span>
+                </div>
+                <div className="mt-3 grid gap-3 min-[430px]:grid-cols-2">
+                  <div className={`${statCard} p-3`}>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                      Current version sample
+                    </p>
+                    <p className="mt-2 text-lg font-semibold text-[#F8FAFC]">
+                      {deckLab.currentSampleSize}/{deckLab.currentVersionTarget}
+                    </p>
+                    <p className="mt-1 text-[11px] text-[#94A3B8]/72">
+                      Keep testing before changing the list.
+                    </p>
+                  </div>
+                  <div className={`${statCard} p-3`}>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                      Clean logs
+                    </p>
+                    <p className="mt-2 text-lg font-semibold text-[#F8FAFC]">
+                      {deckLab.cleanLogCount}/{deckLab.cleanLogTotal || 0}
+                    </p>
+                    <p className="mt-1 text-[11px] text-[#94A3B8]/72">
+                      {deckLab.cleanLogStreak > 0
+                        ? `${deckLab.cleanLogStreak} straight clean logs`
+                        : "Start a clean-log streak"}
+                    </p>
+                  </div>
+                </div>
+                <p className="mt-3 text-sm leading-6 text-[#D6E0F0]/86">
+                  {deckLab.versionPatienceSummary}
+                </p>
+                <p className="mt-2 text-xs leading-5 text-[#94A3B8]/72">
+                  Clean logs help SixPrizer give better reads.
+                </p>
+              </article>
+
+              <article className={`${premiumInset} min-w-0 p-4`}>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-[#F8FAFC]">
+                      Meta watchlist
+                    </p>
+                    <p className="mt-1 text-xs leading-5 text-[#94A3B8]/72">
+                      If these show up on ladder, log them cleanly.
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-3 grid gap-2">
+                  {deckLab.metaWatchlist.map((item) => (
+                    <div
+                      key={item.archetype}
+                      className={`${statCard} flex min-w-0 items-center justify-between gap-3 p-3`}
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold text-[#F8FAFC]">
+                          {item.archetype}
+                        </p>
+                        <p className="mt-1 text-[11px] text-[#94A3B8]/72">
+                          {item.count === 1 ? "1 game" : `${item.count} games`}
+                        </p>
+                      </div>
+                      <span
+                        className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${getDeckLabToneClasses(
+                          item.tone
+                        )}`}
+                      >
+                        {item.statusLabel}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </article>
+            </div>
+          </section>
 
           {sessionCoach && hasDeckGames ? (
             <section className={`p-4 ${glassPanel}`}>

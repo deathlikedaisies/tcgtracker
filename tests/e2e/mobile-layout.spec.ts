@@ -72,5 +72,21 @@ test.describe("mobile layout", () => {
         await expectNoHorizontalOverflow(page);
       });
     }
+
+    test("/decks/[deckId] is readable on mobile", async ({ page }) => {
+      await page.goto("/decks");
+      await page
+        .locator('a[href^="/decks/"]:not([href="/decks"])')
+        .first()
+        .click();
+      await page.waitForURL(/\/decks\//, { timeout: 20000 });
+
+      await expect(page.locator("body")).toContainText(/Deck Lab/i);
+      await expect(page.locator("body")).toContainText(
+        /Version read|Testing discipline|Meta watchlist/i
+      );
+      await expectNoAppError(page);
+      await expectNoHorizontalOverflow(page);
+    });
   });
 });
