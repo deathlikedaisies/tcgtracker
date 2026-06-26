@@ -343,6 +343,7 @@ test.describe("authenticated routes", () => {
     await page.goto("/matches/new");
 
     await expectHeadingVisible(page, "Log a game");
+    await page.getByRole("button", { name: /Import from TCG Live log/i }).click();
     await page.getByLabel("Your TCG Live name").fill("DommitronNL");
     await page
       .getByLabel("TCG Live battle log")
@@ -394,6 +395,7 @@ test.describe("authenticated routes", () => {
   }) => {
     await page.goto("/matches/new");
 
+    await page.getByRole("button", { name: /Import from TCG Live log/i }).click();
     await page
       .getByLabel("TCG Live battle log")
       .fill(
@@ -419,6 +421,7 @@ test.describe("authenticated routes", () => {
   test("/matches/new requires a pasted log before autofill", async ({ page }) => {
     await page.goto("/matches/new");
 
+    await page.getByRole("button", { name: /Import from TCG Live log/i }).click();
     await page.getByLabel("Your TCG Live name").fill("DommitronNL");
     await page.getByRole("button", { name: "Autofill from log" }).click();
 

@@ -119,9 +119,6 @@ const selectedEmeraldToggleClass =
 const selectedRoseToggleClass =
   "border-[#FB7185] bg-[linear-gradient(180deg,rgba(244,63,94,0.26),rgba(101,20,43,0.96))] text-[#FFF1F4] shadow-[0_16px_34px_rgba(244,63,94,0.16),inset_0_0_0_1px_rgba(255,189,206,0.34),inset_0_1px_0_rgba(255,255,255,0.10)] -translate-y-[1px]";
 
-const progressStepClass =
-  "flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-left transition-colors sm:gap-3 sm:py-3";
-
 function parseWentFirstValue(value: string | null | undefined) {
   return parseWentFirstChoice(value);
 }
@@ -670,6 +667,13 @@ export function MatchLogForm({
   });
   const [importStatus, setImportStatus] = useState<string[]>([]);
   const [tcgLivePlayerNameError, setTcgLivePlayerNameError] = useState("");
+  const [importExpanded, setImportExpanded] = useState(() => {
+    if (typeof window === "undefined") {
+      return false;
+    }
+
+    return Boolean(sessionStorage.getItem(sessionKeys.tcgLivePlayerName)?.trim());
+  });
   const [isChangingDeck, setIsChangingDeck] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [moreIssueTagsOpen, setMoreIssueTagsOpen] = useState(() =>
@@ -1016,6 +1020,7 @@ export function MatchLogForm({
   function importTcgLiveLog() {
     const log = tcgLiveLog.trim();
     const playerName = tcgLivePlayerName.trim();
+    setImportExpanded(true);
 
     if (!log) {
       setImportStatus(["Paste a TCG Live log first."]);
@@ -1128,9 +1133,15 @@ export function MatchLogForm({
           : null;
   const summaryChipClass =
     "inline-flex items-center rounded-full bg-[#0B1020]/72 px-2.5 py-1 text-[11px] font-semibold text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]";
+  const activeDeckHeadline = selectedDeck?.label ?? "Choose a deck version";
+  const activeDeckArchetype =
+    selectedDeckSuggestion || selectedDeckArchetype || "Archetype not set yet";
+  const activeVersionLine = selectedDeck?.label
+    ? `Testing: ${selectedDeck.label}`
+    : "Choose the test version you want to log with.";
   const desktopSummary = (
-    <div className="rounded-xl bg-[#0B1020]/52 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#F5C84C]">
+    <div className="rounded-[20px] bg-[#07111F]/34 p-3.5 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#94A3B8]/78">
         Live summary
       </p>
       <p className="mt-2 text-sm font-medium leading-6 text-[#F8FAFC]">
@@ -1438,153 +1449,206 @@ export function MatchLogForm({
           ) : null}
 
           {!wasSuccessful ? (
-            <div className="grid gap-3.5 sm:gap-4 xl:grid-cols-[220px_minmax(0,1fr)_280px]">
-              <aside className="hidden xl:block">
-                <div className="rounded-xl bg-[#07111F]/36 p-3.5 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.12)] sm:p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
-                    Quick log
-                  </p>
-                  <div className="mt-4 grid gap-2">
-                    {stepOrder.map((step, index) => {
-                      const isCurrent = index === currentStep;
-                      const isDone = index < currentStep;
-
-                      return (
-                        <button
-                          key={step.label}
-                          type="button"
-                          onClick={() => {
-                            if (index <= currentStep || index === 0) {
-                              setCurrentStep(index);
-                            }
-                          }}
-                          className={`${progressStepClass} ${
-                            isCurrent
-                              ? "bg-[#4F8CFF]/16 text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.22)]"
-                              : isDone
-                                ? "bg-[#07111F]/48 text-[#DCE8FF]"
-                                : "bg-[#07111F]/18 text-[#94A3B8]"
-                          }`}
-                        >
-                          <span
-                            className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold ${
-                              isCurrent
-                                ? "bg-[#4F8CFF]/24 text-[#F8FAFC]"
-                                : isDone
-                                  ? "bg-[#22C55E]/20 text-[#DCFCE7]"
-                                  : "bg-[#1A2238] text-[#94A3B8]"
-                            }`}
-                          >
-                            {step.shortLabel}
-                          </span>
-                          <span className="text-sm font-semibold">{step.label}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </aside>
-
-              <section className="rounded-xl bg-[#07111F]/36 p-3.5 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.12)] sm:p-5">
-                <div className={`mb-3.5 grid gap-3 p-3 ${subCardClass} sm:mb-4 sm:p-4`}>
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
-                      Import from TCG Live log
-                    </p>
-                    <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
-                      Paste a TCG Live battle log to prefill result, turn order, and opponent deck when possible. You can still edit everything before saving.
-                    </p>
-                  </div>
-                  <div className={`grid gap-2.5 p-3 ${premiumInset}`}>
-                    <label htmlFor="tcg_live_player_name" className={label}>
-                      Your TCG Live name
-                    </label>
-                    <input
-                      id="tcg_live_player_name"
-                      value={tcgLivePlayerName}
-                      onChange={(event) => {
-                        setTcgLivePlayerName(event.target.value);
-                        if (tcgLivePlayerNameError) {
-                          setTcgLivePlayerNameError("");
-                        }
-                      }}
-                      placeholder="DommitronNL"
-                      className={`${inputH11} ${
-                        tcgLivePlayerNameError
-                          ? "border-rose-400/70 shadow-[inset_0_0_0_1px_rgba(244,63,94,0.16)]"
-                          : ""
-                      }`}
-                    />
-                    <p className="text-xs leading-5 text-[#94A3B8]/72">
-                      Required for import so SixPrizer knows which player is you.
-                    </p>
-                    {tcgLivePlayerNameError ? (
-                      <p className="text-xs font-medium text-rose-200">
-                        {tcgLivePlayerNameError}
-                      </p>
-                    ) : null}
-                  </div>
-                  <div className="grid gap-2">
-                    <label htmlFor="tcg_live_log" className={label}>
-                      TCG Live battle log
-                    </label>
-                    <textarea
-                      id="tcg_live_log"
-                      value={tcgLiveLog}
-                      onChange={(event) => setTcgLiveLog(event.target.value)}
-                      rows={7}
-                      placeholder="Paste a TCG Live battle log"
-                      className={`${textarea} min-h-[180px] w-full`}
-                    />
-                  </div>
-                  <div className="flex flex-col gap-2 sm:flex-row">
-                    <button
-                      type="button"
-                      onClick={importTcgLiveLog}
-                      className={`${primaryButton} w-full whitespace-nowrap sm:w-auto sm:min-w-[188px]`}
-                    >
-                      Autofill from log
-                    </button>
-                    <button
-                      type="button"
-                      onClick={clearImportedLog}
-                      className={`${secondaryButton} w-full whitespace-nowrap sm:w-auto sm:min-w-[140px]`}
-                    >
-                      Clear import
-                    </button>
-                  </div>
-                  {importStatus.length ? (
-                    <div className={`grid gap-2 p-3 ${premiumInset}`}>
-                      {importStatus.map((note) => (
-                        <p
-                          key={note}
-                          className="text-sm leading-6 text-[#D6E0F0]"
-                        >
-                          {note}
-                        </p>
-                      ))}
+            <div className="grid gap-3.5 sm:gap-4">
+              <section className="rounded-[22px] bg-[linear-gradient(180deg,rgba(14,24,42,0.94),rgba(8,17,31,0.90))] p-3.5 shadow-[0_18px_36px_rgba(0,0,0,0.18),inset_0_0_0_1px_rgba(148,163,184,0.10)] sm:p-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[20px] bg-[radial-gradient(circle_at_top,rgba(79,140,255,0.20),rgba(11,16,32,0.92))] shadow-[0_18px_32px_rgba(0,0,0,0.24),inset_0_0_0_1px_rgba(79,140,255,0.16)] sm:h-[72px] sm:w-[72px]">
+                      <ArchetypeSprites
+                        archetype={selectedDeckSuggestion || selectedDeckArchetype}
+                        size="lg"
+                        variant="bare"
+                      />
                     </div>
-                  ) : null}
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
+                        Active test
+                      </p>
+                      <h2 className="mt-1 truncate text-xl font-semibold text-[#F8FAFC] sm:text-2xl">
+                        {activeDeckHeadline}
+                      </h2>
+                      <p className="mt-1 truncate text-sm font-medium text-[#D7E0EF] sm:text-base">
+                        {activeDeckArchetype}
+                      </p>
+                      <p className="mt-1 text-xs leading-5 text-[#94A3B8]/76 sm:text-sm">
+                        {activeVersionLine}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="rounded-full bg-[#07111F]/58 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]">
                       Step {currentStep + 1} of {stepOrder.length}
-                    </p>
-                    <p className="text-xs text-[#94A3B8]">
+                    </span>
+                    <span className="rounded-full bg-[#4F8CFF]/12 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.18)]">
                       {stepOrder[currentStep]?.label}
-                    </p>
-                  </div>
-                  <div className="h-2 rounded-full bg-[#07111F]/70">
-                    <div
-                      className="h-2 rounded-full bg-[#4F8CFF] transition-[width,background-color]"
-                      style={{ width: `${progressPercent}%` }}
-                    />
+                    </span>
                   </div>
                 </div>
+              </section>
 
-                <div className="mt-3.5 rounded-xl bg-[#0B1020]/52 p-3.5 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)] sm:mt-4 sm:p-4">
+              <div className="grid gap-3.5 sm:gap-4 xl:grid-cols-[minmax(0,1fr)_240px]">
+                <div className="grid gap-3.5 sm:gap-4">
+                  <section className="rounded-[18px] bg-[#07111F]/30 p-3 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.10)] sm:p-3.5">
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
+                          Quick log
+                        </p>
+                        <p className="text-xs text-[#94A3B8]">
+                          {stepOrder[currentStep]?.label}
+                        </p>
+                      </div>
+                      <div className="h-2 rounded-full bg-[#07111F]/72">
+                        <div
+                          className="h-2 rounded-full bg-[#4F8CFF] transition-[width,background-color]"
+                          style={{ width: `${progressPercent}%` }}
+                        />
+                      </div>
+                      <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+                        {stepOrder.map((step, index) => {
+                          const isCurrent = index === currentStep;
+                          const isDone = index < currentStep;
+
+                          return (
+                            <button
+                              key={step.label}
+                              type="button"
+                              onClick={() => {
+                                if (index <= currentStep || index === 0) {
+                                  setCurrentStep(index);
+                                }
+                              }}
+                              className={`rounded-xl px-2 py-2 text-left transition-colors ${
+                                isCurrent
+                                  ? "bg-[#4F8CFF]/16 text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.22)]"
+                                  : isDone
+                                    ? "bg-[#07111F]/42 text-[#DCE8FF]"
+                                    : "bg-[#07111F]/16 text-[#94A3B8]"
+                              }`}
+                            >
+                              <span className="block text-[11px] font-bold">
+                                {step.shortLabel}
+                              </span>
+                              <span className="mt-1 block text-xs font-semibold leading-4">
+                                {step.label}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </section>
+
+                  <section className="rounded-[18px] bg-[#07111F]/30 p-3 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.10)] sm:p-3.5">
+                    <button
+                      type="button"
+                      onClick={() => setImportExpanded((current) => !current)}
+                      className="flex w-full items-center justify-between gap-3 text-left"
+                    >
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
+                          Import from TCG Live log
+                        </p>
+                        <p className="mt-1 text-sm leading-6 text-[#94A3B8]/76">
+                          Paste a battle log to prefill result, turn order, and opponent deck when possible.
+                        </p>
+                      </div>
+                      <span className="rounded-full bg-[#0B1020]/66 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]">
+                        {importExpanded ? "Hide" : "Open"}
+                      </span>
+                    </button>
+
+                    {importExpanded ? (
+                      <div className="mt-3.5 grid gap-3">
+                        <div className={`grid gap-2.5 p-3 ${premiumInset}`}>
+                          <label htmlFor="tcg_live_player_name" className={label}>
+                            Your TCG Live name
+                          </label>
+                          <input
+                            id="tcg_live_player_name"
+                            value={tcgLivePlayerName}
+                            onChange={(event) => {
+                              setImportExpanded(true);
+                              setTcgLivePlayerName(event.target.value);
+                              if (tcgLivePlayerNameError) {
+                                setTcgLivePlayerNameError("");
+                              }
+                            }}
+                            placeholder="DommitronNL"
+                            className={`${inputH11} ${
+                              tcgLivePlayerNameError
+                                ? "border-rose-400/70 shadow-[inset_0_0_0_1px_rgba(244,63,94,0.16)]"
+                                : ""
+                            }`}
+                          />
+                          <p className="text-xs leading-5 text-[#94A3B8]/72">
+                            Required for import so SixPrizer knows which player is you.
+                          </p>
+                          {tcgLivePlayerNameError ? (
+                            <p className="text-xs font-medium text-rose-200">
+                              {tcgLivePlayerNameError}
+                            </p>
+                          ) : null}
+                        </div>
+                        <div className="grid gap-2">
+                          <label htmlFor="tcg_live_log" className={label}>
+                            TCG Live battle log
+                          </label>
+                          <textarea
+                            id="tcg_live_log"
+                            value={tcgLiveLog}
+                            onChange={(event) => {
+                              setImportExpanded(true);
+                              setTcgLiveLog(event.target.value);
+                            }}
+                            rows={7}
+                            placeholder="Paste a TCG Live battle log"
+                            className={`${textarea} min-h-[180px] w-full`}
+                          />
+                        </div>
+                        <div className="flex flex-col gap-2 sm:flex-row">
+                          <button
+                            type="button"
+                            onClick={importTcgLiveLog}
+                            className={`${primaryButton} w-full whitespace-nowrap sm:w-auto sm:min-w-[188px]`}
+                          >
+                            Autofill from log
+                          </button>
+                          <button
+                            type="button"
+                            onClick={clearImportedLog}
+                            className={`${secondaryButton} w-full whitespace-nowrap sm:w-auto sm:min-w-[140px]`}
+                          >
+                            Clear import
+                          </button>
+                        </div>
+                        {importStatus.length ? (
+                          <div className={`grid gap-2 p-3 ${premiumInset}`}>
+                            {importStatus.map((note) => (
+                              <p
+                                key={note}
+                                className="text-sm leading-6 text-[#D6E0F0]"
+                              >
+                                {note}
+                              </p>
+                            ))}
+                          </div>
+                        ) : null}
+                      </div>
+                    ) : null}
+                  </section>
+
+                  <section className="rounded-xl bg-[#07111F]/36 p-3.5 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.12)] sm:p-5">
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
+                        Current step
+                      </p>
+                      <p className="text-xs text-[#94A3B8]">
+                        Step {currentStep + 1} of {stepOrder.length}
+                      </p>
+                    </div>
+
+                    <div className="mt-3.5 rounded-xl bg-[#0B1020]/52 p-3.5 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)] sm:mt-4 sm:p-4">
                   {currentStep === 0 ? (
                     <div className="grid gap-3.5 sm:gap-4">
                       <div>
@@ -2287,7 +2351,9 @@ export function MatchLogForm({
                 </div>
               </section>
 
+              </div>
               <aside className="hidden xl:block">{desktopSummary}</aside>
+            </div>
             </div>
           ) : null}
         </div>
