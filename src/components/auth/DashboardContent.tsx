@@ -564,12 +564,14 @@ function NextSetupStepCard({
   href,
   ctaLabel,
   eyebrow = "Next setup step",
+  ctaVariant = "primary",
 }: {
   title: string;
   copy: string;
   href: string;
   ctaLabel: string;
   eyebrow?: string;
+  ctaVariant?: "primary" | "secondary";
 }) {
   return (
     <section className={`${glassPanel} p-3.5 sm:p-5`}>
@@ -585,7 +587,10 @@ function NextSetupStepCard({
             {copy}
           </p>
         </div>
-        <Link href={href} className={`${primaryButton} h-11 shrink-0`}>
+        <Link
+          href={href}
+          className={`${ctaVariant === "primary" ? primaryButton : secondaryButton} h-11 shrink-0`}
+        >
           {ctaLabel}
           <ArrowRight className="ml-2 size-4" aria-hidden="true" />
         </Link>
@@ -802,6 +807,7 @@ export function DashboardContent({
                 href: "/matches/new",
                 ctaLabel: "Log another game",
                 eyebrow: "Build your testing signal",
+                ctaVariant: "secondary" as const,
               }
             : profileIsPrivate
               ? {
@@ -905,19 +911,19 @@ export function DashboardContent({
             />
           ) : (
             <div className="grid gap-4 sm:gap-6">
-              <section className="grid gap-3 xl:grid-cols-[minmax(0,1.55fr)_320px]">
-                <section className={`${glassPanel} p-3.5 sm:p-4`}>
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <section className="grid gap-3 xl:grid-cols-[minmax(0,1.15fr)_320px] xl:items-stretch">
+                <section className={`${glassPanel} p-3 sm:p-3.5`}>
+                  <div className="flex flex-col gap-1.5">
                     <div className="min-w-0">
                       <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
                         Insight scope
                       </p>
-                      <p className="mt-1 text-sm font-semibold text-[#F8FAFC]">
+                      <p className="mt-0.5 text-sm font-semibold text-[#F8FAFC]">
                         {scopeLabel}
                       </p>
                     </div>
                     {!currentDeckId ? (
-                      <Link href="/review?deck_id=all" className={`${secondaryButton} h-10 shrink-0`}>
+                      <Link href="/review?deck_id=all" className={`${secondaryButton} h-10 w-full sm:w-auto shrink-0`}>
                         All decks view
                       </Link>
                     ) : null}
