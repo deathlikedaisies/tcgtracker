@@ -1036,6 +1036,10 @@ export function MatchLogForm({
 
     setTcgLivePlayerNameError("");
 
+    setStartQuality(undefined);
+    setOpeningHandQuality(undefined);
+    setSequencingQuality(undefined);
+
     const parsed = parseTcgLiveLog(log, {
       archetypeOptions: opponentArchetypeOptions,
       playerName,
@@ -1074,9 +1078,6 @@ export function MatchLogForm({
         opponentArchetype: nextOpponentArchetype,
         result: nextResult,
         wentFirst: nextWentFirst,
-        startQuality,
-        openingHandQuality,
-        sequencingQuality,
       })
     );
 

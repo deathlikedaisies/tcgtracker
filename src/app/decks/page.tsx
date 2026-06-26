@@ -28,6 +28,7 @@ import {
   statCard,
 } from "@/components/brand-styles";
 import { getArchetypeOptions } from "@/lib/archetypes";
+import { resolveCurrentDeckScope } from "@/lib/current-deck-scope";
 import {
   analyzeDeckList,
   getDecklistHealth,
@@ -37,7 +38,7 @@ import { LATEST_FORMAT } from "@/lib/formats";
 import { type MatchResult } from "@/lib/match-types";
 import { buildSessionCoachInsight } from "@/lib/session-coach";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
-import { deleteDeck } from "./actions";
+import { deleteDeck, setActiveDeck } from "./actions";
 
 type DeckVersion = {
   id: string;
@@ -255,6 +256,11 @@ export default async function DecksPage() {
   const userMatches = (matches ?? []) as MatchRow[];
   const hasNoDecks = userDecks.length === 0;
   const sessionCoach = buildSessionCoachInsight(userMatches);
+  const currentDeckScope = resolveCurrentDeckScope({
+    decks: userDecks,
+    matches: userMatches,
+  });
+  const currentDeckId = currentDeckScope.deckId;
   const archetypeOptions = getArchetypeOptions(
     LATEST_FORMAT,
     userDecks.map((deck) => deck.archetype).filter(Boolean) as string[]
@@ -528,12 +534,14 @@ export default async function DecksPage() {
               {deckSummaries.length ? (
                 deckSummaries.map((summary) => {
                   const removeDeck = deleteDeck.bind(null, summary.deckId);
+                  const activateDeck = setActiveDeck.bind(null, summary.deckId);
                   const deckArchetype = summary.deckArchetype;
                   const listHealth = getDecklistHealth(
                     summary.analysis,
                     summary.parseError,
                     Boolean(summary.activeVersion?.decklist?.trim())
                   );
+                  const isCurrentDeck = currentDeckId === summary.deckId;
 
                   const versionPrompt = !summary.totalVersions
                     ? "Add first version"
@@ -560,6 +568,11 @@ export default async function DecksPage() {
                                   <h3 className="truncate text-xl font-semibold text-[#F8FAFC]">
                                     {summary.deck.name}
                                   </h3>
+                                  {isCurrentDeck ? (
+                                    <span className="rounded-full bg-[#F5C84C]/12 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#FFE28A] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
+                                      Current test deck
+                                    </span>
+                                  ) : null}
                                   <span
                                     className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${summary.trend.tone}`}
                                   >
@@ -613,19 +626,36 @@ export default async function DecksPage() {
                             </div>
                           </div>
 
-                          <div className="grid grid-cols-3 gap-2 xl:w-52 xl:grid-cols-1">
-                            <Link
-                              href={`/decks/${summary.deck.id}`}
-                              className={primaryButton}
-                            >
-                              {versionPrompt}
-                            </Link>
-                            <Link
-                              href={`/decks/${summary.deck.id}#versions`}
-                              className={secondaryButton}
-                            >
-                              Versions
-                            </Link>
+                            <div className="grid grid-cols-3 gap-2 xl:w-52 xl:grid-cols-1">
+                              <Link
+                                href={`/decks/${summary.deck.id}`}
+                                className={primaryButton}
+                              >
+                                {versionPrompt}
+                              </Link>
+                              {summary.totalVersions ? (
+                                isCurrentDeck ? (
+                                  <Link
+                                    href={`/decks/${summary.deck.id}#versions`}
+                                    className={secondaryButton}
+                                  >
+                                    Versions
+                                  </Link>
+                                ) : (
+                                  <form action={activateDeck}>
+                                    <button type="submit" className={`w-full ${secondaryButton}`}>
+                                      Make active
+                                    </button>
+                                  </form>
+                                )
+                              ) : (
+                                <Link
+                                  href={`/decks/${summary.deck.id}#versions`}
+                                  className={secondaryButton}
+                                >
+                                  Add version
+                                </Link>
+                              )}
                             <form action={removeDeck}>
                               <ConfirmSubmitButton
                                 message="Delete this deck and all of its versions and matches? This cannot be undone."

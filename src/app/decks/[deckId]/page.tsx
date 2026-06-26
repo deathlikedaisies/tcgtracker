@@ -7,7 +7,6 @@ import {
   ShieldCheck,
   Sparkles,
   Target,
-  TrendingUp,
 } from "lucide-react";
 import { AppNav } from "@/components/AppNav";
 import { AppSidebar } from "@/components/AppSidebar";
@@ -34,7 +33,6 @@ import {
   sectionTitle,
 } from "@/components/brand-styles";
 import { SixPrizerLogo } from "@/components/SixPrizerLogo";
-import { SessionCoachPanel } from "@/components/SessionCoachPanel";
 import { getArchetypeOptions } from "@/lib/archetypes";
 import {
   analyzeDeckList,
@@ -343,6 +341,29 @@ export default async function DeckDetailPage({
   const deckArchetype = safeText(deck.archetype, "Unknown archetype");
   const activeVersion =
     deckVersions.find((version) => version.is_active) ?? deckVersions[0] ?? null;
+  const activeVersionName = activeVersion
+    ? safeText(activeVersion.name, "Untitled version")
+    : "No active version";
+  const primaryDeckActionHref = !deckVersions.length
+    ? "#versions"
+    : activeVersion
+      ? `/matches/new?deck_version_id=${activeVersion.id}`
+      : "#versions";
+  const primaryDeckActionLabel = !deckVersions.length
+    ? "Add first version"
+    : !totalRecord.total
+      ? "Log first game"
+      : "Log game";
+  const secondaryDeckActionHref = !deckVersions.length
+    ? "#manual-archetype"
+    : totalRecord.total > 0
+      ? `/review?deck_id=${deck.id}`
+      : "#add-version";
+  const secondaryDeckActionLabel = !deckVersions.length
+    ? "Set deck identity"
+    : totalRecord.total > 0
+      ? "View review"
+      : "Add version";
   const bestVersion = versionInsights
     .filter((insight) => insight.performance.total >= 3)
     .sort((left, right) => {
@@ -519,28 +540,41 @@ export default async function DeckDetailPage({
             </div>
 
             <section className={`mt-5 p-5 sm:p-6 ${glassPanelStrong}`}>
-              <div className="grid gap-5 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+              <div className="grid gap-5 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] xl:items-start">
                 <div className="min-w-0">
                   <div className="flex gap-4">
-                    <ArchetypeSprites
-                      archetype={deckArchetype}
-                      size="md"
-                      className="mt-1 shrink-0"
-                    />
+                    <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-[24px] bg-[radial-gradient(circle_at_top,rgba(79,140,255,0.20),rgba(11,16,32,0.92))] shadow-[0_20px_38px_rgba(0,0,0,0.24),inset_0_0_0_1px_rgba(79,140,255,0.16)] sm:h-[92px] sm:w-[92px]">
+                      <ArchetypeSprites
+                        archetype={deckArchetype}
+                        size="lg"
+                        variant="bare"
+                        className="shrink-0"
+                      />
+                    </div>
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="rounded-full bg-[#4F8CFF]/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.14)]">
-                          Manual archetype
+                          Active deck
                         </span>
-                        <p className="text-sm font-medium text-[#F5C84C]">
+                        <span className="rounded-full bg-[#0B1020]/62 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.14)]">
                           {deckArchetype}
-                        </p>
+                        </span>
                       </div>
                       <h1 className={pageTitle}>{deckName}</h1>
-                      <p className="max-w-2xl text-sm leading-6 text-[#94A3B8]/72">
-                        {deckNotes ??
-                          "Use the manual archetype as the deck-level identity. Auto-detected archetypes below stay version-specific."}
+                      <p className="mt-1 text-sm font-medium text-[#DCE8FF]">
+                        Testing: {activeVersionName}
                       </p>
+                      <p className="mt-2 max-w-2xl text-sm leading-6 text-[#94A3B8]/72">
+                        {deckNotes ?? "Use this page to compare versions, keep the current test active, and decide what to log next."}
+                      </p>
+                      <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                        <Link href={primaryDeckActionHref} className={primaryButton}>
+                          {primaryDeckActionLabel}
+                        </Link>
+                        <Link href={secondaryDeckActionHref} className={secondaryButton}>
+                          {secondaryDeckActionLabel}
+                        </Link>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -576,7 +610,26 @@ export default async function DeckDetailPage({
             </div>
           ) : null}
 
-          {sessionCoach && hasDeckGames ? <SessionCoachPanel insight={sessionCoach} /> : null}
+          {sessionCoach && hasDeckGames ? (
+            <section className={`p-4 ${glassPanel}`}>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
+                    Current experiment
+                  </p>
+                  <h2 className="mt-2 text-lg font-semibold text-[#F8FAFC]">
+                    {sessionCoach.missionTitle}
+                  </h2>
+                  <p className="mt-1 text-sm leading-6 text-[#94A3B8]/72">
+                    {sessionCoach.nextAction}
+                  </p>
+                </div>
+                <div className="rounded-full bg-[#0B1020]/62 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]">
+                  {sessionCoach.missionProgress}/{sessionCoach.missionTargetCount} games
+                </div>
+              </div>
+            </section>
+          ) : null}
 
           <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-start">
             <section id="versions" className="grid gap-4 scroll-mt-8">
@@ -961,46 +1014,52 @@ export default async function DeckDetailPage({
                           </details>
                         </div>
                       ) : (
-                      <div className="mt-4 grid gap-4 xl:grid-cols-2">
-                        <div className={`${premiumInset} p-4`}>
-                          <div className="flex items-center gap-2">
-                            <TrendingUp className="size-4 text-[#4F8CFF]" aria-hidden="true" />
-                            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
-                              Performance
+                      <div className="mt-4 grid gap-4">
+                        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                          <div className={`${statCard} p-3`}>
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                              Games
+                            </p>
+                            <p className="mt-2 text-lg font-semibold text-[#F8FAFC]">
+                              {total}
                             </p>
                           </div>
-                          <div className="mt-4 grid gap-3 grid-cols-2 min-[430px]:grid-cols-3">
-                            <div className={`${statCard} p-3`}>
-                              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
-                                Games
-                              </p>
-                              <p className="mt-2 text-lg font-semibold text-[#F8FAFC]">
-                                {total}
-                              </p>
-                            </div>
-                            <div className={`${statCard} p-3`}>
-                              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
-                                Win rate
-                              </p>
-                              <p className="mt-2 text-lg font-semibold text-[#F8FAFC]">
-                                {total ? `${winRate}%` : "N/A"}
-                              </p>
-                            </div>
-                            <div className={`${statCard} p-3`}>
-                              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
-                                Record
-                              </p>
-                              <p className="mt-2 text-lg font-semibold text-[#F8FAFC]">
-                                {wins}W {losses}L {ties}T
-                              </p>
-                            </div>
+                          <div className={`${statCard} p-3`}>
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                              Win rate
+                            </p>
+                            <p className="mt-2 text-lg font-semibold text-[#F8FAFC]">
+                              {total ? `${winRate}%` : "N/A"}
+                            </p>
                           </div>
-                          <p className="mt-3 text-sm leading-6 text-[#94A3B8]/72">
-                            {testStatus.detail}
-                          </p>
+                          <div className={`${statCard} p-3`}>
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                              Record
+                            </p>
+                            <p className="mt-2 text-lg font-semibold text-[#F8FAFC]">
+                              {wins}W {losses}L {ties}T
+                            </p>
+                          </div>
+                          <div className={`${statCard} p-3`}>
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                              List health
+                            </p>
+                            <p className="mt-2 text-sm font-semibold text-[#F8FAFC]">
+                              {normalizeDecklistUiText(listHealth.label)}
+                            </p>
+                          </div>
                         </div>
+                        <p className="text-sm leading-6 text-[#94A3B8]/72">
+                          {testStatus.detail}
+                        </p>
 
-                        <div className={`${premiumInset} p-4`}>
+                        <details className={`${premiumInset} p-4`}>
+                          <summary className="cursor-pointer list-none text-sm font-semibold text-[#DCE8FF] marker:hidden">
+                            Version details
+                          </summary>
+                          <div className="mt-4 grid gap-4 xl:grid-cols-2">
+
+                            <div className={`${premiumInset} p-4 xl:col-span-2`}>
                           <div className="flex items-center gap-2">
                             <Target className="size-4 text-[#F5C84C]" aria-hidden="true" />
                             <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#F5C84C]">
@@ -1060,7 +1119,7 @@ export default async function DeckDetailPage({
                           )}
                         </div>
 
-                        <div className={`${premiumInset} p-4`}>
+                            <div className={`${premiumInset} p-4 xl:col-span-2`}>
                           <div className="flex items-center gap-2">
                             <Layers3 className="size-4 text-[#4F8CFF]" aria-hidden="true" />
                             <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
@@ -1099,7 +1158,7 @@ export default async function DeckDetailPage({
                           )}
                         </div>
 
-                        <div className={`${premiumInset} p-4`}>
+                            <div className={`${premiumInset} p-4`}>
                           <div className="flex items-center gap-2">
                             <ShieldCheck className="size-4 text-[#F5C84C]" aria-hidden="true" />
                             <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#F5C84C]">
@@ -1157,8 +1216,8 @@ export default async function DeckDetailPage({
                             </p>
                           )}
                         </div>
-                      </div>
-                      )}
+                          </div>
+                        </details>
 
                       {version.notes ? (
                         <div className={`${premiumInset} mt-4 p-4`}>
@@ -1181,6 +1240,8 @@ export default async function DeckDetailPage({
                           </pre>
                         </details>
                       ) : null}
+                      </div>
+                      )}
                     </article>
                   );
                 })

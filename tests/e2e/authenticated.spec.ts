@@ -375,6 +375,30 @@ test.describe("authenticated routes", () => {
     await expect(page.locator("body")).toContainText(/Detected turn order: first/i);
     await expect(page.locator("body")).toContainText(/Detected opponent: AlfonsoLarsen/i);
     await expect(page.locator("body")).toContainText(/Rate how the game felt/i);
+    const qualityContinue = page.getByRole("button", { name: "Continue" });
+    await expect(qualityContinue).toBeDisabled();
+    const startFieldset = page
+      .locator("fieldset")
+      .filter({ has: page.locator("legend", { hasText: /^Start$/ }) });
+    const openingFieldset = page
+      .locator("fieldset")
+      .filter({ has: page.locator("legend", { hasText: /^Opening hand$/ }) });
+    const sequencingFieldset = page
+      .locator("fieldset")
+      .filter({ has: page.locator("legend", { hasText: /^Sequencing$/ }) });
+    await expect(
+      startFieldset.getByRole("button", { pressed: true })
+    ).toHaveCount(0);
+    await expect(
+      openingFieldset.getByRole("button", { pressed: true })
+    ).toHaveCount(0);
+    await expect(
+      sequencingFieldset.getByRole("button", { pressed: true })
+    ).toHaveCount(0);
+    await startFieldset.getByRole("button", { name: "Good" }).click();
+    await openingFieldset.getByRole("button", { name: "Good" }).click();
+    await sequencingFieldset.getByRole("button", { name: "Good" }).click();
+    await expect(qualityContinue).toBeEnabled();
     await expect(page.getByRole("button", { name: "Autofill from log" })).toBeVisible();
 
     await page.getByRole("button", { name: "Back" }).click();
@@ -519,7 +543,7 @@ test.describe("authenticated routes", () => {
     await expect(deckFilter).not.toHaveValue("all");
     await expect(page.locator("body")).toContainText(/Showing insights for:/i);
     await expect(coachHero).toContainText(
-      /Item Lock|missed setup|Mega Greninja|version|stronger so far/i
+      /Item Lock|missed setup|Mega Greninja|supporter drought|version|stronger so far/i
     );
     await expect(coachHero).toContainText(/What to do next/i);
     await expect(coachHero).toContainText(/Evidence|Confidence/i);
@@ -554,7 +578,10 @@ test.describe("authenticated routes", () => {
   test("/dashboard opens Review with the same current-deck scope", async ({ page }) => {
     await page.goto("/dashboard");
 
-    const reviewLink = page.getByRole("link", { name: "Open review" }).first();
+    const reviewLink = page
+      .locator('a[href^="/review"]')
+      .filter({ hasText: "Open review" })
+      .first();
     const href = await reviewLink.getAttribute("href");
 
     expect(href).toBeTruthy();
@@ -599,6 +626,50 @@ test.describe("authenticated routes", () => {
     await expect(page.locator("body")).toContainText(
       /Opening quality|Sequencing quality|Best current signal/i
     );
+    await expectNoAppError(page);
+  });
+
+  test("/decks can switch the active deck and dashboard-review follow it", async ({
+    page,
+  }) => {
+    await page.goto("/decks");
+
+    const inactiveCard = page
+      .locator("article")
+      .filter({ has: page.getByRole("button", { name: "Make active" }) })
+      .first();
+    await expect(inactiveCard).toBeVisible();
+
+    const deckName = (await inactiveCard
+      .getByRole("heading", { level: 3 })
+      .textContent())?.trim();
+    expect(deckName).toBeTruthy();
+
+    const detailHref = await inactiveCard
+      .getByRole("link")
+      .first()
+      .getAttribute("href");
+    const deckId = detailHref?.match(/\/decks\/([^#?]+)/)?.[1];
+    expect(deckId).toBeTruthy();
+
+    await inactiveCard.getByRole("button", { name: "Make active" }).click();
+    await page.waitForURL(/\/decks/, { timeout: 20000 });
+
+    const activeCard = page
+      .locator("article")
+      .filter({ has: page.getByRole("heading", { name: deckName! }) })
+      .first();
+    await expect(activeCard).toContainText(/Current test deck/i);
+    await expect(
+      activeCard.getByRole("button", { name: "Make active" })
+    ).toHaveCount(0);
+
+    await page.goto("/dashboard");
+    await expect(page.locator("body")).toContainText(deckName!);
+
+    await page.goto("/review");
+    await expect(page.getByLabel("Deck")).toHaveValue(deckId!);
+    await expect(page.locator("body")).toContainText(deckName!);
     await expectNoAppError(page);
   });
 

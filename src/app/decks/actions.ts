@@ -92,3 +92,73 @@ export async function deleteDeck(deckId: string) {
   revalidatePath("/decks");
   revalidatePath("/dashboard");
 }
+
+export async function setActiveDeck(deckId: string) {
+  const { supabase, user } = await getSignedInUser();
+
+  const { data: deck, error: deckError } = await supabase
+    .from("decks")
+    .select("id")
+    .eq("id", deckId)
+    .eq("user_id", user.id)
+    .single();
+
+  if (deckError || !deck) {
+    throw new Error("Deck not found.");
+  }
+
+  const { data: versions, error: versionsError } = await supabase
+    .from("deck_versions")
+    .select("id, is_active, created_at")
+    .eq("deck_id", deckId)
+    .order("is_active", { ascending: false })
+    .order("created_at", { ascending: false });
+
+  if (versionsError) {
+    throw new Error(versionsError.message);
+  }
+
+  const targetVersion = versions?.[0] ?? null;
+
+  if (!targetVersion?.id) {
+    redirect(`/decks/${deckId}#versions`);
+  }
+
+  const { data: userDecks, error: userDecksError } = await supabase
+    .from("decks")
+    .select("id")
+    .eq("user_id", user.id);
+
+  if (userDecksError) {
+    throw new Error(userDecksError.message);
+  }
+
+  const userDeckIds = (userDecks ?? []).map((row) => row.id).filter(Boolean);
+
+  if (userDeckIds.length) {
+    const { error: clearError } = await supabase
+      .from("deck_versions")
+      .update({ is_active: false })
+      .in("deck_id", userDeckIds);
+
+    if (clearError) {
+      throw new Error(clearError.message);
+    }
+  }
+
+  const { error: activateError } = await supabase
+    .from("deck_versions")
+    .update({ is_active: true })
+    .eq("id", targetVersion.id)
+    .eq("deck_id", deckId);
+
+  if (activateError) {
+    throw new Error(activateError.message);
+  }
+
+  revalidatePath("/decks");
+  revalidatePath(`/decks/${deckId}`);
+  revalidatePath("/dashboard");
+  revalidatePath("/review");
+  revalidatePath("/matches/new");
+}
