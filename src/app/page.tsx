@@ -71,10 +71,10 @@ function Pill({ children }: { children: ReactNode }) {
 
 function ProductPreview() {
   return (
-    <div className="relative min-w-0 overflow-hidden rounded-[28px] bg-[linear-gradient(180deg,rgba(15,25,44,0.97),rgba(8,17,31,0.94))] p-4 shadow-[0_24px_64px_rgba(0,0,0,0.32),inset_0_0_0_1px_rgba(148,163,184,0.14),inset_0_1px_0_rgba(255,255,255,0.04)] sm:p-5 lg:p-6">
+    <div className="relative min-w-0 overflow-hidden rounded-[30px] bg-[linear-gradient(180deg,rgba(15,25,44,0.97),rgba(8,17,31,0.94))] p-5 shadow-[0_28px_70px_rgba(0,0,0,0.34),inset_0_0_0_1px_rgba(148,163,184,0.14),inset_0_1px_0_rgba(255,255,255,0.04)] sm:p-6 lg:p-7">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,rgba(79,140,255,0.34),rgba(255,255,255,0.10),rgba(245,200,76,0.24))]" />
-      <div className="relative grid gap-4">
-        <div className="flex min-w-0 items-start gap-3 rounded-[22px] bg-[#07111F]/58 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)] sm:gap-4 sm:p-4">
+      <div className="relative grid gap-5">
+        <div className="flex min-w-0 items-start gap-3 rounded-[24px] bg-[#07111F]/58 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)] sm:gap-4 sm:p-5">
           <span className="inline-flex shrink-0 rounded-[20px] bg-[radial-gradient(circle_at_top,rgba(79,140,255,0.24),rgba(11,16,32,0.16)_62%,transparent_100%)] p-3 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.18)]">
             <ArchetypeSprites
               archetype="Dragapult Blaziken"
@@ -93,14 +93,14 @@ function ProductPreview() {
             <p className="mt-1 text-sm font-medium text-[#D6E0F0]/86">
               Testing: v3 consistency build
             </p>
-            <p className="mt-2 text-sm leading-5 text-[#94A3B8]/76">
+            <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
               Showing insights for this deck
             </p>
           </div>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-[1.25fr_0.75fr]">
-          <div className="rounded-[22px] bg-[#0F1A2D]/86 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]">
+        <div className="grid gap-4 sm:grid-cols-[1.28fr_0.72fr]">
+          <div className="rounded-[24px] bg-[#0F1A2D]/86 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)] sm:p-5">
             <div className="flex items-center justify-between gap-3">
               <p className="text-xs font-semibold uppercase tracking-[0.10em] text-[#F5C84C]">
                 Deck Lab
@@ -110,27 +110,27 @@ function ProductPreview() {
             <h3 className="mt-3 text-lg font-bold text-[#F8FAFC]">
               Setup quality improved in v3.
             </h3>
-            <p className="mt-2 text-sm leading-6 text-[#94A3B8]/78">
+            <p className="mt-2 max-w-[32rem] text-sm leading-6 text-[#94A3B8]/78">
               Keep this version for a few more clean logs before changing the list again.
             </p>
-            <div className="mt-4 grid gap-2">
-              <div className="flex items-center justify-between gap-3 rounded-[16px] bg-[#07111F]/58 px-3 py-2.5">
+            <div className="mt-5 grid gap-2.5">
+              <div className="flex items-center justify-between gap-3 rounded-[16px] bg-[#07111F]/58 px-3.5 py-3">
                 <span className="text-sm text-[#D6E0F0]">Win rate</span>
                 <span className="text-sm font-semibold text-emerald-200">58% vs 44%</span>
               </div>
-              <div className="flex items-center justify-between gap-3 rounded-[16px] bg-[#07111F]/58 px-3 py-2.5">
+              <div className="flex items-center justify-between gap-3 rounded-[16px] bg-[#07111F]/58 px-3.5 py-3">
                 <span className="text-sm text-[#D6E0F0]">Opening hand</span>
                 <span className="text-sm font-semibold text-[#FFE28A]">Better</span>
               </div>
-              <div className="flex items-center justify-between gap-3 rounded-[16px] bg-[#07111F]/58 px-3 py-2.5">
+              <div className="flex items-center justify-between gap-3 rounded-[16px] bg-[#07111F]/58 px-3.5 py-3">
                 <span className="text-sm text-[#D6E0F0]">Going second</span>
                 <span className="text-sm font-semibold text-rose-200">Watch</span>
               </div>
             </div>
           </div>
 
-          <div className="grid gap-3">
-            <div className="rounded-[22px] bg-[#0F1A2D]/86 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]">
+          <div className="grid gap-4">
+            <div className="rounded-[24px] bg-[#0F1A2D]/86 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)] sm:p-5">
               <p className="text-xs font-semibold uppercase tracking-[0.10em] text-[#94A3B8]">
                 Testing discipline
               </p>
@@ -148,11 +148,11 @@ function ProductPreview() {
               </div>
             </div>
 
-            <div className="rounded-[22px] bg-[#0F1A2D]/86 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]">
+            <div className="rounded-[24px] bg-[#0F1A2D]/86 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)] sm:p-5">
               <p className="text-xs font-semibold uppercase tracking-[0.10em] text-[#94A3B8]">
                 Meta watchlist
               </p>
-              <div className="mt-3 grid gap-2 text-sm">
+              <div className="mt-4 grid gap-3 text-sm">
                 <div className="flex items-center justify-between gap-3">
                   <span className="truncate text-[#D6E0F0]">N&apos;s Zoroark</span>
                   <span className="shrink-0 text-[#94A3B8]">No data</span>
@@ -239,24 +239,24 @@ export default async function Home() {
         </div>
       </header>
 
-      <section className="relative px-4 pb-12 pt-8 sm:px-6 sm:pb-16 sm:pt-12">
-        <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:items-center">
+      <section className="relative px-4 pb-16 pt-10 sm:px-6 sm:pb-24 sm:pt-16">
+        <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[minmax(0,0.94fr)_minmax(0,1.06fr)] lg:items-center xl:gap-12">
           <div className="min-w-0">
             <p className="inline-flex items-center gap-2 rounded-full bg-[#4F8CFF]/12 px-3 py-1.5 text-sm font-semibold text-[#B8D1FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.22)]">
               <ShieldCheck className="size-4" aria-hidden="true" />
               Built for competitive Pokemon TCG testing
             </p>
-            <h1 className="mt-5 max-w-[12ch] text-4xl font-black leading-[0.98] tracking-normal text-[#F8FAFC] min-[390px]:text-5xl sm:text-6xl xl:text-[4.4rem]">
+            <h1 className="mt-6 max-w-[13ch] text-4xl font-black leading-[1.02] tracking-normal text-[#F8FAFC] min-[390px]:text-5xl sm:text-6xl xl:text-[4rem]">
               Know if your deck changes are actually working.
             </h1>
-            <p className="mt-5 max-w-2xl text-base leading-7 text-[#C7D2E5] sm:text-lg sm:leading-8">
+            <p className="mt-6 max-w-2xl text-base leading-8 text-[#C7D2E5] sm:text-lg sm:leading-8">
               Log games, import TCG Live battle logs, compare deck versions, and see what to test next before changing your list again.
             </p>
             <p className="mt-3 text-sm font-medium text-[#94A3B8]/82">
               Your testing data stays private by default.
             </p>
 
-            <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:gap-4">
               <Link
                 href="/signup"
                 className={`${primaryButton} min-h-12 px-7 text-base shadow-[0_18px_44px_rgba(245,200,76,0.30),0_0_0_1px_rgba(245,200,76,0.22)]`}
@@ -272,7 +272,7 @@ export default async function Home() {
               </Link>
             </div>
 
-            <div className="mt-8 grid gap-2.5 min-[430px]:grid-cols-3">
+            <div className="mt-9 grid gap-2.5 min-[430px]:grid-cols-3">
               <Pill>Fast logging</Pill>
               <Pill>Deck Lab</Pill>
               <Pill>Scoped Review</Pill>
@@ -283,7 +283,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="px-4 pb-14 sm:px-6 sm:pb-20">
+      <section className="px-4 py-16 sm:px-6 sm:py-24">
         <div className="mx-auto max-w-7xl">
           <SectionHeader
             eyebrow="Testing workflow"
@@ -291,7 +291,7 @@ export default async function Home() {
             copy="SixPrizer turns whatever games you actually get into a clean testing loop for the current deck."
           />
 
-          <div className="mt-7 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <div className="mt-9 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
             {workflowSteps.map((item, index) => {
               const Icon = item.icon;
 
@@ -315,8 +315,8 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="px-4 pb-14 sm:px-6 sm:pb-20">
-        <div className="mx-auto grid max-w-7xl gap-6 rounded-[30px] bg-[linear-gradient(180deg,rgba(14,24,42,0.94),rgba(8,17,31,0.90))] p-5 shadow-[0_22px_58px_rgba(0,0,0,0.26),inset_0_0_0_1px_rgba(148,163,184,0.12)] sm:p-7 lg:grid-cols-[0.9fr_1.1fr] lg:p-8">
+      <section className="px-4 py-16 sm:px-6 sm:py-24">
+        <div className="mx-auto grid max-w-7xl gap-8 rounded-[32px] bg-[linear-gradient(180deg,rgba(14,24,42,0.94),rgba(8,17,31,0.90))] p-6 shadow-[0_24px_64px_rgba(0,0,0,0.28),inset_0_0_0_1px_rgba(148,163,184,0.12)] sm:p-8 lg:grid-cols-[0.9fr_1.1fr] lg:p-10">
           <div>
             <SectionHeader
               eyebrow="Deck Lab"
@@ -324,8 +324,8 @@ export default async function Home() {
               copy="Compare your active version against previous builds, track testing discipline, and watch key meta matchups without chasing ladder pairings."
             />
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-              <Link href="/demo/decks" className={`${primaryButton} h-12 px-6`}>
-                Preview Deck Lab
+              <Link href="/demo" className={`${primaryButton} h-12 px-6`}>
+                Preview demo
                 <ArrowRight className="ml-2 size-4" aria-hidden="true" />
               </Link>
               <Link href="/signup" className={`${secondaryButton} h-12 px-6`}>
@@ -334,7 +334,7 @@ export default async function Home() {
             </div>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-2">
             {deckLabFeatures.map((feature) => (
               <div
                 key={feature}
@@ -350,9 +350,9 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="px-4 pb-14 sm:px-6 sm:pb-20">
-        <div className="mx-auto grid max-w-7xl gap-5 lg:grid-cols-2">
-          <div className="rounded-[28px] bg-[linear-gradient(180deg,rgba(15,25,44,0.92),rgba(8,17,31,0.88))] p-5 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.12),0_18px_48px_rgba(0,0,0,0.20)] sm:p-7">
+      <section className="px-4 py-16 sm:px-6 sm:py-24">
+        <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-2">
+          <div className="rounded-[30px] bg-[linear-gradient(180deg,rgba(15,25,44,0.92),rgba(8,17,31,0.88))] p-6 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.12),0_18px_48px_rgba(0,0,0,0.20)] sm:p-8">
             <Import className="size-8 text-[#F5C84C]" aria-hidden="true" />
             <h2 className="mt-4 text-3xl font-black tracking-tight text-[#F8FAFC]">
               Paste a TCG Live battle log. SixPrizer fills the boring parts.
@@ -367,7 +367,7 @@ export default async function Home() {
             </div>
           </div>
 
-          <div className="rounded-[28px] bg-[linear-gradient(180deg,rgba(15,25,44,0.92),rgba(8,17,31,0.88))] p-5 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.12),0_18px_48px_rgba(0,0,0,0.20)] sm:p-7">
+          <div className="rounded-[30px] bg-[linear-gradient(180deg,rgba(15,25,44,0.92),rgba(8,17,31,0.88))] p-6 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.12),0_18px_48px_rgba(0,0,0,0.20)] sm:p-8">
             <LockKeyhole className="size-8 text-[#4F8CFF]" aria-hidden="true" />
             <h2 className="mt-4 text-3xl font-black tracking-tight text-[#F8FAFC]">
               Private testing by default.
@@ -389,8 +389,8 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="px-4 pb-14 sm:px-6 sm:pb-20">
-        <div className="mx-auto max-w-7xl rounded-[30px] bg-[linear-gradient(180deg,rgba(11,18,32,0.96),rgba(7,17,31,0.92))] p-6 text-center shadow-[0_22px_58px_rgba(0,0,0,0.28),inset_0_0_0_1px_rgba(245,200,76,0.16)] sm:p-8">
+      <section className="px-4 py-16 sm:px-6 sm:py-24">
+        <div className="mx-auto max-w-7xl rounded-[32px] bg-[linear-gradient(180deg,rgba(11,18,32,0.96),rgba(7,17,31,0.92))] p-7 text-center shadow-[0_24px_64px_rgba(0,0,0,0.30),inset_0_0_0_1px_rgba(245,200,76,0.16)] sm:p-10">
           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#F5C84C]/88">
             Demo workspace
           </p>
@@ -412,9 +412,9 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="px-4 pb-16 sm:px-6 sm:pb-24">
+      <section className="px-4 pb-24 pt-10 sm:px-6 sm:pb-32 sm:pt-14">
         <div className="mx-auto max-w-7xl">
-          <div className="flex flex-col gap-5 border-t border-white/10 pt-8 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-6 rounded-[30px] border border-white/10 bg-[#0B1020]/44 p-6 shadow-[0_18px_48px_rgba(0,0,0,0.18)] sm:flex-row sm:items-center sm:justify-between sm:p-8">
             <div className="max-w-2xl">
               <h2 className="text-3xl font-black tracking-tight text-[#F8FAFC] sm:text-4xl">
                 Ready to test your next list properly?
