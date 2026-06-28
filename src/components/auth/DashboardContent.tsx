@@ -324,16 +324,16 @@ function MissionHeroCard({
         <div className="mt-3 flex flex-wrap items-center gap-2.5 sm:mt-4 sm:gap-3">
           <ArchetypeSprites archetype={insight.archetype} size="md" className="shrink-0" />
           <div className="min-w-0">
-            <h1 className="text-[1.55rem] font-bold tracking-tight text-[#F8FAFC] sm:text-3xl">
+            <h1 className="text-[1.35rem] font-bold tracking-tight text-[#F8FAFC] sm:text-3xl">
               {insight.missionTitle}
             </h1>
-            <p className="mt-1.5 text-sm leading-5 text-[#D6E0F0]/82 sm:mt-2 sm:text-base sm:leading-6">
+            <p className="mt-1 text-sm leading-5 text-[#D6E0F0]/82 sm:mt-2 sm:text-base sm:leading-6">
               {insight.missionStatusReason}
             </p>
           </div>
         </div>
 
-        <div className="mt-4 grid gap-2 sm:mt-5 sm:gap-3 sm:grid-cols-3">
+        <div className="mt-3 grid grid-cols-2 gap-2 sm:mt-5 sm:gap-3 sm:grid-cols-3">
           <StatusChip
             label="Current focus"
             value={insight.missionContextLabel}
@@ -625,8 +625,8 @@ function CurrentDeckSummaryCard({
 
   return (
     <section className={`${glassPanel} overflow-hidden p-4 sm:p-5`}>
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex min-w-0 items-start gap-4 sm:gap-5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+        <div className="flex min-w-0 items-start gap-3.5 sm:gap-5">
           <span className="inline-flex shrink-0 rounded-[22px] bg-[radial-gradient(circle_at_top,rgba(79,140,255,0.28),rgba(11,16,32,0.16)_62%,transparent_100%)] p-3.5 shadow-[0_18px_38px_rgba(0,0,0,0.20),inset_0_0_0_1px_rgba(148,163,184,0.10)]">
             <ArchetypeSprites
               archetype={isAllDecks ? null : archetype}
@@ -645,13 +645,13 @@ function CurrentDeckSummaryCard({
                 {isAllDecks ? "All decks" : "Active test"}
               </span>
             </div>
-            <h2 className="mt-2 text-xl font-semibold tracking-tight text-[#F8FAFC] sm:text-[1.35rem]">
+            <h2 className="mt-1.5 text-xl font-semibold tracking-tight text-[#F8FAFC] sm:text-[1.35rem]">
               {title}
             </h2>
             <p className="mt-1 text-sm font-medium text-[#D6E0F0]/84 sm:text-base">
               {subtitle}
             </p>
-            <p className="mt-2 text-sm leading-5 text-[#94A3B8]/72">
+            <p className="mt-1.5 text-sm leading-5 text-[#94A3B8]/72">
               {detail}
             </p>
           </div>
@@ -902,9 +902,9 @@ export function DashboardContent({
         <div className={`${appMain} mx-auto w-full max-w-7xl`}>
           <AuthenticatedPageHeader
             current="dashboard"
-            eyebrow="Testing overview"
+            eyebrow="Current workspace"
             title="Overview"
-            subtitle="See what improved, what is hurting you, and what to test next."
+            subtitle="See what to log next, what is hurting the current deck, and what changed."
             userEmail={email}
           />
 

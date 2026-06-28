@@ -57,7 +57,14 @@ test.describe("mobile layout", () => {
         await expectHeadingVisible(page, route.heading);
         if (route.path === "/dashboard") {
           await expect(page.getByRole("button", { name: "Sign out" })).toBeVisible();
+          await expect(page.locator("body")).toContainText(/Current test deck|Current test scope/i);
           await expect(page.locator("body")).toContainText(/Next best action|Current focus/i);
+          await expect(
+            page.getByRole("link", { name: /^Log game$/ }).first()
+          ).toBeVisible();
+          await expect(
+            page.getByRole("link", { name: /^Match history$/ }).first()
+          ).toBeVisible();
         }
         if (route.path === "/matches/new") {
           await expect(page.locator("body")).toContainText(/Active test/i);
