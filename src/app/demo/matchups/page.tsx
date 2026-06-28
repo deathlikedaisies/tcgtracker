@@ -12,7 +12,10 @@ import {
 import {
   getConfidenceLabel,
   getConfidenceTone,
-  getDemoInsights,
+  getDemoActiveVersion,
+  getDemoCurrentDeck,
+  getDemoDeckLab,
+  getDemoDeckMatches,
   getDemoMatchups,
 } from "@/lib/demo-data";
 import { formatMatchRecord } from "@/lib/match-types";
@@ -22,9 +25,17 @@ function pct(wins: number, games: number) {
 }
 
 export default function DemoMatchupsPage() {
-  const matchups = getDemoMatchups();
-  const insights = getDemoInsights();
-  const biggestLeak = insights.biggestStatisticalLeak;
+  const currentDeck = getDemoCurrentDeck();
+  const activeVersion = getDemoActiveVersion(currentDeck);
+  const deckMatches = currentDeck ? getDemoDeckMatches(currentDeck.id) : [];
+  const matchups = getDemoMatchups(deckMatches);
+  const deckLab = currentDeck ? getDemoDeckLab(currentDeck.id) : null;
+  const biggestLeak =
+    matchups.find((matchup) => matchup.games.length >= 2) ?? matchups[0];
+
+  if (!currentDeck || !activeVersion || !deckLab || !biggestLeak) {
+    return null;
+  }
 
   return (
     <DemoShell current="matchups">
@@ -33,11 +44,11 @@ export default function DemoMatchupsPage() {
           <p className="text-sm font-semibold text-[#4F8CFF]">Matchup intelligence</p>
           <h1 className={pageTitle}>Demo matchup report</h1>
           <p className={pageCopy}>
-            Clear weak spots, going-first/second splits, and repeated loss patterns.
+            Supporting matchup evidence for the current test deck, not pooled across every deck in the demo workspace.
           </p>
         </div>
         <Link href="/demo/matches/new" className={`${primaryButton} h-12`}>
-          Test this matchup
+          Log game
         </Link>
       </section>
 
@@ -57,6 +68,9 @@ export default function DemoMatchupsPage() {
                     biggestLeak.losses,
                     biggestLeak.ties
                   )}, {biggestLeak.winRate}% win rate
+                </p>
+                <p className="mt-1 text-xs text-rose-100/72">
+                  {currentDeck.name} · {activeVersion.name}
                 </p>
               </div>
             </div>
@@ -79,17 +93,17 @@ export default function DemoMatchupsPage() {
             </div>
           </div>
           <p className="mt-3 text-sm leading-6 text-rose-100/82">
-            This matchup has enough games to test on purpose. Play a few more games against it and check whether the same problem keeps causing losses.
+            {deckLab.nextObservation}
           </p>
         </article>
 
         <article className={cardLarge}>
-          <h2 className="text-xl font-bold text-[#F8FAFC]">{insights.recommendedNextTest.title}</h2>
+          <h2 className="text-xl font-bold text-[#F8FAFC]">What to watch next</h2>
           <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
-            Why this recommendation? {insights.recommendedNextTest.why}
+            {deckLab.recommendation}
           </p>
           <div className="mt-4 grid gap-3">
-            {insights.recommendedNextTest.steps.map((item, index) => (
+            {[deckLab.versionConclusion, deckLab.sampleCaution, deckLab.nextObservation].map((item, index) => (
               <div key={item} className="grid grid-cols-[32px_minmax(0,1fr)] gap-3 rounded-[16px] bg-[#07111F]/52 p-3">
                 <span className="inline-flex size-8 items-center justify-center rounded-full bg-[#4F8CFF]/18 text-sm font-bold text-[#B8D1FF]">
                   {index + 1}
@@ -106,15 +120,15 @@ export default function DemoMatchupsPage() {
           <div>
             <h2 className="text-xl font-bold text-[#F8FAFC]">Watchlist</h2>
             <p className="text-sm leading-6 text-[#94A3B8]/76">
-              These matchups look risky, but there are not enough games yet. Keep logging them before making changes.
+              If these show up on ladder, log them cleanly. They are not required targets.
             </p>
           </div>
           <span className="rounded-full bg-[#F5C84C]/12 px-2 py-1 text-xs font-semibold text-[#F5C84C]">
-            Early warning
+            Current deck watchlist
           </span>
         </div>
         <div className="mt-4 grid gap-3 md:grid-cols-2">
-          {insights.lowConfidenceWatchlist.map((matchup) => (
+          {deckLab.metaWatchlist.slice(0, 4).map((matchup) => (
             <article key={matchup.archetype} className="rounded-[16px] bg-[#07111F]/52 p-3 shadow-[inset_0_0_0_1px_rgba(245,200,76,0.14)]">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-2">
@@ -122,16 +136,16 @@ export default function DemoMatchupsPage() {
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-[#F8FAFC]">{matchup.archetype}</p>
                     <p className="text-xs text-[#94A3B8]/70">
-                      {matchup.record}, {matchup.games.length} games
+                      {matchup.count} game{matchup.count === 1 ? "" : "s"} · {matchup.recentLabel}
                     </p>
                   </div>
                 </div>
-                <span className={`shrink-0 rounded-full px-2 py-1 text-xs font-semibold ${getConfidenceTone(matchup.games.length)}`}>
-                  Needs more games
+                <span className="shrink-0 rounded-full bg-[#0B1020]/72 px-2 py-1 text-xs font-semibold text-[#DCE8FF]">
+                  {matchup.statusLabel}
                 </span>
               </div>
               <p className="mt-3 text-sm leading-6 text-[#94A3B8]/76">
-                {matchup.winRate}% over only {matchup.games.length} games. Keep logging this matchup before making any list changes.
+                If this matchup appears, log it cleanly before you decide whether the current version needs another change.
               </p>
             </article>
           ))}

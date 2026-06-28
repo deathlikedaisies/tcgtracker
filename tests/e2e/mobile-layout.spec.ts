@@ -8,7 +8,7 @@ import {
 
 const publicRoutes = [
   { path: "/", assertion: () => ({ role: "heading" as const, name: /From testing games to/i }) },
-  { path: "/demo", assertion: () => ({ role: "heading" as const, name: "SixPrizer demo workspace" }) },
+  { path: "/demo", assertion: () => ({ role: "heading" as const, name: "Explore a realistic testing workspace." }) },
   { path: "/login", assertion: () => ({ role: "heading" as const, name: "Log in to SixPrizer" }) },
   { path: "/signup", assertion: () => ({ role: "heading" as const, name: "Create your SixPrizer account" }) },
   { path: "/demo/matches/new", assertion: () => ({ role: "heading" as const, name: "Log a demo game" }) },
@@ -85,6 +85,19 @@ test.describe("mobile layout", () => {
       await expect(page.locator("body")).toContainText(
         /Version read|Version comparison|Testing discipline|Meta watchlist/i
       );
+      await expectNoAppError(page);
+      await expectNoHorizontalOverflow(page);
+    });
+
+    test("/demo is readable on mobile and shows the refreshed current-deck story", async ({
+      page,
+    }) => {
+      await page.goto("/demo");
+
+      await expectHeadingVisible(page, "Explore a realistic testing workspace.");
+      await expect(page.locator("body")).toContainText(/Current test deck/i);
+      await expect(page.locator("body")).toContainText(/Deck Lab/i);
+      await expect(page.locator("body")).toContainText(/Match history/i);
       await expectNoAppError(page);
       await expectNoHorizontalOverflow(page);
     });

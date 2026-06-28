@@ -382,7 +382,7 @@ function getInsightUpdate({
 }
 
 export function DemoMatchLogForm() {
-  const [versionId, setVersionId] = useState("dragapult-v2");
+  const [versionId, setVersionId] = useState("dragapult-v3");
   const [gameContext, setGameContext] = useState<GameContext>("testing");
   const [eventName, setEventName] = useState("");
   const [roundNumber, setRoundNumber] = useState("");
@@ -554,7 +554,7 @@ export function DemoMatchLogForm() {
         This will update your matchup trends.
       </p>
       <Link href="/demo/matches" className={`mt-3 block w-full ${secondaryButton}`}>
-        Demo matches
+        Match history
       </Link>
     </div>
   );
@@ -566,7 +566,7 @@ export function DemoMatchLogForm() {
         : "Needs games";
   const demoMissionSupportLine =
     demoStatusBadge === "Actionable signal"
-      ? "This strengthened the current watchlist read. Review before changing your list."
+      ? "This strengthened the current deck read. Check Review or Matchups before changing the list."
       : demoStatusBadge === "Building signal"
         ? "Building signal. One more game makes this pattern easier to trust."
         : "Needs games. Keep logging normally until this watchlist becomes actionable.";
@@ -617,11 +617,11 @@ export function DemoMatchLogForm() {
   );
   const demoNextActionTitle =
     result === "win"
-      ? "Review this matchup"
+      ? "Open supporting review"
       : "Log next game";
   const demoNextActionCopy =
     result === "win"
-      ? "The sample improved. Review the matchup before changing your list."
+      ? "The sample improved. Use Review or Matchups before changing your list."
       : result === "tie"
         ? "Keep logging normally. When this matchup appears, capture one more watchlist game."
         : "Keep logging normally until the issue pattern is easier to trust.";
@@ -726,13 +726,13 @@ export function DemoMatchLogForm() {
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
-                  Mission progress
+                  Testing signal
                 </p>
                 <p className="mt-1 text-lg font-semibold text-[#F8FAFC]">
-                  {gameContext === "competitive" ? "Round-by-round review" : "Build matchup confidence"}
+                  {gameContext === "competitive" ? "Round-by-round signal" : "Build matchup confidence"}
                 </p>
                 <p className="mt-1 text-xs uppercase tracking-[0.08em] text-[#94A3B8]/72">
-                  {gameContext === "competitive" ? "Focused test" : "Priority watchlist"}
+                  {gameContext === "competitive" ? "Focused testing" : "Current watchlist"}
                 </p>
               </div>
               <span className="rounded-full bg-[#F5C84C]/12 px-3 py-1 text-xs font-bold uppercase tracking-[0.08em] text-[#FFE28A] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
@@ -757,16 +757,16 @@ export function DemoMatchLogForm() {
             <div className="mt-3 h-2 rounded-full bg-[#0B1020]/72">
               <div className="h-2 w-[80%] rounded-full bg-[#4F8CFF]" />
             </div>
-            <p className="mt-3 text-sm font-medium text-[#D7E0EF]">
-              {gameContext === "competitive" && demoStatusBadge === "Actionable signal"
-                ? "This focused round is ready for review."
-                : demoMissionSupportLine}
-            </p>
-            <p className="mt-2 text-xs leading-5 text-[#94A3B8]/72">
-              {gameContext === "competitive"
-                ? `${opponent}: 4/5 focused games. One more round unlocks review.`
-                : `${opponent}: 4/5 watchlist games. One more matchup unlocks review.`}
-            </p>
+              <p className="mt-3 text-sm font-medium text-[#D7E0EF]">
+                {gameContext === "competitive" && demoStatusBadge === "Actionable signal"
+                  ? "This focused round is ready for review."
+                  : demoMissionSupportLine}
+              </p>
+              <p className="mt-2 text-xs leading-5 text-[#94A3B8]/72">
+                {gameContext === "competitive"
+                  ? `${opponent}: 4/5 focused games. One more round makes the read stronger.`
+                  : `${opponent}: 4/5 watchlist games. One more matchup makes the read stronger.`}
+              </p>
           </div>
 
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
@@ -839,7 +839,7 @@ export function DemoMatchLogForm() {
               Log another game
             </button>
             <Link href="/demo/matchups" className={rewardSecondaryButtonClass}>
-              Review matchup
+              Open matchups
             </Link>
             <Link href="/demo" className={rewardSecondaryButtonClass}>
               Dashboard

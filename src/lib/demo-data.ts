@@ -1,6 +1,12 @@
+import { POST_ROTATION_2026_ARCHETYPES } from "@/lib/archetypes";
+import {
+  buildDeckLabSummary,
+  type DeckLabSummary,
+} from "@/lib/deck-lab";
 import {
   countMatchResults,
   formatMatchRecord,
+  type MatchMetadata,
   type MatchResult,
 } from "@/lib/match-types";
 
@@ -17,6 +23,7 @@ export type DemoDeck = {
   name: string;
   archetype: string;
   notes: string;
+  isCurrentTest?: boolean;
   versions: DemoDeckVersion[];
 };
 
@@ -31,6 +38,7 @@ export type DemoMatch = {
   playedAt: string;
   notes: string;
   tags: string[];
+  metadata: MatchMetadata;
 };
 
 export type DemoMatchup = {
@@ -53,50 +61,58 @@ export type DemoConfidence =
   | "Building signal"
   | "Actionable signal";
 
-export type DemoInsightSummary = {
-  currentMission: {
-    archetype: string;
-    title: string;
-    progressLabel: string;
-    explanation: string;
-    why: string;
-  };
-  biggestStatisticalLeak: DemoMatchup;
-  lowConfidenceWatchlist: DemoMatchup[];
-  recommendedNextTest: {
-    archetype: string;
-    title: string;
-    cta: string;
-    why: string;
-    steps: string[];
-  };
+type DemoSeed = Omit<DemoMatch, "id" | "playedAt"> & {
+  playedAt: string;
 };
 
 export const demoDecks: DemoDeck[] = [
   {
-    id: "dragapult-control",
-    name: "Portland Prep Dragapult",
-    archetype: "Dragapult ex",
-    notes: "Primary testing deck. Tuned for Chaos Rising matchups.",
+    id: "dragapult-lab",
+    name: "Portland Prep PultBlaziken",
+    archetype: "Dragapult Blaziken",
+    notes:
+      "Current test deck. The latest version is testing cleaner setup into Greninja and Dragapult mirrors.",
+    isCurrentTest: true,
     versions: [
       {
         id: "dragapult-v1",
         name: "v1 - Dusknoir pressure",
-        notes: "Higher knockout reach, weaker into hand disruption.",
+        notes: "First pass at the list. Higher knockout reach, rougher setup floor.",
         createdAt: "2026-05-13",
       },
       {
         id: "dragapult-v2",
-        name: "v2 - Consistency build",
-        notes: "Added draw stability and trimmed recovery cards.",
+        name: "v2 - Consistency core",
+        notes: "Better opening hands, still soft going second into pressure decks.",
         createdAt: "2026-05-20",
-        isActive: true,
       },
       {
         id: "dragapult-v3",
         name: "v3 - Greninja plan",
-        notes: "Testing extra switch outs and cleaner early setup.",
+        notes: "Current version. Testing extra mobility and cleaner early setup.",
         createdAt: "2026-05-27",
+        isActive: true,
+      },
+    ],
+  },
+  {
+    id: "zoroark-lab",
+    name: "N's Zoroark Tempo",
+    archetype: "N's Zoroark",
+    notes: "Secondary ladder deck for tempo and disruption checks.",
+    versions: [
+      {
+        id: "zoroark-v1",
+        name: "v1 - Fast draw",
+        notes: "Higher speed, weaker comeback turns.",
+        createdAt: "2026-05-16",
+      },
+      {
+        id: "zoroark-v2",
+        name: "v2 - Recovery slots",
+        notes: "Current internal build with steadier late-game pivots.",
+        createdAt: "2026-05-30",
+        isActive: true,
       },
     ],
   },
@@ -104,125 +120,647 @@ export const demoDecks: DemoDeck[] = [
     id: "lucario-box",
     name: "Mega Lucario League Build",
     archetype: "Mega Lucario",
-    notes: "Aggressive alternate deck for local best-of-three testing.",
+    notes: "Alternate best-of-three deck for league night prep.",
     versions: [
       {
         id: "lucario-v1",
         name: "v1 - Maximum pressure",
-        notes: "Fast prize routeping, inconsistent recovery.",
-        createdAt: "2026-05-16",
+        notes: "Explosive starts, fragile into bench damage.",
+        createdAt: "2026-05-18",
       },
       {
         id: "lucario-v2",
         name: "v2 - Recovery package",
-        notes: "Improved late-game pivot lines.",
-        createdAt: "2026-05-25",
+        notes: "Current local version with steadier comeback turns.",
+        createdAt: "2026-06-01",
         isActive: true,
       },
     ],
+  },
+];
+
+function iso(daysAgo: number) {
+  return new Date(Date.UTC(2026, 5, 27 - daysAgo, 19, 30)).toISOString();
+}
+
+function buildMetadata({
+  start,
+  opening,
+  sequencing,
+  issueTags = [],
+  positiveTags = [],
+}: {
+  start?: MatchMetadata["start_quality"];
+  opening?: MatchMetadata["opening_hand_quality"];
+  sequencing?: MatchMetadata["sequencing_quality"];
+  issueTags?: string[];
+  positiveTags?: string[];
+}) {
+  const metadata: MatchMetadata = {
+    game_context: "testing",
+  };
+
+  if (start) {
+    metadata.start_quality = start;
+  }
+
+  if (opening) {
+    metadata.opening_hand_quality = opening;
+  }
+
+  if (sequencing) {
+    metadata.sequencing_quality = sequencing;
+  }
+
+  if (issueTags.length) {
+    metadata.issue_tags = issueTags;
+  }
+
+  if (positiveTags.length) {
+    metadata.positive_tags = positiveTags;
+  }
+
+  return metadata;
+}
+
+const demoMatchSeeds: DemoSeed[] = [
+  {
+    deckId: "dragapult-lab",
+    deckVersionId: "dragapult-v2",
+    opponentArchetype: "Mega Greninja",
+    result: "loss",
+    wentFirst: false,
+    eventType: "Solo testing",
+    playedAt: iso(24),
+    notes: "Missed second attacker and lost the race immediately.",
+    tags: ["missed setup", "bench pressure", "review"],
+    metadata: buildMetadata({
+      start: "bad",
+      opening: "okay",
+      sequencing: "bad",
+      issueTags: ["missed setup", "bench pressure"],
+    }),
   },
   {
-    id: "bolt-ogerpon",
-    name: "Raging Bolt Lab",
-    archetype: "Raging Bolt Ogerpon",
-    notes: "Benchmark deck for speed and prize-race comparisons.",
-    versions: [
-      {
-        id: "bolt-v1",
-        name: "v1 - Turbo",
-        notes: "Best opener, fragile into disruption.",
-        createdAt: "2026-05-11",
-      },
-      {
-        id: "bolt-v2",
-        name: "v2 - Stamina",
-        notes: "Added stability for longer games.",
-        createdAt: "2026-05-24",
-        isActive: true,
-      },
-    ],
+    deckId: "dragapult-lab",
+    deckVersionId: "dragapult-v2",
+    opponentArchetype: "Mega Greninja",
+    result: "loss",
+    wentFirst: false,
+    eventType: "Solo testing",
+    playedAt: iso(23),
+    notes: "Opening hand stalled and the board never stabilized.",
+    tags: ["missed setup", "review"],
+    metadata: buildMetadata({
+      start: "bad",
+      opening: "bad",
+      sequencing: "okay",
+      issueTags: ["missed setup"],
+    }),
+  },
+  {
+    deckId: "dragapult-lab",
+    deckVersionId: "dragapult-v2",
+    opponentArchetype: "Mega Greninja",
+    result: "win",
+    wentFirst: true,
+    eventType: "Best-of-three testing",
+    playedAt: iso(22),
+    notes: "Strong setup let the list keep pace all game.",
+    tags: ["strong setup"],
+    metadata: buildMetadata({
+      start: "good",
+      opening: "good",
+      sequencing: "good",
+      positiveTags: ["strong setup"],
+    }),
+  },
+  {
+    deckId: "dragapult-lab",
+    deckVersionId: "dragapult-v2",
+    opponentArchetype: "Ogerpon Meganium Hydrapple",
+    result: "win",
+    wentFirst: true,
+    eventType: "Solo testing",
+    playedAt: iso(21),
+    notes: "Prize route stayed clean once the lead was established.",
+    tags: ["good prize plan"],
+    metadata: buildMetadata({
+      start: "good",
+      opening: "good",
+      sequencing: "good",
+      positiveTags: ["good prize plan"],
+    }),
+  },
+  {
+    deckId: "dragapult-lab",
+    deckVersionId: "dragapult-v2",
+    opponentArchetype: "Ogerpon Meganium Hydrapple",
+    result: "loss",
+    wentFirst: false,
+    eventType: "Solo testing",
+    playedAt: iso(20),
+    notes: "Fell behind on the prize trade after a slow middle turn.",
+    tags: ["poor prize trade", "review"],
+    metadata: buildMetadata({
+      start: "okay",
+      opening: "okay",
+      sequencing: "bad",
+      issueTags: ["poor prize trade"],
+    }),
+  },
+  {
+    deckId: "dragapult-lab",
+    deckVersionId: "dragapult-v2",
+    opponentArchetype: "Ogerpon Meganium Hydrapple",
+    result: "win",
+    wentFirst: true,
+    eventType: "Solo testing",
+    playedAt: iso(19),
+    notes: "Sequencing stayed clean through the last two turns.",
+    tags: ["clean sequencing"],
+    metadata: buildMetadata({
+      start: "good",
+      opening: "good",
+      sequencing: "great",
+      positiveTags: ["clean sequencing"],
+    }),
+  },
+  {
+    deckId: "dragapult-lab",
+    deckVersionId: "dragapult-v2",
+    opponentArchetype: "Dragapult Dusknoir",
+    result: "loss",
+    wentFirst: false,
+    eventType: "League night",
+    playedAt: iso(18),
+    notes: "Sequencing slip opened the mirror for an easy return KO.",
+    tags: ["bad sequencing", "review"],
+    metadata: buildMetadata({
+      start: "okay",
+      opening: "good",
+      sequencing: "bad",
+      issueTags: ["bad sequencing"],
+    }),
+  },
+  {
+    deckId: "dragapult-lab",
+    deckVersionId: "dragapult-v2",
+    opponentArchetype: "Dragapult Dusknoir",
+    result: "win",
+    wentFirst: true,
+    eventType: "League night",
+    playedAt: iso(17),
+    notes: "Recovered well after the first exchange.",
+    tags: ["strong recovery"],
+    metadata: buildMetadata({
+      start: "good",
+      opening: "okay",
+      sequencing: "good",
+      positiveTags: ["strong recovery"],
+    }),
+  },
+  {
+    deckId: "dragapult-lab",
+    deckVersionId: "dragapult-v2",
+    opponentArchetype: "Mega Lucario",
+    result: "win",
+    wentFirst: true,
+    eventType: "Best-of-three testing",
+    playedAt: iso(16),
+    notes: "Prize plan was clear from turn two.",
+    tags: ["good prize plan"],
+    metadata: buildMetadata({
+      start: "good",
+      opening: "good",
+      sequencing: "good",
+      positiveTags: ["good prize plan"],
+    }),
+  },
+  {
+    deckId: "dragapult-lab",
+    deckVersionId: "dragapult-v2",
+    opponentArchetype: "Mega Lucario",
+    result: "loss",
+    wentFirst: false,
+    eventType: "Best-of-three testing",
+    playedAt: iso(15),
+    notes: "Bench pressure turned one missed pivot into a loss.",
+    tags: ["bench pressure", "review"],
+    metadata: buildMetadata({
+      start: "okay",
+      opening: "okay",
+      sequencing: "bad",
+      issueTags: ["bench pressure"],
+    }),
+  },
+  {
+    deckId: "dragapult-lab",
+    deckVersionId: "dragapult-v3",
+    opponentArchetype: "Mega Greninja",
+    result: "loss",
+    wentFirst: false,
+    eventType: "Solo testing",
+    playedAt: iso(12),
+    notes: "Bench pressure still showed up, but the list felt closer.",
+    tags: ["bench pressure", "review"],
+    metadata: buildMetadata({
+      start: "bad",
+      issueTags: ["bench pressure"],
+    }),
+  },
+  {
+    deckId: "dragapult-lab",
+    deckVersionId: "dragapult-v3",
+    opponentArchetype: "Mega Greninja",
+    result: "win",
+    wentFirst: true,
+    eventType: "Solo testing",
+    playedAt: iso(11),
+    notes: "The updated setup plan let the deck stabilize immediately.",
+    tags: ["strong setup"],
+    metadata: buildMetadata({
+      start: "good",
+      opening: "good",
+      sequencing: "good",
+      positiveTags: ["strong setup"],
+    }),
+  },
+  {
+    deckId: "dragapult-lab",
+    deckVersionId: "dragapult-v3",
+    opponentArchetype: "Ogerpon Meganium Hydrapple",
+    result: "win",
+    wentFirst: true,
+    eventType: "Solo testing",
+    playedAt: iso(10),
+    notes: "Pressure stayed clean once the first setup landed.",
+    tags: ["strong setup"],
+    metadata: buildMetadata({
+      start: "great",
+      opening: "good",
+      sequencing: "good",
+      positiveTags: ["strong setup"],
+    }),
+  },
+  {
+    deckId: "dragapult-lab",
+    deckVersionId: "dragapult-v3",
+    opponentArchetype: "Ogerpon Meganium Hydrapple",
+    result: "win",
+    wentFirst: false,
+    eventType: "Solo testing",
+    playedAt: iso(9),
+    notes: "Going second still held together with a cleaner pivot line.",
+    tags: ["strong recovery"],
+    metadata: buildMetadata({
+      start: "good",
+      opening: "good",
+      sequencing: "great",
+      positiveTags: ["strong recovery"],
+    }),
+  },
+  {
+    deckId: "dragapult-lab",
+    deckVersionId: "dragapult-v3",
+    opponentArchetype: "Ogerpon Meganium Hydrapple",
+    result: "loss",
+    wentFirst: false,
+    eventType: "Solo testing",
+    playedAt: iso(8),
+    notes: "Prize trade still slipped when the second attacker was delayed.",
+    tags: ["poor prize trade", "review"],
+    metadata: buildMetadata({
+      start: "okay",
+      opening: "okay",
+      sequencing: "bad",
+      issueTags: ["poor prize trade"],
+    }),
+  },
+  {
+    deckId: "dragapult-lab",
+    deckVersionId: "dragapult-v3",
+    opponentArchetype: "Ogerpon Meganium Hydrapple",
+    result: "win",
+    wentFirst: true,
+    eventType: "Best-of-three testing",
+    playedAt: iso(7),
+    notes: "Opening hand quality stayed cleaner than the older version.",
+    tags: ["strong setup"],
+    metadata: buildMetadata({
+      start: "good",
+      opening: "great",
+      sequencing: "good",
+      positiveTags: ["strong setup"],
+    }),
+  },
+  {
+    deckId: "dragapult-lab",
+    deckVersionId: "dragapult-v3",
+    opponentArchetype: "Dragapult Dusknoir",
+    result: "win",
+    wentFirst: true,
+    eventType: "League night",
+    playedAt: iso(6),
+    notes: "Mirror sequencing looked much cleaner than the older list.",
+    tags: ["clean sequencing"],
+    metadata: buildMetadata({
+      start: "great",
+      opening: "good",
+      sequencing: "great",
+      positiveTags: ["clean sequencing"],
+    }),
+  },
+  {
+    deckId: "dragapult-lab",
+    deckVersionId: "dragapult-v3",
+    opponentArchetype: "Dragapult Dusknoir",
+    result: "loss",
+    wentFirst: false,
+    eventType: "League night",
+    playedAt: iso(5),
+    notes: "Going second still punishes small sequencing slips.",
+    tags: ["bad sequencing", "review"],
+    metadata: buildMetadata({
+      start: "good",
+      opening: "good",
+      sequencing: "bad",
+      issueTags: ["bad sequencing"],
+    }),
+  },
+  {
+    deckId: "dragapult-lab",
+    deckVersionId: "dragapult-v3",
+    opponentArchetype: "Dragapult Dusknoir",
+    result: "win",
+    wentFirst: true,
+    eventType: "League night",
+    playedAt: iso(4),
+    notes: "Prize plan stayed ahead through the mirror trade.",
+    tags: ["good prize plan"],
+    metadata: buildMetadata({
+      start: "good",
+      opening: "good",
+      sequencing: "good",
+      positiveTags: ["good prize plan"],
+    }),
+  },
+  {
+    deckId: "dragapult-lab",
+    deckVersionId: "dragapult-v3",
+    opponentArchetype: "Dragapult Dusknoir",
+    result: "win",
+    wentFirst: false,
+    eventType: "League night",
+    playedAt: iso(3),
+    notes: "The recovery package kept a close game alive.",
+    tags: ["strong recovery"],
+    metadata: buildMetadata({
+      start: "good",
+      opening: "okay",
+      sequencing: "good",
+      positiveTags: ["strong recovery"],
+    }),
+  },
+  {
+    deckId: "dragapult-lab",
+    deckVersionId: "dragapult-v3",
+    opponentArchetype: "Dragapult Dusknoir",
+    result: "loss",
+    wentFirst: false,
+    eventType: "League night",
+    playedAt: iso(2),
+    notes: "Sequencing still decides the tightest mirror games.",
+    tags: ["bad sequencing", "review"],
+    metadata: buildMetadata({
+      start: "okay",
+      opening: "bad",
+      sequencing: "bad",
+      issueTags: ["bad sequencing"],
+    }),
+  },
+  {
+    deckId: "dragapult-lab",
+    deckVersionId: "dragapult-v3",
+    opponentArchetype: "Mega Lucario",
+    result: "win",
+    wentFirst: true,
+    eventType: "Best-of-three testing",
+    playedAt: iso(1),
+    notes: "The matchup felt cleaner once setup landed on time.",
+    tags: ["favorable matchup"],
+    metadata: buildMetadata({
+      start: "great",
+      opening: "good",
+      sequencing: "good",
+      positiveTags: ["favorable matchup"],
+    }),
+  },
+  {
+    deckId: "zoroark-lab",
+    deckVersionId: "zoroark-v1",
+    opponentArchetype: "Mega Greninja",
+    result: "loss",
+    wentFirst: false,
+    eventType: "Solo testing",
+    playedAt: iso(14),
+    notes: "The fast build ran out of recovery too quickly.",
+    tags: ["poor prize trade", "review"],
+    metadata: buildMetadata({
+      start: "okay",
+      opening: "bad",
+      sequencing: "bad",
+      issueTags: ["poor prize trade"],
+    }),
+  },
+  {
+    deckId: "zoroark-lab",
+    deckVersionId: "zoroark-v1",
+    opponentArchetype: "Slowking",
+    result: "win",
+    wentFirst: true,
+    eventType: "Solo testing",
+    playedAt: iso(13),
+    notes: "Early pressure kept the tempo deck ahead.",
+    tags: ["strong setup"],
+    metadata: buildMetadata({
+      start: "good",
+      opening: "good",
+      sequencing: "good",
+      positiveTags: ["strong setup"],
+    }),
+  },
+  {
+    deckId: "zoroark-lab",
+    deckVersionId: "zoroark-v2",
+    opponentArchetype: "Dragapult Dusknoir",
+    result: "loss",
+    wentFirst: false,
+    eventType: "Best-of-three testing",
+    playedAt: iso(6.5),
+    notes: "Recovery helped, but the mirror pace still felt rough.",
+    tags: ["pace mismatch", "review"],
+    metadata: buildMetadata({
+      start: "okay",
+      opening: "okay",
+      sequencing: "bad",
+      issueTags: ["pace mismatch"],
+    }),
+  },
+  {
+    deckId: "zoroark-lab",
+    deckVersionId: "zoroark-v2",
+    opponentArchetype: "Rocket's Mewtwo",
+    result: "win",
+    wentFirst: true,
+    eventType: "Best-of-three testing",
+    playedAt: iso(5.5),
+    notes: "Late-game recovery package mattered immediately.",
+    tags: ["strong recovery"],
+    metadata: buildMetadata({
+      start: "good",
+      opening: "good",
+      sequencing: "good",
+      positiveTags: ["strong recovery"],
+    }),
+  },
+  {
+    deckId: "zoroark-lab",
+    deckVersionId: "zoroark-v2",
+    opponentArchetype: "Mega Lucario",
+    result: "win",
+    wentFirst: true,
+    eventType: "League night",
+    playedAt: iso(4.5),
+    notes: "Tempo line stayed clean all match.",
+    tags: ["clean sequencing"],
+    metadata: buildMetadata({
+      start: "good",
+      opening: "good",
+      sequencing: "great",
+      positiveTags: ["clean sequencing"],
+    }),
+  },
+  {
+    deckId: "lucario-box",
+    deckVersionId: "lucario-v1",
+    opponentArchetype: "Raging Bolt",
+    result: "loss",
+    wentFirst: false,
+    eventType: "League night",
+    playedAt: iso(10.5),
+    notes: "Bench pressure turned one weak opener into a loss.",
+    tags: ["bench pressure", "review"],
+    metadata: buildMetadata({
+      start: "bad",
+      opening: "okay",
+      sequencing: "bad",
+      issueTags: ["bench pressure"],
+    }),
+  },
+  {
+    deckId: "lucario-box",
+    deckVersionId: "lucario-v1",
+    opponentArchetype: "Mega Greninja",
+    result: "win",
+    wentFirst: true,
+    eventType: "League night",
+    playedAt: iso(9.5),
+    notes: "The aggressive route stole the game early.",
+    tags: ["good prize plan"],
+    metadata: buildMetadata({
+      start: "great",
+      opening: "good",
+      sequencing: "good",
+      positiveTags: ["good prize plan"],
+    }),
+  },
+  {
+    deckId: "lucario-box",
+    deckVersionId: "lucario-v2",
+    opponentArchetype: "Raging Bolt",
+    result: "win",
+    wentFirst: true,
+    eventType: "Best-of-three testing",
+    playedAt: iso(3.5),
+    notes: "Recovery package mattered in the final prize trade.",
+    tags: ["strong recovery"],
+    metadata: buildMetadata({
+      start: "good",
+      opening: "good",
+      sequencing: "good",
+      positiveTags: ["strong recovery"],
+    }),
+  },
+  {
+    deckId: "lucario-box",
+    deckVersionId: "lucario-v2",
+    opponentArchetype: "Mega Greninja",
+    result: "loss",
+    wentFirst: false,
+    eventType: "Best-of-three testing",
+    playedAt: iso(2.5),
+    notes: "Still needs cleaner going-second openings.",
+    tags: ["missed setup", "review"],
+    metadata: buildMetadata({
+      start: "okay",
+      opening: "bad",
+      sequencing: "okay",
+      issueTags: ["missed setup"],
+    }),
+  },
+  {
+    deckId: "lucario-box",
+    deckVersionId: "lucario-v2",
+    opponentArchetype: "Slowking",
+    result: "win",
+    wentFirst: true,
+    eventType: "Best-of-three testing",
+    playedAt: iso(1.5),
+    notes: "Current build stayed stable through the slower games.",
+    tags: ["strong setup"],
+    metadata: buildMetadata({
+      start: "good",
+      opening: "good",
+      sequencing: "good",
+      positiveTags: ["strong setup"],
+    }),
   },
 ];
 
-const matchupPlan = [
-  { archetype: "Mega Greninja", games: 14, wins: 5, firstWins: 4, firstGames: 6, tags: ["missed setup", "bench pressure"] },
-  { archetype: "Dragapult ex", games: 12, wins: 7, firstWins: 4, firstGames: 6, tags: ["prize route", "midgame trade"] },
-  { archetype: "Ogerpon Meganium", games: 10, wins: 6, firstWins: 4, firstGames: 5, tags: ["tempo lead", "resource check"] },
-  { archetype: "Mega Lucario", games: 9, wins: 5, firstWins: 3, firstGames: 5, tags: ["early pressure"] },
-  { archetype: "Rocket's Mewtwo", games: 8, wins: 5, firstWins: 3, firstGames: 4, tags: ["hand disruption"] },
-  { archetype: "Beedrill", games: 7, wins: 4, firstWins: 2, firstGames: 3, tags: ["gust timing"] },
-  { archetype: "Festival Lead", games: 6, wins: 5, firstWins: 3, firstGames: 3, tags: ["favorable trade"] },
-  { archetype: "Alakazam", games: 6, wins: 3, firstWins: 2, firstGames: 3, tags: ["awkward math"] },
-  { archetype: "Mega Lopunny", games: 5, wins: 2, firstWins: 2, firstGames: 3, tags: ["pace mismatch"] },
-  { archetype: "Raging Bolt", games: 5, wins: 4, firstWins: 2, firstGames: 2, tags: ["race plan"] },
-];
-
-const notesByTag: Record<string, string> = {
-  "missed setup": "Opening was too slow; missed second attacker by turn three.",
-  "bench pressure": "Opponent punished exposed support Pokemon.",
-  "prize route": "Prize route was clear after the first two turns.",
-  "midgame trade": "Midgame exchange decided the final prize swing.",
-  "tempo lead": "Early board lead converted into cleaner trades.",
-  "resource check": "Recovery cards mattered in the last two turns.",
-  "early pressure": "Pressure started before the deck stabilized.",
-  "hand disruption": "Late-game hand reset changed the line.",
-  "gust timing": "Gust target changed the matchup math.",
-  "favorable trade": "Opponent could not keep pace with prize trades.",
-  "awkward math": "Damage math required extra setup pieces.",
-  "pace mismatch": "Deck fell behind when going second.",
-  "race plan": "Prize race plan stayed clean.",
-};
-
-function versionForDeck(deck: DemoDeck, index: number) {
-  return deck.versions[index % deck.versions.length];
-}
-
-function buildDemoMatches() {
-  const matches: DemoMatch[] = [];
-  let matchNumber = 0;
-
-  matchupPlan.forEach((plan, planIndex) => {
-    for (let index = 0; index < plan.games; index += 1) {
-      const deck = demoDecks[(planIndex + index) % demoDecks.length];
-      const version = versionForDeck(deck, index);
-      const wentFirst = index < plan.firstGames ? index % 2 === 0 : false;
-      const firstLossCount = plan.firstGames - plan.firstWins;
-      const isFirstLoss = wentFirst && index / 2 < firstLossCount;
-      const secondWins = plan.wins - plan.firstWins;
-      const secondIndex = Math.max(0, index - plan.firstGames);
-      const isSecondWin = !wentFirst && secondIndex < secondWins;
-      const result = isFirstLoss || (!wentFirst && !isSecondWin) ? "loss" : "win";
-      const tag = plan.tags[index % plan.tags.length];
-      const daysAgo = matchNumber;
-      const playedAt = new Date(Date.UTC(2026, 4, 28 - daysAgo, 19 + (index % 4), 15));
-
-      matches.push({
-        id: `demo-match-${String(matchNumber + 1).padStart(2, "0")}`,
-        deckId: deck.id,
-        deckVersionId: version.id,
-        opponentArchetype: plan.archetype,
-        result,
-        wentFirst,
-        eventType: index % 5 === 0 ? "League night" : index % 3 === 0 ? "Best-of-three testing" : "Solo testing",
-        playedAt: playedAt.toISOString(),
-        notes: notesByTag[tag],
-        tags: result === "loss" ? [tag, "review"] : [tag],
-      });
-      matchNumber += 1;
-    }
-  });
-
-  return matches.sort((first, second) => second.playedAt.localeCompare(first.playedAt));
-}
-
-export const demoMatches = buildDemoMatches();
+export const demoMatches: DemoMatch[] = demoMatchSeeds
+  .map((seed, index) => ({
+    ...seed,
+    id: `demo-match-${String(index + 1).padStart(2, "0")}`,
+  }))
+  .sort((left, right) => right.playedAt.localeCompare(left.playedAt));
 
 export function getDemoDeck(deckId: string) {
   return demoDecks.find((deck) => deck.id === deckId) ?? null;
 }
 
+export function getDemoCurrentDeck() {
+  return demoDecks.find((deck) => deck.isCurrentTest) ?? demoDecks[0] ?? null;
+}
+
+export function getDemoActiveVersion(deck: DemoDeck | null) {
+  if (!deck) {
+    return null;
+  }
+
+  return deck.versions.find((version) => version.isActive) ?? deck.versions[0] ?? null;
+}
+
+export function getDemoDeckMatches(deckId: string) {
+  return demoMatches.filter((match) => match.deckId === deckId);
+}
+
+export function getDemoVersionMatches(deckVersionId: string) {
+  return demoMatches.filter((match) => match.deckVersionId === deckVersionId);
+}
+
 export function getDeckMatchCount(deckId: string) {
-  return demoMatches.filter((match) => match.deckId === deckId).length;
+  return getDemoDeckMatches(deckId).length;
 }
 
 export function getWinRate(matches: DemoMatch[]) {
@@ -264,15 +802,21 @@ export function getDemoMatchups(matches: DemoMatch[] = demoMatches): DemoMatchup
         record: formatMatchRecord(wins, losses, ties),
       };
     })
-    .sort((first, second) => first.winRate - second.winRate);
+    .sort((left, right) => {
+      if (left.winRate !== right.winRate) {
+        return left.winRate - right.winRate;
+      }
+
+      return right.games.length - left.games.length;
+    });
 }
 
 export function getConfidenceLabel(gameCount: number): DemoConfidence {
-  if (gameCount < 6) {
+  if (gameCount < 3) {
     return "Needs games";
   }
 
-  if (gameCount < 15) {
+  if (gameCount < 8) {
     return "Building signal";
   }
 
@@ -293,59 +837,45 @@ export function getConfidenceTone(gameCount: number) {
   return "bg-[#22C55E]/12 text-emerald-200 shadow-[inset_0_0_0_1px_rgba(34,197,94,0.22)]";
 }
 
-export function getBiggestStatisticalLeak() {
-  return (
-    getDemoMatchups()
-      .filter((matchup) => matchup.games.length >= 6)
-      .sort((first, second) => {
-        if (first.winRate !== second.winRate) {
-          return first.winRate - second.winRate;
-        }
+export function getDemoDeckLab(deckId: string): DeckLabSummary | null {
+  const deck = getDemoDeck(deckId);
 
-        return second.games.length - first.games.length;
-      })[0] ?? getDemoMatchups()[0]
-  );
+  if (!deck) {
+    return null;
+  }
+
+  const activeVersion = getDemoActiveVersion(deck);
+
+  return buildDeckLabSummary({
+    deckArchetype: deck.archetype,
+    versions: deck.versions.map((version) => ({
+      id: version.id,
+      name: version.name,
+      created_at: version.createdAt,
+      is_active: Boolean(version.isActive),
+    })),
+    activeVersionId: activeVersion?.id ?? null,
+    matches: getDemoDeckMatches(deck.id).map((match) => ({
+      deck_version_id: match.deckVersionId,
+      opponent_archetype: match.opponentArchetype,
+      result: match.result,
+      went_first: match.wentFirst,
+      played_at: match.playedAt,
+      metadata: match.metadata,
+      match_tags: match.tags.map((tag) => ({ tag })),
+    })),
+    archetypes: POST_ROTATION_2026_ARCHETYPES as unknown as string[],
+  });
 }
 
-export function getLowConfidenceWatchlist() {
-  return getDemoMatchups()
-    .filter((matchup) => matchup.games.length < 6 && matchup.winRate < 50)
-    .sort((first, second) => first.winRate - second.winRate);
+export function getDemoCurrentDeckLab() {
+  const deck = getDemoCurrentDeck();
+  return deck ? getDemoDeckLab(deck.id) : null;
 }
 
-export function getDemoInsights(): DemoInsightSummary {
-  const biggestStatisticalLeak = getBiggestStatisticalLeak();
-  const lowConfidenceWatchlist = getLowConfidenceWatchlist();
-
-  return {
-    currentMission: {
-      archetype: "Mega Greninja",
-      title: "Review Mega Greninja matchup",
-      progressLabel: "3/5 games",
-      explanation:
-        "Mega Greninja is the current priority watchlist because the sample is large enough to coach and the same loss issues keep repeating.",
-      why:
-        "Mega Lopunny still needs games. Mega Greninja already has repeated missed-setup and bench-pressure notes, so it is the better next review.",
-    },
-    biggestStatisticalLeak,
-    lowConfidenceWatchlist,
-    recommendedNextTest: {
-      archetype: "Mega Greninja",
-      title: "Run five more Mega Greninja games",
-      cta: "Test Mega Greninja",
-      why:
-        "This is actionable, but not final. More games will confirm whether the issue is opening setup, bench pressure, or the current Dragapult version.",
-      steps: [
-        "Keep one extra switching card in the active Dragapult build.",
-        "Tag whether bench pressure or missed setup creates the first prize deficit.",
-        "Compare Dragapult v2 against v3 after five more Mega Greninja games.",
-      ],
-    },
-  };
-}
-
-export function getRecentSession() {
-  return demoMatches.slice(0, 12);
+export function getRecentSession(deckId?: string) {
+  const source = deckId ? getDemoDeckMatches(deckId) : demoMatches;
+  return source.slice(0, 12);
 }
 
 export function formatDemoDate(value: string) {

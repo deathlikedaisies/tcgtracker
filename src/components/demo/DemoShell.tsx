@@ -21,7 +21,7 @@ import {
   pageHeaderCard,
 } from "@/components/brand-styles";
 
-type DemoSection = "dashboard" | "decks" | "matches" | "log" | "matchups";
+type DemoSection = "dashboard" | "decks" | "review" | "matches" | "log" | "matchups";
 
 type DemoShellProps = {
   current: DemoSection;
@@ -31,7 +31,8 @@ type DemoShellProps = {
 const navItems = [
   { href: "/demo", label: "Overview", section: "dashboard" as const, icon: Gauge },
   { href: "/demo/matches/new", label: "Log game", section: "log" as const, icon: PlusCircle },
-  { href: "/demo/matches", label: "Review", section: "matches" as const, icon: ClipboardList },
+  { href: "/demo/review", label: "Review", section: "review" as const, icon: ClipboardList },
+  { href: "/demo/matches", label: "Match history", section: "matches" as const, icon: ClipboardList },
   { href: "/demo/decks", label: "Decks", section: "decks" as const, icon: Layers3 },
   { href: "/demo/matchups", label: "Matchups", section: "matchups" as const, icon: BarChart3 },
 ];
@@ -60,7 +61,17 @@ export function DemoShell({ current, children }: DemoShellProps) {
                     key={item.href}
                     href={item.href}
                     aria-current={active ? "page" : undefined}
-                    className={active ? navItemActive : navItem}
+                    className={
+                      item.section === "log"
+                        ? `inline-flex h-11 items-center gap-3 rounded-[14px] px-3 text-sm font-semibold shadow-[0_10px_22px_rgba(245,200,76,0.16)] ${
+                            active
+                              ? "bg-[linear-gradient(180deg,#F7D365,#F5C84C)] text-[#07111F]"
+                              : "bg-[linear-gradient(180deg,#F7D365,#F5C84C)] text-[#07111F] hover:-translate-y-0.5"
+                          }`
+                        : active
+                          ? navItemActive
+                          : navItem
+                    }
                   >
                     <Icon className="size-4 shrink-0" aria-hidden="true" />
                     {item.label}
@@ -84,7 +95,7 @@ export function DemoShell({ current, children }: DemoShellProps) {
               <SixPrizerLogo {...logoOnDark} />
               <DemoBadge />
             </div>
-            <nav className={`grid grid-cols-5 gap-1 p-1 ${premiumInset}`}>
+            <nav className={`grid grid-cols-3 gap-1 p-1 ${premiumInset}`}>
               {navItems.map((item) => {
                 const active = item.section === current;
 
@@ -93,12 +104,18 @@ export function DemoShell({ current, children }: DemoShellProps) {
                     key={item.href}
                     href={item.href}
                     className={`inline-flex h-9 min-w-0 items-center justify-center rounded-[12px] px-1 text-[11px] font-semibold ${
-                      active
-                        ? "bg-[linear-gradient(180deg,rgba(79,140,255,0.20),rgba(31,67,138,0.18))] text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.28)]"
-                        : "text-[#94A3B8]/78"
+                      item.section === "log"
+                        ? active
+                          ? "bg-[linear-gradient(180deg,#F7D365,#F5C84C)] text-[#07111F] shadow-[0_10px_20px_rgba(245,200,76,0.18)]"
+                          : "bg-[#F5C84C]/12 text-[#FFE28A]"
+                        : active
+                          ? "bg-[linear-gradient(180deg,rgba(79,140,255,0.20),rgba(31,67,138,0.18))] text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.28)]"
+                          : "text-[#94A3B8]/78"
                     }`}
                   >
-                    <span className="truncate">{item.label.split(" ")[0]}</span>
+                    <span className="truncate">
+                      {item.label === "Match history" ? "History" : item.label.split(" ")[0]}
+                    </span>
                   </Link>
                 );
               })}

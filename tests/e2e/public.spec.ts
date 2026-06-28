@@ -17,8 +17,23 @@ test.describe("public routes", () => {
   test("demo overview loads", async ({ page }) => {
     await page.goto("/demo");
 
-    await expectHeadingVisible(page, "SixPrizer demo workspace");
+    await expectHeadingVisible(page, "Explore a realistic testing workspace.");
     await expect(page.locator("body")).toContainText("SixPrizer");
+    await expect(page.locator("body")).toContainText(/Current test deck/i);
+    await expect(page.locator("body")).toContainText(/Deck Lab/i);
+    await expect(
+      page.getByRole("link", { name: /^Create your workspace$/ }).first()
+    ).toBeVisible();
+    await expect(page.locator("body")).toContainText(/Match history/i);
+    await expect(page.locator("body")).not.toContainText(/^Logs$/m);
+    await expectNoAppError(page);
+  });
+
+  test("demo review route loads", async ({ page }) => {
+    await page.goto("/demo/review");
+
+    await expectHeadingVisible(page, "Demo review");
+    await expect(page.locator("body")).toContainText(/Current deck signal|Review queue/i);
     await expectNoAppError(page);
   });
 

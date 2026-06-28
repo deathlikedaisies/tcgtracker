@@ -17,6 +17,10 @@ import {
 import { demoDecks, demoMatches, formatDemoDate, type DemoMatch } from "@/lib/demo-data";
 import { getMatchResultLabel } from "@/lib/match-types";
 
+type DemoMatchesReviewProps = {
+  mode?: "review" | "history";
+};
+
 type FilterKey =
   | "mission"
   | "losses"
@@ -27,9 +31,9 @@ type FilterKey =
   | "bench pressure";
 
 const filters: { key: FilterKey; label: string }[] = [
-  { key: "mission", label: "Current focus" },
+  { key: "mission", label: "Current deck signal" },
   { key: "losses", label: "Losses only" },
-  { key: "review", label: "Review-tagged" },
+  { key: "review", label: "Tagged review" },
   { key: "greninja", label: "Mega Greninja" },
   { key: "second", label: "Went second" },
   { key: "missed setup", label: "missed setup" },
@@ -88,8 +92,13 @@ function filterSummary(activeFilters: FilterKey[], filteredMatches: DemoMatch[])
   return `Showing ${filteredMatches.length} games matching ${labels.join(", ")}.`;
 }
 
-export function DemoMatchesReview() {
-  const [activeFilters, setActiveFilters] = useState<FilterKey[]>(["mission"]);
+export function DemoMatchesReview({
+  mode = "history",
+}: DemoMatchesReviewProps) {
+  const isReviewMode = mode === "review";
+  const [activeFilters, setActiveFilters] = useState<FilterKey[]>(
+    isReviewMode ? ["mission"] : []
+  );
 
   const missionGames = useMemo(() => demoMatches.filter(isMissionGame), []);
   const filteredMatches = useMemo(
@@ -116,14 +125,20 @@ export function DemoMatchesReview() {
     <>
       <section className={pageHeaderCard}>
         <div>
-          <p className="text-sm font-semibold text-[#4F8CFF]">Review mode</p>
-          <h1 className={pageTitle}>Match review</h1>
+          <p className="text-sm font-semibold text-[#4F8CFF]">
+            {isReviewMode ? "Supporting review" : "Current deck archive"}
+          </p>
+          <h1 className={pageTitle}>
+            {isReviewMode ? "Demo review" : "Match history"}
+          </h1>
           <p className={pageCopy}>
-            Start with the games that explain the current leak, then widen into the full seeded archive.
+            {isReviewMode
+              ? "Start with the current deck signals, then widen into the seeded archive for supporting evidence."
+              : "Scroll a realistic match history and see how SixPrizer keeps testing notes tied to deck versions."}
           </p>
         </div>
         <Link href="/demo/matches/new" className={`${primaryButton} h-12`}>
-          Log fake game
+          Log game
         </Link>
       </section>
 
@@ -132,7 +147,7 @@ export function DemoMatchesReview() {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">
               <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#F5C84C]">
-                Review queue
+                {isReviewMode ? "Review queue" : "Current version queue"}
               </p>
               <div className="mt-3 flex items-center gap-3">
                 <ArchetypeSprites archetype="Mega Greninja" size="md" />
@@ -141,7 +156,9 @@ export function DemoMatchesReview() {
                     Mega Greninja going second
                   </h2>
                   <p className="text-sm leading-6 text-[#94A3B8]/78">
-                    Current focus from the demo coaching loop.
+                    {isReviewMode
+                      ? "Current deck evidence that still deserves review."
+                      : "Current deck games worth keeping an eye on in the history view."}
                   </p>
                 </div>
               </div>
@@ -178,10 +195,14 @@ export function DemoMatchesReview() {
         </article>
 
         <article className={cardLarge}>
-          <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
-            Review filters
+            <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
+            {isReviewMode ? "Review filters" : "History filters"}
           </p>
-          <h2 className="mt-2 text-xl font-bold text-[#F8FAFC]">Find the games that explain it</h2>
+          <h2 className="mt-2 text-xl font-bold text-[#F8FAFC]">
+            {isReviewMode
+              ? "Find the games that explain the current signal"
+              : "Filter the seeded archive"}
+          </h2>
           <div className="mt-4 flex flex-wrap gap-2">
             {filters.map((filter) => {
               const active = activeFilters.includes(filter.key);
