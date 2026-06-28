@@ -4,10 +4,12 @@ import { suggestArchetypeFromLogText } from "@/lib/decklist";
 export type TcgLiveLogParseResult = {
   result?: "win" | "loss" | "tie";
   turnOrder?: "first" | "second" | "unknown";
+  userPlayerName?: string;
   opponentName?: string;
   winnerName?: string;
-  decidingPlayerName?: string;
+  firstPlayerName?: string;
   opponentDeckGuess?: string;
+  opponentEvidenceCards?: string[];
   confidence?: "high" | "medium" | "low";
   notes: string[];
 };
@@ -25,8 +27,13 @@ type ResultResolution = {
 
 type TurnOrderResolution = {
   turnOrder?: "first" | "second" | "unknown";
-  decidingPlayerName?: string;
+  firstPlayerName?: string;
   note: string;
+};
+
+type ResolvedPlayers = {
+  userPlayerName?: string;
+  opponentPlayerName?: string;
 };
 
 function normalize(value: string) {
@@ -45,6 +52,23 @@ function dedupe(values: string[]) {
   return Array.from(new Set(values.filter(Boolean)));
 }
 
+function sortByOccurrence(lines: string[], candidates: string[]) {
+  return candidates
+    .map((candidate) => {
+      const normalizedCandidate = normalize(candidate);
+      const firstIndex = lines.findIndex((line) =>
+        normalize(line).includes(normalizedCandidate)
+      );
+
+      return {
+        candidate,
+        firstIndex: firstIndex === -1 ? Number.MAX_SAFE_INTEGER : firstIndex,
+      };
+    })
+    .sort((left, right) => left.firstIndex - right.firstIndex)
+    .map((entry) => entry.candidate);
+}
+
 function getKnownPlayerNames(lines: string[]) {
   const candidates = new Set<string>();
 
@@ -56,6 +80,8 @@ function getKnownPlayerNames(lines: string[]) {
       /^(.*?) won the coin toss\./i,
       /^(.*?) decided to go (first|second)\./i,
       /^(.*?) (played|attached|evolved|used|drew|discarded|shuffled|put|took)\b/i,
+      /^(.*?)'s .*?\b(used|attacked|retreated|was Knocked Out|was damaged|used)\b/i,
+      /^Opponent conceded\. (.*?) wins\./i,
       /All Prize cards taken\. (.*?) wins\./i,
       /^(.*?) wins\./i,
     ].forEach((pattern) => {
@@ -68,12 +94,18 @@ function getKnownPlayerNames(lines: string[]) {
     });
   }
 
-  return Array.from(candidates);
+  return sortByOccurrence(lines, Array.from(candidates));
 }
 
 function detectWinner(lines: string[]) {
-  for (const line of lines) {
+  for (const line of lines.slice().reverse()) {
     const trimmed = line.trim();
+    const concededMatch = trimmed.match(/^Opponent conceded\. (.*?) wins\.$/i);
+
+    if (concededMatch?.[1]) {
+      return concededMatch[1].trim();
+    }
+
     const prizeMatch = trimmed.match(/^All Prize cards taken\. (.*?) wins\.$/i);
 
     if (prizeMatch?.[1]) {
@@ -134,19 +166,27 @@ function detectDecidingPlayer(lines: string[]) {
   return null;
 }
 
-function resolveOpponentName(playerName: string | undefined, knownPlayers: string[]) {
-  if (!playerName) {
-    return undefined;
-  }
+function resolvePlayers(
+  rawPlayerName: string | undefined,
+  knownPlayers: string[]
+): ResolvedPlayers {
+  const normalizedPlayer = rawPlayerName ? normalize(rawPlayerName) : "";
+  const userPlayerName =
+    knownPlayers.find((name) => normalize(name) === normalizedPlayer) ??
+    rawPlayerName;
+  const opponentPlayerName = userPlayerName
+    ? knownPlayers.find((name) => normalize(name) !== normalize(userPlayerName))
+    : undefined;
 
-  const normalizedPlayer = normalize(playerName);
-  return knownPlayers.find((name) => normalize(name) !== normalizedPlayer);
+  return {
+    userPlayerName,
+    opponentPlayerName,
+  };
 }
 
 function resolveResult(
   lines: string[],
-  playerName: string | undefined,
-  knownPlayers: string[]
+  resolvedPlayers: ResolvedPlayers
 ): ResultResolution {
   const fullLog = normalize(lines.join("\n"));
 
@@ -168,7 +208,7 @@ function resolveResult(
   ) {
     return {
       result: "win" as const,
-      winnerName: playerName,
+      winnerName: resolvedPlayers.userPlayerName,
       note: "Detected result: win",
     };
   }
@@ -178,7 +218,7 @@ function resolveResult(
   ) {
     return {
       result: "loss" as const,
-      winnerName: resolveOpponentName(playerName, knownPlayers),
+      winnerName: resolvedPlayers.opponentPlayerName,
       note: "Detected result: loss",
     };
   }
@@ -193,7 +233,7 @@ function resolveResult(
     };
   }
 
-  if (!playerName) {
+  if (!resolvedPlayers.userPlayerName) {
     return {
       result: undefined,
       winnerName,
@@ -201,14 +241,26 @@ function resolveResult(
     };
   }
 
+  if (
+    resolvedPlayers.opponentPlayerName &&
+    normalize(winnerName) !== normalize(resolvedPlayers.userPlayerName) &&
+    normalize(winnerName) !== normalize(resolvedPlayers.opponentPlayerName)
+  ) {
+    return {
+      result: undefined,
+      winnerName,
+      note: `Detected winner: ${winnerName}. Could not map that name to either player cleanly.`,
+    };
+  }
+
   return {
     result:
-      normalize(winnerName) === normalize(playerName)
+      normalize(winnerName) === normalize(resolvedPlayers.userPlayerName)
         ? ("win" as const)
         : ("loss" as const),
     winnerName,
     note:
-      normalize(winnerName) === normalize(playerName)
+      normalize(winnerName) === normalize(resolvedPlayers.userPlayerName)
         ? "Detected result: win"
         : "Detected result: loss",
   };
@@ -216,14 +268,14 @@ function resolveResult(
 
 function resolveTurnOrder(
   lines: string[],
-  playerName: string | undefined
+  resolvedPlayers: ResolvedPlayers
 ): TurnOrderResolution {
   const decidingPlayer = detectDecidingPlayer(lines);
 
   if (!decidingPlayer) {
     return {
       turnOrder: undefined,
-      decidingPlayerName: undefined,
+      firstPlayerName: undefined,
       note: "Could not detect turn order from this log.",
     };
   }
@@ -231,7 +283,7 @@ function resolveTurnOrder(
   if (decidingPlayer.playerName === "you") {
     return {
       turnOrder: decidingPlayer.choice,
-      decidingPlayerName: playerName,
+      firstPlayerName: resolvedPlayers.userPlayerName,
       note: `Detected turn order: ${decidingPlayer.choice}`,
     };
   }
@@ -239,37 +291,39 @@ function resolveTurnOrder(
   if (decidingPlayer.playerName === "opponent") {
     return {
       turnOrder: decidingPlayer.choice === "first" ? "second" : "first",
-      decidingPlayerName: undefined,
+      firstPlayerName: decidingPlayer.choice === "first"
+        ? resolvedPlayers.opponentPlayerName
+        : resolvedPlayers.userPlayerName,
       note: `Detected turn order: ${
         decidingPlayer.choice === "first" ? "second" : "first"
       }`,
     };
   }
 
-  if (!playerName) {
+  if (!resolvedPlayers.userPlayerName) {
     return {
       turnOrder: undefined,
-      decidingPlayerName: decidingPlayer.playerName,
+      firstPlayerName: decidingPlayer.choice === "first" ? decidingPlayer.playerName : undefined,
       note: `Detected turn choice: ${decidingPlayer.playerName} decided to go ${decidingPlayer.choice}. Add your TCG Live name to autofill turn order.`,
     };
   }
 
-  const isUser = normalize(decidingPlayer.playerName) === normalize(playerName);
+  const isUser =
+    resolvedPlayers.userPlayerName &&
+    normalize(decidingPlayer.playerName) === normalize(resolvedPlayers.userPlayerName);
+  const userTurnOrder = isUser
+    ? decidingPlayer.choice
+    : decidingPlayer.choice === "first"
+      ? "second"
+      : "first";
 
   return {
-    turnOrder: isUser
-      ? decidingPlayer.choice
-      : decidingPlayer.choice === "first"
-        ? "second"
-        : "first",
-    decidingPlayerName: decidingPlayer.playerName,
-    note: `Detected turn order: ${
-      isUser
-        ? decidingPlayer.choice
-        : decidingPlayer.choice === "first"
-          ? "second"
-          : "first"
-    }`,
+    turnOrder: userTurnOrder,
+    firstPlayerName:
+      userTurnOrder === "first"
+        ? resolvedPlayers.userPlayerName ?? decidingPlayer.playerName
+        : resolvedPlayers.opponentPlayerName ?? decidingPlayer.playerName,
+    note: `Detected turn order: ${userTurnOrder}`,
   };
 }
 
@@ -279,7 +333,7 @@ function extractOpponentFocusedLog(
   playerName: string | undefined
 ) {
   if (!opponentName) {
-    return "";
+    return { text: "", cards: [] as string[] };
   }
 
   const opponentPattern = new RegExp(
@@ -290,8 +344,7 @@ function extractOpponentFocusedLog(
     ? new RegExp(`^${escapeRegex(playerName)}(?:'s)?\\b`, "i")
     : null;
 
-  return lines
-    .filter((line) => {
+  const opponentLines = lines.filter((line) => {
       const trimmed = line.trim();
 
       if (playerPattern?.test(trimmed)) {
@@ -299,8 +352,33 @@ function extractOpponentFocusedLog(
       }
 
       return opponentPattern.test(trimmed);
+    });
+
+  const cards = dedupe(
+    opponentLines.flatMap((line) => {
+      const trimmed = line.trim();
+      const patterns = [
+        new RegExp(`^${escapeRegex(opponentName)} played (.*?) to the (?:Active Spot|Bench)\\.?$`, "i"),
+        new RegExp(`^${escapeRegex(opponentName)} evolved .*? to (.*?) on the (?:Active Spot|Bench)\\.?$`, "i"),
+        new RegExp(`^${escapeRegex(opponentName)} attached .*? to (.*?)\\.?$`, "i"),
+        new RegExp(`^${escapeRegex(opponentName)}'s (.*?) used .*`, "i"),
+      ];
+
+      for (const pattern of patterns) {
+        const match = trimmed.match(pattern);
+        if (match?.[1]) {
+          return [match[1].trim()];
+        }
+      }
+
+      return [];
     })
-    .join("\n");
+  );
+
+  return {
+    text: opponentLines.join("\n"),
+    cards,
+  };
 }
 
 function detectOpponentDeck(
@@ -309,15 +387,17 @@ function detectOpponentDeck(
   playerName: string | undefined,
   archetypeOptions: string[]
 ) {
-  const opponentFocusedLog = extractOpponentFocusedLog(
+  const opponentEvidence = extractOpponentFocusedLog(
     lines,
     opponentName,
     playerName
   );
+  const opponentFocusedLog = opponentEvidence.text;
 
   if (!opponentFocusedLog) {
     return {
       opponentDeckGuess: undefined,
+      opponentEvidenceCards: [] as string[],
       confidence: "low" as const,
       note: "Could not confidently detect opponent deck. Please choose it manually.",
     };
@@ -328,6 +408,7 @@ function detectOpponentDeck(
   if (suggestion.isClearSuggestion && suggestion.archetype !== OTHER_ARCHETYPE) {
     return {
       opponentDeckGuess: suggestion.archetype,
+      opponentEvidenceCards: opponentEvidence.cards,
       confidence:
         suggestion.confidence === "high"
           ? ("high" as const)
@@ -345,6 +426,7 @@ function detectOpponentDeck(
   if (directMatch) {
     return {
       opponentDeckGuess: directMatch,
+      opponentEvidenceCards: opponentEvidence.cards,
       confidence: "medium" as const,
       note: `Detected opponent deck: ${directMatch}`,
     };
@@ -352,6 +434,7 @@ function detectOpponentDeck(
 
   return {
     opponentDeckGuess: undefined,
+    opponentEvidenceCards: opponentEvidence.cards,
     confidence: "low" as const,
     note: "Could not confidently detect opponent deck. Please choose it manually.",
   };
@@ -366,17 +449,17 @@ export function parseTcgLiveLog(
     .map((line) => line.trim())
     .filter(Boolean);
   const knownPlayers = getKnownPlayerNames(lines);
-  const playerName = options.playerName?.trim() || undefined;
-  const opponentName = playerName
-    ? resolveOpponentName(playerName, knownPlayers)
-    : undefined;
+  const resolvedPlayers = resolvePlayers(
+    options.playerName?.trim() || undefined,
+    knownPlayers
+  );
 
-  const resultInfo = resolveResult(lines, playerName, knownPlayers);
-  const turnInfo = resolveTurnOrder(lines, playerName);
+  const resultInfo = resolveResult(lines, resolvedPlayers);
+  const turnInfo = resolveTurnOrder(lines, resolvedPlayers);
   const opponentDeck = detectOpponentDeck(
     lines,
-    opponentName,
-    playerName,
+    resolvedPlayers.opponentPlayerName,
+    resolvedPlayers.userPlayerName,
     options.archetypeOptions ?? []
   );
 
@@ -384,7 +467,9 @@ export function parseTcgLiveLog(
     [
       resultInfo.note,
       turnInfo.note,
-      opponentName ? `Detected opponent: ${opponentName}` : null,
+      resolvedPlayers.opponentPlayerName
+        ? `Detected opponent: ${resolvedPlayers.opponentPlayerName}`
+        : null,
       opponentDeck.note,
     ].filter((value): value is string => Boolean(value))
   );
@@ -392,10 +477,12 @@ export function parseTcgLiveLog(
   return {
     result: resultInfo.result,
     turnOrder: turnInfo.turnOrder,
-    opponentName,
+    userPlayerName: resolvedPlayers.userPlayerName,
+    opponentName: resolvedPlayers.opponentPlayerName,
     winnerName: resultInfo.winnerName,
-    decidingPlayerName: turnInfo.decidingPlayerName,
+    firstPlayerName: turnInfo.firstPlayerName,
     opponentDeckGuess: opponentDeck.opponentDeckGuess,
+    opponentEvidenceCards: opponentDeck.opponentEvidenceCards,
     confidence: opponentDeck.confidence,
     notes,
   };

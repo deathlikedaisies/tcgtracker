@@ -116,6 +116,17 @@ test.describe("TCG Live log parser", () => {
     "All Prize cards taken. DommitronNL wins.",
   ].join("\n");
 
+  const concessionLog = [
+    "DommitronNL decided to go first.",
+    "CarlosX2 played Yveltal to the Active Spot.",
+    "CarlosX2 played Pecharunt to the Bench.",
+    "CarlosX2 played Skorupi to the Bench.",
+    "CarlosX2 evolved Toxel to Toxtricity on the Bench.",
+    "DommitronNL evolved Dreepy to Dragapult ex in the Active Spot.",
+    "DommitronNL's Dragapult ex used Phantom Dive on CarlosX2's Yveltal for 200 damage.",
+    "Opponent conceded. DommitronNL wins.",
+  ].join("\n");
+
   test("extracts result, turn order, and opponent deck from named-player logs", async () => {
     const parsed = parseTcgLiveLog(
       realStyleLog,
@@ -168,8 +179,69 @@ test.describe("TCG Live log parser", () => {
     expect(parsed.result).toBeUndefined();
     expect(parsed.turnOrder).toBeUndefined();
     expect(parsed.winnerName).toBe("DommitronNL");
-    expect(parsed.decidingPlayerName).toBe("DommitronNL");
+    expect(parsed.firstPlayerName).toBe("DommitronNL");
     expect(parsed.notes.join(" ")).toMatch(/Add your TCG Live name/i);
+  });
+
+  test("resolves result and opponent ownership from the entered TCG Live user perspective", async () => {
+    const parsed = parseTcgLiveLog(concessionLog, {
+      archetypeOptions: [
+        "Dragapult",
+        "Dragapult ex",
+        "Dragapult Blaziken",
+        "Dark Poison",
+        "Pecharunt",
+      ],
+      playerName: "DommitronNL",
+    });
+
+    expect(parsed.userPlayerName).toBe("DommitronNL");
+    expect(parsed.result).toBe("win");
+    expect(parsed.winnerName).toBe("DommitronNL");
+    expect(parsed.turnOrder).toBe("first");
+    expect(parsed.firstPlayerName).toBe("DommitronNL");
+    expect(parsed.opponentName).toBe("CarlosX2");
+    expect(parsed.opponentDeckGuess).not.toBe("Dragapult");
+    expect(parsed.opponentDeckGuess).not.toBe("Dragapult ex");
+    expect(parsed.opponentDeckGuess).not.toBe("Dragapult Blaziken");
+    expect(parsed.opponentEvidenceCards).toEqual(
+      expect.arrayContaining(["Yveltal", "Pecharunt", "Skorupi", "Toxtricity"])
+    );
+  });
+
+  test("flips the same named-player log correctly when the other player is you", async () => {
+    const parsed = parseTcgLiveLog(concessionLog, {
+      archetypeOptions: [
+        "Dragapult",
+        "Dragapult ex",
+        "Dragapult Blaziken",
+      ],
+      playerName: "CarlosX2",
+    });
+
+    expect(parsed.userPlayerName).toBe("CarlosX2");
+    expect(parsed.result).toBe("loss");
+    expect(parsed.turnOrder).toBe("second");
+    expect(parsed.opponentName).toBe("DommitronNL");
+    expect(parsed.opponentDeckGuess).toMatch(/Dragapult/i);
+  });
+
+  test("uses the last explicit winner line when the log ends with a concession win", async () => {
+    const parsed = parseTcgLiveLog(
+      [
+        "DommitronNL decided to go first.",
+        "CarlosX2 played Yveltal to the Active Spot.",
+        "DommitronNL's Dragapult ex was Knocked Out.",
+        "Opponent conceded. DommitronNL wins.",
+      ].join("\n"),
+      {
+        archetypeOptions: ["Dragapult Blaziken", "Dark Poison"],
+        playerName: "DommitronNL",
+      }
+    );
+
+    expect(parsed.result).toBe("win");
+    expect(parsed.winnerName).toBe("DommitronNL");
   });
 });
 
@@ -726,31 +798,24 @@ test.describe("authenticated routes", () => {
       .getByLabel("TCG Live battle log")
       .fill(
         [
-          "DommitronNL chose heads for the opening coin flip.",
-          "DommitronNL won the coin toss.",
           "DommitronNL decided to go first.",
-          "DommitronNL played Dreepy to the Active Spot.",
-          "DommitronNL played Dragapult ex to the Bench.",
-          "DommitronNL played Blaziken ex to the Bench.",
-          "AlfonsoLarsen played Budew to the Active Spot.",
-          "AlfonsoLarsen played Chikorita to the Bench.",
-          "AlfonsoLarsen evolved Chikorita to Bayleef on the Bench.",
-          "AlfonsoLarsen evolved Bayleef to Meganium on the Bench.",
-          "AlfonsoLarsen played Teal Mask Ogerpon ex to the Bench.",
-          "AlfonsoLarsen evolved Applin to Dipplin on the Bench.",
-          "All Prize cards taken. DommitronNL wins.",
+          "CarlosX2 played Yveltal to the Active Spot.",
+          "CarlosX2 played Pecharunt to the Bench.",
+          "CarlosX2 played Skorupi to the Bench.",
+          "CarlosX2 evolved Toxel to Toxtricity on the Bench.",
+          "DommitronNL evolved Dreepy to Dragapult ex in the Active Spot.",
+          "DommitronNL's Dragapult ex used Phantom Dive on CarlosX2's Yveltal for 200 damage.",
+          "Opponent conceded. DommitronNL wins.",
         ].join("\n")
       );
     await page.getByRole("button", { name: "Autofill from log" }).click();
 
     await expect(page.locator('input[name="result"]')).toHaveValue("win");
     await expect(page.locator('input[name="went_first"]')).toHaveValue("true");
-    await expect(page.locator('input[name="opponent_archetype"]')).not.toHaveValue(
-      "Dragapult Blaziken"
-    );
+    await expect(page.locator('input[name="opponent_archetype"]')).not.toHaveValue(/Dragapult/i);
     await expect(page.locator("body")).toContainText(/Detected result: win/i);
     await expect(page.locator("body")).toContainText(/Detected turn order: first/i);
-    await expect(page.locator("body")).toContainText(/Detected opponent: AlfonsoLarsen/i);
+    await expect(page.locator("body")).toContainText(/Detected opponent: CarlosX2/i);
     await expect(page.locator("body")).toContainText(/Rate how the game felt/i);
     const qualityContinue = page.getByRole("button", { name: "Continue" });
     await expect(qualityContinue).toBeDisabled();
