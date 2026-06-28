@@ -7,7 +7,7 @@ import {
 } from "./helpers/assertions";
 
 const publicRoutes = [
-  { path: "/", assertion: () => ({ role: "heading" as const, name: /From testing games to/i }) },
+  { path: "/", assertion: () => ({ role: "heading" as const, name: "Know if your deck changes are actually working." }) },
   { path: "/demo", assertion: () => ({ role: "heading" as const, name: "Explore a realistic testing workspace." }) },
   { path: "/login", assertion: () => ({ role: "heading" as const, name: "Log in to SixPrizer" }) },
   { path: "/signup", assertion: () => ({ role: "heading" as const, name: "Create your SixPrizer account" }) },
@@ -38,6 +38,20 @@ test.describe("mobile layout", () => {
       await expectNoHorizontalOverflow(page);
     });
   }
+
+  test("landing page is readable on mobile and shows the current product story", async ({
+    page,
+  }) => {
+    await page.goto("/");
+
+    await expectHeadingVisible(page, "Know if your deck changes are actually working.");
+    await expect(page.locator("body")).toContainText(/Deck Lab/i);
+    await expect(page.locator("body")).toContainText(/TCG Live battle log/i);
+    await expect(page.locator("body")).toContainText(/Private testing by default/i);
+    await expect(page.getByRole("link", { name: "Preview demo" }).first()).toBeVisible();
+    await expectNoAppError(page);
+    await expectNoHorizontalOverflow(page);
+  });
 
   test.describe("authenticated mobile layout", () => {
     test.describe.configure({ mode: "serial" });

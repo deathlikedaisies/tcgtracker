@@ -7,10 +7,14 @@ test.describe("public routes", () => {
   test("landing page shows the main SixPrizer CTAs", async ({ page }) => {
     await page.goto("/");
 
-    await expectHeadingVisible(page, /From testing games to/i);
+    await expectHeadingVisible(page, "Know if your deck changes are actually working.");
     await expect(page.getByRole("link", { name: "Start tracking games" }).first()).toBeVisible();
     await expect(page.getByRole("link", { name: "Preview demo" }).first()).toBeVisible();
     await expect(page.locator("body")).toContainText("SixPrizer");
+    await expect(page.locator("body")).toContainText(/Deck Lab tells you whether the change was worth it/i);
+    await expect(page.locator("body")).toContainText(/Paste a TCG Live battle log/i);
+    await expect(page.locator("body")).toContainText(/Private testing by default/i);
+    await expect(page.locator("body")).toContainText(/Try the demo workspace first/i);
     await expectNoAppError(page);
   });
 
