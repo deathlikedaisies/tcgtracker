@@ -7,7 +7,7 @@ import {
 } from "./helpers/assertions";
 
 const publicRoutes = [
-  { path: "/", assertion: () => ({ role: "heading" as const, name: "Know if your deck changes are actually working." }) },
+  { path: "/", assertion: () => ({ role: "heading" as const, name: "Track your Pokemon TCG testing and find what is costing wins." }) },
   { path: "/demo", assertion: () => ({ role: "heading" as const, name: "Explore a realistic testing workspace." }) },
   { path: "/login", assertion: () => ({ role: "heading" as const, name: "Log in to SixPrizer" }) },
   { path: "/signup", assertion: () => ({ role: "heading" as const, name: "Create your SixPrizer account" }) },
@@ -44,10 +44,15 @@ test.describe("mobile layout", () => {
   }) => {
     await page.goto("/");
 
-    await expectHeadingVisible(page, "Know if your deck changes are actually working.");
+    await expectHeadingVisible(
+      page,
+      "Track your Pokemon TCG testing and find what is costing wins."
+    );
+    await expect(page.locator("body")).toContainText(/Fast match logging/i);
+    await expect(page.locator("body")).toContainText(/Matchup tracking/i);
+    await expect(page.locator("body")).toContainText(/Review and improve/i);
     await expect(page.locator("body")).toContainText(/Deck Lab/i);
-    await expect(page.locator("body")).toContainText(/TCG Live battle log/i);
-    await expect(page.locator("body")).toContainText(/Private testing by default/i);
+    await expect(page.locator("body")).toContainText(/Your testing data stays private by default/i);
     await expect(page.getByRole("link", { name: "Preview demo" }).first()).toBeVisible();
     await expectNoAppError(page);
     await expectNoHorizontalOverflow(page);

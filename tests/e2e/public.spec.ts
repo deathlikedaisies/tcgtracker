@@ -7,14 +7,18 @@ test.describe("public routes", () => {
   test("landing page shows the main SixPrizer CTAs", async ({ page }) => {
     await page.goto("/");
 
-    await expectHeadingVisible(page, "Know if your deck changes are actually working.");
+    await expectHeadingVisible(
+      page,
+      "Track your Pokemon TCG testing and find what is costing wins."
+    );
     await expect(page.getByRole("link", { name: "Start tracking games" }).first()).toBeVisible();
     await expect(page.getByRole("link", { name: "Preview demo" }).first()).toBeVisible();
     await expect(page.locator("body")).toContainText("SixPrizer");
-    await expect(page.locator("body")).toContainText(/Deck Lab tells you whether the change was worth it/i);
-    await expect(page.locator("body")).toContainText(/Paste a TCG Live battle log/i);
-    await expect(page.locator("body")).toContainText(/Private testing by default/i);
-    await expect(page.locator("body")).toContainText(/Try the demo workspace first/i);
+    await expect(page.locator("body")).toContainText(/Fast match logging/i);
+    await expect(page.locator("body")).toContainText(/Matchup tracking/i);
+    await expect(page.locator("body")).toContainText(/Review and improve/i);
+    await expect(page.locator("body")).toContainText(/Deck Lab turns your logs into deck decisions/i);
+    await expect(page.locator("body")).toContainText(/Your testing data stays private by default/i);
     await expectNoAppError(page);
   });
 
