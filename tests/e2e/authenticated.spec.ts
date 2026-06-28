@@ -1019,6 +1019,13 @@ test.describe("authenticated routes", () => {
     await expect(page.locator("body")).not.toContainText(/good prize plan.*positive pattern/i);
     await expect(page.locator("body")).not.toContainText(/wins tagged.*losses tagged|3 of 14 wins tagged/i);
     await expect(page.locator("body")).not.toContainText(/Detailed analytics|Recent form.*Deck versions|Turn-order split.*Tag pressure/i);
+    const nextBestActionCard = page
+      .getByText(/Next best action/i)
+      .first()
+      .locator("xpath=ancestor::section[1]");
+    await expect(
+      nextBestActionCard.getByRole("link", { name: /^Open review$/ })
+    ).toHaveCount(1);
     await expectNoAppError(page);
   });
 

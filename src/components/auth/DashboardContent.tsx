@@ -298,6 +298,11 @@ function MissionHeroCard({
   );
   const primaryHref = insight.continueHref;
   const primaryLabel = insight.ctaLabel;
+  const primaryReviewPath = primaryHref.split("?")[0];
+  const secondaryReviewPath = reviewHref.split("?")[0];
+  const showSecondaryReviewCta =
+    primaryReviewPath !== secondaryReviewPath &&
+    primaryLabel.trim().toLowerCase() !== "open review";
 
   return (
     <section className={`grid gap-3 p-3 sm:gap-4 sm:p-5 xl:grid-cols-[minmax(0,1.5fr)_280px] ${missionHeroCard} bg-[linear-gradient(180deg,rgba(14,24,42,0.94),rgba(8,17,31,0.90))]`}>
@@ -428,9 +433,11 @@ function MissionHeroCard({
             {primaryLabel}
             <ArrowRight className="ml-2 size-4" aria-hidden="true" />
           </Link>
-          <Link href={reviewHref} className={`${secondaryButton} h-11`}>
-            Open review
-          </Link>
+          {showSecondaryReviewCta ? (
+            <Link href={reviewHref} className={`${secondaryButton} h-11`}>
+              Open review
+            </Link>
+          ) : null}
         </div>
       </div>
     </section>
