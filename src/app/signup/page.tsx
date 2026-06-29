@@ -1,6 +1,7 @@
 import { AuthForm } from "@/components/auth/AuthForm";
 import { glassPanelStrong, marketingShell, pageCopy } from "@/components/brand-styles";
 import { BrandLogo } from "@/components/BrandLogo";
+import { getBetaSignupStatus } from "@/lib/beta-signup";
 import { getOptionalSupabaseConfig } from "@/lib/supabase-config";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
@@ -35,6 +36,8 @@ export default async function SignupPage() {
     redirect("/dashboard");
   }
 
+  const betaSignupStatus = await getBetaSignupStatus();
+
   return (
     <main className={`flex items-center justify-center px-4 py-8 sm:px-6 sm:py-12 ${marketingShell}`}>
       <section className={`w-full max-w-sm p-5 sm:p-6 ${glassPanelStrong}`}>
@@ -44,10 +47,16 @@ export default async function SignupPage() {
             Create your SixPrizer account
           </h1>
           <p className={pageCopy}>
-            Create an account to start tracking your matches.
+            {betaSignupStatus.inviteGateEnabled
+              ? "Enter your beta invite code to start tracking your matches."
+              : "Create an account to start tracking your matches."}
           </p>
         </div>
-        <AuthForm mode="signup" authConfigured={authConfigured} />
+        <AuthForm
+          mode="signup"
+          authConfigured={authConfigured}
+          betaInviteGateEnabled={betaSignupStatus.inviteGateEnabled}
+        />
       </section>
     </main>
   );

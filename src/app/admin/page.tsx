@@ -17,6 +17,7 @@ import {
   type AdminActivityItem,
   type AdminAnalytics,
 } from "@/lib/admin-analytics";
+import { getBetaSignupStatus, type BetaSignupStatus } from "@/lib/beta-signup";
 import { hasAdminSupabaseConfig } from "@/lib/supabase-admin";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 
@@ -75,6 +76,17 @@ function SummaryCard({
   );
 }
 
+function BetaMetricCard({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div className="rounded-[22px] bg-[#0F1A2D]/82 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]">
+      <p className="text-xs font-semibold uppercase tracking-[0.10em] text-[#94A3B8]">
+        {label}
+      </p>
+      <p className="mt-2 text-3xl font-black tracking-tight text-[#F8FAFC]">{value}</p>
+    </div>
+  );
+}
+
 function StatusPill({ status }: { status: string }) {
   const tone =
     status === "Active tester"
@@ -92,7 +104,13 @@ function StatusPill({ status }: { status: string }) {
   );
 }
 
-function AdminDashboard({ analytics }: { analytics: AdminAnalytics }) {
+function AdminDashboard({
+  analytics,
+  betaSignupStatus,
+}: {
+  analytics: AdminAnalytics;
+  betaSignupStatus: BetaSignupStatus;
+}) {
   return (
     <div className={appShell}>
       <AppSidebar current="settings" />
@@ -133,6 +151,46 @@ function AdminDashboard({ analytics }: { analytics: AdminAnalytics }) {
           <SummaryCard label="Deck versions" value={analytics.summary.totalVersions} />
           <SummaryCard label="Logged games" value={analytics.summary.totalMatches} />
           <SummaryCard label="Feedback reports" value={analytics.summary.feedbackReports} />
+        </section>
+
+        <section className={`${glassPanel} p-5 sm:p-6`}>
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#F5C84C]">
+                Beta signup gate
+              </p>
+              <h2 className="mt-2 text-2xl font-black tracking-tight text-[#F8FAFC]">
+                {betaSignupStatus.inviteGateEnabled
+                  ? "Invite-only signup is active"
+                  : "Signup gate is open"}
+              </h2>
+              <p className={`mt-2 max-w-3xl ${sectionCopy}`}>
+                Invite codes are checked server-side before Supabase Auth creates a user.
+                The invite code is never exposed through a public variable.
+              </p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[440px]">
+              <BetaMetricCard
+                label="Beta users"
+                value={betaSignupStatus.currentBetaUsers ?? analytics.summary.totalUsers}
+              />
+              <BetaMetricCard
+                label="Signup cap"
+                value={betaSignupStatus.maxBetaUsers ?? "No cap"}
+              />
+              <BetaMetricCard
+                label="Spots left"
+                value={betaSignupStatus.remainingSpots ?? "Open"}
+              />
+            </div>
+          </div>
+          <p className="mt-3 text-xs leading-5 text-[#94A3B8]">
+            {betaSignupStatus.maxBetaUsers === null
+              ? "No MAX_BETA_USERS cap is configured."
+              : betaSignupStatus.canCountUsers
+                ? "The cap count excludes the owner admin account."
+                : "Signup cap is configured, but user counting is unavailable without the server-only service role key."}
+          </p>
         </section>
 
         <section className={`${cardLarge} overflow-hidden`}>
@@ -334,7 +392,10 @@ export default async function AdminPage() {
     );
   }
 
-  const analytics = await getAdminAnalytics();
+  const [analytics, betaSignupStatus] = await Promise.all([
+    getAdminAnalytics(),
+    getBetaSignupStatus(),
+  ]);
 
-  return <AdminDashboard analytics={analytics} />;
+  return <AdminDashboard analytics={analytics} betaSignupStatus={betaSignupStatus} />;
 }

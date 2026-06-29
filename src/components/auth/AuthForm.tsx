@@ -20,6 +20,7 @@ import { AUTH_SUPPORT_LINE } from "@/lib/auth-errors";
 type AuthFormProps = {
   mode: AuthMode;
   authConfigured?: boolean;
+  betaInviteGateEnabled?: boolean;
   initialMessage?: {
     message: string;
     variant: AuthFormState["variant"];
@@ -46,6 +47,7 @@ function getTone(variant: AuthFormState["variant"]) {
 export function AuthForm({
   mode,
   authConfigured = true,
+  betaInviteGateEnabled = false,
   initialMessage = null,
 }: AuthFormProps) {
   const isLogin = mode === "login";
@@ -108,21 +110,39 @@ export function AuthForm({
           ) : null}
         </div>
         {!isLogin ? (
-          <div className="flex flex-col gap-2">
-            <label htmlFor="confirm-password" className={label}>
-              Confirm password
-            </label>
-            <input
-              id="confirm-password"
-              name="confirm-password"
-              type="password"
-              autoComplete="new-password"
-              required
-              minLength={8}
-              disabled={!authConfigured || isSubmitting}
-              className={`${inputH11} disabled:cursor-not-allowed disabled:opacity-70`}
-            />
-          </div>
+          <>
+            <div className="flex flex-col gap-2">
+              <label htmlFor="confirm-password" className={label}>
+                Confirm password
+              </label>
+              <input
+                id="confirm-password"
+                name="confirm-password"
+                type="password"
+                autoComplete="new-password"
+                required
+                minLength={8}
+                disabled={!authConfigured || isSubmitting}
+                className={`${inputH11} disabled:cursor-not-allowed disabled:opacity-70`}
+              />
+            </div>
+            {betaInviteGateEnabled ? (
+              <div className="flex flex-col gap-2">
+                <label htmlFor="beta-invite-code" className={label}>
+                  Beta invite code
+                </label>
+                <input
+                  id="beta-invite-code"
+                  name="beta-invite-code"
+                  type="text"
+                  autoComplete="off"
+                  placeholder="Enter your beta code"
+                  disabled={!authConfigured || isSubmitting}
+                  className={`${inputH11} disabled:cursor-not-allowed disabled:opacity-70`}
+                />
+              </div>
+            ) : null}
+          </>
         ) : null}
         {displayedMessage ? (
           <div

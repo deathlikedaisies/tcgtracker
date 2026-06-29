@@ -102,6 +102,30 @@ test.describe("public routes", () => {
     await expectNoAppError(page);
   });
 
+  test("signup beta gate shows invite field and rejects invalid codes when enabled", async ({ page }) => {
+    test.skip(
+      !process.env.BETA_INVITE_CODE && process.env.NODE_ENV !== "production",
+      "Beta invite gate is not enabled in this test environment."
+    );
+
+    await page.goto("/signup");
+
+    await expectHeadingVisible(page, "Create your SixPrizer account");
+    await expect(page.getByLabel("Beta invite code")).toBeVisible();
+
+    await page.getByLabel("Email").fill(`invalid-code-${Date.now()}@example.com`);
+    await page.getByLabel("Password").fill("password123");
+    await page.getByLabel("Confirm password").fill("password123");
+    await page.getByLabel("Beta invite code").fill("WRONG-CODE");
+    await page.getByRole("button", { name: "Create account" }).click();
+
+    await expect(page.getByRole("alert")).toContainText(
+      "This beta is invite-only right now. Please check the code and try again."
+    );
+    await expect(page).toHaveURL(/\/signup/);
+    await expectNoAppError(page);
+  });
+
   test("missing public profile shows the unavailable state", async ({ page }) => {
     await page.goto("/u/sixprizer-missing-profile");
 

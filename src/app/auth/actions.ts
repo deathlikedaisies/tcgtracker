@@ -7,6 +7,7 @@ import {
   isEmailNotConfirmedError,
   normalizeAuthError,
 } from "@/lib/auth-errors";
+import { validateBetaSignup } from "@/lib/beta-signup";
 
 export type AuthMode = "login" | "signup";
 
@@ -89,6 +90,7 @@ export async function submitAuthFormAction(
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
   const confirmPassword = String(formData.get("confirm-password") ?? "");
+  const betaInviteCode = String(formData.get("beta-invite-code") ?? "").trim();
 
   if (!email || !password) {
     return {
@@ -109,6 +111,16 @@ export async function submitAuthFormAction(
       message: AUTH_ERROR_MESSAGES.passwordsDoNotMatch,
       variant: "error",
     };
+  }
+
+  if (mode === "signup") {
+    const betaSignup = await validateBetaSignup(betaInviteCode);
+    if (!betaSignup.ok) {
+      return {
+        message: betaSignup.message,
+        variant: "error",
+      };
+    }
   }
 
   const result = await submitAuthForm(mode, email, password);
