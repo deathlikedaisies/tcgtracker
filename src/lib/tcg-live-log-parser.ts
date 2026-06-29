@@ -491,18 +491,94 @@ function getSegmentOwner(
   return "neutral";
 }
 
-function removeUserOwnedMentions(line: string, playerName: string | undefined) {
-  if (!playerName) {
-    return line;
+function cleanEvidenceCardName(value: string) {
+  return value
+    .trim()
+    .replace(/[.!?]+$/g, "")
+    .replace(/\s+(?:in|on|to|from|with|for)\b.*$/i, "")
+    .trim();
+}
+
+function isSafeEvidenceCardName(value: string) {
+  const normalizedValue = normalize(value);
+
+  return Boolean(
+    normalizedValue &&
+      !/^(a|an|the|energy|tool|pokemon tool|trainer|supporter|stadium)$/.test(
+        normalizedValue
+      ) &&
+      !/\b(?:damage counter|prize card|active spot|bench|opening hand)\b/.test(
+        normalizedValue
+      )
+  );
+}
+
+function extractOpponentEvidenceFromSegment(
+  segment: string,
+  opponentName: string,
+  playerName: string | undefined
+) {
+  const trimmed = segment.trim();
+  const opponent = escapeRegex(opponentName);
+  const user = playerName ? escapeRegex(playerName) : null;
+  const extractedCards: string[] = [];
+
+  const addCard = (value: string | undefined) => {
+    const cardName = cleanEvidenceCardName(value ?? "");
+
+    if (isSafeEvidenceCardName(cardName)) {
+      extractedCards.push(cardName);
+    }
+  };
+
+  const actorPokemonMatch = trimmed.match(
+    new RegExp(`^${opponent}'s\\s+(.+?)\\s+used\\b`, "i")
+  );
+
+  if (actorPokemonMatch?.[1]) {
+    addCard(actorPokemonMatch[1]);
   }
 
-  return line.replace(
+  const playedPokemonMatch = trimmed.match(
     new RegExp(
-      `${escapeRegex(playerName)}'s\\s+[^.!?]*?(?=\\s+(?:for|to|on|with|became|is|was|used|attacked|retreated)\\b|[.!?]|$)`,
-      "gi"
-    ),
-    ""
+      `^${opponent}\\s+played\\s+(.+?)\\s+to the (?:Active Spot|Bench)\\.?$`,
+      "i"
+    )
   );
+
+  if (playedPokemonMatch?.[1]) {
+    addCard(playedPokemonMatch[1]);
+  }
+
+  const evolvedPokemonMatch = trimmed.match(
+    new RegExp(
+      `^${opponent}\\s+evolved\\s+(.+?)\\s+to\\s+(.+?)(?:\\s+on the (?:Active Spot|Bench))?\\.?$`,
+      "i"
+    )
+  );
+
+  if (evolvedPokemonMatch?.[1] || evolvedPokemonMatch?.[2]) {
+    addCard(evolvedPokemonMatch?.[1]);
+    addCard(evolvedPokemonMatch?.[2]);
+  }
+
+  const attachedPokemonMatch = trimmed.match(
+    new RegExp(`^${opponent}\\s+attached\\s+.+?\\s+to\\s+(.+?)\\.?$`, "i")
+  );
+  const attachedTarget = attachedPokemonMatch?.[1]?.trim();
+
+  if (
+    attachedTarget &&
+    (!user || !new RegExp(`\\b${user}'s\\b`, "i").test(attachedTarget))
+  ) {
+    const opponentOwnedTarget = attachedTarget.match(
+      new RegExp(`^${opponent}'s\\s+(.+)$`, "i")
+    );
+
+    addCard(opponentOwnedTarget?.[1] ?? attachedTarget);
+  }
+
+  return extractedCards;
 }
 
 function extractOpponentFocusedLog(
@@ -514,49 +590,24 @@ function extractOpponentFocusedLog(
     return { text: "", cards: [] as string[] };
   }
 
-  const opponentLines = lines
-    .filter((line) => {
+  const cards = dedupe(
+    lines.flatMap((line) => {
       const trimmed = line.trim();
 
       if (getSegmentOwner(trimmed, opponentName, playerName) !== "opponent") {
-        return false;
+        return [];
       }
 
-      if (
-        playerName &&
-        trimmed.includes(playerName) &&
-        !new RegExp(`^${escapeRegex(opponentName)}(?:'s)?\\b`, "i").test(trimmed)
-      ) {
-        return false;
-      }
-
-      return true;
-    })
-    .map((line) => removeUserOwnedMentions(line, playerName));
-
-  const cards = dedupe(
-    opponentLines.flatMap((line) => {
-      const trimmed = line.trim();
-      const patterns = [
-        new RegExp(`^${escapeRegex(opponentName)} played (.*?) to the (?:Active Spot|Bench)\\.?$`, "i"),
-        new RegExp(`^${escapeRegex(opponentName)} evolved .*? to (.*?) on the (?:Active Spot|Bench)\\.?$`, "i"),
-        new RegExp(`^${escapeRegex(opponentName)} attached .*? to (.*?)\\.?$`, "i"),
-        new RegExp(`^${escapeRegex(opponentName)}'s (.*?) used .*`, "i"),
-      ];
-
-      for (const pattern of patterns) {
-        const match = trimmed.match(pattern);
-        if (match?.[1]) {
-          return [match[1].trim()];
-        }
-      }
-
-      return [];
+      return extractOpponentEvidenceFromSegment(
+        trimmed,
+        opponentName,
+        playerName
+      );
     })
   );
 
   return {
-    text: opponentLines.join("\n"),
+    text: cards.join("\n"),
     cards,
   };
 }

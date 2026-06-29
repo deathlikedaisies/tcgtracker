@@ -351,6 +351,79 @@ test.describe("TCG Live log parser", () => {
     );
   });
 
+  test("ignores target and knockout Pokemon when inferring the opponent deck", async () => {
+    const collapsedLog = [
+      "SetupDommitronNL chose tails for the opening coin flip.",
+      "Antonio_Romanni won the coin toss.",
+      "Antonio_Romanni decided to go first.",
+      "DommitronNL played Dreepy to the Active Spot.",
+      "DommitronNL evolved Dreepy to Drakloak on the Bench.",
+      "DommitronNL evolved Drakloak to Dragapult ex on the Bench.",
+      "DommitronNL evolved Torchic to Blaziken ex on the Bench.",
+      "DommitronNL's Meowth ex was switched with DommitronNL's Blaziken ex to become the Active Pokemon.",
+      "DommitronNL's Meowth ex is now in the Active Spot.",
+      "Antonio_Romanni played Abra to the Bench.",
+      "Antonio_Romanni evolved Abra to Kadabra on the Bench.",
+      "Antonio_Romanni evolved Kadabra to Alakazam on the Bench.",
+      "Antonio_Romanni's Alakazam used Powerful Hand.",
+      "Antonio_Romanni put 22 damage counters on Antonio_Romanni's Meowth ex.",
+      "DommitronNL's Meowth ex was Knocked Out.",
+      "Antonio_Romanni took 2 Prize cards.",
+      "Opponent took all of their Prize cards. Antonio_Romanni wins.",
+    ].join("");
+
+    const parsed = parseTcgLiveLog(collapsedLog, {
+      archetypeOptions: [
+        "Alakazam",
+        "Dragapult",
+        "Dragapult ex",
+        "Dragapult Blaziken",
+        "Blaziken",
+        "Blaziken ex",
+        "Meowth ex",
+      ],
+      playerName: "DommitronNL",
+    });
+
+    expect(parsed.result).toBe("loss");
+    expect(parsed.turnOrder).toBe("second");
+    expect(parsed.opponentName).toBe("Antonio_Romanni");
+    expect(parsed.opponentDeckGuess).toMatch(/Alakazam/i);
+    expect(parsed.opponentDeckGuess).not.toMatch(/Dragapult|Blaziken|Meowth/i);
+    expect(parsed.opponentEvidenceCards).toEqual(
+      expect.arrayContaining(["Abra", "Kadabra", "Alakazam"])
+    );
+    expect(parsed.opponentEvidenceCards).not.toEqual(
+      expect.arrayContaining(["Dragapult ex", "Blaziken ex", "Meowth ex"])
+    );
+  });
+
+  test("does not count user-owned knockout victims as opponent deck evidence", async () => {
+    const parsed = parseTcgLiveLog(
+      [
+        "DommitronNL decided to go second.",
+        "Antonio_Romanni played Abra to the Bench.",
+        "Antonio_Romanni evolved Abra to Kadabra on the Bench.",
+        "Antonio_Romanni evolved Kadabra to Alakazam on the Bench.",
+        "Antonio_Romanni's Alakazam used Powerful Hand.",
+        "DommitronNL's Dragapult ex was Knocked Out.",
+        "Opponent took all of their Prize cards. Antonio_Romanni wins.",
+      ].join(""),
+      {
+        archetypeOptions: ["Alakazam", "Dragapult ex", "Dragapult Blaziken"],
+        playerName: "DommitronNL",
+      }
+    );
+
+    expect(parsed.opponentName).toBe("Antonio_Romanni");
+    expect(parsed.opponentDeckGuess).toMatch(/Alakazam/i);
+    expect(parsed.opponentDeckGuess).not.toMatch(/Dragapult/i);
+    expect(parsed.opponentEvidenceCards).toEqual(
+      expect.arrayContaining(["Abra", "Kadabra", "Alakazam"])
+    );
+    expect(parsed.opponentEvidenceCards).not.toContain("Dragapult ex");
+  });
+
   test("maps clean final winner tokens even when no other opponent signal is available", async () => {
     const loss = parseTcgLiveLog(
       "Opponent took all of their Prize cards. Antonio_Romanni wins.",
