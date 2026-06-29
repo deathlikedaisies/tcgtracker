@@ -527,21 +527,21 @@ function SetupChecklist({
     <section
       className={`${emptyCard} overflow-hidden p-0 before:pointer-events-none before:absolute before:inset-0 before:bg-[radial-gradient(circle_at_18%_8%,rgba(79,140,255,0.18),transparent_32%),radial-gradient(circle_at_88%_18%,rgba(245,200,76,0.12),transparent_28%)] before:content-['']`}
     >
-      <div className="relative grid gap-5 p-4 sm:gap-6 sm:p-7 lg:grid-cols-[minmax(0,1.08fr)_minmax(320px,0.92fr)] lg:items-stretch">
+      <div className="relative grid gap-3.5 p-3.5 sm:gap-5 sm:p-5 lg:grid-cols-[minmax(0,1.05fr)_minmax(320px,0.95fr)] lg:items-stretch">
         <div className="min-w-0">
           <div className="inline-flex items-center gap-2 rounded-full bg-[#4F8CFF]/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.18)]">
             <Sparkles className="size-3.5" aria-hidden="true" />
             New workspace
           </div>
-          <h2 className="mt-4 max-w-2xl text-[2rem] font-black leading-[1.02] tracking-tight text-[#F8FAFC] sm:text-5xl">
+          <h2 className="mt-3 max-w-2xl text-[1.75rem] font-black leading-[1.04] tracking-tight text-[#F8FAFC] sm:text-4xl">
             Set up your testing workspace
           </h2>
-          <p className="mt-4 max-w-2xl text-sm leading-6 text-[#D6E0F0]/82 sm:text-base sm:leading-7">
+          <p className="mt-2.5 max-w-2xl text-sm leading-5 text-[#D6E0F0]/82 sm:text-base sm:leading-6">
             Add your deck, save a version, and start logging games. SixPrizer turns your testing data into matchup trends, review prompts, and Deck Lab reads.
           </p>
 
-          <div className="mt-5 flex flex-col gap-2 sm:mt-6 sm:flex-row sm:items-center">
-            <Link href={cta.href} className={`${primaryButton} h-12 w-full sm:w-auto`}>
+          <div className="mt-3.5 flex flex-col gap-2 sm:mt-4 sm:flex-row sm:items-center">
+            <Link href={cta.href} className={`${primaryButton} h-11 w-full sm:w-auto`}>
               {cta.label}
               <ArrowRight className="ml-2 size-4" aria-hidden="true" />
             </Link>
@@ -551,22 +551,22 @@ function SetupChecklist({
           </div>
         </div>
 
-        <div className={`${premiumInsetStrong} relative min-w-0 p-4 sm:p-5`}>
+        <div className={`${premiumInsetStrong} relative min-w-0 p-3.5 sm:p-4`}>
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.10em] text-[#F5C84C]">
                 Testing command center
               </p>
-              <p className="mt-1 text-sm text-[#94A3B8]/76">
+              <p className="mt-0.5 text-sm text-[#94A3B8]/76">
                 Build signal in order.
               </p>
             </div>
-            <span className="inline-flex size-12 shrink-0 items-center justify-center rounded-2xl bg-[#F5C84C]/12 text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.18)]">
+            <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-2xl bg-[#F5C84C]/12 text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.18)]">
               <Target className="size-5" aria-hidden="true" />
             </span>
           </div>
 
-          <div className="mt-5 grid gap-3">
+          <div className="mt-3.5 grid gap-2.5">
             {steps.map((step, index) => {
               const Icon = step.icon;
               const isNext = index === nextStepIndex;
@@ -582,14 +582,14 @@ function SetupChecklist({
                 <Link
                   key={step.label}
                   href={isLocked ? cta.href : step.href}
-                  className={`${premiumInset} group relative grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-[18px] p-3 transition-transform transition-colors hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C84C]/65 focus-visible:ring-offset-2 focus-visible:ring-offset-[#07111F] ${
+                  className={`${premiumInset} group relative grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2.5 rounded-[16px] p-2.5 transition-transform transition-colors hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C84C]/65 focus-visible:ring-offset-2 focus-visible:ring-offset-[#07111F] sm:p-3 ${
                     isNext
                       ? "shadow-[0_14px_30px_rgba(245,200,76,0.08),inset_0_0_0_1px_rgba(245,200,76,0.22)]"
                       : ""
                   }`}
                 >
                   <span
-                    className={`inline-flex size-10 shrink-0 items-center justify-center rounded-2xl ${
+                    className={`inline-flex size-9 shrink-0 items-center justify-center rounded-2xl ${
                       step.complete
                         ? "bg-emerald-500/10 text-emerald-200"
                         : isNext
@@ -615,7 +615,7 @@ function SetupChecklist({
                         {statusLabel}
                       </span>
                     </div>
-                    <p className="mt-0.5 text-sm leading-5 text-[#94A3B8]/74">
+                    <p className="mt-0.5 text-xs leading-4 text-[#94A3B8]/74 sm:text-sm sm:leading-5">
                       {step.helper}
                     </p>
                   </div>
@@ -632,14 +632,14 @@ function SetupChecklist({
         </div>
       </div>
 
-      <div className="relative border-t border-white/6 bg-[#07111F]/42 p-4 sm:p-5">
+      <div className="relative border-t border-white/6 bg-[#07111F]/42 p-3 sm:p-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.10em] text-[#4F8CFF]">
               What you unlock
             </p>
-            <p className="mt-1 text-sm leading-5 text-[#94A3B8]/76">
-              Once games are logged, SixPrizer can start showing focused testing reads.
+            <p className="mt-0.5 text-sm leading-5 text-[#94A3B8]/76">
+              Logged games unlock focused testing reads.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -1004,8 +1004,13 @@ export function DashboardContent({
             current="dashboard"
             eyebrow="Current workspace"
             title="Overview"
-            subtitle="See what to log next, what is hurting the current deck, and what changed."
+            subtitle={
+              hasAnyMatches
+                ? "See what to log next, what is hurting the current deck, and what changed."
+                : "Finish setup to start tracking games."
+            }
             userEmail={email}
+            className={!hasAnyMatches ? "xl:py-4" : ""}
           />
 
           {!hasAnyMatches ? (
