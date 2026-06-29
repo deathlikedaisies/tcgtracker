@@ -7,18 +7,14 @@ test.describe("public routes", () => {
   test("landing page shows the main SixPrizer CTAs", async ({ page }) => {
     await page.goto("/");
 
-    await expectHeadingVisible(
-      page,
-      "Track your Pokemon TCG testing and find what is costing wins."
-    );
+    await expectHeadingVisible(page, "From testing games to six-prize turns.");
     await expect(page.getByRole("link", { name: "Start tracking games" }).first()).toBeVisible();
     await expect(page.getByRole("link", { name: "Preview demo" }).first()).toBeVisible();
     await expect(page.locator("body")).toContainText("SixPrizer");
-    await expect(page.locator("body")).toContainText(/Fast match logging/i);
-    await expect(page.locator("body")).toContainText(/Matchup tracking/i);
-    await expect(page.locator("body")).toContainText(/Review and improve/i);
-    await expect(page.locator("body")).toContainText(/Deck Lab turns your logs into deck decisions/i);
-    await expect(page.locator("body")).toContainText(/Your testing data stays private by default/i);
+    await expect(page.locator("body")).toContainText(/Mega Greninja matchup/i);
+    await expect(page.locator("body")).toContainText(/Current focus/i);
+    await expect(page.locator("body")).toContainText(/Fast logging/i);
+    await expect(page.locator("body")).toContainText(/Matchup signal/i);
     await expectNoAppError(page);
   });
 

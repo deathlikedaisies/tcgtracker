@@ -7,7 +7,7 @@ import {
 } from "./helpers/assertions";
 
 const publicRoutes = [
-  { path: "/", assertion: () => ({ role: "heading" as const, name: "Track your Pokemon TCG testing and find what is costing wins." }) },
+  { path: "/", assertion: () => ({ role: "heading" as const, name: "From testing games to six-prize turns." }) },
   { path: "/demo", assertion: () => ({ role: "heading" as const, name: "Explore a realistic testing workspace." }) },
   { path: "/login", assertion: () => ({ role: "heading" as const, name: "Log in to SixPrizer" }) },
   { path: "/signup", assertion: () => ({ role: "heading" as const, name: "Create your SixPrizer account" }) },
@@ -44,15 +44,11 @@ test.describe("mobile layout", () => {
   }) => {
     await page.goto("/");
 
-    await expectHeadingVisible(
-      page,
-      "Track your Pokemon TCG testing and find what is costing wins."
-    );
-    await expect(page.locator("body")).toContainText(/Fast match logging/i);
-    await expect(page.locator("body")).toContainText(/Matchup tracking/i);
-    await expect(page.locator("body")).toContainText(/Review and improve/i);
-    await expect(page.locator("body")).toContainText(/Deck Lab/i);
-    await expect(page.locator("body")).toContainText(/Your testing data stays private by default/i);
+    await expectHeadingVisible(page, "From testing games to six-prize turns.");
+    await expect(page.locator("body")).toContainText(/Mega Greninja matchup/i);
+    await expect(page.locator("body")).toContainText(/Current focus/i);
+    await expect(page.locator("body")).toContainText(/Fast logging/i);
+    await expect(page.locator("body")).toContainText(/Matchup signal/i);
     await expect(page.getByRole("link", { name: "Preview demo" }).first()).toBeVisible();
     await expectNoAppError(page);
     await expectNoHorizontalOverflow(page);
