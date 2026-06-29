@@ -1,16 +1,16 @@
 # Playtest 1000 Audit
 
-Date: 2026-06-24
+Date: 2026-06-29
 User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 
 ## Seed setup summary
 
 - Test account: pokeleaguenl@gmail.com
-- Base URL audited: http://127.0.0.1:3000
+- Base URL audited: http://127.0.0.1:3100
 - Decks: 12
 - Versions: 33
 - Matches: 1000
-- Shared reports after audit: 2
+- Shared reports after audit: 10
 
 ## Data patterns intentionally created
 
@@ -39,9 +39,9 @@ User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 - /matches?page=5
 - /matches?page=10
 - /decks
-- /decks/e8ece6e6-c779-4ba2-8626-b43844acb00f
-- /decks/e8ece6e6-c779-4ba2-8626-b43844acb00f
-- /decks/8229d2ee-0040-4226-8b0f-4c3c9f4ae501
+- /decks/a5c28a7c-6ca4-420d-9935-3d13c0aed970
+- /decks/a5c28a7c-6ca4-420d-9935-3d13c0aed970
+- /decks/fa258514-ea3b-4291-8692-b6277910d8b5
 - /matches/new
 - /profile
 
@@ -49,7 +49,7 @@ User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 
 - /dashboard
 - /decks
-- /decks/e8ece6e6-c779-4ba2-8626-b43844acb00f
+- /decks/a5c28a7c-6ca4-420d-9935-3d13c0aed970
 - /review
 - /matchups
 - /matches
@@ -62,8 +62,8 @@ User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 - /dashboard
 - /profile
 - /decks
-- /decks/e8ece6e6-c779-4ba2-8626-b43844acb00f
-- /decks/8229d2ee-0040-4226-8b0f-4c3c9f4ae501
+- /decks/a5c28a7c-6ca4-420d-9935-3d13c0aed970
+- /decks/fa258514-ea3b-4291-8692-b6277910d8b5
 - /matches/new
 - /matches
 - /matchups
@@ -71,11 +71,11 @@ User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 
 ## Findings by page
 
-### dashboard: Primary mission
+### dashboard: Current-deck primary mission
 
 - Severity: low
 - Problem: No blocking issue found in this audit pass.
-- Suggested fix: Keep Mega Greninja on the watchlist and keep tagging what breaks first.
+- Suggested fix: Keep the dashboard scoped to the active deck and send broader matchup leaks to Matchups.
 - Fix now or defer: defer
 
 ### review: Primary insight
@@ -132,12 +132,18 @@ User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 - results/playtest_1000_screenshots/authenticated_post_save_reward_1000.png
 - results/playtest_1000_screenshots/desktop__dashboard.png
 - results/playtest_1000_screenshots/desktop__decks.png
+- results/playtest_1000_screenshots/desktop__decks_01cb3c5b-454a-4bab-933f-f4e744725b55.png
 - results/playtest_1000_screenshots/desktop__decks_02d3b3d1-6fe0-4381-803b-af3d8147ccb4.png
 - results/playtest_1000_screenshots/desktop__decks_8229d2ee-0040-4226-8b0f-4c3c9f4ae501.png
 - results/playtest_1000_screenshots/desktop__decks_86a3c634-52e6-4a84-95ca-a792fe66faed.png
 - results/playtest_1000_screenshots/desktop__decks_9811d1c6-3fde-4b24-8f09-a3c88d4f1fe3.png
+- results/playtest_1000_screenshots/desktop__decks_a4507d60-390a-41e6-8d7d-900baf2fa9b5.png
+- results/playtest_1000_screenshots/desktop__decks_a5c28a7c-6ca4-420d-9935-3d13c0aed970.png
+- results/playtest_1000_screenshots/desktop__decks_a9c5d2bd-9322-40c3-855a-284bc658c113.png
 - results/playtest_1000_screenshots/desktop__decks_ba5186f9-a355-4f15-901e-5c34b0d82ee8.png
+- results/playtest_1000_screenshots/desktop__decks_c2898131-8184-42f8-8854-238b8517144f.png
 - results/playtest_1000_screenshots/desktop__decks_e8ece6e6-c779-4ba2-8626-b43844acb00f.png
+- results/playtest_1000_screenshots/desktop__decks_fa258514-ea3b-4291-8692-b6277910d8b5.png
 - results/playtest_1000_screenshots/desktop__demo.png
 - results/playtest_1000_screenshots/desktop__matches.png
 - results/playtest_1000_screenshots/desktop__matches_new.png
@@ -155,7 +161,9 @@ User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 - results/playtest_1000_screenshots/mobile__dashboard.png
 - results/playtest_1000_screenshots/mobile__decks.png
 - results/playtest_1000_screenshots/mobile__decks_86a3c634-52e6-4a84-95ca-a792fe66faed.png
+- results/playtest_1000_screenshots/mobile__decks_a5c28a7c-6ca4-420d-9935-3d13c0aed970.png
 - results/playtest_1000_screenshots/mobile__decks_ba5186f9-a355-4f15-901e-5c34b0d82ee8.png
+- results/playtest_1000_screenshots/mobile__decks_c2898131-8184-42f8-8854-238b8517144f.png
 - results/playtest_1000_screenshots/mobile__decks_e8ece6e6-c779-4ba2-8626-b43844acb00f.png
 - results/playtest_1000_screenshots/mobile__matches.png
 - results/playtest_1000_screenshots/mobile__matches_new.png
@@ -175,8 +183,12 @@ User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 - results/playtest_1000_screenshots/tablet__decks_8229d2ee-0040-4226-8b0f-4c3c9f4ae501.png
 - results/playtest_1000_screenshots/tablet__decks_86a3c634-52e6-4a84-95ca-a792fe66faed.png
 - results/playtest_1000_screenshots/tablet__decks_9811d1c6-3fde-4b24-8f09-a3c88d4f1fe3.png
+- results/playtest_1000_screenshots/tablet__decks_a4507d60-390a-41e6-8d7d-900baf2fa9b5.png
+- results/playtest_1000_screenshots/tablet__decks_a5c28a7c-6ca4-420d-9935-3d13c0aed970.png
 - results/playtest_1000_screenshots/tablet__decks_ba5186f9-a355-4f15-901e-5c34b0d82ee8.png
+- results/playtest_1000_screenshots/tablet__decks_c2898131-8184-42f8-8854-238b8517144f.png
 - results/playtest_1000_screenshots/tablet__decks_e8ece6e6-c779-4ba2-8626-b43844acb00f.png
+- results/playtest_1000_screenshots/tablet__decks_fa258514-ea3b-4291-8692-b6277910d8b5.png
 - results/playtest_1000_screenshots/tablet__matches.png
 - results/playtest_1000_screenshots/tablet__matches_new.png
 - results/playtest_1000_screenshots/tablet__matchups.png
@@ -185,7 +197,8 @@ User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 
 ## Recommended fixes
 
-- clear_bad_matchup: Seeded at 25-45-10 across 80 games.
+- dashboard_current_deck_signal: All-decks matchup leaks belong on Matchups unless the user explicitly selects an all-decks scope.
+- matchups_all_decks_bad_matchup: Seeded at 25-45-10 across 80 games.
 - low_sample_noise: Rogue Box stays at 7-11-7 across 25 games.
 - version_improvement: Raging Bolt v3 and Gardevoir v2 are seeded as the healthier versions.
 - repeated_loss_issue: 32 of 32 control losses are tagged Item Lock, but the richer global sample may still surface a broader loss tag above it.
@@ -198,7 +211,8 @@ User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 
 ### Fixed now
 
-- clear_bad_matchup: no change required in this pass; current behavior matched the seeded expectation.
+- dashboard_current_deck_signal: no change required in this pass; current behavior matched the seeded expectation.
+- matchups_all_decks_bad_matchup: no change required in this pass; current behavior matched the seeded expectation.
 - low_sample_noise: no change required in this pass; current behavior matched the seeded expectation.
 - version_improvement: no change required in this pass; current behavior matched the seeded expectation.
 - repeated_loss_issue: no change required in this pass; current behavior matched the seeded expectation.
@@ -213,14 +227,14 @@ User id: c9c7565b-9587-4e54-9d0b-a0c32e568d36
 
 ## Performance summary
 
-- /matchups: 6751ms
-- /matchups: 5984ms
-- /matchups: 5641ms
-- /decks/e8ece6e6-c779-4ba2-8626-b43844acb00f: 2362ms
-- /decks/e8ece6e6-c779-4ba2-8626-b43844acb00f: 1809ms
-- /decks/8229d2ee-0040-4226-8b0f-4c3c9f4ae501: 1768ms
-- /matches?page=2: 1686ms
-- /matches: 1661ms
+- /decks/a5c28a7c-6ca4-420d-9935-3d13c0aed970: 5093ms
+- /matchups: 4400ms
+- /matchups: 4160ms
+- /matchups: 3493ms
+- /matches: 2034ms
+- /review: 2014ms
+- /decks: 1523ms
+- /decks/fa258514-ea3b-4291-8692-b6277910d8b5: 1457ms
 
 ## Production validation
 

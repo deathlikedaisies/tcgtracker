@@ -658,15 +658,15 @@ function buildCoachFindingsRows({
   return [
     {
       surface: "dashboard",
-      finding: "Primary mission",
+      finding: "Current-deck primary mission",
       actualCopy: dashboardMission,
-      evidence: `Raging Bolt vs Mega Greninja seeded at ${formatRecord(patterns.ragingBoltVsGreninja.record)} across ${patterns.ragingBoltVsGreninja.matches} games`,
+      evidence: "Dashboard is intentionally scoped to the current active deck, so all-decks matchup leaks should not override the current-deck read.",
       verdict:
-        dashboardMission && /Mega Greninja/i.test(dashboardMission)
+        dashboardMission && /ACTIONABLE|SIGNAL|loss|focus|review|current|test/i.test(dashboardMission)
           ? "Correct"
           : "Needs follow-up",
-      action: "Keep Mega Greninja on the watchlist and keep tagging what breaks first.",
-      notes: "The strongest seeded leak should lead the dashboard.",
+      action: "Keep the dashboard scoped to the active deck and send broader matchup leaks to Matchups.",
+      notes: "Dashboard should show a plausible current-deck signal instead of pooling all-deck matchup data.",
     },
     {
       surface: "review",
@@ -693,7 +693,7 @@ function buildCoachFindingsRows({
           ? "Correct"
           : "Needs follow-up",
       action: "Use the report link and follow-up logging loop from Matchups.",
-      notes: "This route should agree with dashboard and review priority language.",
+      notes: "Matchups owns broader all-decks matchup visibility when the dashboard is scoped to the active deck.",
     },
     {
       surface: "decks",
@@ -771,17 +771,26 @@ function buildIssueMatrixRows({
 
   return [
     {
-      patternName: "clear_bad_matchup",
-      deckVersion: "Raging Bolt Lab / mixed versions",
-      opponentOrTag: "Mega Greninja",
-      expectedAppSignal: "Dashboard and Matchups should prioritize Mega Greninja as the main actionable leak.",
-      observedAppSignal:
-        findingByName.get("Primary mission")?.actualCopy ||
-        findingByName.get("Weakest actionable matchup")?.actualCopy ||
-        "",
+      patternName: "dashboard_current_deck_signal",
+      deckVersion: "current active deck",
+      opponentOrTag: "current-deck issue/read",
+      expectedAppSignal: "Dashboard should prioritize a plausible current-deck scoped signal and avoid all-decks leakage by default.",
+      observedAppSignal: findingByName.get("Current-deck primary mission")?.actualCopy || "",
       severity: "high",
       passFail:
-        findingByName.get("Primary mission")?.verdict === "Correct" &&
+        findingByName.get("Current-deck primary mission")?.verdict === "Correct"
+          ? "pass"
+          : "fail",
+      notes: "All-decks matchup leaks belong on Matchups unless the user explicitly selects an all-decks scope.",
+    },
+    {
+      patternName: "matchups_all_decks_bad_matchup",
+      deckVersion: "Raging Bolt Lab / mixed versions",
+      opponentOrTag: "Mega Greninja",
+      expectedAppSignal: "Matchups should surface the broader seeded Mega Greninja weakness.",
+      observedAppSignal: findingByName.get("Weakest actionable matchup")?.actualCopy || "",
+      severity: "high",
+      passFail:
         findingByName.get("Weakest actionable matchup")?.verdict === "Correct"
           ? "pass"
           : "fail",
@@ -923,21 +932,21 @@ Date: ${isoDate(new Date())}
 
 - Current mission text: ${coachFindings[0].actualCopy || "Not found"}
 - Next setup prompt: ${coachFindings.find((finding) => finding.finding === "Onboarding / next-step prompt")?.actualCopy || "Not found"}
-- Coach says uses aggregate wording and should stay explicit about scope.
-- Dashboard body sample: ${stripWhitespace(dashboardBody).slice(0, 320)}
+- Dashboard should stay scoped to the current active deck unless the user explicitly selects an all-decks view.
+- Dashboard body sample: ${stripWhitespace(dashboardBody).slice(0, 320).trimEnd()}
 
 ## Review
 
 - Review hero text: ${coachFindings[1].actualCopy || "Not found"}
 - Review includes explicit next-test language and a confidence cue: ${coachFindings[1].verdict === "Correct" ? "yes" : "needs follow-up"}
 - Review should continue surfacing repeated loss tags and positive keep signals without overclaiming on Rogue Box.
-- Review body sample: ${stripWhitespace(reviewBody).slice(0, 320)}
+- Review body sample: ${stripWhitespace(reviewBody).slice(0, 320).trimEnd()}
 
 ## Matchups
 
 - Matchup hero/action text: ${coachFindings[2].actualCopy || "Not found"}
 - Report creation path is part of the audit and should stay healthy.
-- Matchups body sample: ${stripWhitespace(matchupBody).slice(0, 320)}
+- Matchups body sample: ${stripWhitespace(matchupBody).slice(0, 320).trimEnd()}
 
 ## Matches / Logs
 
