@@ -243,6 +243,86 @@ test.describe("TCG Live log parser", () => {
     expect(parsed.result).toBe("win");
     expect(parsed.winnerName).toBe("DommitronNL");
   });
+
+  test("extracts the final player token from prize-card winner clauses", async () => {
+    const parsed = parseTcgLiveLog(
+      [
+        "Antonio_Romanni chose heads for the opening coin flip.",
+        "Antonio_Romanni won the coin toss.",
+        "Antonio_Romanni decided to go first.",
+        "DommitronNL played Dreepy to the Active Spot.",
+        "DommitronNL played Dragapult ex to the Bench.",
+        "Antonio_Romanni played Abra to the Active Spot.",
+        "Antonio_Romanni played Kadabra to the Bench.",
+        "Antonio_Romanni evolved Kadabra to Alakazam on the Bench.",
+        "Antonio_Romanni's Alakazam used Dimensional Hand.",
+        "Opponent took all of their Prize cards. Antonio_Romanni wins.",
+      ].join("\n"),
+      {
+        archetypeOptions: ["Alakazam", "Alakazam Dudunsparce", "Dragapult Blaziken"],
+        playerName: "DommitronNL",
+      }
+    );
+
+    expect(parsed.result).toBe("loss");
+    expect(parsed.turnOrder).toBe("second");
+    expect(parsed.winnerName).toBe("Antonio_Romanni");
+    expect(parsed.opponentName).toBe("Antonio_Romanni");
+    expect(parsed.opponentDeckGuess).not.toBe("Dragapult Blaziken");
+    if (parsed.opponentDeckGuess) {
+      expect(parsed.opponentDeckGuess).toMatch(/Alakazam/i);
+    }
+  });
+
+  test("parses common explicit winner line formats", async () => {
+    const cases = [
+      {
+        line: "Opponent took all of their Prize cards. Antonio_Romanni wins.",
+        playerName: "DommitronNL",
+        opponentName: "Antonio_Romanni",
+        expectedWinner: "Antonio_Romanni",
+        expectedResult: "loss",
+      },
+      {
+        line: "You took all of your Prize cards. DommitronNL wins.",
+        playerName: "DommitronNL",
+        opponentName: "Antonio_Romanni",
+        expectedWinner: "DommitronNL",
+        expectedResult: "win",
+      },
+      {
+        line: "Opponent conceded. DommitronNL wins.",
+        playerName: "DommitronNL",
+        opponentName: "Antonio_Romanni",
+        expectedWinner: "DommitronNL",
+        expectedResult: "win",
+      },
+      {
+        line: "PlayerName wins.",
+        playerName: "DommitronNL",
+        opponentName: "PlayerName",
+        expectedWinner: "PlayerName",
+        expectedResult: "loss",
+      },
+    ] as const;
+
+    for (const winnerCase of cases) {
+      const parsed = parseTcgLiveLog(
+        [
+          `${winnerCase.playerName} decided to go first.`,
+          `${winnerCase.opponentName} played Abra to the Active Spot.`,
+          winnerCase.line,
+        ].join("\n"),
+        {
+          archetypeOptions: ["Alakazam"],
+          playerName: winnerCase.playerName,
+        }
+      );
+
+      expect(parsed.winnerName).toBe(winnerCase.expectedWinner);
+      expect(parsed.result).toBe(winnerCase.expectedResult);
+    }
+  });
 });
 
 test.describe("current deck scope resolver", () => {

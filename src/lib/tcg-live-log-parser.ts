@@ -69,11 +69,41 @@ function sortByOccurrence(lines: string[], candidates: string[]) {
     .map((entry) => entry.candidate);
 }
 
+function cleanPlayerName(value: string) {
+  return value.trim().replace(/[.!?]+$/g, "").trim();
+}
+
+function parseWinnerNameFromLine(line: string) {
+  const trimmed = line.trim();
+  if (!/\bwins\.?$/i.test(trimmed)) {
+    return undefined;
+  }
+
+  const finalClauseMatch = trimmed.match(/(?:^|[.!?]\s+)([^.!?]+?)\s+wins\.?$/i);
+  const fallbackMatch = trimmed.match(/^(.+?)\s+wins\.?$/i);
+  const winnerName = cleanPlayerName(finalClauseMatch?.[1] ?? fallbackMatch?.[1] ?? "");
+
+  if (
+    !winnerName ||
+    /^(opponent took all of their prize cards|you took all of your prize cards|all prize cards taken|opponent conceded)$/i.test(
+      winnerName
+    )
+  ) {
+    return undefined;
+  }
+
+  return winnerName;
+}
+
 function getKnownPlayerNames(lines: string[]) {
   const candidates = new Set<string>();
 
   for (const line of lines) {
     const trimmed = line.trim();
+    const winnerName = parseWinnerNameFromLine(trimmed);
+    if (winnerName && !/^you$/i.test(winnerName) && !/^your opponent$/i.test(winnerName)) {
+      candidates.add(winnerName);
+    }
 
     [
       /^(.*?) chose heads for the opening coin flip\./i,
@@ -81,9 +111,6 @@ function getKnownPlayerNames(lines: string[]) {
       /^(.*?) decided to go (first|second)\./i,
       /^(.*?) (played|attached|evolved|used|drew|discarded|shuffled|put|took)\b/i,
       /^(.*?)'s .*?\b(used|attacked|retreated|was Knocked Out|was damaged|used)\b/i,
-      /^Opponent conceded\. (.*?) wins\./i,
-      /All Prize cards taken\. (.*?) wins\./i,
-      /^(.*?) wins\./i,
     ].forEach((pattern) => {
       const match = trimmed.match(pattern);
       const playerName = match?.[1]?.trim();
@@ -99,23 +126,10 @@ function getKnownPlayerNames(lines: string[]) {
 
 function detectWinner(lines: string[]) {
   for (const line of lines.slice().reverse()) {
-    const trimmed = line.trim();
-    const concededMatch = trimmed.match(/^Opponent conceded\. (.*?) wins\.$/i);
+    const winnerName = parseWinnerNameFromLine(line);
 
-    if (concededMatch?.[1]) {
-      return concededMatch[1].trim();
-    }
-
-    const prizeMatch = trimmed.match(/^All Prize cards taken\. (.*?) wins\.$/i);
-
-    if (prizeMatch?.[1]) {
-      return prizeMatch[1].trim();
-    }
-
-    const simpleMatch = trimmed.match(/^(.*?) wins\.$/i);
-
-    if (simpleMatch?.[1] && !/^you$/i.test(simpleMatch[1])) {
-      return simpleMatch[1].trim();
+    if (winnerName && !/^you$/i.test(winnerName)) {
+      return winnerName;
     }
   }
 
