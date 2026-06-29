@@ -6,8 +6,15 @@ import {
   Activity,
   ArrowRight,
   ChevronDown,
+  CheckCircle2,
+  CircleDot,
+  ClipboardCheck,
+  Layers3,
+  LockKeyhole,
   ShieldAlert,
+  Sparkles,
   Target,
+  UserRound,
   type LucideIcon,
 } from "lucide-react";
 import { AuthenticatedPageHeader } from "@/components/AuthenticatedPageHeader";
@@ -457,43 +464,43 @@ function SetupChecklist({
 }) {
   const deckSetupHref = firstDeckId ? `/decks/${firstDeckId}` : "/decks";
   const matchLoggingHref = hasAnyDeckVersions ? "/matches/new" : deckSetupHref;
-  const reviewSignalHref = matchLoggingHref;
   const steps = [
     {
-      label: "Create your SixPrizer profile",
+      label: "Profile",
       complete: hasProfile,
-      helper: "It can stay private until you want to share a summary.",
-      href: "/profile",
-      ariaLabel: "Go to profile setup",
+      helper: "Set your player name and basic preferences.",
+      href: "/profile/setup",
+      icon: UserRound,
     },
     {
-      label: "Create your first deck",
+      label: "Deck",
       complete: hasDecks,
-      helper: "Name the list you want to test first.",
+      helper: "Add the list you are currently testing.",
       href: "/decks",
-      ariaLabel: "Create your first deck",
+      icon: Layers3,
     },
     {
-      label: "Add a test version",
+      label: "Version",
       complete: hasAnyDeckVersions,
-      helper: "Paste a version so matchup signal can start.",
+      helper: "Save the build you want to track.",
       href: deckSetupHref,
-      ariaLabel: "Add a test version",
+      icon: ClipboardCheck,
     },
     {
-      label: "Log your first game",
+      label: "Games",
       complete: false,
-      helper: "One logged game unlocks the coaching loop.",
+      helper: "Log matches to start seeing patterns.",
       href: matchLoggingHref,
-      ariaLabel: "Log your first game",
+      icon: Activity,
     },
-    {
-      label: "Build first signal",
-      complete: false,
-      helper: "Three to five games is enough to start seeing direction.",
-      href: reviewSignalHref,
-      ariaLabel: "Open review",
-    },
+  ];
+  const nextStepIndex = steps.findIndex((step) => !step.complete);
+  const unlocks = [
+    "Matchup trends",
+    "Repeated issues",
+    "Turn-order signal",
+    "Deck Lab reads",
+    "Version comparison",
   ];
 
   const cta = !hasProfile
@@ -517,49 +524,135 @@ function SetupChecklist({
         };
 
   return (
-    <section className={emptyCard}>
-      <p className="text-sm font-semibold text-[#4F8CFF]">First setup</p>
-      <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[#F8FAFC]">
-        Build your coaching home.
-      </h2>
-      <p className="mt-2 max-w-2xl text-sm leading-6 text-[#94A3B8]/72">
-        Start with one deck, one version, and a few logged games. The dashboard gets useful quickly once signal starts forming.
-      </p>
+    <section
+      className={`${emptyCard} overflow-hidden p-0 before:pointer-events-none before:absolute before:inset-0 before:bg-[radial-gradient(circle_at_18%_8%,rgba(79,140,255,0.18),transparent_32%),radial-gradient(circle_at_88%_18%,rgba(245,200,76,0.12),transparent_28%)] before:content-['']`}
+    >
+      <div className="relative grid gap-5 p-4 sm:gap-6 sm:p-7 lg:grid-cols-[minmax(0,1.08fr)_minmax(320px,0.92fr)] lg:items-stretch">
+        <div className="min-w-0">
+          <div className="inline-flex items-center gap-2 rounded-full bg-[#4F8CFF]/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.18)]">
+            <Sparkles className="size-3.5" aria-hidden="true" />
+            New workspace
+          </div>
+          <h2 className="mt-4 max-w-2xl text-[2rem] font-black leading-[1.02] tracking-tight text-[#F8FAFC] sm:text-5xl">
+            Set up your testing workspace
+          </h2>
+          <p className="mt-4 max-w-2xl text-sm leading-6 text-[#D6E0F0]/82 sm:text-base sm:leading-7">
+            Add your deck, save a version, and start logging games. SixPrizer turns your testing data into matchup trends, review prompts, and Deck Lab reads.
+          </p>
 
-      <div className="mt-4 grid gap-2.5 sm:mt-6 sm:gap-3 sm:grid-cols-2">
-        {steps.map((step) => (
-          <Link
-            key={step.label}
-            href={step.href}
-            aria-label={step.ariaLabel}
-            className={`${premiumInset} group rounded-[18px] p-3 transition-transform transition-colors duration-150 ease-out hover:-translate-y-0.5 hover:text-inherit hover:shadow-[0_14px_30px_rgba(0,0,0,0.18),inset_0_0_0_1px_rgba(79,140,255,0.18)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C84C]/65 focus-visible:ring-offset-2 focus-visible:ring-offset-[#07111F] active:scale-[0.99] sm:rounded-[20px] sm:p-4`}
-          >
-            <div className="flex items-center justify-between gap-3">
-              <span
-                className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${
-                  step.complete
-                    ? "bg-emerald-500/10 text-emerald-200"
-                    : "bg-[#4F8CFF]/10 text-[#DCE8FF]"
-                }`}
-              >
-                {step.complete ? "Done" : "Next"}
-              </span>
-              <ArrowRight
-                className="size-4 text-[#94A3B8]/68 transition-transform duration-150 ease-out group-hover:translate-x-0.5 group-hover:text-[#DCE8FF] group-focus-visible:translate-x-0.5 group-focus-visible:text-[#DCE8FF]"
-                aria-hidden="true"
-              />
+          <div className="mt-5 flex flex-col gap-2 sm:mt-6 sm:flex-row sm:items-center">
+            <Link href={cta.href} className={`${primaryButton} h-12 w-full sm:w-auto`}>
+              {cta.label}
+              <ArrowRight className="ml-2 size-4" aria-hidden="true" />
+            </Link>
+            <span className="text-center text-xs leading-5 text-[#94A3B8]/70 sm:text-left">
+              One deck and one version are enough to begin.
+            </span>
+          </div>
+        </div>
+
+        <div className={`${premiumInsetStrong} relative min-w-0 p-4 sm:p-5`}>
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.10em] text-[#F5C84C]">
+                Testing command center
+              </p>
+              <p className="mt-1 text-sm text-[#94A3B8]/76">
+                Build signal in order.
+              </p>
             </div>
-            <p className="mt-2.5 text-base font-semibold text-[#F8FAFC]">{step.label}</p>
-            <p className="mt-1 text-sm leading-5 text-[#94A3B8]/72 sm:leading-6">{step.helper}</p>
-          </Link>
-        ))}
+            <span className="inline-flex size-12 shrink-0 items-center justify-center rounded-2xl bg-[#F5C84C]/12 text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.18)]">
+              <Target className="size-5" aria-hidden="true" />
+            </span>
+          </div>
+
+          <div className="mt-5 grid gap-3">
+            {steps.map((step, index) => {
+              const Icon = step.icon;
+              const isNext = index === nextStepIndex;
+              const isLocked = !step.complete && !isNext;
+              const statusLabel = step.complete ? "Done" : isNext ? "Next" : "Locked";
+              const StatusIcon = step.complete
+                ? CheckCircle2
+                : isLocked
+                  ? LockKeyhole
+                  : CircleDot;
+
+              return (
+                <Link
+                  key={step.label}
+                  href={isLocked ? cta.href : step.href}
+                  className={`${premiumInset} group relative grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-[18px] p-3 transition-transform transition-colors hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C84C]/65 focus-visible:ring-offset-2 focus-visible:ring-offset-[#07111F] ${
+                    isNext
+                      ? "shadow-[0_14px_30px_rgba(245,200,76,0.08),inset_0_0_0_1px_rgba(245,200,76,0.22)]"
+                      : ""
+                  }`}
+                >
+                  <span
+                    className={`inline-flex size-10 shrink-0 items-center justify-center rounded-2xl ${
+                      step.complete
+                        ? "bg-emerald-500/10 text-emerald-200"
+                        : isNext
+                          ? "bg-[#F5C84C]/12 text-[#F5C84C]"
+                          : "bg-[#1A2238]/70 text-[#94A3B8]"
+                    }`}
+                  >
+                    <Icon className="size-4.5" aria-hidden="true" />
+                  </span>
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="font-semibold text-[#F8FAFC]">{step.label}</p>
+                      <span
+                        className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] ${
+                          step.complete
+                            ? "bg-emerald-500/10 text-emerald-200"
+                            : isNext
+                              ? "bg-[#F5C84C]/12 text-[#FFE28A]"
+                              : "bg-[#94A3B8]/10 text-[#94A3B8]"
+                        }`}
+                      >
+                        <StatusIcon className="size-3" aria-hidden="true" />
+                        {statusLabel}
+                      </span>
+                    </div>
+                    <p className="mt-0.5 text-sm leading-5 text-[#94A3B8]/74">
+                      {step.helper}
+                    </p>
+                  </div>
+                  <ArrowRight
+                    className={`size-4 shrink-0 transition-transform group-hover:translate-x-0.5 ${
+                      isLocked ? "text-[#94A3B8]/36" : "text-[#DCE8FF]/72"
+                    }`}
+                    aria-hidden="true"
+                  />
+                </Link>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
-      <div className="mt-4 sm:mt-6">
-        <Link href={cta.href} className={`${primaryButton} h-12 w-full sm:w-auto`}>
-          {cta.label}
-          <ArrowRight className="ml-2 size-4" aria-hidden="true" />
-        </Link>
+      <div className="relative border-t border-white/6 bg-[#07111F]/42 p-4 sm:p-5">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-[0.10em] text-[#4F8CFF]">
+              What you unlock
+            </p>
+            <p className="mt-1 text-sm leading-5 text-[#94A3B8]/76">
+              Once games are logged, SixPrizer can start showing focused testing reads.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {unlocks.map((unlock) => (
+              <span
+                key={unlock}
+                className={`${metallicBadge} rounded-full px-3 py-1.5 text-xs font-semibold text-[#DCE8FF]`}
+              >
+                {unlock}
+              </span>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );
