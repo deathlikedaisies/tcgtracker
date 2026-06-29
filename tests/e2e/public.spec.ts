@@ -1,5 +1,29 @@
 import { expect, test } from "@playwright/test";
 import { expectHeadingVisible, expectNoAppError } from "./helpers/assertions";
+import {
+  AUTH_ERROR_MESSAGES,
+  normalizeAuthError,
+} from "@/lib/auth-errors";
+
+test.describe("auth error normalization", () => {
+  test("maps common Supabase auth errors to clear beta-safe messages", async () => {
+    expect(normalizeAuthError("over_email_send_rate_limit", "signup")).toBe(
+      AUTH_ERROR_MESSAGES.signupRateLimit
+    );
+    expect(normalizeAuthError("Invalid login credentials", "login")).toBe(
+      AUTH_ERROR_MESSAGES.invalidCredentials
+    );
+    expect(normalizeAuthError("Email not confirmed", "login")).toBe(
+      AUTH_ERROR_MESSAGES.emailNotConfirmed
+    );
+    expect(normalizeAuthError("Token has expired or is invalid", "auth-link")).toBe(
+      AUTH_ERROR_MESSAGES.expiredOrInvalidLink
+    );
+    expect(normalizeAuthError("Unexpected provider failure", "login")).toBe(
+      AUTH_ERROR_MESSAGES.fallback
+    );
+  });
+});
 
 test.describe("public routes", () => {
   test.setTimeout(60000);
@@ -53,7 +77,20 @@ test.describe("public routes", () => {
 
     await expectHeadingVisible(page, "Log in to SixPrizer");
     await expect(page.locator("body")).toContainText(
-      "Account created. Check your inbox and spam folder for the SixPrizer confirmation email before logging in."
+      "Check your email to confirm your account. Check your spam folder if it does not arrive within a minute."
+    );
+    await expectNoAppError(page);
+  });
+
+  test("login page normalizes expired auth link errors", async ({ page }) => {
+    await page.goto("/login?error=access_denied&error_description=Token%20has%20expired");
+
+    await expectHeadingVisible(page, "Log in to SixPrizer");
+    await expect(page.locator("body")).toContainText(
+      "This login or confirmation link has expired. Please request a new one."
+    );
+    await expect(page.locator("body")).toContainText(
+      "If this keeps happening, send a screenshot to the beta organiser."
     );
     await expectNoAppError(page);
   });

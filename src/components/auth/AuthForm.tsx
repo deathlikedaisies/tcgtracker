@@ -15,6 +15,7 @@ import {
   secondaryButton,
   sectionCopy,
 } from "@/components/brand-styles";
+import { AUTH_SUPPORT_LINE } from "@/lib/auth-errors";
 
 type AuthFormProps = {
   mode: AuthMode;
@@ -66,6 +67,8 @@ export function AuthForm({
     ? state.variant ?? initialMessage?.variant
     : "error";
   const isUnconfirmed = state.variant === "email-unconfirmed";
+  const showSupportLine =
+    Boolean(displayedMessage) && displayedVariant !== "success";
 
   return (
     <>
@@ -122,13 +125,16 @@ export function AuthForm({
           </div>
         ) : null}
         {displayedMessage ? (
-          <p
+          <div
             role={displayedVariant === "success" ? "status" : "alert"}
             aria-live="polite"
             className={getTone(displayedVariant)}
           >
-            {displayedMessage}
-          </p>
+            <p>{displayedMessage}</p>
+            {showSupportLine ? (
+              <p className="mt-1 text-xs leading-5 opacity-80">{AUTH_SUPPORT_LINE}</p>
+            ) : null}
+          </div>
         ) : null}
         <button
           type="submit"
@@ -170,9 +176,16 @@ export function AuthForm({
         </form>
       ) : null}
       {resendState.message ? (
-        <p role="status" aria-live="polite" className={`mt-3 ${getTone(resendState.variant)}`}>
-          {resendState.message}
-        </p>
+        <div
+          role={resendState.variant === "success" ? "status" : "alert"}
+          aria-live="polite"
+          className={`mt-3 ${getTone(resendState.variant)}`}
+        >
+          <p>{resendState.message}</p>
+          {resendState.variant !== "success" ? (
+            <p className="mt-1 text-xs leading-5 opacity-80">{AUTH_SUPPORT_LINE}</p>
+          ) : null}
+        </div>
       ) : null}
     </>
   );

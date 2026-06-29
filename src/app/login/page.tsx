@@ -1,6 +1,7 @@
 import { AuthForm } from "@/components/auth/AuthForm";
 import { glassPanelStrong, marketingShell, pageCopy } from "@/components/brand-styles";
 import { BrandLogo } from "@/components/BrandLogo";
+import { normalizeAuthError } from "@/lib/auth-errors";
 import { getOptionalSupabaseConfig } from "@/lib/supabase-config";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
@@ -9,19 +10,29 @@ export const dynamic = "force-dynamic";
 
 type LoginPageProps = {
   searchParams: Promise<{
+    error?: string;
+    error_code?: string;
+    error_description?: string;
+    message?: string;
     signup?: string;
   }>;
 };
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
-  const { signup } = await searchParams;
+  const { error, error_code, error_description, message, signup } =
+    await searchParams;
   const authConfigured = Boolean(getOptionalSupabaseConfig());
   let shouldRedirect = false;
-  const initialMessage =
-    signup === "success"
+  const authLinkError = error_description ?? message ?? error_code ?? error;
+  const initialMessage = authLinkError
+    ? {
+        message: normalizeAuthError(authLinkError, "auth-link"),
+        variant: "error" as const,
+      }
+    : signup === "success"
       ? {
           message:
-            "Account created. Check your inbox and spam folder for the SixPrizer confirmation email before logging in.",
+            "Check your email to confirm your account. Check your spam folder if it does not arrive within a minute.",
           variant: "success" as const,
         }
       : null;

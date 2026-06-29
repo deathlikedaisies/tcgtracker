@@ -2,7 +2,11 @@
 
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
-import { SupabaseConfigError } from "@/lib/supabase-config";
+import {
+  AUTH_ERROR_MESSAGES,
+  isEmailNotConfirmedError,
+  normalizeAuthError,
+} from "@/lib/auth-errors";
 
 export type AuthMode = "login" | "signup";
 
@@ -18,106 +22,6 @@ export type AuthFormState = {
   variant?: "error" | "success" | "email-unconfirmed";
   emailForResend?: string;
 };
-
-const AUTH_MESSAGES = {
-  network:
-    "Could not connect to SixPrizer. Check your connection and try again.",
-  invalidCredentials: "Email or password is incorrect.",
-  missingConfig: "SixPrizer is not configured correctly. Please contact support.",
-  emailNotConfirmed:
-    "Your email has not been confirmed yet. Please check your inbox and spam folder for the SixPrizer confirmation email, then try logging in again.",
-  rateLimit: "Too many attempts. Please wait a few minutes and try again.",
-  fallback: "Authentication failed. Please try again.",
-  signupAlreadyRegistered:
-    "An account already exists for this email. Try logging in, or resend the confirmation email if you have not confirmed it yet.",
-  signupInvalidEmail: "Enter a valid email address.",
-  signupWeakPassword: "Use a password with at least 8 characters.",
-  signupFallback:
-    "We could not create your account. Please check your details and try again.",
-} as const;
-
-function normalizeAuthError(error: unknown) {
-  const message = error instanceof Error ? error.message : String(error ?? "");
-  const lowerMessage = message.toLowerCase();
-
-  if (error instanceof SupabaseConfigError) {
-    return AUTH_MESSAGES.missingConfig;
-  }
-
-  if (
-    lowerMessage.includes("fetch failed") ||
-    lowerMessage.includes("failed to fetch") ||
-    lowerMessage.includes("network request failed") ||
-    lowerMessage.includes("typeerror")
-  ) {
-    return AUTH_MESSAGES.network;
-  }
-
-  if (
-    lowerMessage.includes("invalid login credentials") ||
-    lowerMessage.includes("invalid credentials")
-  ) {
-    return AUTH_MESSAGES.invalidCredentials;
-  }
-
-  return AUTH_MESSAGES.fallback;
-}
-
-function normalizeSignupError(error: unknown): string {
-  const message = error instanceof Error ? error.message : String(error ?? "");
-  const lower = message.toLowerCase();
-
-  if (error instanceof SupabaseConfigError) {
-    return AUTH_MESSAGES.missingConfig;
-  }
-
-  if (
-    lower.includes("fetch failed") ||
-    lower.includes("failed to fetch") ||
-    lower.includes("network request failed") ||
-    lower.includes("typeerror")
-  ) {
-    return AUTH_MESSAGES.network;
-  }
-
-  if (
-    lower.includes("user already registered") ||
-    lower.includes("already registered") ||
-    lower.includes("already been registered")
-  ) {
-    return AUTH_MESSAGES.signupAlreadyRegistered;
-  }
-
-  if (
-    lower.includes("invalid email") ||
-    lower.includes("unable to validate email") ||
-    lower.includes("valid email address")
-  ) {
-    return AUTH_MESSAGES.signupInvalidEmail;
-  }
-
-  if (
-    lower.includes("password should be") ||
-    lower.includes("password is too short") ||
-    lower.includes("weak password") ||
-    lower.includes("at least 6 character") ||
-    lower.includes("at least 8 character")
-  ) {
-    return AUTH_MESSAGES.signupWeakPassword;
-  }
-
-  if (
-    lower.includes("email rate limit") ||
-    lower.includes("rate limit exceeded") ||
-    lower.includes("too many requests") ||
-    lower.includes("over_email_send_rate_limit") ||
-    lower.includes("for security purposes")
-  ) {
-    return AUTH_MESSAGES.rateLimit;
-  }
-
-  return AUTH_MESSAGES.signupFallback;
-}
 
 function logSafeAuthError(context: string, error: unknown) {
   if (error instanceof Error) {
@@ -147,15 +51,14 @@ export async function submitAuthForm(
 
     if (error) {
       logSafeAuthError("Supabase auth returned an error", error);
-      const lowerMsg = error.message?.toLowerCase() ?? "";
-      const emailNotConfirmed = lowerMsg.includes("email not confirmed");
+      const emailNotConfirmed = isEmailNotConfirmedError(error);
       return {
         ok: false,
         message: emailNotConfirmed
-          ? AUTH_MESSAGES.emailNotConfirmed
+          ? AUTH_ERROR_MESSAGES.emailNotConfirmed
           : mode === "signup"
-            ? normalizeSignupError(error)
-            : normalizeAuthError(error),
+            ? normalizeAuthError(error, "signup")
+            : normalizeAuthError(error, "login"),
         emailNotConfirmed,
       };
     }
@@ -166,7 +69,7 @@ export async function submitAuthForm(
     };
   } catch (error) {
     logSafeAuthError("Supabase auth request failed", error);
-    return { ok: false, message: normalizeAuthError(error) };
+    return { ok: false, message: normalizeAuthError(error, mode) };
   }
 }
 
@@ -178,8 +81,7 @@ export async function submitAuthFormAction(
 ): Promise<AuthFormState> {
   if (!authConfigured) {
     return {
-      message:
-        "SixPrizer is not configured correctly. Please contact support.",
+      message: AUTH_ERROR_MESSAGES.missingConfig,
       variant: "error",
     };
   }
@@ -190,21 +92,21 @@ export async function submitAuthFormAction(
 
   if (!email || !password) {
     return {
-      message: "Enter your email and password.",
+      message: AUTH_ERROR_MESSAGES.missingCredentials,
       variant: "error",
     };
   }
 
   if (mode === "signup" && password.length < 8) {
     return {
-      message: AUTH_MESSAGES.signupWeakPassword,
+      message: AUTH_ERROR_MESSAGES.weakPassword,
       variant: "error",
     };
   }
 
   if (mode === "signup" && password !== confirmPassword) {
     return {
-      message: "Passwords do not match.",
+      message: AUTH_ERROR_MESSAGES.passwordsDoNotMatch,
       variant: "error",
     };
   }
@@ -214,14 +116,14 @@ export async function submitAuthFormAction(
   if (!result.ok) {
     if (result.emailNotConfirmed) {
       return {
-        message: result.message ?? AUTH_MESSAGES.emailNotConfirmed,
+        message: result.message ?? AUTH_ERROR_MESSAGES.emailNotConfirmed,
         variant: "email-unconfirmed",
         emailForResend: email,
       };
     }
 
     return {
-      message: result.message ?? AUTH_MESSAGES.fallback,
+      message: result.message ?? AUTH_ERROR_MESSAGES.fallback,
       variant: "error",
     };
   }
@@ -242,9 +144,20 @@ export async function resendConfirmationEmail(
 
   try {
     const supabase = await createServerSupabaseClient();
-    await supabase.auth.resend({ type: "signup", email });
-  } catch {
-    // Return the same generic message regardless of outcome to prevent account enumeration.
+    const { error } = await supabase.auth.resend({ type: "signup", email });
+    if (error) {
+      logSafeAuthError("Supabase confirmation resend failed", error);
+      return {
+        message: normalizeAuthError(error, "resend-confirmation"),
+        variant: "error",
+      };
+    }
+  } catch (error) {
+    logSafeAuthError("Supabase confirmation resend request failed", error);
+    return {
+      message: normalizeAuthError(error, "resend-confirmation"),
+      variant: "error",
+    };
   }
 
   return {
