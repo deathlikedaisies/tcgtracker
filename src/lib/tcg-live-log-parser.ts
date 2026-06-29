@@ -36,6 +36,10 @@ type ResolvedPlayers = {
   opponentPlayerName?: string;
 };
 
+const playerTokenPattern = "[A-Za-z0-9_]{2,32}";
+const playerActionPattern =
+  "(?:chose|won|decided|drew|played|attached|evolved|used|discarded|shuffled|put|took)";
+
 function normalize(value: string) {
   return value
     .trim()
@@ -69,6 +73,46 @@ function sortByOccurrence(lines: string[], candidates: string[]) {
     .map((entry) => entry.candidate);
 }
 
+function normalizeTcgLiveLogText(value: string) {
+  return String(value ?? "")
+    .replace(/\r\n?/g, "\n")
+    .replace(/[\u2018\u2019`]/g, "'")
+    .replace(/[ \t]+/g, " ")
+    .replace(
+      new RegExp(
+        `([.!?])\\s*(?=(?:${playerTokenPattern}|Opponent|You|Your opponent)\\s+${playerActionPattern}\\b|${playerTokenPattern}'s\\b)`,
+        "gi"
+      ),
+      "$1\n"
+    )
+    .replace(
+      new RegExp(
+        `\\b(Setup|Active Pok(?:e|é)mon|Bench|Prize cards|Cards in hand)(?=(?:${playerTokenPattern}|Opponent|You|Your opponent)\\s+${playerActionPattern}\\b|${playerTokenPattern}'s\\b)`,
+        "gi"
+      ),
+      "$1\n"
+    );
+}
+
+function isCleanPlayerToken(value: string | undefined): value is string {
+  return Boolean(value && new RegExp(`^${playerTokenPattern}$`).test(value));
+}
+
+function isGenericPlayerReference(value: string) {
+  return /^(you|your opponent|opponent)$/i.test(value);
+}
+
+function isLikelyCompressedUserFragment(candidate: string, userPlayerName: string | undefined) {
+  if (!userPlayerName) {
+    return false;
+  }
+
+  const normalizedCandidate = normalize(candidate);
+  const normalizedUser = normalize(userPlayerName);
+
+  return normalizedCandidate !== normalizedUser && normalizedCandidate.endsWith(normalizedUser);
+}
+
 function cleanPlayerName(value: string) {
   return value.trim().replace(/[.!?]+$/g, "").trim();
 }
@@ -79,8 +123,12 @@ function parseWinnerNameFromLine(line: string) {
     return undefined;
   }
 
-  const finalClauseMatch = trimmed.match(/(?:^|[.!?]\s+)([^.!?]+?)\s+wins\.?$/i);
-  const fallbackMatch = trimmed.match(/^(.+?)\s+wins\.?$/i);
+  const finalClauseMatch = trimmed.match(
+    new RegExp(`(?:^|[.!?]\\s+)(${playerTokenPattern})\\s+wins\\.?$`, "i")
+  );
+  const fallbackMatch = trimmed.match(
+    new RegExp(`^(${playerTokenPattern})\\s+wins\\.?$`, "i")
+  );
   const winnerName = cleanPlayerName(finalClauseMatch?.[1] ?? fallbackMatch?.[1] ?? "");
 
   if (
@@ -95,30 +143,56 @@ function parseWinnerNameFromLine(line: string) {
   return winnerName;
 }
 
-function getKnownPlayerNames(lines: string[]) {
+function addTokenMatches(candidates: Set<string>, text: string, pattern: RegExp) {
+  for (const match of text.matchAll(pattern)) {
+    const playerName = match[1]?.trim();
+
+    if (
+      isCleanPlayerToken(playerName) &&
+      playerName &&
+      !isGenericPlayerReference(playerName)
+    ) {
+      candidates.add(playerName);
+    }
+  }
+}
+
+function getKnownPlayerNames(lines: string[], rawPlayerName?: string) {
   const candidates = new Set<string>();
+  const fullText = lines.join("\n");
+
+  if (isCleanPlayerToken(rawPlayerName)) {
+    candidates.add(rawPlayerName.trim());
+  }
 
   for (const line of lines) {
     const trimmed = line.trim();
     const winnerName = parseWinnerNameFromLine(trimmed);
-    if (winnerName && !/^you$/i.test(winnerName) && !/^your opponent$/i.test(winnerName)) {
+    if (
+      isCleanPlayerToken(winnerName) &&
+      winnerName &&
+      !isGenericPlayerReference(winnerName)
+    ) {
       candidates.add(winnerName);
     }
+  }
 
-    [
-      /^(.*?) chose heads for the opening coin flip\./i,
-      /^(.*?) won the coin toss\./i,
-      /^(.*?) decided to go (first|second)\./i,
-      /^(.*?) (played|attached|evolved|used|drew|discarded|shuffled|put|took)\b/i,
-      /^(.*?)'s .*?\b(used|attacked|retreated|was Knocked Out|was damaged|used)\b/i,
-    ].forEach((pattern) => {
-      const match = trimmed.match(pattern);
-      const playerName = match?.[1]?.trim();
+  [
+    new RegExp(`\\b(${playerTokenPattern})\\s+chose (?:heads|tails) for the opening coin flip\\.`, "gi"),
+    new RegExp(`\\b(${playerTokenPattern})\\s+won the coin toss\\.`, "gi"),
+    new RegExp(`\\b(${playerTokenPattern})\\s+decided to go (?:first|second)\\.`, "gi"),
+    new RegExp(`\\b(${playerTokenPattern})'s Turn\\b`, "gi"),
+    new RegExp(`\\b(${playerTokenPattern})\\s+drew 7 cards for the opening hand\\.`, "gi"),
+    new RegExp(`\\b(${playerTokenPattern})\\s+(?:played|attached|evolved|used|drew|discarded|shuffled|put|took)\\b`, "gi"),
+    new RegExp(`\\b(${playerTokenPattern})'s\\s+.*?\\b(?:used|attacked|retreated|was Knocked Out|was damaged)\\b`, "gi"),
+  ].forEach((pattern) => addTokenMatches(candidates, fullText, pattern));
 
-      if (playerName && !/^you$/i.test(playerName) && !/^your opponent$/i.test(playerName)) {
-        candidates.add(playerName);
+  if (rawPlayerName) {
+    for (const candidate of Array.from(candidates)) {
+      if (isLikelyCompressedUserFragment(candidate, rawPlayerName)) {
+        candidates.delete(candidate);
       }
-    });
+    }
   }
 
   return sortByOccurrence(lines, Array.from(candidates));
@@ -137,16 +211,22 @@ function detectWinner(lines: string[]) {
 }
 
 function detectDecidingPlayer(lines: string[]) {
+  const fullText = lines.join("\n");
+  const namedPattern = new RegExp(
+    `\\b(${playerTokenPattern})\\s+decided to go (first|second)\\.`,
+    "gi"
+  );
+  const namedMatch = namedPattern.exec(fullText);
+
+  if (namedMatch?.[1] && namedMatch?.[2]) {
+    return {
+      playerName: namedMatch[1].trim(),
+      choice: namedMatch[2].toLowerCase() as "first" | "second",
+    };
+  }
+
   for (const line of lines) {
     const trimmed = line.trim();
-    const namedMatch = trimmed.match(/^(.*?) decided to go (first|second)\.$/i);
-
-    if (namedMatch?.[1] && namedMatch?.[2]) {
-      return {
-        playerName: namedMatch[1].trim(),
-        choice: namedMatch[2].toLowerCase() as "first" | "second",
-      };
-    }
 
     if (/you chose to go first|you went first|you are going first/i.test(trimmed)) {
       return {
@@ -182,14 +262,26 @@ function detectDecidingPlayer(lines: string[]) {
 
 function resolvePlayers(
   rawPlayerName: string | undefined,
-  knownPlayers: string[]
+  knownPlayers: string[],
+  winnerName?: string
 ): ResolvedPlayers {
   const normalizedPlayer = rawPlayerName ? normalize(rawPlayerName) : "";
   const userPlayerName =
     knownPlayers.find((name) => normalize(name) === normalizedPlayer) ??
     rawPlayerName;
+  const winnerOpponentName =
+    userPlayerName &&
+    isCleanPlayerToken(winnerName) &&
+    winnerName &&
+    normalize(winnerName) !== normalize(userPlayerName)
+      ? winnerName
+      : undefined;
   const opponentPlayerName = userPlayerName
-    ? knownPlayers.find((name) => normalize(name) !== normalize(userPlayerName))
+    ? knownPlayers.find(
+        (name) =>
+          normalize(name) !== normalize(userPlayerName) &&
+          !isLikelyCompressedUserFragment(name, userPlayerName)
+      ) ?? winnerOpponentName
     : undefined;
 
   return {
@@ -276,7 +368,10 @@ function resolveResult(
     note:
       normalize(winnerName) === normalize(resolvedPlayers.userPlayerName)
         ? "Detected result: win"
-        : "Detected result: loss",
+        : resolvedPlayers.opponentPlayerName &&
+            normalize(winnerName) === normalize(resolvedPlayers.opponentPlayerName)
+          ? "Detected result: loss"
+          : "Detected result: loss. Mapped winner to opponent from final winner line.",
   };
 }
 
@@ -458,14 +553,16 @@ export function parseTcgLiveLog(
   text: string,
   options: ParseOptions = {}
 ): TcgLiveLogParseResult {
-  const lines = String(text)
+  const lines = normalizeTcgLiveLogText(text)
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter(Boolean);
-  const knownPlayers = getKnownPlayerNames(lines);
+  const winnerName = detectWinner(lines);
+  const knownPlayers = getKnownPlayerNames(lines, options.playerName?.trim() || undefined);
   const resolvedPlayers = resolvePlayers(
     options.playerName?.trim() || undefined,
-    knownPlayers
+    knownPlayers,
+    winnerName
   );
 
   const resultInfo = resolveResult(lines, resolvedPlayers);

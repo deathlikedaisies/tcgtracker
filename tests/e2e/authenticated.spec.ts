@@ -274,6 +274,63 @@ test.describe("TCG Live log parser", () => {
     }
   });
 
+  test("handles collapsed logs without malformed opponent names", async () => {
+    const collapsedLog = [
+      "SetupDommitronNL chose tails for the opening coin flip.",
+      "Antonio_Romanni won the coin toss.",
+      "Antonio_Romanni decided to go first.",
+      "DommitronNL drew 7 cards for the opening hand.",
+      "Antonio_Romanni drew 7 cards for the opening hand.",
+      "DommitronNL played Dreepy to the Active Spot.",
+      "DommitronNL played Dragapult ex to the Bench.",
+      "Antonio_Romanni played Abra to the Active Spot.",
+      "Antonio_Romanni played Kadabra to the Bench.",
+      "Antonio_Romanni evolved Kadabra to Alakazam on the Bench.",
+      "Antonio_Romanni's Alakazam used Powerful Hand.",
+      "Opponent took all of their Prize cards. Antonio_Romanni wins.",
+    ].join("");
+
+    const parsed = parseTcgLiveLog(collapsedLog, {
+      archetypeOptions: ["Alakazam", "Alakazam Dudunsparce", "Dragapult Blaziken"],
+      playerName: "DommitronNL",
+    });
+
+    expect(parsed.result).toBe("loss");
+    expect(parsed.turnOrder).toBe("second");
+    expect(parsed.winnerName).toBe("Antonio_Romanni");
+    expect(parsed.opponentName).toBe("Antonio_Romanni");
+    expect(parsed.opponentName).not.toContain("Setup");
+    expect(parsed.opponentDeckGuess).not.toBe("Dragapult Blaziken");
+    expect(parsed.notes.join(" ")).not.toMatch(/Could not map that name/i);
+    if (parsed.opponentDeckGuess) {
+      expect(parsed.opponentDeckGuess).toMatch(/Alakazam/i);
+    }
+  });
+
+  test("maps clean final winner tokens even when no other opponent signal is available", async () => {
+    const loss = parseTcgLiveLog(
+      "Opponent took all of their Prize cards. Antonio_Romanni wins.",
+      {
+        archetypeOptions: ["Alakazam"],
+        playerName: "DommitronNL",
+      }
+    );
+    const win = parseTcgLiveLog(
+      "You took all of your Prize cards. DommitronNL wins.",
+      {
+        archetypeOptions: ["Alakazam"],
+        playerName: "DommitronNL",
+      }
+    );
+
+    expect(loss.winnerName).toBe("Antonio_Romanni");
+    expect(loss.opponentName).toBe("Antonio_Romanni");
+    expect(loss.result).toBe("loss");
+    expect(loss.notes.join(" ")).not.toMatch(/Could not map that name/i);
+    expect(win.winnerName).toBe("DommitronNL");
+    expect(win.result).toBe("win");
+  });
+
   test("parses common explicit winner line formats", async () => {
     const cases = [
       {
