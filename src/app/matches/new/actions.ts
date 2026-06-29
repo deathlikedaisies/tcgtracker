@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { LATEST_FORMAT } from "@/lib/formats";
+import { savePokemonTcgLiveUsername } from "@/lib/user-private-settings";
 import {
   buildMatchMetadataFromFormData,
   getGameContextEventType,
@@ -19,6 +20,33 @@ import {
 } from "@/lib/match-options";
 const results = new Set<string>(MATCH_RESULTS);
 const eventTypes = new Set<string>(EVENT_TYPES);
+
+export async function rememberPokemonTcgLiveUsername(username: string) {
+  const supabase = await createServerSupabaseClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  const result = await savePokemonTcgLiveUsername(user.id, username);
+
+  if (!result.ok) {
+    return {
+      error: result.error,
+    };
+  }
+
+  revalidatePath("/profile");
+  revalidatePath("/settings/profile");
+  revalidatePath("/matches/new");
+
+  return {
+    error: null,
+  };
+}
 
 export async function logMatch(
   _state: { error: string | null },

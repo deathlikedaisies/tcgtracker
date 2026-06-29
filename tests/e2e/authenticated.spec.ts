@@ -307,6 +307,50 @@ test.describe("TCG Live log parser", () => {
     }
   });
 
+  test("does not infer opponent deck from user-owned evidence in compressed mixed logs", async () => {
+    const collapsedLog = [
+      "SetupDommitronNL chose tails for the opening coin flip.",
+      "Antonio_Romanni won the coin toss.",
+      "Antonio_Romanni decided to go first.",
+      "DommitronNL played Dreepy to the Active Spot.",
+      "DommitronNL played Torchic to the Bench.",
+      "DommitronNL evolved Dreepy to Drakloak on the Bench.",
+      "DommitronNL evolved Drakloak to Dragapult ex on the Bench.",
+      "DommitronNL evolved Torchic to Blaziken ex on the Bench.",
+      "DommitronNL's Meowth ex was switched with DommitronNL's Blaziken ex to become the Active Pokemon.",
+      "DommitronNL's Dragapult ex used Phantom Dive.",
+      "Antonio_Romanni played Abra to the Bench.",
+      "Antonio_Romanni played Dunsparce to the Bench.",
+      "Antonio_Romanni evolved Abra to Kadabra on the Bench.",
+      "Antonio_Romanni evolved Kadabra to Alakazam on the Bench.",
+      "Antonio_Romanni's Alakazam used Powerful Hand on DommitronNL's Dragapult ex.",
+      "Antonio_Romanni's Fezandipiti ex used Flip the Script.",
+      "Opponent took all of their Prize cards. Antonio_Romanni wins.",
+    ].join("");
+
+    const parsed = parseTcgLiveLog(collapsedLog, {
+      archetypeOptions: [
+        "Alakazam",
+        "Alakazam Dudunsparce",
+        "Dragapult",
+        "Dragapult ex",
+        "Dragapult Blaziken",
+        "Blaziken",
+        "Blaziken ex",
+      ],
+      playerName: "DommitronNL",
+    });
+
+    expect(parsed.result).toBe("loss");
+    expect(parsed.turnOrder).toBe("second");
+    expect(parsed.opponentName).toBe("Antonio_Romanni");
+    expect(parsed.opponentDeckGuess).toMatch(/Alakazam/i);
+    expect(parsed.opponentDeckGuess).not.toMatch(/Dragapult|Blaziken/i);
+    expect(parsed.opponentEvidenceCards).toEqual(
+      expect.arrayContaining(["Abra", "Dunsparce", "Kadabra", "Alakazam"])
+    );
+  });
+
   test("maps clean final winner tokens even when no other opponent signal is available", async () => {
     const loss = parseTcgLiveLog(
       "Opponent took all of their Prize cards. Antonio_Romanni wins.",
@@ -930,6 +974,9 @@ test.describe("authenticated routes", () => {
 
     await expectHeadingVisible(page, "Log a game");
     await page.getByRole("button", { name: /Import from TCG Live log/i }).click();
+    await expect(
+      page.getByLabel("Remember this name on my profile")
+    ).toBeVisible();
     await page.getByLabel("Your TCG Live name").fill("DommitronNL");
     await page
       .getByLabel("TCG Live battle log")
@@ -1065,6 +1112,7 @@ test.describe("authenticated routes", () => {
     await expect(page.getByLabel("Current testing focus")).toHaveCount(0);
     await expect(page.getByLabel("Country")).toHaveCount(1);
     await expect(page.getByLabel("Favorite deck")).toHaveCount(1);
+    await expect(page.getByLabel("Pokemon TCG Live username")).toHaveCount(1);
     await expect(page.locator("body")).not.toContainText(/^Handle$/m);
     await expect(page.locator("body")).toContainText(/Public profile URL/i);
     await expect(page.locator("body")).toContainText(/https?:\/\/[^\s]+\/u\/domz_test/i);

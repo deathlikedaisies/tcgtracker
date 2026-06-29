@@ -66,6 +66,7 @@ type MatchLogFormProps = {
   initialOpponentVariant?: string;
   initialResult?: string;
   initialWentFirst?: string;
+  initialTcgLivePlayerName?: string | null;
   initialNotes?: string;
   initialTags?: string[];
   initialMetadata?: MatchMetadata | null;
@@ -74,6 +75,9 @@ type MatchLogFormProps = {
   secondaryLabel?: string;
   submitLabel?: string;
   wasSuccessful: boolean;
+  rememberTcgLiveUsernameAction?: (
+    username: string
+  ) => Promise<{ error: string | null }>;
 };
 
 type StepResultValue = MatchResult | "";
@@ -450,6 +454,7 @@ export function MatchLogForm({
   initialOpponentVariant,
   initialResult,
   initialWentFirst,
+  initialTcgLivePlayerName,
   initialNotes,
   initialTags = [],
   initialMetadata,
@@ -458,6 +463,7 @@ export function MatchLogForm({
   secondaryLabel = "Match history",
   submitLabel = "Save game",
   wasSuccessful,
+  rememberTcgLiveUsernameAction,
 }: MatchLogFormProps) {
   const [actionState, formAction] = useActionState(action, { error: null });
   const metadata = initialMetadata ?? {};
@@ -659,6 +665,10 @@ export function MatchLogForm({
   const [notes, setNotes] = useState(initialNotes ?? "");
   const [tcgLiveLog, setTcgLiveLog] = useState("");
   const [tcgLivePlayerName, setTcgLivePlayerName] = useState(() => {
+    if (initialTcgLivePlayerName?.trim()) {
+      return initialTcgLivePlayerName.trim();
+    }
+
     if (typeof window === "undefined") {
       return "";
     }
@@ -667,7 +677,12 @@ export function MatchLogForm({
   });
   const [importStatus, setImportStatus] = useState<string[]>([]);
   const [tcgLivePlayerNameError, setTcgLivePlayerNameError] = useState("");
+  const [rememberTcgLiveName, setRememberTcgLiveName] = useState(false);
   const [importExpanded, setImportExpanded] = useState(() => {
+    if (initialTcgLivePlayerName?.trim()) {
+      return true;
+    }
+
     if (typeof window === "undefined") {
       return false;
     }
@@ -1017,7 +1032,7 @@ export function MatchLogForm({
   const rewardSecondaryButtonClass =
     `${secondaryButton} h-12 bg-[#07111F]/62 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]`;
 
-  function importTcgLiveLog() {
+  async function importTcgLiveLog() {
     const log = tcgLiveLog.trim();
     const playerName = tcgLivePlayerName.trim();
     setImportExpanded(true);
@@ -1081,7 +1096,19 @@ export function MatchLogForm({
       })
     );
 
-    setImportStatus(parsed.notes);
+    let nextImportStatus = parsed.notes;
+
+    if (rememberTcgLiveName && rememberTcgLiveUsernameAction) {
+      const rememberResult = await rememberTcgLiveUsernameAction(playerName);
+      nextImportStatus = [
+        ...nextImportStatus,
+        rememberResult.error
+          ? "Could not save TCG Live name to your profile."
+          : "TCG Live name saved to your profile.",
+      ];
+    }
+
+    setImportStatus(nextImportStatus);
   }
 
   function clearImportedLog() {
@@ -1585,6 +1612,19 @@ export function MatchLogForm({
                           <p className="text-xs leading-5 text-[#94A3B8]/72">
                             Required for import so SixPrizer knows which player is you.
                           </p>
+                          {rememberTcgLiveUsernameAction ? (
+                            <label className="flex items-start gap-2 text-xs leading-5 text-[#D6E0F0]">
+                              <input
+                                type="checkbox"
+                                checked={rememberTcgLiveName}
+                                onChange={(event) =>
+                                  setRememberTcgLiveName(event.target.checked)
+                                }
+                                className="mt-1 h-4 w-4 rounded border-[#334155] bg-[#07111F] text-[#F5C84C] focus:ring-[#F5C84C]/60"
+                              />
+                              <span>Remember this name on my profile</span>
+                            </label>
+                          ) : null}
                           {tcgLivePlayerNameError ? (
                             <p className="text-xs font-medium text-rose-200">
                               {tcgLivePlayerNameError}

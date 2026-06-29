@@ -13,6 +13,7 @@ import {
 import { SixPrizerLogo } from "@/components/SixPrizerLogo";
 import { getOwnProfile } from "@/lib/community";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
+import { getOwnUserPrivateSettings } from "@/lib/user-private-settings";
 
 export default async function ProfileSetupPage() {
   const supabase = await createServerSupabaseClient();
@@ -29,6 +30,8 @@ export default async function ProfileSetupPage() {
   if (profile) {
     redirect("/profile");
   }
+
+  const privateSettings = await getOwnUserPrivateSettings(user.id);
 
   return (
     <main className={appShell}>
@@ -49,7 +52,11 @@ export default async function ProfileSetupPage() {
               <AppNav current="settings" />
             </div>
           </header>
-          <ProfileSettingsForm profile={null} mode="setup" />
+          <ProfileSettingsForm
+            profile={null}
+            mode="setup"
+            pokemonTcgLiveUsername={privateSettings?.pokemon_tcg_live_username}
+          />
         </div>
       </section>
     </main>

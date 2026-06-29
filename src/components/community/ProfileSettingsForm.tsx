@@ -33,6 +33,7 @@ import { getCountryOptions, getCountryOptionValue } from "@/lib/countries";
 type ProfileSettingsFormProps = {
   profile: ProfileRecord | null;
   mode: "setup" | "settings";
+  pokemonTcgLiveUsername?: string | null;
 };
 
 type BuilderValues = {
@@ -41,6 +42,7 @@ type BuilderValues = {
   bio: string;
   country: string;
   favoriteArchetype: string;
+  pokemonTcgLiveUsername: string;
   mainDeckName: string;
   currentTestingFocus: string;
   profileVisibility: ProfileVisibility;
@@ -97,13 +99,17 @@ const PRIVATE_RULES = [
   "Analytics sharing is controlled separately from profile visibility.",
 ];
 
-function getInitialProfileValues(profile: ProfileRecord | null): BuilderValues {
+function getInitialProfileValues(
+  profile: ProfileRecord | null,
+  pokemonTcgLiveUsername: string | null | undefined
+): BuilderValues {
   return {
     displayName: profile?.display_name ?? "",
     avatarUrl: profile?.avatar_url ?? "",
     bio: profile?.bio ?? "",
     country: profile?.country ?? "",
     favoriteArchetype: profile?.favorite_archetype ?? "",
+    pokemonTcgLiveUsername: pokemonTcgLiveUsername ?? "",
     mainDeckName: profile?.main_deck_name ?? "",
     currentTestingFocus: profile?.current_testing_focus ?? "",
     profileVisibility: profile?.profile_visibility ?? "private",
@@ -233,6 +239,7 @@ function OptionCardGroup<T extends string>({
 export function ProfileSettingsForm({
   profile,
   mode,
+  pokemonTcgLiveUsername,
 }: ProfileSettingsFormProps) {
   const initialProfileFormState: ProfileFormState = {
     error: null,
@@ -247,7 +254,7 @@ export function ProfileSettingsForm({
     initialProfileFormState
   );
   const [values, setValues] = useState<BuilderValues>(() =>
-    getInitialProfileValues(profile)
+    getInitialProfileValues(profile, pokemonTcgLiveUsername)
   );
 
   const profilePreview = useMemo(
@@ -424,6 +431,27 @@ export function ProfileSettingsForm({
               listMaxHeightClassName="max-h-48"
               customOptionPrefix="Use custom deck"
             />
+            <div className="grid gap-2">
+              <label htmlFor="pokemon_tcg_live_username" className={label}>
+                Pokemon TCG Live username
+              </label>
+              <input
+                id="pokemon_tcg_live_username"
+                name="pokemon_tcg_live_username"
+                value={values.pokemonTcgLiveUsername}
+                onChange={(event) =>
+                  setValues((current) => ({
+                    ...current,
+                    pokemonTcgLiveUsername: event.target.value,
+                  }))
+                }
+                className={inputH10}
+                placeholder="DommitronNL"
+              />
+              <FieldHint>
+                Used to identify you when importing TCG Live battle logs.
+              </FieldHint>
+            </div>
             <input type="hidden" name="main_deck_name" value={values.mainDeckName} />
             <input
               type="hidden"

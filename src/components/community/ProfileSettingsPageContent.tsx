@@ -20,6 +20,7 @@ type ProfileSettingsPageContentProps = {
   profile: ProfileRecord;
   userEmail: string;
   refreshed?: string;
+  pokemonTcgLiveUsername?: string | null;
 };
 
 function getInitial(value: string) {
@@ -42,6 +43,7 @@ export function ProfileSettingsPageContent({
   profile,
   userEmail,
   refreshed,
+  pokemonTcgLiveUsername,
 }: ProfileSettingsPageContentProps) {
   const refreshAction = refreshProfileStatsAction.bind(
     null,
@@ -191,7 +193,11 @@ export function ProfileSettingsPageContent({
             </div>
           </section>
 
-          <ProfileSettingsForm profile={profile} mode="settings" />
+          <ProfileSettingsForm
+            profile={profile}
+            mode="settings"
+            pokemonTcgLiveUsername={pokemonTcgLiveUsername}
+          />
         </div>
       </section>
     </main>

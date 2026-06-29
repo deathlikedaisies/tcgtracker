@@ -16,6 +16,10 @@ import {
   unfollowUser,
 } from "@/lib/community";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
+import {
+  savePokemonTcgLiveUsername,
+  validatePokemonTcgLiveUsername,
+} from "@/lib/user-private-settings";
 
 export type ProfileFormState = {
   error: string | null;
@@ -77,6 +81,20 @@ export async function saveProfileAction(
       "private"
     ),
   };
+  const pokemonTcgLiveUsername = String(
+    formData.get("pokemon_tcg_live_username") ?? ""
+  );
+  const usernameError = validatePokemonTcgLiveUsername(pokemonTcgLiveUsername);
+
+  if (usernameError) {
+    return {
+      error: usernameError,
+      success: null,
+      warning: null,
+      publicUrl: null,
+      handle: null,
+    };
+  }
 
   const result = await createOrUpdateProfile(user.id, input);
 
@@ -90,15 +108,26 @@ export async function saveProfileAction(
     };
   }
 
+  const usernameResult = await savePokemonTcgLiveUsername(
+    user.id,
+    pokemonTcgLiveUsername
+  );
+
   revalidatePath("/profile");
   revalidatePath("/settings/profile");
   revalidatePath("/profile/setup");
   revalidatePath(`/u/${result.profile.handle}`);
+  revalidatePath("/matches/new");
 
   return {
     error: null,
     success: "Profile saved.",
-    warning: "warning" in result ? result.warning ?? null : null,
+    warning:
+      usernameResult.ok
+        ? "warning" in result
+          ? result.warning ?? null
+          : null
+        : usernameResult.error,
     publicUrl:
       result.profile.profile_visibility === "private"
         ? null

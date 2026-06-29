@@ -21,7 +21,8 @@ import { LATEST_FORMAT } from "@/lib/formats";
 import { type MatchResult } from "@/lib/match-types";
 import { buildSessionCoachInsight } from "@/lib/session-coach";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
-import { logMatch } from "./actions";
+import { getOwnUserPrivateSettings } from "@/lib/user-private-settings";
+import { logMatch, rememberPokemonTcgLiveUsername } from "./actions";
 
 type DeckWithVersions = {
   id: string;
@@ -130,6 +131,7 @@ export default async function NewMatchPage({
     ...previousOpponentArchetypes,
     ...userDecks.map((deck) => deck.archetype),
   ]);
+  const privateSettings = await getOwnUserPrivateSettings(user.id);
 
   return (
     <main className={appShell}>
@@ -154,6 +156,10 @@ export default async function NewMatchPage({
               initialOpponentArchetype={opponent}
               initialResult={result}
               initialWentFirst={wentFirst}
+              initialTcgLivePlayerName={
+                privateSettings?.pokemon_tcg_live_username ?? null
+              }
+              rememberTcgLiveUsernameAction={rememberPokemonTcgLiveUsername}
               sessionCoach={sessionCoach}
               wasSuccessful={success === "1"}
             />

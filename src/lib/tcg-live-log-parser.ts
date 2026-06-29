@@ -36,6 +36,8 @@ type ResolvedPlayers = {
   opponentPlayerName?: string;
 };
 
+type SegmentOwner = "user" | "opponent" | "neutral";
+
 const playerTokenPattern = "[A-Za-z0-9_]{2,32}";
 const playerActionPattern =
   "(?:chose|won|decided|drew|played|attached|evolved|used|discarded|shuffled|put|took)";
@@ -73,6 +75,8 @@ function sortByOccurrence(lines: string[], candidates: string[]) {
     .map((entry) => entry.candidate);
 }
 
+// Kept temporarily as a reference for the older one-pass segmentation behavior.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function normalizeTcgLiveLogText(value: string) {
   return String(value ?? "")
     .replace(/\r\n?/g, "\n")
@@ -92,6 +96,33 @@ function normalizeTcgLiveLogText(value: string) {
       ),
       "$1\n"
     );
+}
+
+function segmentTcgLiveLogText(value: string) {
+  let normalized = String(value ?? "")
+    .replace(/\r\n?/g, "\n")
+    .replace(/[\u2018\u2019`]/g, "'")
+    .replace(/[ \t]+/g, " ");
+
+  for (let index = 0; index < 3; index += 1) {
+    normalized = normalized
+      .replace(
+        new RegExp(
+          `([.!?])\\s*(?=(?:${playerTokenPattern}|Opponent|You|Your opponent)\\s+${playerActionPattern}\\b|${playerTokenPattern}'s\\b)`,
+          "gi"
+        ),
+        "$1\n"
+      )
+      .replace(
+        new RegExp(
+          `\\b(Setup|Active Pok(?:e|é|Ã©)mon|Bench|Prize cards|Cards in hand)(?=(?:${playerTokenPattern}|Opponent|You|Your opponent)\\s+${playerActionPattern}\\b|${playerTokenPattern}'s\\b)`,
+          "gi"
+        ),
+        "$1\n"
+      );
+  }
+
+  return normalized;
 }
 
 function isCleanPlayerToken(value: string | undefined): value is string {
@@ -436,6 +467,44 @@ function resolveTurnOrder(
   };
 }
 
+function getSegmentOwner(
+  segment: string,
+  opponentName: string | undefined,
+  playerName: string | undefined
+): SegmentOwner {
+  const trimmed = segment.trim();
+
+  if (
+    playerName &&
+    new RegExp(`^${escapeRegex(playerName)}(?:'s)?\\b`, "i").test(trimmed)
+  ) {
+    return "user";
+  }
+
+  if (
+    opponentName &&
+    new RegExp(`^${escapeRegex(opponentName)}(?:'s)?\\b`, "i").test(trimmed)
+  ) {
+    return "opponent";
+  }
+
+  return "neutral";
+}
+
+function removeUserOwnedMentions(line: string, playerName: string | undefined) {
+  if (!playerName) {
+    return line;
+  }
+
+  return line.replace(
+    new RegExp(
+      `${escapeRegex(playerName)}'s\\s+[^.!?]*?(?=\\s+(?:for|to|on|with|became|is|was|used|attacked|retreated)\\b|[.!?]|$)`,
+      "gi"
+    ),
+    ""
+  );
+}
+
 function extractOpponentFocusedLog(
   lines: string[],
   opponentName: string | undefined,
@@ -445,23 +514,25 @@ function extractOpponentFocusedLog(
     return { text: "", cards: [] as string[] };
   }
 
-  const opponentPattern = new RegExp(
-    `^${escapeRegex(opponentName)}(?:'s)?\\b`,
-    "i"
-  );
-  const playerPattern = playerName
-    ? new RegExp(`^${escapeRegex(playerName)}(?:'s)?\\b`, "i")
-    : null;
-
-  const opponentLines = lines.filter((line) => {
+  const opponentLines = lines
+    .filter((line) => {
       const trimmed = line.trim();
 
-      if (playerPattern?.test(trimmed)) {
+      if (getSegmentOwner(trimmed, opponentName, playerName) !== "opponent") {
         return false;
       }
 
-      return opponentPattern.test(trimmed);
-    });
+      if (
+        playerName &&
+        trimmed.includes(playerName) &&
+        !new RegExp(`^${escapeRegex(opponentName)}(?:'s)?\\b`, "i").test(trimmed)
+      ) {
+        return false;
+      }
+
+      return true;
+    })
+    .map((line) => removeUserOwnedMentions(line, playerName));
 
   const cards = dedupe(
     opponentLines.flatMap((line) => {
@@ -553,7 +624,7 @@ export function parseTcgLiveLog(
   text: string,
   options: ParseOptions = {}
 ): TcgLiveLogParseResult {
-  const lines = normalizeTcgLiveLogText(text)
+  const lines = segmentTcgLiveLogText(text)
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter(Boolean);
