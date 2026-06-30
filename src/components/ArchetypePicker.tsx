@@ -18,6 +18,7 @@ type ArchetypePickerProps = {
   maxOptions?: number;
   listMaxHeightClassName?: string;
   customOptionPrefix?: string;
+  suggestionsMode?: "inline" | "popover";
 };
 
 function normalize(value: string) {
@@ -42,11 +43,13 @@ export function ArchetypePicker({
   maxOptions = 12,
   listMaxHeightClassName = "max-h-72",
   customOptionPrefix = "Use custom matchup",
+  suggestionsMode = "inline",
 }: ArchetypePickerProps) {
   const isControlled = value !== undefined;
   const [internalValue, setInternalValue] = useState(defaultValue);
   const selectedValue = isControlled ? value : internalValue;
   const [query, setQuery] = useState(selectedValue ?? "");
+  const [isFocused, setIsFocused] = useState(false);
 
   useEffect(() => {
     if (selectedValue !== query) {
@@ -70,6 +73,8 @@ export function ArchetypePicker({
 
   const exactMatch = options.some((option) => normalize(option) === normalize(query));
   const canUseCustom = query.trim().length > 0 && !exactMatch;
+  const shouldShowPopoverOptions =
+    suggestionsMode === "inline" || (isFocused && query.trim().length >= 2);
 
   function setValue(nextValue: string) {
     if (!isControlled) {
@@ -85,7 +90,7 @@ export function ArchetypePicker({
   }
 
   return (
-    <div className="flex w-full max-w-full min-w-0 flex-col gap-2 overflow-x-hidden">
+    <div className="relative flex w-full max-w-full min-w-0 flex-col gap-2 overflow-x-visible">
       <label htmlFor={`${id}-search`} className={labelClass}>
         {label}
       </label>
@@ -114,9 +119,20 @@ export function ArchetypePicker({
           setQuery(nextValue);
           onValueChange?.(nextValue);
         }}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => {
+          window.setTimeout(() => setIsFocused(false), 120);
+        }}
         className={inputH10}
       />
-      <div className={`${listMaxHeightClassName} max-w-full overflow-x-hidden overflow-y-auto rounded-md bg-[#0B1020]/42 p-1.5 shadow-[inset_0_0_0_1px_rgba(248,250,252,0.05)]`}>
+      {shouldShowPopoverOptions ? (
+      <div
+        className={`${listMaxHeightClassName} ${
+          suggestionsMode === "popover"
+            ? "absolute left-0 right-0 top-full z-30 mt-2 shadow-[0_18px_34px_rgba(0,0,0,0.35),inset_0_0_0_1px_rgba(248,250,252,0.08)]"
+            : "shadow-[inset_0_0_0_1px_rgba(248,250,252,0.05)]"
+        } max-w-full overflow-x-hidden overflow-y-auto rounded-md bg-[#0B1020]/95 p-1.5`}
+      >
         <div className="grid gap-1.5">
           {visibleOptions.map((option) => {
             const isSelected = normalize(option) === normalize(selectedValue);
@@ -160,6 +176,7 @@ export function ArchetypePicker({
           ) : null}
         </div>
       </div>
+      ) : null}
     </div>
   );
 }
