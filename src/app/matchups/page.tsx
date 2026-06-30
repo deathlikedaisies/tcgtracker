@@ -519,7 +519,6 @@ export default async function MatchupsPage({
     selectedVersion?.name ??
     selectedDeck?.name ??
     (activeFilterCount ? "Filtered matchup map" : "All decks");
-  const tightenFilterOffset = hasFilteredMatches || sessionCoach ? "-mt-1 sm:-mt-3" : "";
 
   return (
     <main className={appShell}>
@@ -662,11 +661,11 @@ export default async function MatchupsPage({
               ) : null}
             </article>
 
-            <aside className={`${glassPanel} p-4`}>
+            <aside className={`${glassPanel} p-3 sm:p-3.5`}>
               <div className="flex items-center gap-2">
-                <Zap className="size-5 text-[#F5C84C]" aria-hidden="true" />
+                <Zap className="size-4 text-[#F5C84C]" aria-hidden="true" />
                 <div>
-                  <h2 className="text-lg font-bold text-[#F8FAFC]">
+                  <h2 className="text-base font-bold text-[#F8FAFC]">
                     What to test next
                   </h2>
                   <p className="text-xs text-[#94A3B8]">
@@ -674,7 +673,7 @@ export default async function MatchupsPage({
                   </p>
                 </div>
               </div>
-              <div className="mt-4 grid gap-2">
+              <div className="mt-3 grid gap-1.5">
                 {([
                   {
                     label: sessionCoach?.missionTitle ?? "Build a five-game sample",
@@ -698,16 +697,16 @@ export default async function MatchupsPage({
                     cta: "Open review",
                   },
                 ] as { label: string; href: string; cta: string }[]).map((item, index) => (
-                  <div key={item.label} className={`${premiumInset} flex items-center gap-3 rounded-[16px] p-3`}>
-                    <span className="inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-[#4F8CFF] text-xs font-bold text-white">
+                  <div key={item.label} className={`${premiumInset} flex items-center gap-2.5 rounded-[14px] px-2.5 py-2`}>
+                    <span className="inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-[#4F8CFF] text-[0.68rem] font-bold text-white">
                       {index + 1}
                     </span>
-                    <p className="min-w-0 flex-1 text-sm font-medium leading-5 text-[#F8FAFC]">
+                    <p className="min-w-0 flex-1 text-xs font-medium leading-4 text-[#F8FAFC]">
                       {item.label}
                     </p>
                     <Link
                       href={item.href}
-                      className="shrink-0 rounded-md bg-[#4F8CFF]/18 px-3 py-1 text-xs font-semibold text-[#B8D1FF] transition hover:bg-[#4F8CFF]/28"
+                      className="shrink-0 rounded-md bg-[#4F8CFF]/18 px-2.5 py-1 text-[0.68rem] font-semibold text-[#B8D1FF] transition hover:bg-[#4F8CFF]/28"
                     >
                       {item.cta}
                     </Link>
@@ -720,7 +719,7 @@ export default async function MatchupsPage({
           <SessionCoachPanel insight={sessionCoach} />
         ) : null}
 
-        <form action="/matchups" className={`${glassPanel} ${tightenFilterOffset} overflow-visible p-3 sm:p-4`}>
+        <form action="/matchups" className={`${glassPanel} overflow-visible p-3 sm:p-4`}>
           <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <div className="flex flex-wrap items-center gap-2">
