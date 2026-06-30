@@ -519,6 +519,7 @@ export default async function MatchupsPage({
     selectedVersion?.name ??
     selectedDeck?.name ??
     (activeFilterCount ? "Filtered matchup map" : "All decks");
+  const tightenFilterOffset = hasFilteredMatches || sessionCoach ? "-mt-1 sm:-mt-3" : "";
 
   return (
     <main className={appShell}>
@@ -719,7 +720,7 @@ export default async function MatchupsPage({
           <SessionCoachPanel insight={sessionCoach} />
         ) : null}
 
-        <form action="/matchups" className={`${glassPanel} overflow-visible p-3 sm:p-4`}>
+        <form action="/matchups" className={`${glassPanel} ${tightenFilterOffset} overflow-visible p-3 sm:p-4`}>
           <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <div className="flex flex-wrap items-center gap-2">
