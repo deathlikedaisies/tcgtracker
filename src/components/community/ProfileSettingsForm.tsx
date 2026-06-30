@@ -39,7 +39,6 @@ type ProfileSettingsFormProps = {
 
 type BuilderValues = {
   displayName: string;
-  avatarUrl: string;
   bio: string;
   country: string;
   favoriteArchetype: string;
@@ -106,7 +105,6 @@ function getInitialProfileValues(
 ): BuilderValues {
   return {
     displayName: profile?.display_name ?? "",
-    avatarUrl: profile?.avatar_url ?? "",
     bio: profile?.bio ?? "",
     country: profile?.country ?? "",
     favoriteArchetype: profile?.favorite_archetype ?? "",
@@ -268,7 +266,6 @@ export function ProfileSettingsForm({
       favoriteArchetype: values.favoriteArchetype.trim() || null,
       mainDeckName: values.mainDeckName.trim() || null,
       currentTestingFocus: values.currentTestingFocus.trim() || null,
-      avatarUrl: values.avatarUrl.trim() || null,
     }),
     [values]
   );
@@ -282,6 +279,8 @@ export function ProfileSettingsForm({
 
   return (
     <form action={formAction} className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-start">
+      <input type="hidden" name="avatar_url" value={profile?.avatar_url ?? ""} />
+
       <div className="flex flex-col gap-3 rounded-[18px] bg-[linear-gradient(180deg,rgba(12,22,40,0.88),rgba(7,17,31,0.82))] px-4 py-3 shadow-[0_14px_30px_rgba(0,0,0,0.16),inset_0_0_0_1px_rgba(148,163,184,0.10),inset_0_1px_0_rgba(255,255,255,0.03)] sm:flex-row sm:items-center sm:justify-between xl:col-span-2 xl:sticky xl:top-4 xl:z-10">
         <div>
           <p className="text-sm font-semibold text-[#F8FAFC]">
@@ -349,44 +348,17 @@ export function ProfileSettingsForm({
               </div>
             </div>
 
-            <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_180px]">
-              <div className="grid gap-4">
-                <div className="grid gap-2">
-                  <label htmlFor="avatar_url" className={label}>
-                    Avatar URL
-                  </label>
-                  <input
-                    id="avatar_url"
-                    name="avatar_url"
-                    value={values.avatarUrl}
-                    onChange={(event) =>
-                      setValues((current) => ({
-                        ...current,
-                        avatarUrl: event.target.value,
-                      }))
-                    }
-                    className={inputH10}
-                    placeholder="https://..."
-                  />
-                  <FieldHint>
-                    Optional. Add a clean image URL for your player card.
-                  </FieldHint>
-                </div>
+            <div className={`flex flex-col gap-4 rounded-[22px] p-4 sm:flex-row sm:items-center ${premiumInset}`}>
+              <div className="inline-flex size-20 shrink-0 items-center justify-center rounded-[22px] bg-[linear-gradient(180deg,rgba(79,140,255,0.24),rgba(12,21,38,0.92))] text-2xl font-bold text-[#F8FAFC] shadow-[0_18px_40px_rgba(0,0,0,0.24),inset_0_0_0_1px_rgba(79,140,255,0.18)]">
+                {getInitial(profilePreview.displayName)}
               </div>
-
-              <div className={`flex items-center justify-center rounded-[22px] p-4 ${premiumInset}`}>
-                {profilePreview.avatarUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={profilePreview.avatarUrl}
-                    alt={profilePreview.displayName}
-                    className="size-24 rounded-[24px] object-cover shadow-[0_18px_40px_rgba(0,0,0,0.24)]"
-                  />
-                ) : (
-                  <div className="inline-flex size-24 items-center justify-center rounded-[24px] bg-[linear-gradient(180deg,rgba(79,140,255,0.22),rgba(12,21,38,0.92))] text-3xl font-bold text-[#F8FAFC] shadow-[0_18px_40px_rgba(0,0,0,0.24)]">
-                    {getInitial(profilePreview.displayName)}
-                  </div>
-                )}
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-[#F8FAFC]">
+                  Initials-based player card
+                </p>
+                <p className="mt-1 text-sm leading-6 text-[#94A3B8]/80">
+                  SixPrizer uses your display name initial for a clean, consistent profile mark.
+                </p>
               </div>
             </div>
 
@@ -581,18 +553,9 @@ export function ProfileSettingsForm({
           <div className={`relative grid gap-4 overflow-hidden p-4 sm:p-5 ${premiumInsetStrong}`}>
             <div className="pointer-events-none absolute -right-10 -top-12 size-32 rounded-full bg-[#4F8CFF]/10 blur-3xl" />
             <div className="flex items-start gap-4">
-              {profilePreview.avatarUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={profilePreview.avatarUrl}
-                  alt={profilePreview.displayName}
-                  className="size-20 rounded-[22px] object-cover shadow-[0_18px_40px_rgba(0,0,0,0.24)]"
-                />
-              ) : (
-                <div className="inline-flex size-20 items-center justify-center rounded-[22px] bg-[linear-gradient(180deg,rgba(79,140,255,0.24),rgba(14,24,42,0.92))] text-2xl font-bold text-[#F8FAFC] shadow-[0_18px_40px_rgba(0,0,0,0.24)]">
-                  {getInitial(profilePreview.displayName)}
-                </div>
-              )}
+              <div className="inline-flex size-20 items-center justify-center rounded-[22px] bg-[linear-gradient(180deg,rgba(79,140,255,0.24),rgba(14,24,42,0.92))] text-2xl font-bold text-[#F8FAFC] shadow-[0_18px_40px_rgba(0,0,0,0.24)]">
+                {getInitial(profilePreview.displayName)}
+              </div>
               <div className="relative min-w-0">
                 <h3 className="text-xl font-semibold tracking-tight text-[#F8FAFC]">
                   {profilePreview.displayName}

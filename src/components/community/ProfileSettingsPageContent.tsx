@@ -88,18 +88,9 @@ export function ProfileSettingsPageContent({
             <div className="relative overflow-hidden rounded-[26px] bg-[radial-gradient(circle_at_top_left,rgba(79,140,255,0.18),transparent_38%),radial-gradient(circle_at_88%_14%,rgba(245,200,76,0.09),transparent_24%),linear-gradient(180deg,rgba(12,22,42,0.98),rgba(6,13,26,0.92))] p-4 shadow-[0_22px_56px_rgba(0,0,0,0.30),inset_0_0_0_1px_rgba(79,140,255,0.20),inset_0_1px_0_rgba(255,255,255,0.05)] sm:p-5">
               <div className="pointer-events-none absolute -right-12 -top-16 size-44 rounded-full bg-[#4F8CFF]/10 blur-3xl" />
               <div className="relative flex items-start gap-4">
-                {profile.avatar_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={profile.avatar_url}
-                    alt={profile.display_name}
-                    className="size-20 shrink-0 rounded-[22px] object-cover shadow-[0_16px_34px_rgba(0,0,0,0.30)]"
-                  />
-                ) : (
-                  <div className="inline-flex size-20 shrink-0 items-center justify-center rounded-[22px] bg-[linear-gradient(180deg,rgba(79,140,255,0.30),rgba(12,21,38,0.92))] text-3xl font-bold text-[#F8FAFC] shadow-[0_16px_34px_rgba(0,0,0,0.30),inset_0_0_0_1px_rgba(79,140,255,0.24)]">
-                    {getInitial(profile.display_name)}
-                  </div>
-                )}
+                <div className="inline-flex size-20 shrink-0 items-center justify-center rounded-[22px] bg-[linear-gradient(180deg,rgba(79,140,255,0.30),rgba(12,21,38,0.92))] text-3xl font-bold text-[#F8FAFC] shadow-[0_16px_34px_rgba(0,0,0,0.30),inset_0_0_0_1px_rgba(79,140,255,0.24)]">
+                  {getInitial(profile.display_name)}
+                </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2.5">
                     <span className="inline-flex items-center gap-1.5 rounded-full bg-[#F5C84C]/12 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#FFE28A]">
