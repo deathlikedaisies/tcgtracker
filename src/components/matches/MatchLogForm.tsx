@@ -61,7 +61,10 @@ import {
   type SessionCoachInsight,
 } from "@/lib/session-coach";
 import { buildPostSaveFocusSummary } from "@/lib/match-log-reward";
-import { parseTcgLiveLog } from "@/lib/tcg-live-log-parser";
+import {
+  isValidTcgLivePlayerName,
+  parseTcgLiveLog,
+} from "@/lib/tcg-live-log-parser";
 
 type DeckOption = {
   id: string;
@@ -220,6 +223,24 @@ function cleanChipValue(value: string) {
     .trim()
     .replace(/\s+/g, " ")
     .slice(0, 40);
+}
+
+function sanitizeTcgLiveImportNotes(
+  notes: string[],
+  opponentName: string | undefined
+) {
+  if (isValidTcgLivePlayerName(opponentName)) {
+    return notes;
+  }
+
+  const filteredNotes = notes.filter(
+    (note) => !/^Detected opponent:/i.test(note.trim())
+  );
+
+  return Array.from(new Set([
+    ...filteredNotes,
+    "Could not confidently detect opponent. Please enter it manually.",
+  ]));
 }
 
 function toggleSelection(values: string[], value: string) {
@@ -1181,7 +1202,10 @@ export function MatchLogForm({
       })
     );
 
-    let nextImportStatus = parsed.notes;
+    let nextImportStatus = sanitizeTcgLiveImportNotes(
+      parsed.notes,
+      parsed.opponentName
+    );
 
     if (rememberTcgLiveName && rememberTcgLiveUsernameAction) {
       const rememberResult = await rememberTcgLiveUsernameAction(playerName);

@@ -174,7 +174,7 @@ function isGenericPlayerReference(value: string) {
   return /^(you|your opponent|opponent)$/i.test(value);
 }
 
-function isLikelyPlayerToken(value: string | undefined): value is string {
+export function isValidTcgLivePlayerName(value: string | undefined): value is string {
   return Boolean(
     isCleanPlayerToken(value) &&
       value &&
@@ -214,7 +214,7 @@ function parseWinnerNameFromLine(line: string) {
 
   if (
     !winnerName ||
-    !isLikelyPlayerToken(winnerName) ||
+    !isValidTcgLivePlayerName(winnerName) ||
     /^(opponent took all of their prize cards|you took all of your prize cards|all prize cards taken|opponent conceded)$/i.test(
       winnerName
     )
@@ -230,7 +230,7 @@ function addTokenMatches(candidates: Set<string>, text: string, pattern: RegExp)
     const playerName = match[1]?.trim();
 
     if (
-      isLikelyPlayerToken(playerName)
+      isValidTcgLivePlayerName(playerName)
     ) {
       candidates.add(playerName);
     }
@@ -253,7 +253,7 @@ function getKnownPlayerNames(lines: string[], rawPlayerName?: string) {
   const candidates = new Set<string>();
   const fullText = lines.join("\n");
 
-  if (isLikelyPlayerToken(rawPlayerName)) {
+  if (isValidTcgLivePlayerName(rawPlayerName)) {
     candidates.add(rawPlayerName.trim());
   }
 
@@ -261,7 +261,7 @@ function getKnownPlayerNames(lines: string[], rawPlayerName?: string) {
     const trimmed = line.trim();
     const winnerName = parseWinnerNameFromLine(trimmed);
     if (
-      isLikelyPlayerToken(winnerName)
+      isValidTcgLivePlayerName(winnerName)
     ) {
       candidates.add(winnerName);
     }
@@ -369,7 +369,7 @@ function resolvePlayers(
       : undefined;
   const winnerOpponentName =
     userPlayerName &&
-    isLikelyPlayerToken(winnerName) &&
+      isValidTcgLivePlayerName(winnerName) &&
     winnerName &&
     normalize(winnerName) !== normalize(userPlayerName)
       ? winnerName
@@ -759,9 +759,15 @@ export function parseTcgLiveLog(
 
   const resultInfo = resolveResult(lines, resolvedPlayers);
   const turnInfo = resolveTurnOrder(lines, resolvedPlayers);
+  const safeOpponentName = isValidTcgLivePlayerName(
+    resolvedPlayers.opponentPlayerName
+  )
+    ? resolvedPlayers.opponentPlayerName
+    : undefined;
+
   const opponentDeck = detectOpponentDeck(
     lines,
-    resolvedPlayers.opponentPlayerName,
+    safeOpponentName,
     resolvedPlayers.userPlayerName,
     options.archetypeOptions ?? []
   );
@@ -770,8 +776,8 @@ export function parseTcgLiveLog(
     [
       resultInfo.note,
       turnInfo.note,
-      resolvedPlayers.opponentPlayerName
-        ? `Detected opponent: ${resolvedPlayers.opponentPlayerName}`
+      safeOpponentName
+        ? `Detected opponent: ${safeOpponentName}`
         : "Could not confidently detect opponent. Please enter it manually.",
       opponentDeck.note,
     ].filter((value): value is string => Boolean(value))
@@ -781,7 +787,7 @@ export function parseTcgLiveLog(
     result: resultInfo.result,
     turnOrder: turnInfo.turnOrder,
     userPlayerName: resolvedPlayers.userPlayerName,
-    opponentName: resolvedPlayers.opponentPlayerName,
+    opponentName: safeOpponentName,
     winnerName: resultInfo.winnerName,
     firstPlayerName: turnInfo.firstPlayerName,
     opponentDeckGuess: opponentDeck.opponentDeckGuess,

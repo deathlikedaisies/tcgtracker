@@ -5,7 +5,10 @@ import { buildPostSaveFocusSummary } from "@/lib/match-log-reward";
 import { resolveCurrentDeckScope } from "@/lib/current-deck-scope";
 import { buildDeckLabSummary } from "@/lib/deck-lab";
 import type { SessionCoachInsight } from "@/lib/session-coach";
-import { parseTcgLiveLog } from "@/lib/tcg-live-log-parser";
+import {
+  isValidTcgLivePlayerName,
+  parseTcgLiveLog,
+} from "@/lib/tcg-live-log-parser";
 
 const authRoutes = [
   { path: "/dashboard", heading: "Overview" },
@@ -214,10 +217,20 @@ test.describe("TCG Live log parser", () => {
     expect(parsed.opponentName).toBe("AlfonsoLarsen");
     expect(parsed.opponentName).not.toBe("ex");
     expect(parsed.opponentName).not.toMatch(/^(V|VMAX|VSTAR|GX)$/i);
+    expect(parsed.notes).toContain("Detected opponent: AlfonsoLarsen");
+    expect(parsed.notes).not.toContain("Detected opponent: ex");
     expect(parsed.opponentDeckGuess).not.toBe("Dragapult Blaziken");
     if (parsed.opponentDeckGuess) {
       expect(parsed.opponentDeckGuess).toMatch(/Ogerpon|Meganium/i);
     }
+  });
+
+  test("rejects Pokemon card suffixes as player names", async () => {
+    for (const token of ["ex", "V", "VMAX", "VSTAR", "GX"]) {
+      expect(isValidTcgLivePlayerName(token)).toBe(false);
+    }
+
+    expect(isValidTcgLivePlayerName("AlfonsoLarsen")).toBe(true);
   });
 
   test("rejects card suffix winner tokens and does not treat card words as players", async () => {
