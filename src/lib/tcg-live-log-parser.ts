@@ -41,6 +41,20 @@ type SegmentOwner = "user" | "opponent" | "neutral";
 const playerTokenPattern = "[A-Za-z0-9_]{2,32}";
 const playerActionPattern =
   "(?:chose|won|decided|drew|played|attached|evolved|used|discarded|shuffled|put|took)";
+const reservedPlayerTokens = new Set([
+  "all",
+  "and",
+  "card",
+  "cards",
+  "opponent",
+  "prize",
+  "prizes",
+  "setup",
+  "the",
+  "their",
+  "turn",
+  "you",
+]);
 
 function normalize(value: string) {
   return value
@@ -133,6 +147,15 @@ function isGenericPlayerReference(value: string) {
   return /^(you|your opponent|opponent)$/i.test(value);
 }
 
+function isLikelyPlayerToken(value: string | undefined): value is string {
+  return Boolean(
+    isCleanPlayerToken(value) &&
+      value &&
+      !reservedPlayerTokens.has(normalize(value)) &&
+      !isGenericPlayerReference(value)
+  );
+}
+
 function isLikelyCompressedUserFragment(candidate: string, userPlayerName: string | undefined) {
   if (!userPlayerName) {
     return false;
@@ -179,9 +202,7 @@ function addTokenMatches(candidates: Set<string>, text: string, pattern: RegExp)
     const playerName = match[1]?.trim();
 
     if (
-      isCleanPlayerToken(playerName) &&
-      playerName &&
-      !isGenericPlayerReference(playerName)
+      isLikelyPlayerToken(playerName)
     ) {
       candidates.add(playerName);
     }
@@ -192,7 +213,7 @@ function getKnownPlayerNames(lines: string[], rawPlayerName?: string) {
   const candidates = new Set<string>();
   const fullText = lines.join("\n");
 
-  if (isCleanPlayerToken(rawPlayerName)) {
+  if (isLikelyPlayerToken(rawPlayerName)) {
     candidates.add(rawPlayerName.trim());
   }
 
@@ -200,9 +221,7 @@ function getKnownPlayerNames(lines: string[], rawPlayerName?: string) {
     const trimmed = line.trim();
     const winnerName = parseWinnerNameFromLine(trimmed);
     if (
-      isCleanPlayerToken(winnerName) &&
-      winnerName &&
-      !isGenericPlayerReference(winnerName)
+      isLikelyPlayerToken(winnerName)
     ) {
       candidates.add(winnerName);
     }
@@ -302,7 +321,7 @@ function resolvePlayers(
     rawPlayerName;
   const winnerOpponentName =
     userPlayerName &&
-    isCleanPlayerToken(winnerName) &&
+    isLikelyPlayerToken(winnerName) &&
     winnerName &&
     normalize(winnerName) !== normalize(userPlayerName)
       ? winnerName

@@ -152,6 +152,40 @@ test.describe("TCG Live log parser", () => {
     expect(parsed.notes).toContain("Detected opponent: AlfonsoLarsen");
   });
 
+  test("does not map sentence glue like and as the opponent name", async () => {
+    const parsed = parseTcgLiveLog(
+      [
+        "DommitronNL chose heads for the opening coin flip.",
+        "DommitronNL won the coin toss.",
+        "DommitronNL decided to go first.",
+        "DommitronNL played Dreepy to the Active Spot and played Dragapult ex to the Bench.",
+        "AlfonsoLarsen drew 7 cards for the opening hand.",
+        "AlfonsoLarsen played Chikorita to the Bench.",
+        "AlfonsoLarsen evolved Chikorita to Bayleef on the Bench.",
+        "AlfonsoLarsen evolved Bayleef to Meganium on the Bench.",
+        "AlfonsoLarsen played Teal Mask Ogerpon ex to the Bench.",
+        "All Prize cards taken. DommitronNL wins.",
+      ].join("\n"),
+      {
+        archetypeOptions: [
+          "Dragapult Blaziken",
+          "Ogerpon Meganium Hydrapple",
+          "Ogerpon Meganium",
+        ],
+        playerName: "DommitronNL",
+      }
+    );
+
+    expect(parsed.result).toBe("win");
+    expect(parsed.turnOrder).toBe("first");
+    expect(parsed.opponentName).toBe("AlfonsoLarsen");
+    expect(parsed.opponentName).not.toBe("and");
+    expect(parsed.opponentDeckGuess).not.toBe("Dragapult Blaziken");
+    if (parsed.opponentDeckGuess) {
+      expect(parsed.opponentDeckGuess).toMatch(/Ogerpon|Meganium/i);
+    }
+  });
+
   test("resolves named-player logs from the other side too", async () => {
     const parsed = parseTcgLiveLog(realStyleLog, {
       archetypeOptions: [
