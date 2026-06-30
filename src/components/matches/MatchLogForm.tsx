@@ -3,7 +3,18 @@
 import Link from "next/link";
 import { useActionState, useEffect, useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
-import { ArrowRight, CheckCircle2, Sparkles } from "lucide-react";
+import {
+  ArrowRight,
+  Bot,
+  CheckCircle2,
+  CircleDot,
+  ClipboardList,
+  History,
+  Radio,
+  Sparkles,
+  Target,
+  Zap,
+} from "lucide-react";
 import { ArchetypePicker } from "@/components/ArchetypePicker";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
 import {
@@ -101,6 +112,12 @@ const sessionKeys = {
 };
 
 const subCardClass = `${premiumTile} min-w-0 p-2.5 sm:p-3`;
+
+const cockpitCardClass =
+  "min-w-0 rounded-[22px] bg-[linear-gradient(180deg,rgba(13,25,46,0.90),rgba(7,17,31,0.78))] shadow-[0_18px_42px_rgba(0,0,0,0.18),inset_0_0_0_1px_rgba(148,163,184,0.09)]";
+
+const cockpitInsetClass =
+  "rounded-2xl bg-[#07111F]/58 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]";
 
 const largeToggleClass =
   "group relative flex min-h-12 w-full min-w-0 items-center justify-center overflow-hidden rounded-xl border border-[#23314A] bg-[linear-gradient(180deg,rgba(11,16,32,0.96),rgba(7,17,31,0.88))] px-3 text-center text-sm font-semibold text-[#D7E0EF] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-transform transition-colors duration-150 ease-out hover:-translate-y-0.5 hover:border-[#35507D] hover:bg-[#0D1830] hover:text-[#F8FAFC] hover:shadow-[0_12px_24px_rgba(0,0,0,0.18),inset_0_0_0_1px_rgba(79,140,255,0.12)] active:translate-y-0 active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5C84C]/65 focus-visible:ring-offset-2 focus-visible:ring-offset-[#07111F] sm:min-h-14 sm:rounded-2xl sm:text-base";
@@ -262,6 +279,70 @@ function getResultTone(value: MatchResult): SelectionTone {
   }
 
   return "emerald";
+}
+
+function getImportStatusMeta(note: string) {
+  const normalized = note.toLowerCase();
+
+  if (normalized.includes("result:")) {
+    return {
+      label: "Result",
+      value: note.replace(/^Detected result:\s*/i, ""),
+      toneClass:
+        normalized.includes("loss")
+          ? "border-rose-400/22 bg-rose-500/10 text-rose-100"
+          : normalized.includes("win")
+            ? "border-emerald-400/22 bg-emerald-500/10 text-emerald-100"
+            : "border-[#F5C84C]/22 bg-[#F5C84C]/10 text-[#FFE28A]",
+    };
+  }
+
+  if (normalized.includes("turn order:")) {
+    return {
+      label: "Turn order",
+      value: note.replace(/^Detected turn order:\s*/i, ""),
+      toneClass: "border-[#4F8CFF]/24 bg-[#4F8CFF]/10 text-[#DCE8FF]",
+    };
+  }
+
+  if (normalized.includes("detected opponent:")) {
+    return {
+      label: "Opponent",
+      value: note.replace(/^Detected opponent:\s*/i, ""),
+      toneClass: "border-[#4F8CFF]/24 bg-[#4F8CFF]/10 text-[#DCE8FF]",
+    };
+  }
+
+  if (normalized.includes("opponent deck:")) {
+    return {
+      label: "Opponent deck",
+      value: note.replace(/^Detected opponent deck:\s*/i, ""),
+      toneClass: "border-emerald-400/22 bg-emerald-500/10 text-emerald-100",
+    };
+  }
+
+  if (normalized.includes("could not confidently detect opponent deck")) {
+    return {
+      label: "Opponent deck",
+      value: "Choose manually",
+      detail: "Could not confidently detect opponent deck.",
+      toneClass: "border-[#F5C84C]/22 bg-[#F5C84C]/9 text-[#FFE28A]",
+    };
+  }
+
+  if (normalized.includes("saved to your profile")) {
+    return {
+      label: "TCG Live name",
+      value: "Saved",
+      toneClass: "border-emerald-400/22 bg-emerald-500/10 text-emerald-100",
+    };
+  }
+
+  return {
+    label: "Import note",
+    value: note,
+    toneClass: "border-[#334155]/70 bg-[#07111F]/62 text-[#D6E0F0]",
+  };
 }
 
 function SelectionMark({ tone }: { tone: SelectionTone }) {
@@ -1159,8 +1240,6 @@ export function MatchLogForm({
                   ? "Add at least one issue reason before saving."
                   : "Add at least one reason tag before saving."
           : null;
-  const summaryChipClass =
-    "inline-flex items-center rounded-full bg-[#0B1020]/72 px-2.5 py-1 text-[11px] font-semibold text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]";
   const activeDeckHeadline = selectedDeck?.label ?? "Choose a deck version";
   const activeDeckArchetype =
     selectedDeckSuggestion || selectedDeckArchetype || "Archetype not set yet";
@@ -1168,39 +1247,81 @@ export function MatchLogForm({
     ? `Testing: ${selectedDeck.label}`
     : "Choose the test version you want to log with.";
   const desktopSummary = (
-    <div className="rounded-[20px] bg-[#07111F]/34 p-3.5 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#94A3B8]/78">
-        Live summary
-      </p>
-      <p className="mt-2 text-sm font-medium leading-6 text-[#F8FAFC]">
-        {readySummary ||
-          "Choose a matchup, result, turn order, quality, and reason to complete the quick log."}
-      </p>
-      <div className="mt-3 flex flex-wrap gap-1.5">
-        <span className={summaryChipClass}>
-          Result: {result ? getMatchResultLabel(result) : "Not set"}
+    <div className={`${cockpitCardClass} sticky top-4 p-3.5`}>
+      <div className="flex items-center gap-2">
+        <span className="inline-flex size-8 items-center justify-center rounded-xl bg-[#4F8CFF]/12 text-[#B8D1FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.18)]">
+          <Radio className="size-4" aria-hidden="true" />
         </span>
-        <span className={summaryChipClass}>
-          Turn order:{" "}
-          {wentFirst === "true"
-            ? "First"
-            : wentFirst === "false"
-              ? "Second"
-              : wentFirst === "unknown"
-                ? "Turn order unknown"
-                : "Not set"}
-        </span>
-        <span className={summaryChipClass}>
-          Tags:{" "}
-          {[...issueTags, ...positiveTags].length
-            ? [...issueTags, ...positiveTags].slice(0, 2).join(", ")
-            : "No tags yet"}
-        </span>
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#94A3B8]/78">
+            Live match card
+          </p>
+          <p className="text-sm font-semibold text-[#F8FAFC]">
+            Updates as you log
+          </p>
+        </div>
       </div>
-      <p className="mt-3 text-xs text-[#94A3B8]/76">
-        This will update your matchup trends.
-      </p>
-      <Link href={secondaryHref} className={`mt-3 block w-full ${secondaryButton}`}>
+
+      <div className="mt-4 rounded-2xl bg-[#0B1020]/56 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+        <p className="text-sm font-medium leading-6 text-[#F8FAFC]">
+          {readySummary ||
+            "Choose matchup, result, turn order, quality, and reason to complete the quick log."}
+        </p>
+      </div>
+
+      <div className="mt-3 grid gap-2">
+        {[
+          {
+            label: "Result",
+            value: result ? getMatchResultLabel(result) : "Not set",
+            tone:
+              result === "win"
+                ? "text-emerald-200"
+                : result === "loss"
+                  ? "text-rose-200"
+                  : "text-[#DCE8FF]",
+          },
+          {
+            label: "Turn order",
+            value:
+              wentFirst === "true"
+                ? "First"
+                : wentFirst === "false"
+                  ? "Second"
+                  : wentFirst === "unknown"
+                    ? "Unknown"
+                    : "Not set",
+            tone: "text-[#DCE8FF]",
+          },
+          {
+            label: "Tags",
+            value: [...issueTags, ...positiveTags].length
+              ? [...issueTags, ...positiveTags].slice(0, 2).join(", ")
+              : "No tags yet",
+            tone: "text-[#DCE8FF]",
+          },
+        ].map((item) => (
+          <div
+            key={item.label}
+            className="flex items-center justify-between gap-3 rounded-xl bg-[#07111F]/50 px-3 py-2 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.07)]"
+          >
+            <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]/76">
+              {item.label}
+            </span>
+            <span className={`truncate text-sm font-semibold ${item.tone}`}>
+              {item.value}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-3 flex items-center gap-2 rounded-xl bg-[#F5C84C]/8 px-3 py-2 text-xs font-medium leading-5 text-[#FFE28A] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.12)]">
+        <Zap className="size-4 shrink-0" aria-hidden="true" />
+        Clean logs strengthen Deck Lab and Review.
+      </div>
+
+      <Link href={secondaryHref} className={`mt-3 flex w-full items-center justify-center gap-2 ${secondaryButton}`}>
+        <History className="size-4" aria-hidden="true" />
         {secondaryLabel}
       </Link>
     </div>
@@ -1478,10 +1599,12 @@ export function MatchLogForm({
 
           {!wasSuccessful ? (
             <div className="grid min-w-0 gap-3.5 sm:gap-4">
-              <section className="min-w-0 rounded-[22px] bg-[linear-gradient(180deg,rgba(14,24,42,0.94),rgba(8,17,31,0.90))] p-3.5 shadow-[0_18px_36px_rgba(0,0,0,0.18),inset_0_0_0_1px_rgba(148,163,184,0.10)] sm:p-4">
+              <section className="relative min-w-0 overflow-hidden rounded-[24px] bg-[radial-gradient(circle_at_15%_0%,rgba(79,140,255,0.24),transparent_34%),radial-gradient(circle_at_90%_10%,rgba(245,200,76,0.14),transparent_32%),linear-gradient(135deg,rgba(14,27,50,0.98),rgba(7,17,31,0.92))] p-3.5 shadow-[0_22px_52px_rgba(0,0,0,0.26),inset_0_0_0_1px_rgba(184,209,255,0.14)] sm:p-4">
+                <div className="pointer-events-none absolute -right-16 -top-20 h-44 w-44 rounded-full bg-[#4F8CFF]/12 blur-3xl" />
+                <div className="pointer-events-none absolute -bottom-20 left-12 h-36 w-36 rounded-full bg-[#F5C84C]/8 blur-3xl" />
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex min-w-0 items-center gap-3 overflow-hidden">
-                    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[20px] bg-[radial-gradient(circle_at_top,rgba(79,140,255,0.20),rgba(11,16,32,0.92))] shadow-[0_18px_32px_rgba(0,0,0,0.24),inset_0_0_0_1px_rgba(79,140,255,0.16)] sm:h-[72px] sm:w-[72px]">
+                    <div className="relative flex h-16 w-16 shrink-0 items-center justify-center rounded-[22px] bg-[radial-gradient(circle_at_top,rgba(79,140,255,0.30),rgba(11,16,32,0.94))] shadow-[0_18px_36px_rgba(79,140,255,0.12),0_18px_32px_rgba(0,0,0,0.28),inset_0_0_0_1px_rgba(184,209,255,0.18)] sm:h-[76px] sm:w-[76px]">
                       <ArchetypeSprites
                         archetype={selectedDeckSuggestion || selectedDeckArchetype}
                         size="lg"
@@ -1489,9 +1612,14 @@ export function MatchLogForm({
                       />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
-                        Active test
-                      </p>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="rounded-full bg-[#4F8CFF]/12 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[#B8D1FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.18)]">
+                          Active test
+                        </p>
+                        <p className="rounded-full bg-[#F5C84C]/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[#FFE28A] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.14)]">
+                          Testing cockpit
+                        </p>
+                      </div>
                       <h2 className="mt-1 truncate text-xl font-semibold text-[#F8FAFC] sm:text-2xl">
                         {activeDeckHeadline}
                       </h2>
@@ -1501,13 +1629,17 @@ export function MatchLogForm({
                       <p className="mt-1 text-xs leading-5 text-[#94A3B8]/76 sm:text-sm">
                         {activeVersionLine}
                       </p>
+                      <p className="mt-2 flex items-center gap-2 text-xs font-medium leading-5 text-[#DCE8FF]/88">
+                        <Sparkles className="size-3.5 shrink-0 text-[#F5C84C]" aria-hidden="true" />
+                        Keep logging clean games to strengthen your reads.
+                      </p>
                     </div>
                   </div>
-                    <div className="flex min-w-0 flex-wrap items-center gap-2">
-                      <span className="rounded-full bg-[#07111F]/58 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]">
+                    <div className="relative flex min-w-0 flex-wrap items-center gap-2">
+                      <span className="rounded-full bg-[#07111F]/64 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.12)]">
                         Step {currentStep + 1} of {stepOrder.length}
                       </span>
-                    <span className="rounded-full bg-[#4F8CFF]/12 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.18)]">
+                    <span className="rounded-full bg-[#4F8CFF]/16 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#DCE8FF] shadow-[0_0_22px_rgba(79,140,255,0.12),inset_0_0_0_1px_rgba(79,140,255,0.22)]">
                       {stepOrder[currentStep]?.label}
                     </span>
                   </div>
@@ -1516,19 +1648,24 @@ export function MatchLogForm({
 
               <div className="grid min-w-0 gap-3.5 sm:gap-4 xl:grid-cols-[minmax(0,1fr)_240px]">
                 <div className="grid min-w-0 gap-3.5 sm:gap-4">
-                  <section className="min-w-0 rounded-[18px] bg-[#07111F]/30 p-3 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.10)] sm:p-3.5">
+                  <section className={`${cockpitCardClass} p-3 sm:p-3.5`}>
                     <div className="flex flex-col gap-2">
                       <div className="flex items-center justify-between gap-3">
-                        <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
-                          Quick log
-                        </p>
-                        <p className="text-xs text-[#94A3B8]">
+                        <div className="flex items-center gap-2">
+                          <span className="inline-flex size-7 items-center justify-center rounded-xl bg-[#4F8CFF]/12 text-[#B8D1FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.18)]">
+                            <ClipboardList className="size-3.5" aria-hidden="true" />
+                          </span>
+                          <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
+                            Quick log
+                          </p>
+                        </div>
+                        <p className="text-xs font-semibold text-[#DCE8FF]">
                           {stepOrder[currentStep]?.label}
                         </p>
                       </div>
-                      <div className="h-2 rounded-full bg-[#07111F]/72">
+                      <div className="h-2 rounded-full bg-[#07111F]/72 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.06)]">
                         <div
-                          className="h-2 rounded-full bg-[#4F8CFF] transition-[width,background-color]"
+                          className="h-2 rounded-full bg-[linear-gradient(90deg,#4F8CFF,#F5C84C)] shadow-[0_0_18px_rgba(79,140,255,0.22)] transition-[width,background-color]"
                           style={{ width: `${progressPercent}%` }}
                         />
                       </div>
@@ -1546,16 +1683,21 @@ export function MatchLogForm({
                                   setCurrentStep(index);
                                 }
                               }}
-                              className={`min-w-0 rounded-xl px-2 py-2 text-left transition-colors ${
+                              className={`min-w-0 rounded-xl px-2 py-2 text-left transition-all ${
                                 isCurrent
-                                  ? "bg-[#4F8CFF]/16 text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.22)]"
+                                  ? "bg-[#4F8CFF]/17 text-[#F8FAFC] shadow-[0_0_22px_rgba(79,140,255,0.10),inset_0_0_0_1px_rgba(79,140,255,0.28)]"
                                   : isDone
-                                    ? "bg-[#07111F]/42 text-[#DCE8FF]"
-                                    : "bg-[#07111F]/16 text-[#94A3B8]"
+                                    ? "bg-emerald-500/9 text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(34,197,94,0.14)]"
+                                    : "bg-[#07111F]/22 text-[#94A3B8] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.04)]"
                               }`}
                             >
-                              <span className="block text-[11px] font-bold">
-                                {step.shortLabel}
+                              <span className="flex items-center gap-1.5 text-[11px] font-bold">
+                                {isDone ? (
+                                  <CheckCircle2 className="size-3.5 text-emerald-300" aria-hidden="true" />
+                                ) : isCurrent ? (
+                                  <CircleDot className="size-3.5 text-[#F5C84C]" aria-hidden="true" />
+                                ) : null}
+                                <span>{step.shortLabel}</span>
                               </span>
                               <span className="mt-1 block text-xs font-semibold leading-4 break-words">
                                 {step.label}
@@ -1567,28 +1709,33 @@ export function MatchLogForm({
                     </div>
                   </section>
 
-                  <section className="min-w-0 rounded-[18px] bg-[#07111F]/30 p-3 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.10)] sm:p-3.5">
+                  <section className={`${cockpitCardClass} p-3 sm:p-3.5`}>
                     <button
                       type="button"
                       onClick={() => setImportExpanded((current) => !current)}
                       className="flex w-full min-w-0 items-center justify-between gap-3 text-left"
                     >
-                      <div className="min-w-0">
-                        <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
-                          Import from TCG Live log
-                        </p>
-                        <p className="mt-1 text-sm leading-6 text-[#94A3B8]/76">
-                          Paste a battle log to prefill result, turn order, and opponent deck when possible.
-                        </p>
+                      <div className="flex min-w-0 items-start gap-3">
+                        <span className="mt-0.5 inline-flex size-9 shrink-0 items-center justify-center rounded-2xl bg-[#F5C84C]/10 text-[#FFE28A] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
+                          <Bot className="size-[18px]" aria-hidden="true" />
+                        </span>
+                        <div className="min-w-0">
+                          <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#F5C84C]">
+                            Import from TCG Live log
+                          </p>
+                          <p className="mt-1 text-sm leading-6 text-[#94A3B8]/76">
+                            Paste a TCG Live battle log to autofill result, turn order, and opponent deck when possible.
+                          </p>
+                        </div>
                       </div>
-                      <span className="shrink-0 rounded-full bg-[#0B1020]/66 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]">
+                      <span className="shrink-0 rounded-full bg-[#0B1020]/70 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.12)]">
                         {importExpanded ? "Hide" : "Open"}
                       </span>
                     </button>
 
                     {importExpanded ? (
                       <div className="mt-3.5 grid min-w-0 gap-3">
-                        <div className={`grid gap-2.5 p-3 ${premiumInset}`}>
+                        <div className={`grid gap-2.5 p-3 ${cockpitInsetClass}`}>
                           <label htmlFor="tcg_live_player_name" className={label}>
                             Your TCG Live name
                           </label>
@@ -1631,7 +1778,7 @@ export function MatchLogForm({
                             </p>
                           ) : null}
                         </div>
-                        <div className="grid gap-2">
+                        <div className={`grid gap-2 p-3 ${cockpitInsetClass}`}>
                           <label htmlFor="tcg_live_log" className={label}>
                             TCG Live battle log
                           </label>
@@ -1644,7 +1791,7 @@ export function MatchLogForm({
                             }}
                             rows={7}
                             placeholder="Paste a TCG Live battle log"
-                            className={`${textarea} min-h-[180px] w-full max-w-full min-w-0`}
+                            className={`${textarea} min-h-[190px] w-full max-w-full min-w-0 bg-[#0B1020]/72 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.10)]`}
                           />
                         </div>
                         <div className="flex flex-col gap-2 sm:flex-row">
@@ -1664,32 +1811,60 @@ export function MatchLogForm({
                           </button>
                         </div>
                         {importStatus.length ? (
-                          <div className={`grid gap-2 p-3 ${premiumInset}`}>
-                            {importStatus.map((note) => (
-                              <p
-                                key={note}
-                                className="text-sm leading-6 text-[#D6E0F0]"
-                              >
-                                {note}
+                          <div className={`grid gap-2 p-3 ${cockpitInsetClass}`}>
+                            <div className="flex items-center gap-2">
+                              <CheckCircle2 className="size-4 text-emerald-300" aria-hidden="true" />
+                              <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#94A3B8]/80">
+                                Import read
                               </p>
-                            ))}
+                            </div>
+                            <div className="grid gap-2 sm:grid-cols-2">
+                              {importStatus.map((note) => {
+                                const status = getImportStatusMeta(note);
+
+                                return (
+                                  <div
+                                    key={note}
+                                    className={`min-w-0 rounded-xl border px-3 py-2 ${status.toneClass}`}
+                                  >
+                                    <span className="sr-only">{note}</span>
+                                    <p className="text-[10px] font-bold uppercase tracking-[0.1em] opacity-72">
+                                      {status.label}
+                                    </p>
+                                    <p className="mt-1 truncate text-sm font-semibold">
+                                      {status.value}
+                                    </p>
+                                    {"detail" in status && status.detail ? (
+                                      <p className="mt-1 text-xs leading-4 opacity-75">
+                                        {status.detail}
+                                      </p>
+                                    ) : null}
+                                  </div>
+                                );
+                              })}
+                            </div>
                           </div>
                         ) : null}
                       </div>
                     ) : null}
                   </section>
 
-                  <section className="min-w-0 rounded-xl bg-[#07111F]/36 p-3.5 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.12)] sm:p-5">
+                  <section className="min-w-0 rounded-[24px] bg-[linear-gradient(180deg,rgba(12,22,40,0.95),rgba(7,17,31,0.86))] p-3.5 shadow-[0_18px_42px_rgba(0,0,0,0.20),inset_0_0_0_1px_rgba(79,140,255,0.13)] sm:p-5">
                     <div className="flex items-center justify-between gap-3">
-                      <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
-                        Current step
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex size-7 items-center justify-center rounded-xl bg-[#4F8CFF]/12 text-[#B8D1FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.18)]">
+                          <Target className="size-3.5" aria-hidden="true" />
+                        </span>
+                        <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
+                          Current step
+                        </p>
+                      </div>
                       <p className="text-xs text-[#94A3B8]">
                         Step {currentStep + 1} of {stepOrder.length}
                       </p>
                     </div>
 
-                    <div className="mt-3.5 min-w-0 rounded-xl bg-[#0B1020]/52 p-3.5 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)] sm:mt-4 sm:p-4">
+                    <div className="mt-3.5 min-w-0 rounded-[20px] bg-[#0B1020]/56 p-3.5 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)] sm:mt-4 sm:p-4">
                   {currentStep === 0 ? (
                     <div className="grid gap-3.5 sm:gap-4">
                       <div>
@@ -1868,20 +2043,30 @@ export function MatchLogForm({
 
                   {currentStep === 3 ? (
                     <div className="grid gap-3.5 sm:gap-4">
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
-                          Quality
-                        </p>
-                        <h2 className="mt-2 text-[1.35rem] font-semibold leading-tight text-[#F8FAFC] sm:text-2xl">
-                          Rate how the game felt
-                        </h2>
-                        <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
-                          Rate the start, opening hand, and sequencing before moving on.
-                        </p>
+                      <div className="rounded-2xl bg-[radial-gradient(circle_at_top_left,rgba(79,140,255,0.16),transparent_34%),rgba(7,17,31,0.48)] p-3 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.12)] sm:p-4">
+                        <div className="flex items-start gap-3">
+                          <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-2xl bg-[#4F8CFF]/12 text-[#B8D1FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.18)]">
+                            <Zap className="size-5" aria-hidden="true" />
+                          </span>
+                          <div>
+                            <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
+                              Quality signal
+                            </p>
+                            <h2 className="mt-2 text-[1.35rem] font-semibold leading-tight text-[#F8FAFC] sm:text-2xl">
+                              Rate how the game felt
+                            </h2>
+                            <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
+                              These subjective ratings stay manual. TCG Live import never fills them.
+                            </p>
+                          </div>
+                        </div>
                       </div>
                       <div className="grid gap-2.5 sm:gap-3">
-                        <fieldset className={subCardClass}>
-                          <legend className={label}>Start</legend>
+                        <fieldset className={`${subCardClass} bg-[#07111F]/58`}>
+                          <legend className={`${label} flex items-center gap-2`}>
+                            <CircleDot className="size-3.5 text-[#F5C84C]" aria-hidden="true" />
+                            Start
+                          </legend>
                           <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
                             {MATCH_START_QUALITY_OPTIONS.map((value) => (
                               (() => {
@@ -1908,8 +2093,11 @@ export function MatchLogForm({
                             ))}
                           </div>
                         </fieldset>
-                        <fieldset className={subCardClass}>
-                          <legend className={label}>Opening hand</legend>
+                        <fieldset className={`${subCardClass} bg-[#07111F]/58`}>
+                          <legend className={`${label} flex items-center gap-2`}>
+                            <CircleDot className="size-3.5 text-[#F5C84C]" aria-hidden="true" />
+                            Opening hand
+                          </legend>
                           <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
                             {MATCH_OPENING_HAND_OPTIONS.map((value) => (
                               (() => {
@@ -1936,8 +2124,11 @@ export function MatchLogForm({
                             ))}
                           </div>
                         </fieldset>
-                        <fieldset className={subCardClass}>
-                          <legend className={label}>Sequencing</legend>
+                        <fieldset className={`${subCardClass} bg-[#07111F]/58`}>
+                          <legend className={`${label} flex items-center gap-2`}>
+                            <CircleDot className="size-3.5 text-[#F5C84C]" aria-hidden="true" />
+                            Sequencing
+                          </legend>
                           <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
                             {MATCH_SEQUENCING_OPTIONS.map((value) => (
                               (() => {
@@ -2291,18 +2482,21 @@ export function MatchLogForm({
                   ) : null}
                 </div>
 
-                <div className="mt-3.5 rounded-xl bg-[#0B1020]/52 p-2.5 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)] xl:hidden sm:mt-4 sm:p-3">
-                  <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#F5C84C]">
-                    Ready to save
-                  </p>
-                  <p className="mt-1.5 text-sm font-medium leading-5 text-[#F8FAFC] sm:mt-2 sm:leading-6">
+                <div className="mt-3.5 rounded-[18px] bg-[linear-gradient(180deg,rgba(11,16,32,0.78),rgba(7,17,31,0.62))] p-3 shadow-[inset_0_0_0_1px_rgba(245,200,76,0.12)] xl:hidden sm:mt-4">
+                  <div className="flex items-center gap-2">
+                    <Radio className="size-4 text-[#F5C84C]" aria-hidden="true" />
+                    <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#F5C84C]">
+                      Live match card
+                    </p>
+                  </div>
+                  <p className="mt-2 text-sm font-semibold leading-5 text-[#F8FAFC] sm:leading-6">
                     {readySummary ||
                       "Choose matchup, result, turn order, quality, and reason to save."}
                   </p>
-                  <p className="mt-1.5 text-sm text-[#94A3B8]/76 sm:mt-2">
+                  <p className="mt-2 text-sm text-[#94A3B8]/76">
                     {canQuickSave
-                      ? "You can save now, or add optional context first."
-                      : "This will update your matchup trends."}
+                      ? "Ready to save, or add optional context."
+                      : "This will update matchup trends and Deck Lab reads."}
                   </p>
                 </div>
 
@@ -2400,20 +2594,28 @@ export function MatchLogForm({
         </div>
       </form>
       {sessionCoach && !wasSuccessful ? (
-        <section className="rounded-[16px] bg-[#07111F]/28 p-2.5 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.08)] sm:rounded-[22px] sm:p-3.5">
+        <section className="rounded-[20px] bg-[radial-gradient(circle_at_left,rgba(79,140,255,0.16),transparent_34%),linear-gradient(180deg,rgba(11,16,32,0.82),rgba(7,17,31,0.64))] p-3 shadow-[0_16px_34px_rgba(0,0,0,0.16),inset_0_0_0_1px_rgba(79,140,255,0.12)] sm:rounded-[24px] sm:p-4">
           <div className="flex flex-col gap-2.5 sm:flex-row sm:items-start sm:justify-between">
-            <div className="min-w-0">
-              <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
-                Current focus
-              </p>
-              <p className="mt-1 text-[15px] font-semibold text-[#F8FAFC] sm:text-lg">
-                {sessionCoach.missionTitle}
-              </p>
-              <p className="mt-1 text-xs leading-5 text-[#94A3B8]/72 sm:text-sm">
-                {sessionCoach.nextAction}
-              </p>
+            <div className="flex min-w-0 items-start gap-3">
+              <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-2xl bg-[#F5C84C]/10 text-[#FFE28A] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
+                <Target className="size-4" aria-hidden="true" />
+              </span>
+              <div className="min-w-0">
+                <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#F5C84C]">
+                  Current focus
+                </p>
+                <p className="mt-1 text-[15px] font-semibold text-[#F8FAFC] sm:text-lg">
+                  {sessionCoach.missionTitle}
+                </p>
+                <p className="mt-1 text-xs leading-5 text-[#94A3B8]/72 sm:text-sm">
+                  {sessionCoach.nextAction}
+                </p>
+                <p className="mt-2 text-xs font-medium text-[#DCE8FF]/82">
+                  Clean logs improve your Deck Lab reads.
+                </p>
+              </div>
             </div>
-            <div className="rounded-lg bg-[#0B1020]/42 px-2.5 py-1 text-[11px] font-semibold text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+            <div className="w-fit rounded-full bg-[#0B1020]/56 px-3 py-1.5 text-[11px] font-semibold text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]">
               {sessionCoach.missionProgress}/{sessionCoach.missionTargetCount} games
             </div>
           </div>
