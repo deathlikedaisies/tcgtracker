@@ -1,7 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useEffect, useMemo, useState } from "react";
+import {
+  useActionState,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type PointerEvent,
+} from "react";
 import { useFormStatus } from "react-dom";
 import {
   ArrowRight,
@@ -114,7 +121,7 @@ const sessionKeys = {
 const subCardClass = `${premiumTile} min-w-0 p-2.5 sm:p-3`;
 
 const cockpitCardClass =
-  "min-w-0 rounded-[22px] bg-[linear-gradient(180deg,rgba(13,25,46,0.90),rgba(7,17,31,0.78))] shadow-[0_18px_42px_rgba(0,0,0,0.18),inset_0_0_0_1px_rgba(148,163,184,0.09)]";
+  "min-w-0 rounded-[18px] bg-[linear-gradient(180deg,rgba(13,25,46,0.88),rgba(7,17,31,0.76))] shadow-[0_14px_32px_rgba(0,0,0,0.16),inset_0_0_0_1px_rgba(148,163,184,0.09)]";
 
 const cockpitInsetClass =
   "rounded-2xl bg-[#07111F]/58 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]";
@@ -745,6 +752,7 @@ export function MatchLogForm({
   );
   const [notes, setNotes] = useState(initialNotes ?? "");
   const [tcgLiveLog, setTcgLiveLog] = useState("");
+  const tcgLiveLogRef = useRef<HTMLTextAreaElement>(null);
   const [tcgLivePlayerName, setTcgLivePlayerName] = useState(() => {
     if (initialTcgLivePlayerName?.trim()) {
       return initialTcgLivePlayerName.trim();
@@ -757,19 +765,11 @@ export function MatchLogForm({
     return sessionStorage.getItem(sessionKeys.tcgLivePlayerName) ?? "";
   });
   const [importStatus, setImportStatus] = useState<string[]>([]);
+  const tcgLivePlayerNameRef = useRef<HTMLInputElement>(null);
   const [tcgLivePlayerNameError, setTcgLivePlayerNameError] = useState("");
   const [rememberTcgLiveName, setRememberTcgLiveName] = useState(false);
-  const [importExpanded, setImportExpanded] = useState(() => {
-    if (initialTcgLivePlayerName?.trim()) {
-      return true;
-    }
-
-    if (typeof window === "undefined") {
-      return false;
-    }
-
-    return Boolean(sessionStorage.getItem(sessionKeys.tcgLivePlayerName)?.trim());
-  });
+  const [importExpanded, setImportExpanded] = useState(false);
+  const importPointerHandledRef = useRef(false);
   const [isChangingDeck, setIsChangingDeck] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [moreIssueTagsOpen, setMoreIssueTagsOpen] = useState(() =>
@@ -1114,9 +1114,13 @@ export function MatchLogForm({
     `${secondaryButton} h-12 bg-[#07111F]/62 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]`;
 
   async function importTcgLiveLog() {
-    const log = tcgLiveLog.trim();
-    const playerName = tcgLivePlayerName.trim();
+    const log = (tcgLiveLogRef.current?.value ?? tcgLiveLog).trim();
+    const playerName = (
+      tcgLivePlayerNameRef.current?.value ?? tcgLivePlayerName
+    ).trim();
     setImportExpanded(true);
+    setTcgLiveLog(log);
+    setTcgLivePlayerName(playerName);
 
     if (!log) {
       setImportStatus(["Paste a TCG Live log first."]);
@@ -1190,6 +1194,25 @@ export function MatchLogForm({
     }
 
     setImportStatus(nextImportStatus);
+  }
+
+  function handleImportPointerDown(event: PointerEvent<HTMLButtonElement>) {
+    if (event.button !== 0) {
+      return;
+    }
+
+    event.preventDefault();
+    importPointerHandledRef.current = true;
+    void importTcgLiveLog();
+  }
+
+  function handleImportClick() {
+    if (importPointerHandledRef.current) {
+      importPointerHandledRef.current = false;
+      return;
+    }
+
+    void importTcgLiveLog();
   }
 
   function clearImportedLog() {
@@ -1328,10 +1351,10 @@ export function MatchLogForm({
   );
 
   return (
-    <div className="mt-5 grid min-w-0 gap-4">
+    <div className="mt-3 grid min-w-0 gap-3">
       <form
         action={formAction}
-        className={`w-full max-w-full min-w-0 overflow-x-hidden p-2.5 sm:p-5 ${glassPanelStrong}`}
+        className={`w-full max-w-full min-w-0 overflow-x-hidden p-2 sm:p-3.5 ${glassPanelStrong}`}
       >
         <input type="hidden" name="deck_version_id" value={deckVersionId} />
         <input
@@ -1598,58 +1621,54 @@ export function MatchLogForm({
           ) : null}
 
           {!wasSuccessful ? (
-            <div className="grid min-w-0 gap-3.5 sm:gap-4">
-              <section className="relative min-w-0 overflow-hidden rounded-[24px] bg-[radial-gradient(circle_at_15%_0%,rgba(79,140,255,0.24),transparent_34%),radial-gradient(circle_at_90%_10%,rgba(245,200,76,0.14),transparent_32%),linear-gradient(135deg,rgba(14,27,50,0.98),rgba(7,17,31,0.92))] p-3.5 shadow-[0_22px_52px_rgba(0,0,0,0.26),inset_0_0_0_1px_rgba(184,209,255,0.14)] sm:p-4">
-                <div className="pointer-events-none absolute -right-16 -top-20 h-44 w-44 rounded-full bg-[#4F8CFF]/12 blur-3xl" />
-                <div className="pointer-events-none absolute -bottom-20 left-12 h-36 w-36 rounded-full bg-[#F5C84C]/8 blur-3xl" />
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex min-w-0 items-center gap-3 overflow-hidden">
-                    <div className="relative flex h-16 w-16 shrink-0 items-center justify-center rounded-[22px] bg-[radial-gradient(circle_at_top,rgba(79,140,255,0.30),rgba(11,16,32,0.94))] shadow-[0_18px_36px_rgba(79,140,255,0.12),0_18px_32px_rgba(0,0,0,0.28),inset_0_0_0_1px_rgba(184,209,255,0.18)] sm:h-[76px] sm:w-[76px]">
+            <div className="grid min-w-0 gap-2.5 sm:gap-3">
+              <section className="relative min-w-0 overflow-hidden rounded-[20px] bg-[radial-gradient(circle_at_15%_0%,rgba(79,140,255,0.20),transparent_30%),radial-gradient(circle_at_90%_10%,rgba(245,200,76,0.10),transparent_28%),linear-gradient(135deg,rgba(14,27,50,0.96),rgba(7,17,31,0.90))] p-2.5 shadow-[0_16px_38px_rgba(0,0,0,0.22),inset_0_0_0_1px_rgba(184,209,255,0.13)] sm:p-3">
+                <div className="pointer-events-none absolute -right-20 -top-24 h-40 w-40 rounded-full bg-[#4F8CFF]/10 blur-3xl" />
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex min-w-0 items-center gap-2.5 overflow-hidden">
+                    <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-[18px] bg-[radial-gradient(circle_at_top,rgba(79,140,255,0.28),rgba(11,16,32,0.94))] shadow-[0_12px_28px_rgba(79,140,255,0.10),0_12px_24px_rgba(0,0,0,0.24),inset_0_0_0_1px_rgba(184,209,255,0.18)] sm:h-14 sm:w-14">
                       <ArchetypeSprites
                         archetype={selectedDeckSuggestion || selectedDeckArchetype}
-                        size="lg"
+                        size="md"
                         variant="bare"
                       />
                     </div>
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
-                        <p className="rounded-full bg-[#4F8CFF]/12 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[#B8D1FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.18)]">
+                        <p className="rounded-full bg-[#4F8CFF]/12 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-[#B8D1FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.18)]">
                           Active test
                         </p>
-                        <p className="rounded-full bg-[#F5C84C]/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[#FFE28A] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.14)]">
-                          Testing cockpit
-                        </p>
                       </div>
-                      <h2 className="mt-1 truncate text-xl font-semibold text-[#F8FAFC] sm:text-2xl">
+                      <h2 className="mt-0.5 truncate text-lg font-semibold text-[#F8FAFC] sm:text-xl">
                         {activeDeckHeadline}
                       </h2>
-                      <p className="mt-1 truncate text-sm font-medium text-[#D7E0EF] sm:text-base">
+                      <p className="mt-0.5 truncate text-sm font-medium text-[#D7E0EF]">
                         {activeDeckArchetype}
                       </p>
-                      <p className="mt-1 text-xs leading-5 text-[#94A3B8]/76 sm:text-sm">
+                      <p className="mt-0.5 truncate text-xs leading-5 text-[#94A3B8]/76">
                         {activeVersionLine}
                       </p>
-                      <p className="mt-2 flex items-center gap-2 text-xs font-medium leading-5 text-[#DCE8FF]/88">
+                      <p className="mt-1 flex items-center gap-1.5 text-xs font-medium leading-5 text-[#DCE8FF]/86">
                         <Sparkles className="size-3.5 shrink-0 text-[#F5C84C]" aria-hidden="true" />
-                        Keep logging clean games to strengthen your reads.
+                        Clean games strengthen your reads.
                       </p>
                     </div>
                   </div>
-                    <div className="relative flex min-w-0 flex-wrap items-center gap-2">
-                      <span className="rounded-full bg-[#07111F]/64 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.12)]">
+                    <div className="relative flex min-w-0 flex-wrap items-center gap-1.5">
+                      <span className="rounded-full bg-[#07111F]/64 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.12)]">
                         Step {currentStep + 1} of {stepOrder.length}
                       </span>
-                    <span className="rounded-full bg-[#4F8CFF]/16 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#DCE8FF] shadow-[0_0_22px_rgba(79,140,255,0.12),inset_0_0_0_1px_rgba(79,140,255,0.22)]">
+                    <span className="rounded-full bg-[#4F8CFF]/16 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#DCE8FF] shadow-[0_0_18px_rgba(79,140,255,0.10),inset_0_0_0_1px_rgba(79,140,255,0.22)]">
                       {stepOrder[currentStep]?.label}
                     </span>
                   </div>
                 </div>
               </section>
 
-              <div className="grid min-w-0 gap-3.5 sm:gap-4 xl:grid-cols-[minmax(0,1fr)_240px]">
-                <div className="grid min-w-0 gap-3.5 sm:gap-4">
-                  <section className={`${cockpitCardClass} p-3 sm:p-3.5`}>
-                    <div className="flex flex-col gap-2">
+              <div className="grid min-w-0 gap-2.5 sm:gap-3 xl:grid-cols-[minmax(0,1fr)_220px]">
+                <div className="grid min-w-0 gap-2.5 sm:gap-3">
+                  <section className={`${cockpitCardClass} p-2.5`}>
+                    <div className="flex flex-col gap-1.5">
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2">
                           <span className="inline-flex size-7 items-center justify-center rounded-xl bg-[#4F8CFF]/12 text-[#B8D1FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.18)]">
@@ -1663,13 +1682,13 @@ export function MatchLogForm({
                           {stepOrder[currentStep]?.label}
                         </p>
                       </div>
-                      <div className="h-2 rounded-full bg-[#07111F]/72 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.06)]">
+                      <div className="h-1.5 rounded-full bg-[#07111F]/72 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.06)]">
                         <div
-                          className="h-2 rounded-full bg-[linear-gradient(90deg,#4F8CFF,#F5C84C)] shadow-[0_0_18px_rgba(79,140,255,0.22)] transition-[width,background-color]"
+                          className="h-1.5 rounded-full bg-[linear-gradient(90deg,#4F8CFF,#F5C84C)] shadow-[0_0_14px_rgba(79,140,255,0.20)] transition-[width,background-color]"
                           style={{ width: `${progressPercent}%` }}
                         />
                       </div>
-                      <div className="grid grid-cols-2 gap-2 sm:grid-cols-6">
+                      <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-6">
                         {stepOrder.map((step, index) => {
                           const isCurrent = index === currentStep;
                           const isDone = index < currentStep;
@@ -1683,7 +1702,7 @@ export function MatchLogForm({
                                   setCurrentStep(index);
                                 }
                               }}
-                              className={`min-w-0 rounded-xl px-2 py-2 text-left transition-all ${
+                              className={`min-w-0 rounded-lg px-2 py-1.5 text-left transition-all ${
                                 isCurrent
                                   ? "bg-[#4F8CFF]/17 text-[#F8FAFC] shadow-[0_0_22px_rgba(79,140,255,0.10),inset_0_0_0_1px_rgba(79,140,255,0.28)]"
                                   : isDone
@@ -1699,7 +1718,7 @@ export function MatchLogForm({
                                 ) : null}
                                 <span>{step.shortLabel}</span>
                               </span>
-                              <span className="mt-1 block text-xs font-semibold leading-4 break-words">
+                              <span className="mt-0.5 block text-[11px] font-semibold leading-4 break-words">
                                 {step.label}
                               </span>
                             </button>
@@ -1709,21 +1728,21 @@ export function MatchLogForm({
                     </div>
                   </section>
 
-                  <section className={`${cockpitCardClass} p-3 sm:p-3.5`}>
+                  <section className={`${cockpitCardClass} p-2.5`}>
                     <button
                       type="button"
                       onClick={() => setImportExpanded((current) => !current)}
                       className="flex w-full min-w-0 items-center justify-between gap-3 text-left"
                     >
-                      <div className="flex min-w-0 items-start gap-3">
-                        <span className="mt-0.5 inline-flex size-9 shrink-0 items-center justify-center rounded-2xl bg-[#F5C84C]/10 text-[#FFE28A] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
+                      <div className="flex min-w-0 items-start gap-2.5">
+                        <span className="mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-xl bg-[#F5C84C]/10 text-[#FFE28A] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
                           <Bot className="size-[18px]" aria-hidden="true" />
                         </span>
                         <div className="min-w-0">
                           <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#F5C84C]">
                             Import from TCG Live log
                           </p>
-                          <p className="mt-1 text-sm leading-6 text-[#94A3B8]/76">
+                          <p className="mt-0.5 text-sm leading-5 text-[#94A3B8]/76">
                             Paste a TCG Live battle log to autofill result, turn order, and opponent deck when possible.
                           </p>
                         </div>
@@ -1734,13 +1753,14 @@ export function MatchLogForm({
                     </button>
 
                     {importExpanded ? (
-                      <div className="mt-3.5 grid min-w-0 gap-3">
-                        <div className={`grid gap-2.5 p-3 ${cockpitInsetClass}`}>
+                      <div className="mt-2.5 grid min-w-0 gap-2.5">
+                        <div className={`grid gap-2 p-2.5 ${cockpitInsetClass}`}>
                           <label htmlFor="tcg_live_player_name" className={label}>
                             Your TCG Live name
                           </label>
                           <input
                             id="tcg_live_player_name"
+                            ref={tcgLivePlayerNameRef}
                             value={tcgLivePlayerName}
                             onChange={(event) => {
                               setImportExpanded(true);
@@ -1778,26 +1798,28 @@ export function MatchLogForm({
                             </p>
                           ) : null}
                         </div>
-                        <div className={`grid gap-2 p-3 ${cockpitInsetClass}`}>
+                        <div className={`grid gap-2 p-2.5 ${cockpitInsetClass}`}>
                           <label htmlFor="tcg_live_log" className={label}>
                             TCG Live battle log
                           </label>
                           <textarea
                             id="tcg_live_log"
+                            ref={tcgLiveLogRef}
                             value={tcgLiveLog}
                             onChange={(event) => {
                               setImportExpanded(true);
                               setTcgLiveLog(event.target.value);
                             }}
-                            rows={7}
+                            rows={5}
                             placeholder="Paste a TCG Live battle log"
-                            className={`${textarea} min-h-[190px] w-full max-w-full min-w-0 bg-[#0B1020]/72 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.10)]`}
+                            className={`${textarea} min-h-[130px] w-full max-w-full min-w-0 bg-[#0B1020]/72 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.10)] focus:min-h-[170px]`}
                           />
                         </div>
                         <div className="flex flex-col gap-2 sm:flex-row">
                           <button
                             type="button"
-                            onClick={importTcgLiveLog}
+                            onPointerDown={handleImportPointerDown}
+                            onClick={handleImportClick}
                             className={`${primaryButton} w-full whitespace-nowrap sm:w-auto sm:min-w-[188px]`}
                           >
                             Autofill from log
@@ -1811,7 +1833,7 @@ export function MatchLogForm({
                           </button>
                         </div>
                         {importStatus.length ? (
-                          <div className={`grid gap-2 p-3 ${cockpitInsetClass}`}>
+                          <div className={`grid gap-2 p-2.5 ${cockpitInsetClass}`}>
                             <div className="flex items-center gap-2">
                               <CheckCircle2 className="size-4 text-emerald-300" aria-hidden="true" />
                               <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#94A3B8]/80">
@@ -1849,7 +1871,7 @@ export function MatchLogForm({
                     ) : null}
                   </section>
 
-                  <section className="min-w-0 rounded-[24px] bg-[linear-gradient(180deg,rgba(12,22,40,0.95),rgba(7,17,31,0.86))] p-3.5 shadow-[0_18px_42px_rgba(0,0,0,0.20),inset_0_0_0_1px_rgba(79,140,255,0.13)] sm:p-5">
+                  <section className="min-w-0 rounded-[22px] bg-[linear-gradient(180deg,rgba(12,22,40,0.96),rgba(7,17,31,0.88))] p-3 shadow-[0_18px_42px_rgba(0,0,0,0.20),inset_0_0_0_1px_rgba(79,140,255,0.14)] sm:p-4">
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex items-center gap-2">
                         <span className="inline-flex size-7 items-center justify-center rounded-xl bg-[#4F8CFF]/12 text-[#B8D1FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.18)]">
@@ -1864,17 +1886,17 @@ export function MatchLogForm({
                       </p>
                     </div>
 
-                    <div className="mt-3.5 min-w-0 rounded-[20px] bg-[#0B1020]/56 p-3.5 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)] sm:mt-4 sm:p-4">
+                    <div className="mt-2.5 min-w-0 rounded-[18px] bg-[#0B1020]/56 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)] sm:mt-3 sm:p-3.5">
                   {currentStep === 0 ? (
-                    <div className="grid gap-3.5 sm:gap-4">
+                    <div className="grid gap-3">
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
                           Match
                         </p>
-                        <h2 className="mt-2 text-[1.35rem] font-semibold leading-tight text-[#F8FAFC] sm:text-2xl">
+                        <h2 className="mt-1.5 text-[1.25rem] font-semibold leading-tight text-[#F8FAFC] sm:text-[1.45rem]">
                           Who did you play against?
                         </h2>
-                        <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
+                        <p className="mt-1.5 text-sm leading-5 text-[#94A3B8]/76">
                           Start with the matchup. You can fill the rest in fast.
                         </p>
                       </div>
@@ -1957,15 +1979,15 @@ export function MatchLogForm({
                   ) : null}
 
                   {currentStep === 2 ? (
-                    <div className="grid gap-3.5 sm:gap-4">
+                    <div className="grid gap-3">
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
                           Turn order
                         </p>
-                        <h2 className="mt-2 text-[1.35rem] font-semibold leading-tight text-[#F8FAFC] sm:text-2xl">
+                        <h2 className="mt-1.5 text-[1.25rem] font-semibold leading-tight text-[#F8FAFC] sm:text-[1.45rem]">
                           Did you go first, second, or can&apos;t remember?
                         </h2>
-                        <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
+                        <p className="mt-1.5 text-sm leading-5 text-[#94A3B8]/76">
                           Choose turn order, or tap unknown and keep going.
                         </p>
                       </div>
@@ -2001,15 +2023,15 @@ export function MatchLogForm({
                   ) : null}
 
                   {currentStep === 1 ? (
-                    <div className="grid gap-3.5 sm:gap-4">
+                    <div className="grid gap-3">
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
                           Result
                         </p>
-                        <h2 className="mt-2 text-[1.35rem] font-semibold leading-tight text-[#F8FAFC] sm:text-2xl">
+                        <h2 className="mt-1.5 text-[1.25rem] font-semibold leading-tight text-[#F8FAFC] sm:text-[1.45rem]">
                           What was the result?
                         </h2>
-                        <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
+                        <p className="mt-1.5 text-sm leading-5 text-[#94A3B8]/76">
                           Win, loss, or tie. Keep it moving.
                         </p>
                       </div>
@@ -2042,20 +2064,20 @@ export function MatchLogForm({
                   ) : null}
 
                   {currentStep === 3 ? (
-                    <div className="grid gap-3.5 sm:gap-4">
-                      <div className="rounded-2xl bg-[radial-gradient(circle_at_top_left,rgba(79,140,255,0.16),transparent_34%),rgba(7,17,31,0.48)] p-3 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.12)] sm:p-4">
+                    <div className="grid gap-3">
+                      <div className="rounded-2xl bg-[radial-gradient(circle_at_top_left,rgba(79,140,255,0.14),transparent_32%),rgba(7,17,31,0.46)] p-2.5 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.12)] sm:p-3">
                         <div className="flex items-start gap-3">
-                          <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-2xl bg-[#4F8CFF]/12 text-[#B8D1FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.18)]">
-                            <Zap className="size-5" aria-hidden="true" />
+                          <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-2xl bg-[#4F8CFF]/12 text-[#B8D1FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.18)]">
+                            <Zap className="size-[18px]" aria-hidden="true" />
                           </span>
                           <div>
                             <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
                               Quality signal
                             </p>
-                            <h2 className="mt-2 text-[1.35rem] font-semibold leading-tight text-[#F8FAFC] sm:text-2xl">
+                            <h2 className="mt-1.5 text-[1.25rem] font-semibold leading-tight text-[#F8FAFC] sm:text-[1.45rem]">
                               Rate how the game felt
                             </h2>
-                            <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
+                            <p className="mt-1.5 text-sm leading-5 text-[#94A3B8]/76">
                               These subjective ratings stay manual. TCG Live import never fills them.
                             </p>
                           </div>
@@ -2160,15 +2182,15 @@ export function MatchLogForm({
                   ) : null}
 
                   {currentStep === 4 ? (
-                    <div className="grid gap-3.5 sm:gap-4">
+                    <div className="grid gap-3">
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
                           What mattered?
                         </p>
-                        <h2 className="mt-2 text-[1.35rem] font-semibold leading-tight text-[#F8FAFC] sm:text-2xl">
+                        <h2 className="mt-1.5 text-[1.25rem] font-semibold leading-tight text-[#F8FAFC] sm:text-[1.45rem]">
                           {primaryTagTitle}
                         </h2>
-                        <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
+                        <p className="mt-1.5 text-sm leading-5 text-[#94A3B8]/76">
                           Add at least one reason tag before saving this game.
                         </p>
                       </div>
@@ -2320,15 +2342,15 @@ export function MatchLogForm({
                   ) : null}
 
                   {currentStep === 5 ? (
-                    <div className="grid gap-3.5 sm:gap-4">
+                    <div className="grid gap-3">
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
                           More context
                         </p>
-                        <h2 className="mt-2 text-[1.35rem] font-semibold leading-tight text-[#F8FAFC] sm:text-2xl">
+                        <h2 className="mt-1.5 text-[1.25rem] font-semibold leading-tight text-[#F8FAFC] sm:text-[1.45rem]">
                           Anything worth remembering?
                         </h2>
-                        <p className="mt-2 text-sm leading-6 text-[#94A3B8]/76">
+                        <p className="mt-1.5 text-sm leading-5 text-[#94A3B8]/76">
                           Everything here is optional. Save as soon as you have enough.
                         </p>
                       </div>
@@ -2482,7 +2504,7 @@ export function MatchLogForm({
                   ) : null}
                 </div>
 
-                <div className="mt-3.5 rounded-[18px] bg-[linear-gradient(180deg,rgba(11,16,32,0.78),rgba(7,17,31,0.62))] p-3 shadow-[inset_0_0_0_1px_rgba(245,200,76,0.12)] xl:hidden sm:mt-4">
+                <div className="mt-3 rounded-[18px] bg-[linear-gradient(180deg,rgba(11,16,32,0.78),rgba(7,17,31,0.62))] p-2.5 shadow-[inset_0_0_0_1px_rgba(245,200,76,0.12)] xl:hidden">
                   <div className="flex items-center gap-2">
                     <Radio className="size-4 text-[#F5C84C]" aria-hidden="true" />
                     <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#F5C84C]">
@@ -2500,7 +2522,7 @@ export function MatchLogForm({
                   </p>
                 </div>
 
-                <div className="mt-4 flex flex-col gap-2 sm:mt-5 sm:flex-row sm:items-center sm:justify-between">
+                <div className="mt-3 flex flex-col gap-2 sm:mt-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex min-h-10 items-center gap-2">
                     {currentStep > 0 ? (
                       <button
@@ -2594,10 +2616,10 @@ export function MatchLogForm({
         </div>
       </form>
       {sessionCoach && !wasSuccessful ? (
-        <section className="rounded-[20px] bg-[radial-gradient(circle_at_left,rgba(79,140,255,0.16),transparent_34%),linear-gradient(180deg,rgba(11,16,32,0.82),rgba(7,17,31,0.64))] p-3 shadow-[0_16px_34px_rgba(0,0,0,0.16),inset_0_0_0_1px_rgba(79,140,255,0.12)] sm:rounded-[24px] sm:p-4">
+        <section className="rounded-[18px] bg-[radial-gradient(circle_at_left,rgba(79,140,255,0.14),transparent_32%),linear-gradient(180deg,rgba(11,16,32,0.80),rgba(7,17,31,0.62))] p-2.5 shadow-[0_12px_28px_rgba(0,0,0,0.14),inset_0_0_0_1px_rgba(79,140,255,0.12)] sm:rounded-[22px] sm:p-3">
           <div className="flex flex-col gap-2.5 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex min-w-0 items-start gap-3">
-              <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-2xl bg-[#F5C84C]/10 text-[#FFE28A] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
+              <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-xl bg-[#F5C84C]/10 text-[#FFE28A] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
                 <Target className="size-4" aria-hidden="true" />
               </span>
               <div className="min-w-0">

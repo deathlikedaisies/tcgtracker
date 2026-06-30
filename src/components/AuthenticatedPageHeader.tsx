@@ -23,6 +23,7 @@ type AuthenticatedPageHeaderProps = {
   userEmail?: string;
   actions?: ReactNode;
   className?: string;
+  compact?: boolean;
 };
 
 export function AuthenticatedPageHeader({
@@ -33,11 +34,16 @@ export function AuthenticatedPageHeader({
   userEmail,
   actions,
   className = "",
+  compact = false,
 }: AuthenticatedPageHeaderProps) {
   return (
-    <header className={`${pageHeaderCard} overflow-hidden p-3 sm:p-4 xl:px-6 xl:py-5 ${className}`}>
-      <div className="flex flex-col gap-3 sm:gap-4">
-        <div className="flex flex-wrap items-center justify-between gap-3 xl:hidden">
+    <header
+      className={`${pageHeaderCard} overflow-hidden ${
+        compact ? "p-2.5 sm:p-3 xl:px-4 xl:py-3" : "p-3 sm:p-4 xl:px-6 xl:py-5"
+      } ${className}`}
+    >
+      <div className={`flex flex-col ${compact ? "gap-2" : "gap-3 sm:gap-4"}`}>
+        <div className="flex flex-wrap items-center justify-between gap-2 xl:hidden">
           <Link
             href="/dashboard"
             aria-label="Go to dashboard"
@@ -60,16 +66,32 @@ export function AuthenticatedPageHeader({
                 {eyebrow}
               </p>
             ) : null}
-            <h1 className="mt-1 text-[1.55rem] font-bold tracking-tight text-[#F8FAFC] sm:mt-2 sm:text-4xl xl:text-[2rem]">
+            <h1
+              className={`mt-1 font-bold tracking-tight text-[#F8FAFC] ${
+                compact
+                  ? "text-[1.35rem] sm:text-2xl xl:text-[1.65rem]"
+                  : "text-[1.55rem] sm:mt-2 sm:text-4xl xl:text-[2rem]"
+              }`}
+            >
               {title}
             </h1>
             {subtitle ? (
-              <p className="mt-1 text-sm leading-5 text-[#94A3B8]/72 sm:mt-2 sm:leading-6">
+              <p
+                className={`mt-1 text-sm text-[#94A3B8]/72 ${
+                  compact ? "leading-5" : "leading-5 sm:mt-2 sm:leading-6"
+                }`}
+              >
                 {subtitle}
               </p>
             ) : null}
             {userEmail ? (
-              <p className="mt-1 truncate text-[11px] text-[#94A3B8]/62 sm:mt-2 sm:text-xs">{userEmail}</p>
+              <p
+                className={`mt-1 truncate text-[11px] text-[#94A3B8]/62 ${
+                  compact ? "" : "sm:mt-2 sm:text-xs"
+                }`}
+              >
+                {userEmail}
+              </p>
             ) : null}
           </div>
 

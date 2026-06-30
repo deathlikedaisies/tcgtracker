@@ -142,8 +142,9 @@ export default async function NewMatchPage({
             current="log"
             eyebrow="Fast log"
             title="Log a game"
-            subtitle="Capture the matchup, result, and context before the next queue."
+            subtitle="Capture the match before the next queue."
             userEmail={user.email ?? "Unknown email"}
+            compact
           />
 
           {deckOptions.length ? (
