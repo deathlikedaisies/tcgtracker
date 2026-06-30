@@ -186,6 +186,64 @@ test.describe("TCG Live log parser", () => {
     }
   });
 
+  test("does not map Pokemon card suffixes like ex as opponent names", async () => {
+    const parsed = parseTcgLiveLog(
+      [
+        "DommitronNL chose heads for the opening coin flip.",
+        "DommitronNL won the coin toss.",
+        "DommitronNL decided to go first.",
+        "DommitronNL drew 7 cards for the opening hand.",
+        "AlfonsoLarsen drew 7 cards for the opening hand.",
+        "DommitronNL played Dragapult ex to the Active Spot.",
+        "AlfonsoLarsen played Teal Mask Ogerpon ex to the Bench.",
+        "AlfonsoLarsen's Teal Mask Ogerpon ex used Teal Dance.",
+        "All Prize cards taken. DommitronNL wins.",
+      ].join("\n"),
+      {
+        archetypeOptions: [
+          "Dragapult Blaziken",
+          "Ogerpon Meganium Hydrapple",
+          "Ogerpon Meganium",
+        ],
+        playerName: "DommitronNL",
+      }
+    );
+
+    expect(parsed.result).toBe("win");
+    expect(parsed.turnOrder).toBe("first");
+    expect(parsed.opponentName).toBe("AlfonsoLarsen");
+    expect(parsed.opponentName).not.toBe("ex");
+    expect(parsed.opponentName).not.toMatch(/^(V|VMAX|VSTAR|GX)$/i);
+    expect(parsed.opponentDeckGuess).not.toBe("Dragapult Blaziken");
+    if (parsed.opponentDeckGuess) {
+      expect(parsed.opponentDeckGuess).toMatch(/Ogerpon|Meganium/i);
+    }
+  });
+
+  test("rejects card suffix winner tokens and does not treat card words as players", async () => {
+    const reservedSuffixes = ["ex", "V", "VMAX", "VSTAR", "GX"] as const;
+
+    for (const suffix of reservedSuffixes) {
+      const parsed = parseTcgLiveLog(
+        [
+          "DommitronNL drew 7 cards for the opening hand.",
+          "AlfonsoLarsen drew 7 cards for the opening hand.",
+          `AlfonsoLarsen played Teal Mask Ogerpon ${suffix} to the Bench.`,
+          `${suffix} wins.`,
+        ].join("\n"),
+        {
+          archetypeOptions: ["Ogerpon Meganium"],
+          playerName: "DommitronNL",
+        }
+      );
+
+      expect(parsed.winnerName).toBeUndefined();
+      expect(parsed.result).toBeUndefined();
+      expect(parsed.opponentName).toBe("AlfonsoLarsen");
+      expect(parsed.opponentName).not.toBe(suffix);
+    }
+  });
+
   test("resolves named-player logs from the other side too", async () => {
     const parsed = parseTcgLiveLog(realStyleLog, {
       archetypeOptions: [

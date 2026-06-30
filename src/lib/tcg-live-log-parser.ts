@@ -44,16 +44,43 @@ const playerActionPattern =
 const reservedPlayerTokens = new Set([
   "all",
   "and",
+  "active",
+  "attached",
+  "basic",
+  "bench",
   "card",
   "cards",
+  "deck",
+  "discard",
+  "discarded",
+  "drew",
+  "energy",
+  "evolved",
+  "ex",
+  "gx",
+  "hand",
+  "knocked",
+  "loss",
+  "lost",
+  "out",
   "opponent",
+  "played",
+  "pokemon",
+  "pokémon",
   "prize",
   "prizes",
   "setup",
   "the",
   "their",
   "turn",
+  "used",
+  "v",
+  "vmax",
+  "vstar",
+  "win",
+  "wins",
   "you",
+  "your",
 ]);
 
 function normalize(value: string) {
@@ -187,6 +214,7 @@ function parseWinnerNameFromLine(line: string) {
 
   if (
     !winnerName ||
+    !isLikelyPlayerToken(winnerName) ||
     /^(opponent took all of their prize cards|you took all of your prize cards|all prize cards taken|opponent conceded)$/i.test(
       winnerName
     )
@@ -209,6 +237,18 @@ function addTokenMatches(candidates: Set<string>, text: string, pattern: RegExp)
   }
 }
 
+function getOpeningHandPlayers(lines: string[]) {
+  const candidates = new Set<string>();
+  const pattern = new RegExp(
+    `(?:^|\\n)(${playerTokenPattern})\\s+drew 7 cards for the opening hand\\.`,
+    "gi"
+  );
+
+  addTokenMatches(candidates, lines.join("\n"), pattern);
+
+  return sortByOccurrence(lines, Array.from(candidates));
+}
+
 function getKnownPlayerNames(lines: string[], rawPlayerName?: string) {
   const candidates = new Set<string>();
   const fullText = lines.join("\n");
@@ -228,13 +268,14 @@ function getKnownPlayerNames(lines: string[], rawPlayerName?: string) {
   }
 
   [
-    new RegExp(`\\b(${playerTokenPattern})\\s+chose (?:heads|tails) for the opening coin flip\\.`, "gi"),
-    new RegExp(`\\b(${playerTokenPattern})\\s+won the coin toss\\.`, "gi"),
-    new RegExp(`\\b(${playerTokenPattern})\\s+decided to go (?:first|second)\\.`, "gi"),
-    new RegExp(`\\b(${playerTokenPattern})'s Turn\\b`, "gi"),
-    new RegExp(`\\b(${playerTokenPattern})\\s+drew 7 cards for the opening hand\\.`, "gi"),
-    new RegExp(`\\b(${playerTokenPattern})\\s+(?:played|attached|evolved|used|drew|discarded|shuffled|put|took)\\b`, "gi"),
-    new RegExp(`\\b(${playerTokenPattern})'s\\s+.*?\\b(?:used|attacked|retreated|was Knocked Out|was damaged)\\b`, "gi"),
+    new RegExp(`(?:^|\\n)(${playerTokenPattern})\\s+chose (?:heads|tails) for the opening coin flip\\.`, "gi"),
+    new RegExp(`(?:^|\\n)(${playerTokenPattern})\\s+won the coin toss\\.`, "gi"),
+    new RegExp(`(?:^|\\n)(${playerTokenPattern})\\s+decided to go (?:first|second)\\.`, "gi"),
+    new RegExp(`(?:^|\\n)(${playerTokenPattern})'s Turn\\b`, "gi"),
+    new RegExp(`(?:^|\\n)(${playerTokenPattern})\\s+drew 7 cards for the opening hand\\.`, "gi"),
+    new RegExp(`(?:^|\\n)(${playerTokenPattern})\\s+took (?:a|\\d+) Prize cards?\\.`, "gi"),
+    new RegExp(`(?:^|\\n)(${playerTokenPattern})\\s+(?:played|attached|evolved)\\b`, "gi"),
+    new RegExp(`(?:^|\\n)(${playerTokenPattern})'s\\s+.*?\\bused\\b`, "gi"),
   ].forEach((pattern) => addTokenMatches(candidates, fullText, pattern));
 
   if (rawPlayerName) {
@@ -313,12 +354,19 @@ function detectDecidingPlayer(lines: string[]) {
 function resolvePlayers(
   rawPlayerName: string | undefined,
   knownPlayers: string[],
-  winnerName?: string
+  winnerName?: string,
+  openingHandPlayers: string[] = []
 ): ResolvedPlayers {
   const normalizedPlayer = rawPlayerName ? normalize(rawPlayerName) : "";
   const userPlayerName =
     knownPlayers.find((name) => normalize(name) === normalizedPlayer) ??
     rawPlayerName;
+  const openingHandOpponentName =
+    userPlayerName && openingHandPlayers.length === 2
+      ? openingHandPlayers.find(
+          (name) => normalize(name) !== normalize(userPlayerName)
+        )
+      : undefined;
   const winnerOpponentName =
     userPlayerName &&
     isLikelyPlayerToken(winnerName) &&
@@ -327,7 +375,8 @@ function resolvePlayers(
       ? winnerName
       : undefined;
   const opponentPlayerName = userPlayerName
-    ? knownPlayers.find(
+    ? openingHandOpponentName ??
+      knownPlayers.find(
         (name) =>
           normalize(name) !== normalize(userPlayerName) &&
           !isLikelyCompressedUserFragment(name, userPlayerName)
@@ -699,11 +748,13 @@ export function parseTcgLiveLog(
     .map((line) => line.trim())
     .filter(Boolean);
   const winnerName = detectWinner(lines);
+  const openingHandPlayers = getOpeningHandPlayers(lines);
   const knownPlayers = getKnownPlayerNames(lines, options.playerName?.trim() || undefined);
   const resolvedPlayers = resolvePlayers(
     options.playerName?.trim() || undefined,
     knownPlayers,
-    winnerName
+    winnerName,
+    openingHandPlayers
   );
 
   const resultInfo = resolveResult(lines, resolvedPlayers);
@@ -721,7 +772,7 @@ export function parseTcgLiveLog(
       turnInfo.note,
       resolvedPlayers.opponentPlayerName
         ? `Detected opponent: ${resolvedPlayers.opponentPlayerName}`
-        : null,
+        : "Could not confidently detect opponent. Please enter it manually.",
       opponentDeck.note,
     ].filter((value): value is string => Boolean(value))
   );
