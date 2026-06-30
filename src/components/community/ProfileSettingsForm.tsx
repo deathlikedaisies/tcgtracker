@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useActionState, useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
+import { CheckCircle2, Gamepad2, ShieldCheck, Sparkles } from "lucide-react";
 import { ArchetypePicker } from "@/components/ArchetypePicker";
 import {
   formSectionCard,
@@ -169,8 +170,8 @@ function SectionHeader({
           {step}
         </span>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
-            Section {step}
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#4F8CFF]">
+            Player card setup
           </p>
           <h2 className={`mt-1 ${sectionTitle}`}>{title}</h2>
         </div>
@@ -280,11 +281,16 @@ export function ProfileSettingsForm({
   ]);
 
   return (
-    <form action={formAction} className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start">
-      <div className="flex items-center justify-between gap-3 rounded-[16px] bg-[#07111F]/40 px-4 py-2.5 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)] xl:col-span-2 xl:sticky xl:top-4 xl:z-10">
-        <p className="text-sm font-semibold text-[#F8FAFC]">
-          {mode === "setup" ? "Create your profile" : "Profile settings"}
-        </p>
+    <form action={formAction} className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-start">
+      <div className="flex flex-col gap-3 rounded-[18px] bg-[linear-gradient(180deg,rgba(12,22,40,0.88),rgba(7,17,31,0.82))] px-4 py-3 shadow-[0_14px_30px_rgba(0,0,0,0.16),inset_0_0_0_1px_rgba(148,163,184,0.10),inset_0_1px_0_rgba(255,255,255,0.03)] sm:flex-row sm:items-center sm:justify-between xl:col-span-2 xl:sticky xl:top-4 xl:z-10">
+        <div>
+          <p className="text-sm font-semibold text-[#F8FAFC]">
+            {mode === "setup" ? "Create your player card" : "Edit player card"}
+          </p>
+          <p className="mt-0.5 text-xs text-[#94A3B8]/72">
+            Save identity, TCG Live import name, and sharing controls.
+          </p>
+        </div>
         <SaveProfileButton mode={mode} />
       </div>
 
@@ -293,7 +299,7 @@ export function ProfileSettingsForm({
           <SectionHeader
             step="1"
             title="Player identity"
-            description="Display name, country, and bio. Keep private until ready to share."
+            description="Set the identity that appears on shared profile links and reports."
           />
 
           <section className={`grid gap-4 p-4 sm:p-5 ${premiumInsetStrong}`}>
@@ -363,7 +369,7 @@ export function ProfileSettingsForm({
                     placeholder="https://..."
                   />
                   <FieldHint>
-                    Optional. Add a clean image URL if you want your public profile to feel more personal.
+                    Optional. Add a clean image URL for your player card.
                   </FieldHint>
                 </div>
               </div>
@@ -410,7 +416,7 @@ export function ProfileSettingsForm({
           <SectionHeader
             step="2"
             title="Competitive profile"
-            description="Add the deck you know best so your player card feels more familiar."
+            description="Connect your testing identity to the decks and tools you use most."
           />
 
           <section className={`grid gap-4 p-4 sm:p-5 ${premiumInsetStrong}`}>
@@ -432,9 +438,15 @@ export function ProfileSettingsForm({
               customOptionPrefix="Use custom deck"
             />
             <div className="grid gap-2">
-              <label htmlFor="pokemon_tcg_live_username" className={label}>
-                Pokemon TCG Live username
-              </label>
+              <div className="flex flex-wrap items-center gap-2">
+                <label htmlFor="pokemon_tcg_live_username" className={label}>
+                  Pokemon TCG Live username
+                </label>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-[#F5C84C]/12 px-2.5 py-1 text-[11px] font-semibold text-[#FFE28A]">
+                  <Gamepad2 className="size-3.5" aria-hidden="true" />
+                  Import helper
+                </span>
+              </div>
               <input
                 id="pokemon_tcg_live_username"
                 name="pokemon_tcg_live_username"
@@ -449,7 +461,7 @@ export function ProfileSettingsForm({
                 placeholder="DommitronNL"
               />
               <FieldHint>
-                Used to identify you when importing TCG Live battle logs.
+                Used to autofill your name on the Log game page when importing TCG Live battle logs.
               </FieldHint>
             </div>
             <input type="hidden" name="main_deck_name" value={values.mainDeckName} />
@@ -458,8 +470,8 @@ export function ProfileSettingsForm({
               name="current_testing_focus"
               value={values.currentTestingFocus}
             />
-            <p className={sectionCopy}>
-              This helps the preview feel familiar without exposing raw decklists or private notes.
+            <p className={`${sectionCopy} rounded-[14px] bg-[#07111F]/38 px-3 py-2 text-xs`}>
+              Competitive profile fields help your player card feel familiar without exposing raw decklists or private notes.
             </p>
           </section>
         </div>
@@ -556,16 +568,18 @@ export function ProfileSettingsForm({
       <aside className="grid gap-4 xl:sticky xl:top-6">
         <section className={`grid gap-4 p-4 sm:p-5 ${formSectionCard}`}>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
-              Live preview
+            <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-[#4F8CFF]">
+              <Sparkles className="size-3.5" aria-hidden="true" />
+              Share preview
             </p>
-            <h2 className={`mt-2 ${sectionTitle}`}>Your SixPrizer player card</h2>
+            <h2 className={`mt-2 ${sectionTitle}`}>Public profile preview</h2>
             <p className={pageCopy}>
-              This is how your profile will start to feel once you decide to share it.
+              This is how your profile appears when shared.
             </p>
           </div>
 
-          <div className={`grid gap-4 p-4 sm:p-5 ${premiumInsetStrong}`}>
+          <div className={`relative grid gap-4 overflow-hidden p-4 sm:p-5 ${premiumInsetStrong}`}>
+            <div className="pointer-events-none absolute -right-10 -top-12 size-32 rounded-full bg-[#4F8CFF]/10 blur-3xl" />
             <div className="flex items-start gap-4">
               {profilePreview.avatarUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -579,7 +593,7 @@ export function ProfileSettingsForm({
                   {getInitial(profilePreview.displayName)}
                 </div>
               )}
-              <div className="min-w-0">
+              <div className="relative min-w-0">
                 <h3 className="text-xl font-semibold tracking-tight text-[#F8FAFC]">
                   {profilePreview.displayName}
                 </h3>
@@ -589,9 +603,9 @@ export function ProfileSettingsForm({
               </div>
             </div>
 
-            <p className="text-sm leading-6 text-[#D6E0F0]">{profilePreview.bio}</p>
+            <p className="relative text-sm leading-6 text-[#D6E0F0]">{profilePreview.bio}</p>
 
-            <div className="flex flex-wrap gap-2">
+            <div className="relative flex flex-wrap gap-2">
               <span className={`${premiumChip} text-[#DCE8FF]`}>
                 {formatProfileVisibility(currentProfileVisibility)}
               </span>
@@ -609,20 +623,21 @@ export function ProfileSettingsForm({
 
         <section className={`grid gap-4 p-4 sm:p-5 ${formSectionCard}`}>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
+            <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-[#4F8CFF]">
+              <ShieldCheck className="size-3.5" aria-hidden="true" />
               Privacy summary
             </p>
             <h2 className={`mt-2 ${sectionTitle}`}>What stays private</h2>
             <p className={pageCopy}>
-              Your community profile is controlled, summary-first, and safe by default.
+              Your player card is controlled, summary-first, and private by default.
             </p>
           </div>
 
-          <div className={`grid gap-3 p-4 ${premiumInset}`}>
+          <div className={`grid gap-2.5 p-3 ${premiumInset}`}>
             {PRIVATE_RULES.map((rule) => (
               <div key={rule} className="flex items-start gap-3">
                 <span className="mt-1 inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/14 text-[11px] font-bold text-emerald-200">
-                  ✓
+                  <CheckCircle2 className="size-3.5" aria-hidden="true" />
                 </span>
                 <p className="text-sm leading-6 text-[#D6E0F0]">{rule}</p>
               </div>
