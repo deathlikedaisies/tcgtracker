@@ -476,8 +476,8 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
           </div>
         </section>
 
-        <form action="/matches" className={`${glassPanel} p-4 sm:p-5`}>
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+        <form action="/matches" className={`${glassPanel} overflow-visible p-3 sm:p-4`}>
+          <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <div className="flex flex-wrap items-center gap-2">
                 <p className="text-sm font-semibold text-[#F8FAFC]">
@@ -489,7 +489,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                   </span>
                 ) : null}
               </div>
-              <p className="mt-1 text-sm text-[#94A3B8]">
+              <p className="mt-0.5 text-xs text-[#94A3B8] sm:text-sm">
                 Narrow the list without changing your logged data.
               </p>
             </div>
@@ -502,8 +502,8 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
               </Link>
             </div>
           </div>
-          <div className="mt-4 grid gap-3 min-[430px]:grid-cols-2 lg:grid-cols-[1fr_1fr_1.5fr_1fr]">
-            <div className="flex flex-col gap-1.5">
+          <div className="mt-3 grid gap-2.5 min-[430px]:grid-cols-2 lg:grid-cols-[1fr_1fr_1.5fr_1fr]">
+            <div className="flex flex-col gap-1">
               <label htmlFor="deck_id" className={label}>
                 Deck
               </label>
@@ -521,7 +521,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                 ))}
               </select>
             </div>
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-1">
               <label htmlFor="deck_version_id" className={label}>
                 Version
               </label>
@@ -550,9 +550,10 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                 placeholder="All archetypes"
                 maxOptions={5}
                 listMaxHeightClassName="max-h-40"
+                suggestionsMode="popover"
               />
             </div>
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-1">
               <label htmlFor="result" className={label}>
                 Result
               </label>
@@ -570,14 +571,14 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
             </div>
           </div>
           <details
-            className="mt-3 rounded-2xl bg-[#07111F]/45 px-3 py-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]"
+            className="mt-2.5 rounded-2xl bg-[#07111F]/45 px-3 py-2.5 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]"
             {...((params.start_date || params.end_date || missionOnly) ? { open: true } : {})}
           >
             <summary className="cursor-pointer select-none text-xs font-semibold uppercase tracking-[0.16em] text-[#94A3B8]/80 hover:text-[#F8FAFC]">
               Advanced filters
             </summary>
-            <div className="mt-3 grid gap-2 min-[430px]:grid-cols-2 lg:grid-cols-3">
-              <div className="flex flex-col gap-1.5">
+            <div className="mt-2.5 grid gap-2 min-[430px]:grid-cols-2 lg:grid-cols-3">
+              <div className="flex flex-col gap-1">
                 <label htmlFor="start_date" className={label}>From</label>
                 <input
                   id="start_date"
@@ -587,7 +588,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                   className={inputH10}
                 />
               </div>
-              <div className="flex flex-col gap-1.5">
+              <div className="flex flex-col gap-1">
                 <label htmlFor="end_date" className={label}>To</label>
                 <input
                   id="end_date"
