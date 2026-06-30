@@ -207,6 +207,25 @@ function getHeadlineTone(matchup: {
   };
 }
 
+function getSignalProgressClass(matchup: {
+  matches: number;
+  winRateValue: number;
+}) {
+  if (matchup.matches < 6) {
+    return "bg-[#F5C84C]/72";
+  }
+
+  if (matchup.winRateValue >= 60) {
+    return "bg-emerald-400";
+  }
+
+  if (matchup.winRateValue <= 45) {
+    return "bg-[#F43F5E]";
+  }
+
+  return "bg-[#4F8CFF]";
+}
+
 export default async function MatchupsPage({
   searchParams,
 }: MatchupsPageProps) {
@@ -488,6 +507,18 @@ export default async function MatchupsPage({
     ? getMatchupCoachLabel(worstMatchup)
     : null;
   const worstMatchupTone = getHeadlineTone(worstMatchup);
+  const activeFilterCount = [
+    selectedDeckId,
+    selectedVersionId,
+    selectedOpponentArchetype,
+    params.start_date,
+    params.end_date,
+    sort !== "most_played" ? sort : "",
+  ].filter(Boolean).length;
+  const matchupScopeLabel =
+    selectedVersion?.name ??
+    selectedDeck?.name ??
+    (activeFilterCount ? "Filtered matchup map" : "All decks");
 
   return (
     <main className={appShell}>
@@ -507,7 +538,7 @@ export default async function MatchupsPage({
         <AuthenticatedPageHeader
           current="matchups"
           title="Matchup Intelligence"
-          subtitle="Understand what is really happening and where to focus next."
+          subtitle="Understand your matchup spread and what to test next."
           userEmail={user.email ?? "Unknown email"}
           actions={
             hasFilteredMatches ? (
@@ -541,25 +572,57 @@ export default async function MatchupsPage({
 
         {hasFilteredMatches ? (
           <section className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start">
-            <article className={`p-3 sm:p-4 ${glassPanelStrong}`}>
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="flex min-w-0 flex-wrap items-center gap-2.5">
-                  <div className="flex items-center gap-1.5">
+            <article className={`${glassPanelStrong} overflow-hidden p-4 sm:p-5`}>
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div className="flex min-w-0 items-center gap-3">
+                  <div className="relative shrink-0">
+                    <div className="absolute inset-0 rounded-full bg-[#4F8CFF]/20 blur-xl" />
+                    {worstMatchup ? (
+                      <ArchetypeSprites
+                        archetype={worstMatchup.opponentArchetype}
+                        className="relative"
+                      />
+                    ) : (
+                      <AlertTriangle
+                        className={`relative size-8 ${worstMatchupTone.iconClassName}`}
+                        aria-hidden="true"
+                      />
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="mb-1 flex flex-wrap items-center gap-2">
                     <AlertTriangle className={`size-4 ${worstMatchupTone.iconClassName}`} aria-hidden="true" />
                     <p className={`text-xs font-semibold uppercase tracking-[0.1em] ${worstMatchupTone.labelClassName}`}>
                       {getHeadlineSignal(worstMatchup)}
                     </p>
+                    {worstMatchupCoachLabel ? (
+                      <span
+                        className={`rounded-full px-2.5 py-1 text-xs font-semibold ${worstMatchupCoachLabel.className}`}
+                      >
+                        {worstMatchupCoachLabel.label}
+                      </span>
+                    ) : null}
                   </div>
-                  {worstMatchup ? (
-                    <ArchetypeSprites archetype={worstMatchup.opponentArchetype} />
-                  ) : null}
-                  <h2 className="text-lg font-bold tracking-tight text-[#F8FAFC]">
+                  <h2 className="truncate text-2xl font-bold tracking-tight text-[#F8FAFC]">
                     {worstMatchup?.opponentArchetype ?? "No matchup yet"}
                   </h2>
+                  <p className="mt-1 text-sm text-[#94A3B8]">
+                    {worstMatchup && worstMatchup.matches < 6
+                      ? `Only ${worstMatchup.matches} game${
+                          worstMatchup.matches === 1 ? "" : "s"
+                        } logged. Log more before treating this as a trend.`
+                      : worstMatchupCoachLabel?.action ?? "Keep building your matchup map."}
+                  </p>
                 </div>
-                <p className={`text-3xl font-bold ${worstMatchupTone.valueClassName}`}>
-                  {worstMatchup?.winRate ?? "0%"}
-                </p>
+                </div>
+                <div className="rounded-[20px] bg-[#07111F]/60 px-4 py-3 text-left shadow-[inset_0_0_0_1px_rgba(148,163,184,0.09)] lg:text-right">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#94A3B8]">
+                    Win rate
+                  </p>
+                  <p className={`mt-1 text-4xl font-bold ${worstMatchupTone.valueClassName}`}>
+                    {worstMatchup?.winRate ?? "0%"}
+                  </p>
+                </div>
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
                 <div className={`${premiumInset} flex items-center gap-2 rounded-[12px] px-3 py-1.5`}>
@@ -581,24 +644,34 @@ export default async function MatchupsPage({
                 <div className={`${premiumInset} flex items-center rounded-[12px] px-3 py-1.5`}>
                   <span className="text-xs font-semibold text-[#F8FAFC]">
                     {worstMatchup && worstMatchup.matches >= 15
-                      ? "Keep logging"
+                      ? "Strong enough to review"
                       : "Keep building signal"}
                   </span>
                 </div>
               </div>
-              {worstMatchupCoachLabel ? (
-                <p className="mt-3 text-sm font-medium text-[#94A3B8]">
-                  {worstMatchupCoachLabel.action}
-                </p>
+              {worstMatchup ? (
+                <div className="mt-4 h-2 overflow-hidden rounded-full bg-[#1A2238]/70">
+                  <div
+                    className={`h-full rounded-full ${getSignalProgressClass(worstMatchup)} ${
+                      worstMatchup.matches < 6 ? "opacity-60" : ""
+                    }`}
+                    style={{ width: `${worstMatchup.winRateValue}%` }}
+                  />
+                </div>
               ) : null}
             </article>
 
-            <aside className={`p-4 ${glassPanel}`}>
+            <aside className={`${glassPanel} p-4`}>
               <div className="flex items-center gap-2">
                 <Zap className="size-5 text-[#F5C84C]" aria-hidden="true" />
-                <h2 className="text-lg font-bold text-[#F8FAFC]">
-                  What to test next
-                </h2>
+                <div>
+                  <h2 className="text-lg font-bold text-[#F8FAFC]">
+                    What to test next
+                  </h2>
+                  <p className="text-xs text-[#94A3B8]">
+                    Use the current read without overreacting.
+                  </p>
+                </div>
               </div>
               <div className="mt-4 grid gap-2">
                 {([
@@ -646,9 +719,34 @@ export default async function MatchupsPage({
           <SessionCoachPanel insight={sessionCoach} />
         ) : null}
 
-        <form action="/matchups" className={`p-3 ${glassPanel}`}>
-          <div className="grid gap-2 min-[430px]:grid-cols-2 lg:grid-cols-[1fr_1fr_1.5fr_1fr]">
-            <div className="flex flex-col gap-1.5">
+        <form action="/matchups" className={`${glassPanel} overflow-visible p-3 sm:p-4`}>
+          <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="text-sm font-semibold text-[#F8FAFC]">
+                  Filter matchup map
+                </p>
+                {activeFilterCount ? (
+                  <span className="rounded-full bg-[#4F8CFF]/14 px-2.5 py-1 text-xs font-semibold text-[#B8D1FF]">
+                    {activeFilterCount} active
+                  </span>
+                ) : null}
+              </div>
+              <p className="mt-0.5 text-xs text-[#94A3B8] sm:text-sm">
+                Scope: {matchupScopeLabel}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button type="submit" className={primaryButton}>
+                Apply filters
+              </button>
+              <Link href="/matchups" className={secondaryButton}>
+                Clear
+              </Link>
+            </div>
+          </div>
+          <div className="mt-3 grid gap-2.5 min-[430px]:grid-cols-2 lg:grid-cols-[1fr_1fr_1.5fr_1fr]">
+            <div className="flex flex-col gap-1">
               <label htmlFor="deck_id" className={label}>
                 Deck
               </label>
@@ -666,7 +764,7 @@ export default async function MatchupsPage({
                 ))}
               </select>
             </div>
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-1">
               <label htmlFor="deck_version_id" className={label}>
                 Version
               </label>
@@ -685,7 +783,7 @@ export default async function MatchupsPage({
                 ))}
               </select>
             </div>
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-1">
               <ArchetypePicker
                 id="opponent_archetype"
                 name="opponent_archetype"
@@ -695,9 +793,10 @@ export default async function MatchupsPage({
                 placeholder="All archetypes"
                 maxOptions={5}
                 listMaxHeightClassName="max-h-40"
+                suggestionsMode="popover"
               />
             </div>
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-1">
               <label htmlFor="sort" className={label}>
                 Sort
               </label>
@@ -714,23 +813,15 @@ export default async function MatchupsPage({
               </select>
             </div>
           </div>
-          <div className="mt-2 flex flex-wrap gap-2">
-            <button type="submit" className={primaryButton}>
-              Apply filters
-            </button>
-            <Link href="/matchups" className={secondaryButton}>
-              Clear
-            </Link>
-          </div>
           <details
-            className="mt-2"
+            className="mt-2.5 rounded-2xl bg-[#07111F]/45 px-3 py-2.5 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]"
             {...((params.start_date || params.end_date) ? { open: true } : {})}
           >
-            <summary className="cursor-pointer select-none text-xs font-semibold text-[#94A3B8]/72 hover:text-[#F8FAFC]">
+            <summary className="cursor-pointer select-none text-xs font-semibold uppercase tracking-[0.16em] text-[#94A3B8]/80 hover:text-[#F8FAFC]">
               Advanced filters
             </summary>
-            <div className="mt-3 grid gap-2 min-[430px]:grid-cols-2">
-              <div className="flex flex-col gap-1.5">
+            <div className="mt-2.5 grid gap-2 min-[430px]:grid-cols-2">
+              <div className="flex flex-col gap-1">
                 <label htmlFor="start_date" className={label}>From</label>
                 <input
                   id="start_date"
@@ -740,7 +831,7 @@ export default async function MatchupsPage({
                   className={inputH10}
                 />
               </div>
-              <div className="flex flex-col gap-1.5">
+              <div className="flex flex-col gap-1">
                 <label htmlFor="end_date" className={label}>To</label>
                 <input
                   id="end_date"
@@ -755,13 +846,14 @@ export default async function MatchupsPage({
         </form>
 
         {!hasMatches ? (
-          <section className={emptyCard}>
+          <section className={`${emptyCard} overflow-hidden`}>
+            <div className="mb-5 h-1.5 w-28 rounded-full bg-[linear-gradient(90deg,#F5C84C,#4F8CFF)]" />
             <h2 className="text-2xl font-semibold tracking-tight text-[#F8FAFC]">
-              No matches logged yet.
+              No matchup reads yet.
             </h2>
             <p className={`mt-3 max-w-xl ${sectionCopy}`}>
-              Matchup reports appear after you log games against a deck version.
-              Start by setting up a deck if you have not created one yet.
+              Log a few games to start building your matchup map. SixPrizer
+              needs clean match logs before it can show useful spread reads.
             </p>
             <Link
               href={hasAnyDeckVersions ? "/matches/new" : "/decks"}
@@ -771,7 +863,7 @@ export default async function MatchupsPage({
             </Link>
           </section>
         ) : hasFilteredMatches ? (
-          <section className={cardLarge}>
+          <section className={`${cardLarge} overflow-hidden`}>
             <div className="flex flex-col gap-1">
               <h2 className={sectionTitle}>
                 Matchup breakdown
@@ -787,32 +879,37 @@ export default async function MatchupsPage({
                 return (
                   <article
                     key={matchup.opponentArchetype}
-                    className={`${interactiveTile} rounded-[16px] p-4`}
+                    className={`${interactiveTile} rounded-[20px] p-4 sm:p-5`}
                   >
-                  <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px] lg:items-center">
-                    <div>
-                      <div className="flex flex-wrap items-center gap-3">
+                  <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_240px] lg:items-start">
+                    <div className="min-w-0">
+                      <div className="flex min-w-0 flex-wrap items-center gap-3">
                         <ArchetypeSprites
                           archetype={matchup.opponentArchetype}
                         />
-                        <h3 className="font-medium text-[#F8FAFC]">
-                          {matchup.opponentArchetype}
-                        </h3>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#94A3B8]">
+                            Opponent
+                          </p>
+                          <h3 className="truncate text-lg font-semibold text-[#F8FAFC] sm:text-xl">
+                            {matchup.opponentArchetype}
+                          </h3>
+                        </div>
                         <span
-                          className={`rounded-md px-2 py-1 text-xs font-semibold ${coachLabel.className}`}
+                          className={`rounded-full px-2.5 py-1 text-xs font-semibold ${coachLabel.className}`}
                         >
                           {coachLabel.label}
                         </span>
                         {sessionCoach?.archetype === matchup.opponentArchetype ? (
-                          <span className="rounded-md bg-[#F5C84C]/12 px-2 py-1 text-xs font-semibold text-[#F5C84C]">
+                          <span className="rounded-full bg-[#F5C84C]/12 px-2.5 py-1 text-xs font-semibold text-[#F5C84C]">
                             Focus area
                           </span>
                         ) : null}
                       </div>
-                      <div className="mt-3 h-2 rounded-full bg-[#1A2238]/70">
+                      <div className="mt-4 h-2.5 overflow-hidden rounded-full bg-[#1A2238]/70">
                         <div
-                          className={`h-2 rounded-full bg-[#4F8CFF] ${
-                            matchup.matches < 3 ? "opacity-45" : ""
+                          className={`h-full rounded-full ${getSignalProgressClass(matchup)} ${
+                            matchup.matches < 6 ? "opacity-55" : ""
                           }`}
                           style={{ width: `${matchup.winRateValue}%` }}
                         />
@@ -831,14 +928,43 @@ export default async function MatchupsPage({
                         <MatchStrip matches={matchup.recentMatches} />
                       </div>
                     </div>
-                    <div className="grid grid-cols-5 gap-2 text-sm">
-                      <p className="text-[#94A3B8]">{matchup.matches} played</p>
-                      <p className="text-[#94A3B8]">{matchup.wins} W</p>
-                      <p className="text-[#94A3B8]">{matchup.losses} L</p>
-                      <p className="text-[#94A3B8]">{matchup.ties} T</p>
-                      <p className="font-semibold text-[#F8FAFC]">
-                        {matchup.winRate}
-                      </p>
+                    <div className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-4 lg:grid-cols-2">
+                      <div className={`${premiumInset} rounded-[14px] px-3 py-2`}>
+                        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-[#94A3B8]">
+                          Games
+                        </p>
+                        <p className="mt-1 text-lg font-bold text-[#F8FAFC]">
+                          {matchup.matches}
+                        </p>
+                      </div>
+                      <div className={`${premiumInset} rounded-[14px] px-3 py-2`}>
+                        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-[#94A3B8]">
+                          Record
+                        </p>
+                        <p className="mt-1 text-lg font-bold text-[#F8FAFC]">
+                          {formatMatchRecord(matchup.wins, matchup.losses, matchup.ties)}
+                        </p>
+                      </div>
+                      <div className={`${premiumInset} rounded-[14px] px-3 py-2`}>
+                        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-[#94A3B8]">
+                          Win rate
+                        </p>
+                        <p className="mt-1 text-lg font-bold text-[#F8FAFC]">
+                          {matchup.winRate}
+                        </p>
+                      </div>
+                      <div className={`${premiumInset} rounded-[14px] px-3 py-2`}>
+                        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-[#94A3B8]">
+                          Sample
+                        </p>
+                        <p className="mt-1 text-sm font-bold text-[#F8FAFC]">
+                          {matchup.matches < 6
+                            ? "Needs more"
+                            : matchup.matches < 15
+                              ? "Early read"
+                              : "Useful read"}
+                        </p>
+                      </div>
                     </div>
                   </div>
 
@@ -911,13 +1037,13 @@ export default async function MatchupsPage({
             </div>
           </section>
         ) : (
-          <section className={emptyCard}>
+          <section className={`${emptyCard} overflow-hidden`}>
+            <div className="mb-5 h-1.5 w-24 rounded-full bg-[#4F8CFF]/60" />
             <h2 className="text-xl font-semibold text-[#F8FAFC]">
-              No matchups match these filters.
+              No matchups found for these filters.
             </h2>
             <p className={`mt-2 ${sectionCopy}`}>
-              Try a different deck, deck version, archetype, date range, or
-              clear the filters.
+              Clear filters or try a broader matchup search.
             </p>
             <Link
               href="/matchups"
