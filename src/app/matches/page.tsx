@@ -149,6 +149,31 @@ function notePreview(notes: string | null) {
   return compact.length > 72 ? `${compact.slice(0, 72)}...` : compact;
 }
 
+function getResultBadgeClass(result: MatchResult) {
+  if (result === "win") {
+    return "bg-emerald-500/15 text-emerald-200 shadow-[inset_0_0_0_1px_rgba(34,197,94,0.18)]";
+  }
+
+  if (result === "loss") {
+    return "bg-[#F43F5E]/15 text-rose-100 shadow-[inset_0_0_0_1px_rgba(244,63,94,0.18)]";
+  }
+
+  return "bg-[#4F8CFF]/13 text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.16)]";
+}
+
+function getCleanLogStatus(metadata: MatchMetadata) {
+  const hasQuality = Boolean(
+    metadata.start_quality &&
+      metadata.opening_hand_quality &&
+      metadata.sequencing_quality
+  );
+  const hasReason = Boolean(
+    metadata.issue_tags?.length || metadata.positive_tags?.length
+  );
+
+  return hasQuality && hasReason ? "clean" : "needs-detail";
+}
+
 function getDeckVersion(match: Pick<MatchRow, "deck_versions">) {
   return Array.isArray(match.deck_versions)
     ? match.deck_versions[0]
@@ -351,6 +376,30 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
   const pageHref = (page: number) => buildMatchesPageHref(params, page);
   const hasPreviousPage = currentPage > 1;
   const hasNextPage = currentPage < totalPages;
+  const filteredResultCounts = filteredMatchSummaries.reduce(
+    (counts, match) => {
+      counts[match.result] += 1;
+      return counts;
+    },
+    { win: 0, loss: 0, tie: 0 } as Record<MatchResult, number>
+  );
+  const filteredWinRate = totalFilteredMatches
+    ? Math.round((filteredResultCounts.win / totalFilteredMatches) * 100)
+    : 0;
+  const latestFilteredMatch = filteredMatchSummaries[0];
+  const activeFilterCount = [
+    selectedDeckId,
+    selectedVersionId,
+    selectedOpponentArchetype,
+    selectedResult,
+    params.start_date,
+    params.end_date,
+    missionOnly ? "mission" : "",
+  ].filter(Boolean).length;
+  const filterScopeLabel =
+    selectedVersion?.name ??
+    selectedDeck?.name ??
+    (activeFilterCount ? "Filtered view" : "All logged games");
 
   return (
     <main className={appShell}>
@@ -367,7 +416,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
         <AuthenticatedPageHeader
           current="matches"
           title="Match history"
-          subtitle="Browse, filter, edit, and remove logged matches."
+          subtitle="Review your logged games, spot patterns, and clean up entries."
           userEmail={user.email ?? "Unknown email"}
         />
 
@@ -377,8 +426,83 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
           </div>
         ) : null}
 
-        <form action="/matches" className={`p-3 ${glassPanel}`}>
-          <div className="grid gap-2 min-[430px]:grid-cols-2 lg:grid-cols-[1fr_1fr_1.5fr_1fr]">
+        <section className={`${glassPanel} overflow-hidden p-4 sm:p-5`}>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className={`${premiumInset} px-3 py-3`}>
+              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#94A3B8]">
+                In view
+              </p>
+              <p className="mt-1 text-2xl font-semibold text-[#F8FAFC]">
+                {totalFilteredMatches}
+              </p>
+              <p className="mt-1 text-xs text-[#94A3B8]">
+                {filterScopeLabel}
+              </p>
+            </div>
+            <div className={`${premiumInset} px-3 py-3`}>
+              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#94A3B8]">
+                Record
+              </p>
+              <p className="mt-1 text-2xl font-semibold text-[#F8FAFC]">
+                {filteredResultCounts.win}-{filteredResultCounts.loss}
+                {filteredResultCounts.tie ? `-${filteredResultCounts.tie}` : ""}
+              </p>
+              <p className="mt-1 text-xs text-[#94A3B8]">
+                {totalFilteredMatches ? `${filteredWinRate}% win rate` : "No games yet"}
+              </p>
+            </div>
+            <div className={`${premiumInset} px-3 py-3`}>
+              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#94A3B8]">
+                Latest log
+              </p>
+              <p className="mt-1 text-lg font-semibold text-[#F8FAFC]">
+                {latestFilteredMatch ? formatDate(latestFilteredMatch.played_at) : "None yet"}
+              </p>
+              <p className="mt-1 text-xs text-[#94A3B8]">
+                Most recent match in this view
+              </p>
+            </div>
+            <div className={`${premiumInset} px-3 py-3`}>
+              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#94A3B8]">
+                Filters
+              </p>
+              <p className="mt-1 text-2xl font-semibold text-[#F8FAFC]">
+                {activeFilterCount}
+              </p>
+              <p className="mt-1 text-xs text-[#94A3B8]">
+                {activeFilterCount ? "Filtered testing archive" : "Full archive"}
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <form action="/matches" className={`${glassPanel} p-4 sm:p-5`}>
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="text-sm font-semibold text-[#F8FAFC]">
+                  Filter archive
+                </p>
+                {activeFilterCount ? (
+                  <span className="rounded-full bg-[#4F8CFF]/14 px-2.5 py-1 text-xs font-semibold text-[#B8D1FF]">
+                    {activeFilterCount} active
+                  </span>
+                ) : null}
+              </div>
+              <p className="mt-1 text-sm text-[#94A3B8]">
+                Narrow the list without changing your logged data.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button type="submit" className={primaryButton}>
+                Apply filters
+              </button>
+              <Link href="/matches" className={secondaryButton}>
+                Clear
+              </Link>
+            </div>
+          </div>
+          <div className="mt-4 grid gap-3 min-[430px]:grid-cols-2 lg:grid-cols-[1fr_1fr_1.5fr_1fr]">
             <div className="flex flex-col gap-1.5">
               <label htmlFor="deck_id" className={label}>
                 Deck
@@ -445,19 +569,11 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
               </select>
             </div>
           </div>
-          <div className="mt-2 flex flex-wrap gap-2">
-            <button type="submit" className={primaryButton}>
-              Apply filters
-            </button>
-            <Link href="/matches" className={secondaryButton}>
-              Clear
-            </Link>
-          </div>
           <details
-            className="mt-2"
+            className="mt-3 rounded-2xl bg-[#07111F]/45 px-3 py-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]"
             {...((params.start_date || params.end_date || missionOnly) ? { open: true } : {})}
           >
-            <summary className="cursor-pointer select-none text-xs font-semibold text-[#94A3B8]/72 hover:text-[#F8FAFC]">
+            <summary className="cursor-pointer select-none text-xs font-semibold uppercase tracking-[0.16em] text-[#94A3B8]/80 hover:text-[#F8FAFC]">
               Advanced filters
             </summary>
             <div className="mt-3 grid gap-2 min-[430px]:grid-cols-2 lg:grid-cols-3">
@@ -498,13 +614,14 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
         </form>
 
         {!coachMatchRows.length ? (
-          <section className={emptyCard}>
+          <section className={`${emptyCard} overflow-hidden`}>
+            <div className="mb-5 h-1.5 w-28 rounded-full bg-[linear-gradient(90deg,#F5C84C,#4F8CFF)]" />
             <h2 className="text-2xl font-semibold tracking-tight text-[#F8FAFC]">
               No matches logged yet.
             </h2>
             <p className={`mt-3 max-w-xl ${sectionCopy}`}>
-              Match history becomes useful once games are logged. SixPrizer needs
-              one deck version first so each game belongs to a real test build.
+              Log your first match to start building matchup signal. SixPrizer
+              turns clean logs into review prompts, matchup reads, and Deck Lab evidence.
             </p>
             <Link
               href={hasAnyDeckVersions ? "/matches/new" : "/decks"}
@@ -514,11 +631,11 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
             </Link>
           </section>
         ) : totalFilteredMatches ? (
-          <section className={cardLarge}>
+          <section className={`${cardLarge} overflow-hidden`}>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div className="flex flex-col gap-1">
               <h2 className={sectionTitle}>
-                Match History
+                Testing archive
               </h2>
               <p className={sectionCopy}>
                 {totalFilteredMatches <= MATCHES_PAGE_SIZE
@@ -558,6 +675,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                 const deckVersion = getDeckVersion(match);
                 const tags = match.match_tags?.map((tag) => tag.tag) ?? [];
                 const metadata = parseMatchMetadata(match.metadata);
+                const cleanLogStatus = getCleanLogStatus(metadata);
                 const removeMatch = deleteMatch.bind(null, match.id);
                 const countsTowardMission = matchCountsTowardMission(
                   match,
@@ -571,57 +689,69 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                 return (
                   <article
                     key={match.id}
-                    className={`${interactiveTile} rounded-[16px] p-4`}
+                    className={`${interactiveTile} rounded-[20px] p-4 sm:p-5`}
                   >
-                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
-                          <p className="text-sm font-medium text-[#94A3B8]">
-                            {formatDate(match.played_at)}
-                          </p>
                           <span
-                            className={`rounded-full px-2 py-1 text-xs font-medium uppercase ${
-                              match.result === "win"
-                                ? "bg-emerald-500/15 text-emerald-300"
-                                : match.result === "loss"
-                                  ? "bg-[#F43F5E]/15 text-rose-200"
-                                  : "bg-slate-400/15 text-slate-200"
-                            }`}
+                            className={`rounded-full px-2.5 py-1 text-xs font-semibold uppercase ${getResultBadgeClass(match.result)}`}
                           >
                             {getMatchResultLabel(match.result)}
                           </span>
-                          {countsTowardMission ? (
-                            <span className="rounded-full bg-[#F5C84C]/14 px-2 py-1 text-xs font-semibold text-[#F5C84C]">
-                              Focus progress
-                            </span>
-                          ) : null}
-                          {countsTowardContext ? (
-                            <span className="rounded-full bg-[#4F8CFF]/14 px-2 py-1 text-xs font-semibold text-[#B8D1FF]">
-                              Focus evidence
-                            </span>
-                          ) : null}
-                        </div>
-                        <div className="mt-2 flex items-center gap-3">
-                          <ArchetypeSprites archetype={match.opponent_archetype} />
-                          <h3 className="min-w-0 text-lg font-semibold text-[#F8FAFC]">
-                            {match.opponent_archetype}
-                            {match.opponent_variant
-                              ? ` - ${match.opponent_variant}`
-                              : ""}
-                          </h3>
-                        </div>
-                        <p className="mt-1 text-sm text-[#94A3B8]">
-                          {getDeckName(match)} -{" "}
-                          {deckVersion?.name ?? "Unknown version"}
-                        </p>
-                        <div className="mt-3 flex flex-wrap gap-2 text-xs text-[#94A3B8]">
+                          <span className={subtlePill}>
+                            {formatDate(match.played_at)}
+                          </span>
                           <span className={subtlePill}>
                             {match.went_first === null
-                              ? "Turn order unknown"
+                              ? "Turn unknown"
                               : match.went_first
                                 ? "Went first"
                                 : "Went second"}
                           </span>
+                          <span
+                            className={
+                              cleanLogStatus === "clean"
+                                ? "rounded-full bg-[#F5C84C]/14 px-2.5 py-1 text-xs font-semibold text-[#FFE28A]"
+                                : "rounded-full bg-[#94A3B8]/10 px-2.5 py-1 text-xs font-semibold text-[#C6D0DE]"
+                            }
+                          >
+                            {cleanLogStatus === "clean" ? "Clean log" : "Needs detail"}
+                          </span>
+                          {countsTowardMission ? (
+                            <span className="rounded-full bg-[#F5C84C]/14 px-2.5 py-1 text-xs font-semibold text-[#F5C84C]">
+                              Focus progress
+                            </span>
+                          ) : null}
+                          {countsTowardContext ? (
+                            <span className="rounded-full bg-[#4F8CFF]/14 px-2.5 py-1 text-xs font-semibold text-[#B8D1FF]">
+                              Focus evidence
+                            </span>
+                          ) : null}
+                        </div>
+                        <div className="mt-3 flex min-w-0 items-center gap-3">
+                          <ArchetypeSprites archetype={match.opponent_archetype} />
+                          <div className="min-w-0">
+                            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#94A3B8]">
+                              Opponent
+                            </p>
+                            <h3 className="min-w-0 truncate text-lg font-semibold text-[#F8FAFC] sm:text-xl">
+                              {match.opponent_archetype}
+                              {match.opponent_variant
+                                ? ` - ${match.opponent_variant}`
+                                : ""}
+                            </h3>
+                          </div>
+                        </div>
+                        <div className="mt-3 rounded-2xl bg-[#07111F]/45 px-3 py-2.5 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#94A3B8]">
+                            Test build
+                          </p>
+                          <p className="mt-1 truncate text-sm font-semibold text-[#F8FAFC]">
+                            {getDeckName(match)} · {deckVersion?.name ?? "Unknown version"}
+                          </p>
+                        </div>
+                        <div className="mt-3 flex flex-wrap gap-2 text-xs text-[#94A3B8]">
                           <span className={`${subtlePill} capitalize`}>
                             {match.event_type ?? "No event"}
                           </span>
@@ -722,14 +852,20 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                             ) : null}
                           </div>
                         ) : null}
-                        <p className={`mt-3 ${sectionCopy}`}>
-                          {notePreview(match.notes)}
-                        </p>
+                        {match.notes ? (
+                          <p className={`mt-3 ${sectionCopy}`}>
+                            {notePreview(match.notes)}
+                          </p>
+                        ) : (
+                          <p className="mt-3 text-sm text-[#94A3B8]/58">
+                            No notes added.
+                          </p>
+                        )}
                       </div>
-                      <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-row lg:min-w-36 lg:flex-col">
+                      <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-row lg:min-w-32 lg:flex-col">
                         <Link
                           href={`/matches/${match.id}/edit`}
-                          className={primaryButton}
+                          className={secondaryButton}
                         >
                           Edit
                         </Link>
@@ -776,12 +912,13 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
             ) : null}
           </section>
         ) : (
-          <section className={emptyCard}>
+          <section className={`${emptyCard} overflow-hidden`}>
+            <div className="mb-5 h-1.5 w-24 rounded-full bg-[#4F8CFF]/60" />
             <h2 className="text-xl font-semibold text-[#F8FAFC]">
-              No matches match these filters.
+              No matches found for these filters.
             </h2>
             <p className={`mt-2 ${sectionCopy}`}>
-              Try a different deck, version, opponent, result, or date range.
+              Clear filters or try a broader search to inspect more games.
             </p>
             <Link
               href="/matches"
