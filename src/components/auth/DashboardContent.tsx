@@ -312,7 +312,7 @@ function MissionHeroCard({
     primaryLabel.trim().toLowerCase() !== "open review";
 
   return (
-    <section className={`grid gap-3 p-3 sm:gap-4 sm:p-5 xl:grid-cols-[minmax(0,1.5fr)_280px] ${missionHeroCard} bg-[linear-gradient(180deg,rgba(14,24,42,0.94),rgba(8,17,31,0.90))]`}>
+    <section className={`grid gap-3 p-3 sm:gap-4 sm:p-5 xl:grid-cols-[minmax(0,1.5fr)_280px] xl:items-start ${missionHeroCard} bg-[radial-gradient(circle_at_12%_0%,rgba(79,140,255,0.16),transparent_34%),linear-gradient(180deg,rgba(14,24,42,0.94),rgba(8,17,31,0.90))]`}>
       <div className="min-w-0">
         <div className="flex flex-wrap items-start gap-1.5 sm:gap-2">
           <span className="inline-flex size-8 items-center justify-center rounded-xl bg-[#F5C84C]/12 text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.18)] sm:size-10 sm:rounded-2xl">
@@ -361,6 +361,25 @@ function MissionHeroCard({
             value={badge.label}
             tone="green"
           />
+        </div>
+
+        <div className="mt-3 grid gap-2 sm:mt-4 sm:grid-cols-2">
+          <div className={`${premiumInset} p-3`}>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
+              What to log next
+            </p>
+            <p className="mt-1.5 text-sm font-semibold leading-5 text-[#F8FAFC]">
+              {insight.exactTest}
+            </p>
+          </div>
+          <div className={`${premiumInset} p-3`}>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#F5C84C]">
+              Why it matters
+            </p>
+            <p className="mt-1.5 text-sm leading-5 text-[#D6E0F0]">
+              {insight.whyThisMatters}
+            </p>
+          </div>
         </div>
 
         <details className="mt-3 sm:mt-4">
@@ -724,10 +743,10 @@ function CurrentDeckSummaryCard({
     : "Showing insights for this deck";
 
   return (
-    <section className={`${glassPanel} overflow-hidden p-4 sm:p-5`}>
+    <section className={`${glassPanel} overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(79,140,255,0.14),transparent_34%),linear-gradient(180deg,rgba(12,22,40,0.92),rgba(7,16,30,0.84))] p-4 sm:p-5`}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
         <div className="flex min-w-0 items-start gap-3.5 sm:gap-5">
-          <span className="inline-flex shrink-0 rounded-[22px] bg-[radial-gradient(circle_at_top,rgba(79,140,255,0.28),rgba(11,16,32,0.16)_62%,transparent_100%)] p-3.5 shadow-[0_18px_38px_rgba(0,0,0,0.20),inset_0_0_0_1px_rgba(148,163,184,0.10)]">
+          <span className="inline-flex shrink-0 rounded-[24px] bg-[radial-gradient(circle_at_top,rgba(79,140,255,0.34),rgba(11,16,32,0.18)_62%,transparent_100%)] p-3.5 shadow-[0_20px_42px_rgba(0,0,0,0.24),0_0_28px_rgba(79,140,255,0.08),inset_0_0_0_1px_rgba(148,163,184,0.12)]">
             <ArchetypeSprites
               archetype={isAllDecks ? null : archetype}
               size="lg"
@@ -754,11 +773,16 @@ function CurrentDeckSummaryCard({
             <p className="mt-1.5 text-sm leading-5 text-[#94A3B8]/72">
               {detail}
             </p>
+            {!isAllDecks ? (
+              <p className="mt-2 text-xs font-medium text-[#4F8CFF]/86">
+                Dashboard reads are scoped to this deck.
+              </p>
+            ) : null}
           </div>
         </div>
 
         <div className="flex shrink-0 flex-wrap items-center gap-2 sm:max-w-[240px] sm:justify-end">
-          <span className={`${premiumInset} inline-flex rounded-full px-3 py-1.5 text-xs font-semibold text-[#DCE8FF]`}>
+          <span className={`${premiumInset} inline-flex rounded-full px-3 py-1.5 text-xs font-semibold text-[#DCE8FF] shadow-[0_10px_24px_rgba(0,0,0,0.12)]`}>
             {scopeIndicator}
           </span>
         </div>
