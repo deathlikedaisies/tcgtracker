@@ -22,6 +22,13 @@ export const MATCH_ISSUE_TAG_OPTIONS = [
   "misplay",
   "matchup knowledge",
   "unlucky draws",
+  "Behind early",
+  "Slow start",
+  "Was donked",
+  "Dead drew",
+  "Poor prizes",
+  "Lucky",
+  "Quick game",
 ] as const;
 
 export const MATCH_POSITIVE_TAG_OPTIONS = [
@@ -32,6 +39,10 @@ export const MATCH_POSITIVE_TAG_OPTIONS = [
   "opponent bricked",
   "strong recovery",
   "favorable matchup",
+  "Ahead early",
+  "Lucky",
+  "Donked",
+  "Quick game",
 ] as const;
 
 const LEGACY_TAG_MAP: Partial<Record<string, string[]>> = {
@@ -43,6 +54,11 @@ const LEGACY_TAG_MAP: Partial<Record<string, string[]>> = {
   misplay: ["misplay"],
   "matchup knowledge": ["bad matchup"],
   "unlucky draws": ["dead draw"],
+  "Behind early": ["tempo loss"],
+  "Slow start": ["setup issue"],
+  "Was donked": ["setup issue"],
+  "Dead drew": ["dead draw"],
+  "Poor prizes": ["prize plan"],
 };
 
 export function parseSelectedTags(values: FormDataEntryValue[]) {

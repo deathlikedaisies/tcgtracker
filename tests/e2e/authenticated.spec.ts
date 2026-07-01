@@ -2,6 +2,11 @@ import { expect, test } from "@playwright/test";
 import { login, getMissingAuthEnvReason } from "./helpers/auth";
 import { expectHeadingVisible, expectNoAppError } from "./helpers/assertions";
 import { buildPostSaveFocusSummary } from "@/lib/match-log-reward";
+import {
+  MATCH_ISSUE_TAG_OPTIONS,
+  MATCH_POSITIVE_TAG_OPTIONS,
+  flattenStructuredMatchTags,
+} from "@/lib/match-options";
 import { resolveCurrentDeckScope } from "@/lib/current-deck-scope";
 import { buildDeckLabSummary } from "@/lib/deck-lab";
 import type { SessionCoachInsight } from "@/lib/session-coach";
@@ -94,6 +99,41 @@ test.describe("match log reward helpers", () => {
     expect(secondGame.missionCopy).toContain("3 more games");
     expect(secondGame.signalLine).toContain("2/5 games logged");
     expect(secondGame.signalLine).not.toContain("Logged games: 2/5");
+  });
+});
+
+test.describe("match log tag options", () => {
+  test("include beta optional tags and preserve legacy broad tags", async () => {
+    expect(MATCH_POSITIVE_TAG_OPTIONS).toEqual(
+      expect.arrayContaining(["Ahead early", "Lucky", "Donked", "Quick game"])
+    );
+    expect(MATCH_ISSUE_TAG_OPTIONS).toEqual(
+      expect.arrayContaining([
+        "Behind early",
+        "Slow start",
+        "Was donked",
+        "Dead drew",
+        "Poor prizes",
+        "Lucky",
+        "Quick game",
+      ])
+    );
+    expect(
+      flattenStructuredMatchTags({
+        issueTags: ["Slow start", "Dead drew", "Poor prizes"],
+        positiveTags: ["Ahead early"],
+      })
+    ).toEqual(
+      expect.arrayContaining([
+        "Slow start",
+        "setup issue",
+        "Dead drew",
+        "dead draw",
+        "Poor prizes",
+        "prize plan",
+        "Ahead early",
+      ])
+    );
   });
 });
 
@@ -1142,6 +1182,55 @@ test.describe("authenticated routes", () => {
 
     await page.waitForURL(/\/matches\/new\?success=1/, { timeout: 30000 });
     await expect(page.getByTestId("post-save-reward")).toContainText(/Logged\./i);
+    await expectNoAppError(page);
+  });
+
+  test("/matches/new saves and displays new optional issue tags", async ({
+    page,
+  }) => {
+    await page.goto("/matches/new");
+
+    await expectHeadingVisible(page, "Log a game");
+    const continueButton = page.getByRole("button", { name: "Continue" });
+
+    const opponentSearch = page.getByLabel("Opponent deck");
+    await opponentSearch.fill("Mega");
+    await page.getByRole("button", { name: /Mega/i }).first().click();
+    await expect(continueButton).toBeEnabled();
+    await continueButton.click();
+
+    await page.getByRole("button", { name: "Loss" }).click();
+    await page.getByRole("button", { name: "Continue" }).click();
+
+    await page.getByRole("button", { name: "First" }).click();
+    await page.getByRole("button", { name: "Continue" }).click();
+
+    const startFieldset = page
+      .locator("fieldset")
+      .filter({ has: page.locator("legend", { hasText: /^Start$/ }) });
+    const openingFieldset = page
+      .locator("fieldset")
+      .filter({ has: page.locator("legend", { hasText: /^Opening hand$/ }) });
+    const sequencingFieldset = page
+      .locator("fieldset")
+      .filter({ has: page.locator("legend", { hasText: /^Sequencing$/ }) });
+
+    await startFieldset.getByRole("button", { name: "Bad" }).click();
+    await openingFieldset.getByRole("button", { name: "Bad" }).click();
+    await sequencingFieldset.getByRole("button", { name: "Okay" }).click();
+    await page.getByRole("button", { name: "Continue" }).click();
+
+    await page.getByRole("button", { name: "More tags" }).click();
+    await page.getByRole("button", { name: "Slow start" }).click();
+    await page.getByRole("button", { name: "Dead drew" }).click();
+    await page.getByRole("button", { name: "Poor prizes" }).click();
+    await page.getByRole("button", { name: "Save now" }).first().click();
+
+    await page.waitForURL(/\/matches\/new\?success=1/, { timeout: 30000 });
+    await page.goto("/matches");
+    await expect(page.locator("body")).toContainText("Slow start");
+    await expect(page.locator("body")).toContainText("Dead drew");
+    await expect(page.locator("body")).toContainText("Poor prizes");
     await expectNoAppError(page);
   });
 
