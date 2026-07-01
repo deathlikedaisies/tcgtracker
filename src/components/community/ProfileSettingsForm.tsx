@@ -430,7 +430,7 @@ export function ProfileSettingsForm({
                   }))
                 }
                 className={inputH10}
-                placeholder="DommitronNL"
+                placeholder="Your TCG Live username"
               />
               <FieldHint>
                 Used to autofill your name on the Log game page when importing TCG Live battle logs.

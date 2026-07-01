@@ -1155,6 +1155,10 @@ test.describe("authenticated routes", () => {
     await expect(
       page.getByLabel("Remember this name on my profile")
     ).toBeVisible();
+    await expect(page.getByLabel("Your TCG Live name")).toHaveAttribute(
+      "placeholder",
+      "Your TCG Live username"
+    );
     await page.getByLabel("Your TCG Live name").fill("DommitronNL");
     await page
       .getByLabel("TCG Live battle log")
@@ -1295,6 +1299,10 @@ test.describe("authenticated routes", () => {
     await expect(page.getByLabel("Country")).toHaveCount(1);
     await expect(page.getByLabel("Favorite deck")).toHaveCount(1);
     await expect(page.getByLabel("Pokemon TCG Live username")).toHaveCount(1);
+    await expect(page.getByLabel("Pokemon TCG Live username")).toHaveAttribute(
+      "placeholder",
+      "Your TCG Live username"
+    );
     await expect(page.getByLabel("Avatar URL")).toHaveCount(0);
     await expect(page.locator("body")).not.toContainText(/Avatar URL/i);
     await expect(page.locator("body")).not.toContainText(/^Handle$/m);

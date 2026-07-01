@@ -1793,7 +1793,7 @@ export function MatchLogForm({
                                 setTcgLivePlayerNameError("");
                               }
                             }}
-                            placeholder="DommitronNL"
+                            placeholder="Your TCG Live username"
                             className={`${inputH11} ${
                               tcgLivePlayerNameError
                                 ? "border-rose-400/70 shadow-[inset_0_0_0_1px_rgba(244,63,94,0.16)]"
