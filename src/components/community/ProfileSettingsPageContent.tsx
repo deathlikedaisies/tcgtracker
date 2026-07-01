@@ -30,7 +30,7 @@ type ProfileSettingsPageContentProps = {
 };
 
 function getInitial(value: string) {
-  return value.trim().charAt(0).toUpperCase() || "S";
+  return value.trim().charAt(0).toUpperCase() || "?";
 }
 
 function visibilityLabel(visibility: ProfileRecord["profile_visibility"]) {

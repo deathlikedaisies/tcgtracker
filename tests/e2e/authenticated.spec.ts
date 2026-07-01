@@ -1285,12 +1285,18 @@ test.describe("authenticated routes", () => {
     const expectedOrigin = getExpectedOrigin(page);
 
     await expectHeadingVisible(page, /Profile|Create your profile/i);
+    await expect(page.getByLabel("Display name")).toHaveAttribute(
+      "placeholder",
+      "Your player name"
+    );
     await expect(page.getByLabel("Handle")).toHaveCount(0);
     await expect(page.getByLabel("Main deck")).toHaveCount(0);
     await expect(page.getByLabel("Current testing focus")).toHaveCount(0);
     await expect(page.getByLabel("Country")).toHaveCount(1);
     await expect(page.getByLabel("Favorite deck")).toHaveCount(1);
     await expect(page.getByLabel("Pokemon TCG Live username")).toHaveCount(1);
+    await expect(page.getByLabel("Avatar URL")).toHaveCount(0);
+    await expect(page.locator("body")).not.toContainText(/Avatar URL/i);
     await expect(page.locator("body")).not.toContainText(/^Handle$/m);
     await expect(page.locator("body")).toContainText(/Public profile URL/i);
     await expect(page.locator("body")).toContainText(/https?:\/\/[^\s]+\/u\/domz_test/i);
@@ -1330,7 +1336,7 @@ test.describe("authenticated routes", () => {
     await page.getByRole("button", { name: "Save feedback" }).click();
 
     await expect(page.locator("body")).toContainText(
-      "Thanks. Your feedback was saved."
+      "Feedback saved. Thanks, this helps improve the beta."
     );
     await expect(page.getByRole("textbox", { name: "Message" })).toHaveValue("");
     await expectNoAppError(page);

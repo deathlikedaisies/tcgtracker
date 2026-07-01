@@ -133,7 +133,7 @@ function formatAnalyticsVisibility(value: AnalyticsVisibility) {
 }
 
 function getInitial(value: string) {
-  return value.trim().charAt(0).toUpperCase() || "S";
+  return value.trim().charAt(0).toUpperCase() || "?";
 }
 
 function SaveProfileButton({ mode }: { mode: "setup" | "settings" }) {
@@ -319,7 +319,7 @@ export function ProfileSettingsForm({
                     }))
                   }
                   className={inputH10}
-                  placeholder="Dom Zimmerman"
+                  placeholder="Your player name"
                 />
               </div>
               <div className="grid gap-2">
