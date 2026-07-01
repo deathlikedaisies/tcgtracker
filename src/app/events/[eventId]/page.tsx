@@ -21,7 +21,11 @@ import {
   getEventRecord,
   parseEventTags,
 } from "@/lib/events";
-import { getMatchResultLabel, type MatchResult } from "@/lib/match-types";
+import {
+  getMatchResultLabel,
+  isMatchResult,
+  type MatchResult,
+} from "@/lib/match-types";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 
 type EventDetailPageProps = {
@@ -32,9 +36,21 @@ type EventDetailPageProps = {
 
 type EventRoundRow = {
   id: string;
+  round_number: number | null;
+  opponent_deck_name: string | null;
+  result: string | null;
+  match_score: string | null;
+  went_first: boolean | null;
+  tags: unknown;
+  notes: string | null;
+  match_id: string | null;
+};
+
+type EventRoundView = {
+  id: string;
   round_number: number;
   opponent_deck_name: string | null;
-  result: MatchResult;
+  result: MatchResult | null;
   match_score: string | null;
   went_first: boolean | null;
   tags: unknown;
@@ -58,8 +74,19 @@ type EventRow = {
   event_rounds: EventRoundRow[] | null;
 };
 
-function one<T>(value: T | T[] | null | undefined) {
-  return Array.isArray(value) ? value[0] : value ?? null;
+function one<T>(value: T | T[] | null | undefined): T | null {
+  return (Array.isArray(value) ? value[0] : value) ?? null;
+}
+
+function normalizeEventRound(
+  round: EventRoundRow,
+  index: number
+): EventRoundView {
+  return {
+    ...round,
+    round_number: round.round_number ?? index + 1,
+    result: isMatchResult(round.result) ? round.result : null,
+  };
 }
 
 function formatDate(value: string) {
@@ -70,7 +97,7 @@ function formatDate(value: string) {
   }).format(new Date(`${value}T12:00:00`));
 }
 
-function getResultBadgeClass(result: MatchResult) {
+function getResultBadgeClass(result: MatchResult | null) {
   if (result === "win") {
     return "bg-emerald-500/15 text-emerald-200 shadow-[inset_0_0_0_1px_rgba(34,197,94,0.18)]";
   }
@@ -80,6 +107,10 @@ function getResultBadgeClass(result: MatchResult) {
   }
 
   return "bg-[#4F8CFF]/13 text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.16)]";
+}
+
+function getRoundResultLabel(result: MatchResult | null) {
+  return result ? getMatchResultLabel(result) : "Unknown";
 }
 
 function turnOrderLabel(value: boolean | null) {
@@ -114,15 +145,20 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
   const event = data as unknown as EventRow;
   const deck = one(event.decks);
   const version = one(event.deck_versions);
-  const rounds = [...(event.event_rounds ?? [])].sort(
-    (first, second) => first.round_number - second.round_number
-  );
-  const summaryRounds = rounds.map((round) => ({
-    opponent_deck_name: round.opponent_deck_name,
-    result: round.result,
-    went_first: round.went_first,
-    tags: parseEventTags(round.tags),
-  }));
+  const rounds = [...(event.event_rounds ?? [])]
+    .map(normalizeEventRound)
+    .sort((first, second) => first.round_number - second.round_number);
+  const summaryRounds = rounds
+    .filter(
+      (round): round is EventRoundView & { result: MatchResult } =>
+        round.result !== null
+    )
+    .map((round) => ({
+      opponent_deck_name: round.opponent_deck_name,
+      result: round.result,
+      went_first: round.went_first,
+      tags: parseEventTags(round.tags),
+    }));
   const review = buildEventReviewSummary({
     deckName: deck?.name,
     rounds: summaryRounds,
@@ -280,11 +316,11 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                           R{round.round_number}
                         </td>
                         <td className="px-4 py-3 text-[#F8FAFC]">
-                          {round.opponent_deck_name}
+                          {round.opponent_deck_name ?? "Unknown matchup"}
                         </td>
                         <td className="px-4 py-3">
                           <span className={`rounded-full px-2.5 py-1 text-xs font-semibold uppercase ${getResultBadgeClass(round.result)}`}>
-                            {getMatchResultLabel(round.result)}
+                            {getRoundResultLabel(round.result)}
                           </span>
                         </td>
                         <td className="px-4 py-3 text-[#94A3B8]">
@@ -325,12 +361,12 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                     <div className="flex flex-wrap items-center gap-2">
                       <span className={subtlePill}>Round {round.round_number}</span>
                       <span className={`rounded-full px-2.5 py-1 text-xs font-semibold uppercase ${getResultBadgeClass(round.result)}`}>
-                        {getMatchResultLabel(round.result)}
+                        {getRoundResultLabel(round.result)}
                       </span>
                       <span className={subtlePill}>{turnOrderLabel(round.went_first)}</span>
                     </div>
                     <h3 className="mt-3 text-lg font-semibold text-[#F8FAFC]">
-                      {round.opponent_deck_name}
+                      {round.opponent_deck_name ?? "Unknown matchup"}
                     </h3>
                     <p className="mt-1 text-sm text-[#94A3B8]">
                       Score: {round.match_score ?? "Not logged"}

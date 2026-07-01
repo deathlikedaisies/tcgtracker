@@ -1,30 +1,22 @@
 import Link from "next/link";
 import { navItemActive } from "@/components/brand-styles";
-
-type AppNavSection =
-  | "dashboard"
-  | "decks"
-  | "matches"
-  | "log"
-  | "matchups"
-  | "review"
-  | "settings"
-  | "feedback";
+import type { AppSection } from "@/lib/app-navigation";
 
 type AppNavProps = {
-  current: AppNavSection;
+  current: AppSection;
 };
 
 const navItems: {
   href: string;
   label: string;
   mobileLabel: string;
-  section: AppNavSection;
+  section: AppSection;
 }[] = [
   { href: "/dashboard", label: "Overview", mobileLabel: "Overview", section: "dashboard" },
   { href: "/matches/new", label: "Log game", mobileLabel: "Log game", section: "log" },
   { href: "/review", label: "Review", mobileLabel: "Review", section: "review" },
   { href: "/matches", label: "Match history", mobileLabel: "Match history", section: "matches" },
+  { href: "/events", label: "Events", mobileLabel: "Events", section: "events" },
   { href: "/decks", label: "Decks", mobileLabel: "Decks", section: "decks" },
   { href: "/matchups", label: "Matchups", mobileLabel: "Matchups", section: "matchups" },
   { href: "/profile", label: "Profile", mobileLabel: "Profile", section: "settings" },

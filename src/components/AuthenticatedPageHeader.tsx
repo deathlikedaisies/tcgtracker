@@ -4,19 +4,10 @@ import { AppNav } from "@/components/AppNav";
 import { SixPrizerLogo } from "@/components/SixPrizerLogo";
 import { logoOnDark, pageHeaderCard } from "@/components/brand-styles";
 import { SignOutButton } from "@/components/SignOutButton";
-
-type AppNavSection =
-  | "dashboard"
-  | "decks"
-  | "matches"
-  | "log"
-  | "matchups"
-  | "review"
-  | "settings"
-  | "feedback";
+import type { AppSection } from "@/lib/app-navigation";
 
 type AuthenticatedPageHeaderProps = {
-  current: AppNavSection;
+  current: AppSection;
   title: string;
   subtitle?: string;
   eyebrow?: string;

@@ -2,6 +2,7 @@ import Link from "next/link";
 import {
   BarChart3,
   ClipboardList,
+  CalendarDays,
   Gauge,
   Layers3,
   MessageSquareWarning,
@@ -18,16 +19,7 @@ import {
   navRailPanel,
   premiumInset,
 } from "@/components/brand-styles";
-
-type AppSection =
-  | "dashboard"
-  | "decks"
-  | "matches"
-  | "log"
-  | "matchups"
-  | "review"
-  | "settings"
-  | "feedback";
+import type { AppSection } from "@/lib/app-navigation";
 
 type AppSidebarProps = {
   current: AppSection;
@@ -44,6 +36,7 @@ const navItems = [
   { href: "/matches/new", label: "Log game", section: "log" as const, icon: PlusCircle },
   { href: "/review", label: "Review", section: "review" as const, icon: Target },
   { href: "/matches", label: "Match history", section: "matches" as const, icon: ClipboardList },
+  { href: "/events", label: "Events", section: "events" as const, icon: CalendarDays },
   { href: "/decks", label: "Decks", section: "decks" as const, icon: Layers3 },
   { href: "/matchups", label: "Matchups", section: "matchups" as const, icon: BarChart3 },
   { href: "/profile", label: "Profile", section: "settings" as const, icon: Settings2 },
