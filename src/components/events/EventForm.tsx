@@ -74,6 +74,10 @@ const turnOrderOptions = [
   { value: "false", label: "Second" },
 ] as const;
 
+const presetScoreOptions = MATCH_SCORE_OPTIONS.filter(
+  (score) => score !== "Other"
+);
+
 function SubmitButton() {
   const { pending } = useFormStatus();
 
@@ -121,6 +125,31 @@ function getRecord(rounds: RoundDraft[]) {
 function formatRecord(rounds: RoundDraft[]) {
   const record = getRecord(rounds);
   return `${record.wins}-${record.losses}-${record.ties}`;
+}
+
+function getResultLetter(result: RoundDraft["result"]) {
+  if (result === "win") return "W";
+  if (result === "loss") return "L";
+  return "T";
+}
+
+function isPresetScore(score: string) {
+  return presetScoreOptions.includes(score as (typeof presetScoreOptions)[number]);
+}
+
+function formatPreviewRound(
+  round: RoundDraft,
+  index: number,
+  matchStructure: EventMatchStructure
+) {
+  const opponent = round.opponent.trim() || "Opponent deck";
+  const result = getResultLetter(round.result);
+  const score =
+    matchStructure === "bo3" && round.score.trim()
+      ? `${round.score.trim()} `
+      : "";
+
+  return `R${index + 1}: ${opponent} ${score}${result}`;
 }
 
 function updateRound(
@@ -355,9 +384,11 @@ export function EventForm({
                   className="flex items-center justify-between gap-3 rounded-2xl bg-[#07111F]/52 px-3 py-2 text-sm"
                 >
                   <span className="min-w-0 truncate text-[#D7E0EF]">
-                    R{index + 1}: {round.opponent || "Opponent deck"}
+                    {formatPreviewRound(round, index, matchStructure)}
                   </span>
-                  <span className={subtlePill}>{round.result.toUpperCase()}</span>
+                  <span className={subtlePill}>
+                    {getResultLetter(round.result)}
+                  </span>
                 </div>
               ))}
             </div>
@@ -470,6 +501,8 @@ export function EventForm({
         <div className="grid gap-3">
           {rounds.map((round, index) => {
             const isActive = activeRoundId === round.id;
+            const usesOtherScore =
+              matchStructure === "bo3" && !isPresetScore(round.score);
 
             return (
               <article
@@ -510,12 +543,15 @@ export function EventForm({
                   name={`round_${index}_number`}
                   value={index + 1}
                 />
-                <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1.4fr)_auto_minmax(0,1fr)] lg:items-end">
-                  <div className="grid gap-1.5">
-                    <label htmlFor={`round_${index}_opponent`} className={label}>
+                <div className="mt-4 grid gap-3 xl:grid-cols-[minmax(0,1.45fr)_minmax(180px,0.48fr)_minmax(220px,0.66fr)] xl:items-stretch">
+                  <div className="rounded-[20px] bg-[#0B1020]/52 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                    <label
+                      htmlFor={`round_${index}_opponent`}
+                      className={label}
+                    >
                       Opponent deck
                     </label>
-                    <div className="flex items-center gap-2">
+                    <div className="mt-2 flex min-w-0 items-center gap-3 rounded-2xl bg-[#07111F]/78 px-3 py-2.5 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.12)] transition focus-within:shadow-[inset_0_0_0_1px_rgba(79,140,255,0.46),0_0_0_3px_rgba(79,140,255,0.10)]">
                       <ArchetypeSprites
                         archetype={round.opponent}
                         size="md"
@@ -534,25 +570,25 @@ export function EventForm({
                           )
                         }
                         placeholder="Raging Bolt"
-                        className={inputH10}
+                        className="min-w-0 flex-1 bg-transparent text-sm font-semibold text-[#F8FAFC] outline-none placeholder:text-[#64748B]"
                       />
                     </div>
                   </div>
 
-                  <fieldset className="grid gap-1.5">
+                  <fieldset className="rounded-[20px] bg-[#0B1020]/52 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
                     <legend className={label}>Result</legend>
-                    <div className="grid grid-cols-3 gap-1.5">
+                    <div className="mt-2 grid grid-cols-3 gap-1.5">
                       {resultOptions.map((option) => (
                         <label
                           key={option.value}
-                          className={`cursor-pointer rounded-2xl px-3 py-2 text-center text-sm font-semibold transition ${
+                          className={`cursor-pointer rounded-2xl px-3 py-3 text-center text-base font-black transition ${
                             round.result === option.value
                               ? option.value === "win"
-                                ? "bg-emerald-500/18 text-emerald-100 shadow-[inset_0_0_0_1px_rgba(34,197,94,0.24)]"
+                                ? "bg-emerald-500/20 text-emerald-100 shadow-[inset_0_0_0_1px_rgba(34,197,94,0.34),0_10px_20px_rgba(34,197,94,0.10)]"
                                 : option.value === "loss"
-                                  ? "bg-rose-500/18 text-rose-100 shadow-[inset_0_0_0_1px_rgba(244,63,94,0.24)]"
-                                  : "bg-[#4F8CFF]/18 text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.24)]"
-                              : "bg-[#0D1830]/76 text-[#94A3B8] hover:bg-[#14243F]"
+                                  ? "bg-rose-500/20 text-rose-100 shadow-[inset_0_0_0_1px_rgba(244,63,94,0.34),0_10px_20px_rgba(244,63,94,0.10)]"
+                                  : "bg-[#F5C84C]/18 text-[#FFE28A] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.30),0_10px_20px_rgba(245,200,76,0.09)]"
+                              : "bg-[#07111F]/82 text-[#94A3B8] hover:bg-[#14243F] hover:text-[#F8FAFC]"
                           }`}
                           title={option.fullLabel}
                         >
@@ -576,16 +612,16 @@ export function EventForm({
                     </div>
                   </fieldset>
 
-                  <fieldset className="grid gap-1.5">
+                  <fieldset className="rounded-[20px] bg-[#0B1020]/52 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
                     <legend className={label}>Turn order</legend>
-                    <div className="grid grid-cols-3 gap-1.5">
+                    <div className="mt-2 grid grid-cols-3 gap-1.5">
                       {turnOrderOptions.map((option) => (
                         <label
                           key={option.value}
-                          className={`cursor-pointer rounded-2xl px-2 py-2 text-center text-xs font-semibold transition ${
+                          className={`cursor-pointer rounded-2xl px-2 py-2.5 text-center text-xs font-semibold transition ${
                             round.wentFirst === option.value
                               ? "bg-[#4F8CFF]/16 text-[#F8FAFC] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.24)]"
-                              : "bg-[#0D1830]/76 text-[#94A3B8] hover:bg-[#14243F]"
+                              : "bg-[#07111F]/82 text-[#94A3B8] hover:bg-[#14243F] hover:text-[#F8FAFC]"
                           }`}
                         >
                           <input
@@ -610,36 +646,75 @@ export function EventForm({
                 </div>
 
                 {matchStructure === "bo3" ? (
-                  <div className="mt-3 grid gap-1.5 sm:max-w-sm">
-                    <label htmlFor={`round_${index}_score`} className={label}>
+                  <fieldset className="mt-3 rounded-[20px] bg-[#0B1020]/46 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                    <legend className={label}>
                       Match score
-                    </label>
-                    <select
-                      id={`round_${index}_score`}
+                    </legend>
+                    <input
+                      type="hidden"
                       name={`round_${index}_score`}
                       value={round.score}
-                      onChange={(event) =>
-                        setRounds((current) =>
-                          updateRound(current, round.id, {
-                            score: event.target.value,
-                          })
-                        )
-                      }
-                      className={inputH10}
-                    >
-                      {MATCH_SCORE_OPTIONS.map((score) => (
-                        <option key={score} value={score}>
-                          {score}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                    />
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {MATCH_SCORE_OPTIONS.map((score) => {
+                        const selected =
+                          score === "Other"
+                            ? usesOtherScore
+                            : round.score === score;
+
+                        return (
+                          <button
+                            key={score}
+                            type="button"
+                            onClick={() =>
+                              setRounds((current) =>
+                                updateRound(current, round.id, {
+                                  score,
+                                })
+                              )
+                            }
+                            className={`rounded-full px-3 py-2 text-xs font-black transition ${
+                              selected
+                                ? "bg-[#F5C84C]/18 text-[#FFE28A] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.28)]"
+                                : "bg-[#07111F]/82 text-[#94A3B8] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.09)] hover:bg-[#14243F] hover:text-[#F8FAFC]"
+                            }`}
+                            aria-pressed={selected}
+                          >
+                            {score}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {usesOtherScore ? (
+                      <div className="mt-3 max-w-xs">
+                        <label
+                          htmlFor={`round_${index}_score_other`}
+                          className="sr-only"
+                        >
+                          Other score
+                        </label>
+                        <input
+                          id={`round_${index}_score_other`}
+                          value={round.score === "Other" ? "" : round.score}
+                          onChange={(event) =>
+                            setRounds((current) =>
+                              updateRound(current, round.id, {
+                                score: event.target.value || "Other",
+                              })
+                            )
+                          }
+                          placeholder="Custom score"
+                          className={inputH10}
+                        />
+                      </div>
+                    ) : null}
+                  </fieldset>
                 ) : null}
 
                 <div className="mt-3 grid gap-2 sm:grid-cols-2">
                   <details className="rounded-2xl bg-[#0B1020]/46 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
                     <summary className="cursor-pointer text-sm font-semibold text-[#F8FAFC]">
-                      Tags {round.tags.length ? `(${round.tags.length})` : ""}
+                      {round.tags.length ? `Tags · ${round.tags.length}` : "Tags"}
                     </summary>
                     <div className="mt-3 flex flex-wrap gap-2">
                       {eventTagOptions.map((tag) => (
@@ -674,7 +749,7 @@ export function EventForm({
 
                   <details className="rounded-2xl bg-[#0B1020]/46 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
                     <summary className="cursor-pointer text-sm font-semibold text-[#F8FAFC]">
-                      Notes {round.notes ? "(added)" : ""}
+                      {round.notes ? "Notes added" : "Notes"}
                     </summary>
                     <textarea
                       id={`round_${index}_notes`}
