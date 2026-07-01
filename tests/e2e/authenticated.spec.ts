@@ -20,6 +20,7 @@ const authRoutes = [
   { path: "/matches/new", heading: "Log a game" },
   { path: "/review", heading: "Review" },
   { path: "/matches", heading: "Match history" },
+  { path: "/events", heading: "Events" },
   { path: "/decks", heading: "Deck Experiments" },
   { path: "/matchups", heading: "Matchup Intelligence" },
   { path: "/profile", heading: /Profile|Create your profile/i },
@@ -1120,6 +1121,9 @@ test.describe("authenticated routes", () => {
         page.getByRole("link", { name: /^Match history$/ }).first()
       ).toBeVisible();
       await expect(
+        page.getByRole("link", { name: /^Events$/ }).first()
+      ).toBeVisible();
+      await expect(
         page.getByRole("link", { name: /^Log game$/ }).first()
       ).toBeVisible();
       await expect(page.getByLabel("Email")).toHaveCount(0);
@@ -1231,6 +1235,60 @@ test.describe("authenticated routes", () => {
     await expect(page.locator("body")).toContainText("Slow start");
     await expect(page.locator("body")).toContainText("Dead drew");
     await expect(page.locator("body")).toContainText("Poor prizes");
+    await expectNoAppError(page);
+  });
+
+  test("/events creates match-linked event rounds and event review", async ({
+    page,
+  }) => {
+    await page.goto("/events/new");
+
+    await expectHeadingVisible(page, "New event");
+    await page.getByLabel("Event name").fill("CoreTCG Weekly");
+    await page.getByLabel("Event type").selectOption("Local");
+
+    await page.locator('input[name="round_0_opponent"]').fill("Gholdengo");
+    await page.locator('select[name="round_0_result"]').selectOption("win");
+    await page
+      .locator('input[name="round_0_tags"][value="Ahead early"]')
+      .check();
+
+    await page.locator('input[name="round_1_opponent"]').fill("Raging Bolt");
+    await page.locator('select[name="round_1_result"]').selectOption("loss");
+    await page
+      .locator('input[name="round_1_tags"][value="Slow start"]')
+      .check();
+
+    await page.locator('input[name="round_2_opponent"]').fill("Dragapult");
+    await page.locator('select[name="round_2_result"]').selectOption("tie");
+    await page
+      .locator('input[name="round_2_tags"][value="Poor prizes"]')
+      .check();
+
+    await page.getByRole("button", { name: "Save event" }).click();
+    await page.waitForURL(/\/events\/[0-9a-f-]+/, { timeout: 30000 });
+
+    await expectHeadingVisible(page, "CoreTCG Weekly");
+    await expect(page.locator("body")).toContainText("Final record");
+    await expect(page.locator("body")).toContainText("1-1-1");
+    await expect(page.locator("body")).toContainText("Event Review");
+    await expect(page.locator("body")).toContainText("Suggested next test");
+    await expect(page.locator("body")).toContainText("Gholdengo");
+    await expect(page.locator("body")).toContainText("Raging Bolt");
+    await expect(page.locator("body")).toContainText("Dragapult");
+    await expect(page.locator("body")).toContainText("Slow start");
+    await expect(page.locator("body")).toContainText("Poor prizes");
+
+    await page.goto("/events");
+    await expectHeadingVisible(page, "Events");
+    await expect(page.locator("body")).toContainText("CoreTCG Weekly");
+    await expect(page.locator("body")).toContainText("1-1-1");
+
+    await page.goto("/matches");
+    await expect(page.locator("body")).toContainText("Event: CoreTCG Weekly");
+    await expect(page.locator("body")).toContainText("Gholdengo");
+    await expect(page.locator("body")).toContainText("Raging Bolt");
+    await expect(page.locator("body")).toContainText("Dragapult");
     await expectNoAppError(page);
   });
 
