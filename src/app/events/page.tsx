@@ -19,6 +19,7 @@ import {
 } from "@/components/brand-styles";
 import {
   buildEventReviewSummary,
+  getMatchStructureLabel,
   getEventRecord,
   parseEventTags,
 } from "@/lib/events";
@@ -36,6 +37,7 @@ type EventRow = {
   name: string;
   event_date: string;
   event_type: string;
+  match_structure: string | null;
   placement: string | null;
   decks:
     | { name: string; archetype: string | null }
@@ -83,7 +85,7 @@ export default async function EventsPage() {
   const { data, error } = await supabase
     .from("events")
     .select(
-      "id, name, event_date, event_type, placement, decks(name, archetype), deck_versions(name), event_rounds(opponent_deck_name, result, tags)"
+      "id, name, event_date, event_type, match_structure, placement, decks(name, archetype), deck_versions(name), event_rounds(opponent_deck_name, result, tags)"
     )
     .eq("user_id", user.id)
     .order("event_date", { ascending: false })
@@ -119,9 +121,17 @@ export default async function EventsPage() {
             subtitle="Log locals, league cups, ladder sessions, and testing blocks as match-linked event reviews."
             userEmail={user.email ?? "Unknown email"}
             actions={
-              <Link href="/events/new" className={primaryButton}>
-                New event
-              </Link>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <Link href="/events/new" className={primaryButton}>
+                  New event
+                </Link>
+                <Link
+                  href="/events/new?eventType=Testing%20block"
+                  className={secondaryButton}
+                >
+                  New testing block
+                </Link>
+              </div>
             }
           />
 
@@ -204,6 +214,9 @@ export default async function EventsPage() {
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-2">
                             <span className={subtlePill}>{event.event_type}</span>
+                            <span className={subtlePill}>
+                              {getMatchStructureLabel(event.match_structure)}
+                            </span>
                             <span className={subtlePill}>{formatDate(event.event_date)}</span>
                             {event.placement ? (
                               <span className="rounded-full bg-[#F5C84C]/14 px-2.5 py-1 text-xs font-semibold text-[#FFE28A]">
@@ -240,6 +253,14 @@ export default async function EventsPage() {
                                 {issueTag ?? review.problemMatchup ?? "No issue yet"}
                               </p>
                             </div>
+                          </div>
+                          <div className="mt-4 rounded-2xl bg-[#07111F]/50 px-3 py-2">
+                            <p className="text-[0.65rem] uppercase tracking-[0.16em] text-[#94A3B8]">
+                              Suggested next test
+                            </p>
+                            <p className="mt-1 line-clamp-2 text-sm font-medium leading-5 text-[#D7E0EF]">
+                              {review.suggestedNextTest}
+                            </p>
                           </div>
                         </div>
                       </div>

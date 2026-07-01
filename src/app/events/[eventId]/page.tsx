@@ -19,6 +19,7 @@ import {
 import {
   buildEventReviewSummary,
   getEventRecord,
+  getMatchStructureLabel,
   parseEventTags,
 } from "@/lib/events";
 import {
@@ -64,6 +65,7 @@ type EventRow = {
   event_date: string;
   event_type: string;
   format: string;
+  match_structure: string | null;
   placement: string | null;
   notes: string | null;
   decks:
@@ -132,7 +134,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
   const { data, error } = await supabase
     .from("events")
     .select(
-      "id, name, event_date, event_type, format, placement, notes, decks(name, archetype), deck_versions(name), event_rounds(id, round_number, opponent_deck_name, result, match_score, went_first, tags, notes, match_id)"
+      "id, name, event_date, event_type, format, match_structure, placement, notes, decks(name, archetype), deck_versions(name), event_rounds(id, round_number, opponent_deck_name, result, match_score, went_first, tags, notes, match_id)"
     )
     .eq("user_id", user.id)
     .eq("id", eventId)
@@ -197,6 +199,9 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
               <div className="min-w-0">
                 <div className="flex flex-wrap gap-2">
                   <span className={subtlePill}>{event.event_type}</span>
+                  <span className={subtlePill}>
+                    {getMatchStructureLabel(event.match_structure)}
+                  </span>
                   <span className={subtlePill}>{event.format}</span>
                   <span className={subtlePill}>{formatDate(event.event_date)}</span>
                   {event.placement ? (
@@ -316,7 +321,15 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                           R{round.round_number}
                         </td>
                         <td className="px-4 py-3 text-[#F8FAFC]">
-                          {round.opponent_deck_name ?? "Unknown matchup"}
+                          <div className="flex items-center gap-2">
+                            <ArchetypeSprites
+                              archetype={round.opponent_deck_name}
+                              size="sm"
+                            />
+                            <span className="min-w-0 truncate">
+                              {round.opponent_deck_name ?? "Unknown matchup"}
+                            </span>
+                          </div>
                         </td>
                         <td className="px-4 py-3">
                           <span className={`rounded-full px-2.5 py-1 text-xs font-semibold uppercase ${getResultBadgeClass(round.result)}`}>
@@ -366,7 +379,13 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                       <span className={subtlePill}>{turnOrderLabel(round.went_first)}</span>
                     </div>
                     <h3 className="mt-3 text-lg font-semibold text-[#F8FAFC]">
-                      {round.opponent_deck_name ?? "Unknown matchup"}
+                      <span className="inline-flex items-center gap-2">
+                        <ArchetypeSprites
+                          archetype={round.opponent_deck_name}
+                          size="sm"
+                        />
+                        {round.opponent_deck_name ?? "Unknown matchup"}
+                      </span>
                     </h3>
                     <p className="mt-1 text-sm text-[#94A3B8]">
                       Score: {round.match_score ?? "Not logged"}

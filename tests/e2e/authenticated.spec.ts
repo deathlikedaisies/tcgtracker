@@ -1244,33 +1244,44 @@ test.describe("authenticated routes", () => {
     await page.goto("/events/new");
 
     await expectHeadingVisible(page, "New event");
+    await expect(page.getByLabel("Best of 1")).toBeChecked();
+    await expect(page.locator('select[name="round_0_score"]')).toHaveCount(0);
     await page.getByLabel("Event name").fill("CoreTCG Weekly");
+    await page.getByLabel("Event type").selectOption("League Cup");
+    await expect(page.getByLabel("Best of 3")).toBeChecked();
+    await expect(page.locator('select[name="round_0_score"]')).toBeVisible();
     await page.getByLabel("Event type").selectOption("Local");
+    await expect(page.getByLabel("Best of 1")).toBeChecked();
+    await expect(page.locator('select[name="round_0_score"]')).toHaveCount(0);
+    await page.getByLabel("Event type").selectOption("League Cup");
 
     await page.locator('input[name="round_0_opponent"]').fill("Gholdengo");
-    await page.locator('select[name="round_0_result"]').selectOption("win");
-    await page
-      .locator('input[name="round_0_tags"][value="Ahead early"]')
-      .check();
+    await page.locator('select[name="round_0_score"]').selectOption("2-0");
+    await page.locator("article").nth(0).getByText(/^Tags/).click();
+    await page.locator("article").nth(0).getByLabel("Ahead early").check();
 
     await page.locator('input[name="round_1_opponent"]').fill("Raging Bolt");
-    await page.locator('select[name="round_1_result"]').selectOption("loss");
-    await page
-      .locator('input[name="round_1_tags"][value="Slow start"]')
-      .check();
+    await page.locator('input[name="round_1_result"][value="loss"]').check({ force: true });
+    await page.locator('select[name="round_1_score"]').selectOption("1-2");
+    await page.locator("article").nth(1).getByText(/^Tags/).click();
+    await page.locator("article").nth(1).getByLabel("Slow start").check();
 
     await page.locator('input[name="round_2_opponent"]').fill("Dragapult");
-    await page.locator('select[name="round_2_result"]').selectOption("tie");
-    await page
-      .locator('input[name="round_2_tags"][value="Poor prizes"]')
-      .check();
+    await page.locator('input[name="round_2_result"][value="tie"]').check({ force: true });
+    await page.locator('select[name="round_2_score"]').selectOption("1-1");
+    await page.locator("article").nth(2).getByText(/^Tags/).click();
+    await page.locator("article").nth(2).getByLabel("Poor prizes").check();
 
     await page.getByRole("button", { name: "Save event" }).click();
     await page.waitForURL(/\/events\/[0-9a-f-]+/, { timeout: 30000 });
 
     await expectHeadingVisible(page, "CoreTCG Weekly");
     await expect(page.locator("body")).toContainText("Final record");
+    await expect(page.locator("body")).toContainText("Best of 3");
     await expect(page.locator("body")).toContainText("1-1-1");
+    await expect(page.locator("body")).toContainText("2-0");
+    await expect(page.locator("body")).toContainText("1-2");
+    await expect(page.locator("body")).toContainText("1-1");
     await expect(page.locator("body")).toContainText("Event Review");
     await expect(page.locator("body")).toContainText("Suggested next test");
     await expect(page.locator("body")).toContainText("Gholdengo");

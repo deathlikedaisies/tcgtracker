@@ -36,6 +36,18 @@ export const ARCHETYPE_POKEMON: Record<string, ArchetypePokemon[]> = {
     { pokemon: "Lucario" },
     { pokemon: "Hariyama" },
   ],
+  "Mega Lucario Duns": [
+    { pokemon: "Lucario", label: "Mega Lucario" },
+    { pokemon: "Dudunsparce" },
+  ],
+  "Mega Lucario Dudunsparce": [
+    { pokemon: "Lucario", label: "Mega Lucario" },
+    { pokemon: "Dudunsparce" },
+  ],
+  "Lucario Duns": [
+    { pokemon: "Lucario" },
+    { pokemon: "Dudunsparce" },
+  ],
   "Mega Lucario ex": [{ pokemon: "Lucario", label: "Mega Lucario ex" }],
   "Mega Lucario": [{ pokemon: "Lucario", label: "Mega Lucario" }],
   "Mega Greninja": [{ pokemon: "Greninja", label: "Mega Greninja" }],
@@ -219,6 +231,7 @@ export const ARCHETYPE_POKEMON: Record<string, ArchetypePokemon[]> = {
 
   "Charizard ex": [{ pokemon: "Charizard", label: "Charizard ex" }],
   "Gardevoir ex": [{ pokemon: "Gardevoir", label: "Gardevoir ex" }],
+  Gholdengo: [{ pokemon: "Gholdengo" }],
   "Gholdengo ex": [{ pokemon: "Gholdengo", label: "Gholdengo ex" }],
   "Miraidon ex": [{ pokemon: "Miraidon", label: "Miraidon ex" }],
   "Roaring Moon ex": [{ pokemon: "Roaring Moon", label: "Roaring Moon ex" }],

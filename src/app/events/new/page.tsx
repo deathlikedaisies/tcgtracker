@@ -17,6 +17,7 @@ import { createEvent } from "../actions";
 type DeckRow = {
   id: string;
   name: string;
+  archetype: string | null;
   deck_versions: {
     id: string;
     name: string;
@@ -24,7 +25,14 @@ type DeckRow = {
   }[] | null;
 };
 
-export default async function NewEventPage() {
+type NewEventPageProps = {
+  searchParams?: Promise<{
+    eventType?: string;
+  }>;
+};
+
+export default async function NewEventPage({ searchParams }: NewEventPageProps) {
+  const resolvedSearchParams = await searchParams;
   const supabase = await createServerSupabaseClient();
   const {
     data: { user },
@@ -36,7 +44,7 @@ export default async function NewEventPage() {
 
   const { data, error } = await supabase
     .from("decks")
-    .select("id, name, deck_versions(id, name, is_active)")
+    .select("id, name, archetype, deck_versions(id, name, is_active)")
     .eq("user_id", user.id)
     .order("name", { ascending: true })
     .order("is_active", {
@@ -52,6 +60,7 @@ export default async function NewEventPage() {
     .map((deck) => ({
       id: deck.id,
       name: deck.name,
+      archetype: deck.archetype,
       versions: (deck.deck_versions ?? []).map((version) => ({
         id: version.id,
         name: version.name,
@@ -79,7 +88,11 @@ export default async function NewEventPage() {
           />
 
           {decks.length ? (
-            <EventForm action={createEvent} decks={decks} />
+            <EventForm
+              action={createEvent}
+              decks={decks}
+              initialEventType={resolvedSearchParams?.eventType}
+            />
           ) : (
             <section className={`${emptyCard} overflow-hidden`}>
               <div className="mb-5 h-1.5 w-28 rounded-full bg-[linear-gradient(90deg,#F5C84C,#4F8CFF)]" />

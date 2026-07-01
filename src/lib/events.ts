@@ -17,6 +17,13 @@ export const EVENT_TYPE_OPTIONS = [
 
 export const EVENT_FORMAT_OPTIONS = ["Standard", "Expanded", "Other"] as const;
 
+export const EVENT_MATCH_STRUCTURE_OPTIONS = ["bo1", "bo3"] as const;
+
+export const EVENT_MATCH_STRUCTURE_LABELS: Record<EventMatchStructure, string> = {
+  bo1: "Best of 1",
+  bo3: "Best of 3",
+};
+
 export const MATCH_SCORE_OPTIONS = [
   "2-0",
   "2-1",
@@ -30,6 +37,8 @@ export const MATCH_SCORE_OPTIONS = [
 
 export type EventType = (typeof EVENT_TYPE_OPTIONS)[number];
 export type EventFormat = (typeof EVENT_FORMAT_OPTIONS)[number];
+export type EventMatchStructure =
+  (typeof EVENT_MATCH_STRUCTURE_OPTIONS)[number];
 
 export type EventRoundSummaryInput = {
   opponent_deck_name: string | null;
@@ -57,6 +66,32 @@ export function isEventType(value: string): value is EventType {
 
 export function isEventFormat(value: string): value is EventFormat {
   return isOneOf(value, EVENT_FORMAT_OPTIONS);
+}
+
+export function isEventMatchStructure(
+  value: string
+): value is EventMatchStructure {
+  return isOneOf(value, EVENT_MATCH_STRUCTURE_OPTIONS);
+}
+
+export function getDefaultMatchStructure(
+  eventType: EventType
+): EventMatchStructure {
+  if (
+    eventType === "League Cup" ||
+    eventType === "Regional" ||
+    eventType === "International"
+  ) {
+    return "bo3";
+  }
+
+  return "bo1";
+}
+
+export function getMatchStructureLabel(
+  value: EventMatchStructure | string | null | undefined
+) {
+  return value === "bo3" ? EVENT_MATCH_STRUCTURE_LABELS.bo3 : EVENT_MATCH_STRUCTURE_LABELS.bo1;
 }
 
 export function normalizeEventMatchType(eventType: EventType) {
