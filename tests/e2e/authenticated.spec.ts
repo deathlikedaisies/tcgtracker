@@ -1248,6 +1248,12 @@ test.describe("authenticated routes", () => {
     await expect(page.locator("body")).toContainText("Each round is a single game.");
     await expect(page.locator('input[name="round_0_score"]')).toHaveCount(0);
     await expect(page.getByRole("button", { name: "2-1", exact: true })).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: /^Event Round/ })).toHaveCount(1);
+    await expect(page.locator("body")).toContainText("0-0-0");
+    await expect(page.locator("body")).toContainText("R1: Add opponent deck");
+    await expect(page.locator('input[name="round_0_result"]:checked')).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Save event" })).toBeDisabled();
+
     await page.getByLabel("Event name").fill("CoreTCG Weekly");
     await page.getByLabel("Event type").selectOption("League Cup");
     await expect(page.getByLabel("Best of 3")).toBeChecked();
@@ -1261,12 +1267,16 @@ test.describe("authenticated routes", () => {
     await page.locator("article").nth(0).getByPlaceholder("Search opponent deck...").fill("Raging");
     await expect(page.locator("article").nth(0).getByRole("button", { name: "Raging Bolt", exact: true })).toBeVisible();
     await page.locator("article").nth(0).getByRole("button", { name: "Raging Bolt", exact: true }).click();
+    await page.locator('input[name="round_0_result"][value="win"]').check({ force: true });
     await page.locator("article").nth(0).getByRole("button", { name: "2-1", exact: true }).click();
     await expect(page.locator("body")).toContainText("R1: Raging Bolt 2-1 W");
     await page.locator("article").nth(0).getByText(/^Tags/).click();
     await page.locator("article").nth(0).getByLabel("Ahead early").check();
     await expect(page.locator("article").nth(0).getByText("Tags · 1")).toBeVisible();
+    await expect(page.locator("body")).toContainText("1-0-0");
 
+    await page.getByRole("button", { name: "Add next round" }).last().click();
+    await expect(page.getByRole("heading", { name: /^Event Round/ })).toHaveCount(2);
     await page.locator("article").nth(1).getByPlaceholder("Search opponent deck...").fill("Gholdengo");
     await page.locator("article").nth(1).getByRole("button", { name: "Gholdengo", exact: true }).click();
     await page.locator('input[name="round_1_result"][value="loss"]').check({ force: true });
@@ -1274,6 +1284,8 @@ test.describe("authenticated routes", () => {
     await page.locator("article").nth(1).getByText(/^Tags/).click();
     await page.locator("article").nth(1).getByLabel("Slow start").check();
 
+    await page.getByRole("button", { name: "Add next round" }).last().click();
+    await expect(page.getByRole("heading", { name: /^Event Round/ })).toHaveCount(3);
     await page.locator("article").nth(2).getByPlaceholder("Search opponent deck...").fill("Random rogue deck");
     await page.locator('input[name="round_2_result"][value="tie"]').check({ force: true });
     await page.locator("article").nth(2).getByRole("button", { name: "1-1", exact: true }).click();

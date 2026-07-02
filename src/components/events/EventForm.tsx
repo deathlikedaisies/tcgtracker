@@ -52,7 +52,7 @@ type EventFormProps = {
 type RoundDraft = {
   id: string;
   opponent: string;
-  result: "win" | "loss" | "tie";
+  result: "win" | "loss" | "tie" | "";
   score: string;
   wentFirst: "unknown" | "true" | "false";
   tags: string[];
@@ -79,11 +79,11 @@ const presetScoreOptions = MATCH_SCORE_OPTIONS.filter(
   (score) => score !== "Other"
 );
 
-function SubmitButton() {
+function SubmitButton({ disabled }: { disabled: boolean }) {
   const { pending } = useFormStatus();
 
   return (
-    <button type="submit" disabled={pending} className={primaryButton}>
+    <button type="submit" disabled={pending || disabled} className={primaryButton}>
       {pending ? "Saving event..." : "Save event"}
     </button>
   );
@@ -103,7 +103,7 @@ function createRoundDraft(): RoundDraft {
   return {
     id: crypto.randomUUID(),
     opponent: "",
-    result: "win",
+    result: "",
     score: "2-0",
     wentFirst: "unknown",
     tags: [],
@@ -111,9 +111,37 @@ function createRoundDraft(): RoundDraft {
   };
 }
 
-function getRecord(rounds: RoundDraft[]) {
+function isRoundComplete(
+  round: RoundDraft,
+  matchStructure: EventMatchStructure
+) {
+  return Boolean(
+    round.opponent.trim() &&
+      round.result &&
+      (matchStructure === "bo1" || round.score.trim())
+  );
+}
+
+function isRoundEmpty(round: RoundDraft, matchStructure: EventMatchStructure) {
+  const scoreChanged = matchStructure === "bo3" && round.score.trim() !== "2-0";
+
+  return (
+    !round.opponent.trim() &&
+    !round.result &&
+    round.wentFirst === "unknown" &&
+    !round.notes.trim() &&
+    round.tags.length === 0 &&
+    !scoreChanged
+  );
+}
+
+function getRecord(
+  rounds: RoundDraft[],
+  matchStructure: EventMatchStructure
+) {
   return rounds.reduce(
     (record, round) => {
+      if (!isRoundComplete(round, matchStructure)) return record;
       if (round.result === "win") record.wins += 1;
       if (round.result === "loss") record.losses += 1;
       if (round.result === "tie") record.ties += 1;
@@ -123,8 +151,11 @@ function getRecord(rounds: RoundDraft[]) {
   );
 }
 
-function formatRecord(rounds: RoundDraft[]) {
-  const record = getRecord(rounds);
+function formatRecord(
+  rounds: RoundDraft[],
+  matchStructure: EventMatchStructure
+) {
+  const record = getRecord(rounds, matchStructure);
   return `${record.wins}-${record.losses}-${record.ties}`;
 }
 
@@ -144,6 +175,8 @@ function formatPreviewRound(
   matchStructure: EventMatchStructure
 ) {
   const opponent = round.opponent.trim() || "Add opponent deck";
+  if (!round.result) return `R${index + 1}: ${opponent}`;
+
   const result = getResultLetter(round.result);
   const score =
     matchStructure === "bo3" && round.score.trim()
@@ -183,11 +216,7 @@ export function EventForm({
   const [selectedVersionId, setSelectedVersionId] = useState(
     initialVersion?.id ?? ""
   );
-  const [rounds, setRounds] = useState<RoundDraft[]>([
-    createRoundDraft(),
-    createRoundDraft(),
-    createRoundDraft(),
-  ]);
+  const [rounds, setRounds] = useState<RoundDraft[]>([createRoundDraft()]);
   const [activeRoundId, setActiveRoundId] = useState(rounds[0]?.id ?? "");
   const selectedDeck = decks.find((deck) => deck.id === selectedDeckId);
   const visibleVersions = selectedDeck?.versions ?? [];
@@ -204,6 +233,21 @@ export function EventForm({
   const topTags = Array.from(
     new Set(rounds.flatMap((round) => round.tags))
   ).slice(0, 4);
+  const completedRounds = rounds.filter((round) =>
+    isRoundComplete(round, matchStructure)
+  );
+  const hasIncompleteRound = rounds.some(
+    (round) =>
+      !isRoundEmpty(round, matchStructure) &&
+      !isRoundComplete(round, matchStructure)
+  );
+  const canSaveEvent = completedRounds.length > 0 && !hasIncompleteRound;
+  const saveHelperText =
+    completedRounds.length === 0
+      ? "Complete at least one event round to save."
+      : hasIncompleteRound
+        ? "Finish or remove incomplete rounds before saving."
+        : null;
 
   function addRound() {
     const nextRound = createRoundDraft();
@@ -366,7 +410,7 @@ export function EventForm({
                   Record
                 </p>
                 <p className="mt-1 text-xl font-semibold text-[#F8FAFC]">
-                  {formatRecord(rounds)}
+                  {formatRecord(rounds, matchStructure)}
                 </p>
               </div>
               <div className="rounded-2xl bg-[#07111F]/64 px-3 py-2">
@@ -387,9 +431,11 @@ export function EventForm({
                   <span className="min-w-0 truncate text-[#D7E0EF]">
                     {formatPreviewRound(round, index, matchStructure)}
                   </span>
-                  <span className={subtlePill}>
-                    {getResultLetter(round.result)}
-                  </span>
+                  {round.result ? (
+                    <span className={subtlePill}>
+                      {getResultLetter(round.result)}
+                    </span>
+                  ) : null}
                 </div>
               ))}
             </div>
@@ -554,7 +600,6 @@ export function EventForm({
                       id={`round_${index}_opponent`}
                       name={`round_${index}_opponent`}
                       label="Opponent deck"
-                      required
                       value={round.opponent}
                       onValueChange={(nextValue) =>
                         setRounds((current) =>
@@ -601,6 +646,11 @@ export function EventForm({
                         </label>
                       ))}
                     </div>
+                    {!round.result ? (
+                      <p className="mt-2 text-xs font-medium text-[#94A3B8]">
+                        Pick result
+                      </p>
+                    ) : null}
                   </fieldset>
 
                   <fieldset className="rounded-[20px] bg-[#0B1020]/52 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
@@ -770,7 +820,12 @@ export function EventForm({
       </section>
 
       <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
-        <SubmitButton />
+        {saveHelperText ? (
+          <p className="text-sm font-medium text-[#94A3B8]">
+            {saveHelperText}
+          </p>
+        ) : null}
+        <SubmitButton disabled={!canSaveEvent} />
       </div>
     </form>
   );

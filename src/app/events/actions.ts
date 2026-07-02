@@ -19,6 +19,17 @@ export type CreateEventState = {
   error: string | null;
 };
 
+type ParsedEventRound = {
+  roundNumber: number;
+  opponentDeckName: string | null;
+  result: MatchResult | null;
+  matchScore: string | null;
+  wentFirst: boolean | null;
+  roundNotes: string | null;
+  tags: string[];
+  hasData: boolean;
+};
+
 function optionalText(value: FormDataEntryValue | null) {
   const text = String(value ?? "").trim();
   return text ? text : null;
@@ -39,6 +50,88 @@ function parseWentFirst(value: string | null) {
   if (value === "true") return true;
   if (value === "false") return false;
   return null;
+}
+
+function parseRoundDraft(
+  formData: FormData,
+  index: number,
+  matchStructure: string
+): ParsedEventRound {
+  const roundNumber =
+    Number.parseInt(String(formData.get(`round_${index}_number`) ?? index + 1), 10) ||
+    index + 1;
+  const opponentDeckName = optionalText(formData.get(`round_${index}_opponent`));
+  const resultText = optionalText(formData.get(`round_${index}_result`));
+  const matchScore = optionalText(formData.get(`round_${index}_score`));
+  const wentFirst = parseWentFirst(
+    optionalText(formData.get(`round_${index}_went_first`))
+  );
+  const roundNotes = optionalText(formData.get(`round_${index}_notes`));
+  const tags = getTags(formData, `round_${index}_tags`);
+
+  if (resultText && !isMatchResult(resultText)) {
+    throw new Error(`Round ${roundNumber}: result is required.`);
+  }
+
+  const scoreChanged =
+    matchStructure === "bo3" && Boolean(matchScore && matchScore !== "2-0");
+  const hasData = Boolean(
+    opponentDeckName ||
+      resultText ||
+      wentFirst !== null ||
+      roundNotes ||
+      tags.length ||
+      scoreChanged
+  );
+
+  return {
+    roundNumber,
+    opponentDeckName,
+    result: resultText && isMatchResult(resultText) ? resultText : null,
+    matchScore,
+    wentFirst,
+    roundNotes,
+    tags,
+    hasData,
+  };
+}
+
+function validateCompletedRounds(
+  rounds: ParsedEventRound[],
+  matchStructure: string
+) {
+  const completedRounds: (ParsedEventRound & {
+    opponentDeckName: string;
+    result: MatchResult;
+  })[] = [];
+
+  for (const round of rounds) {
+    if (!round.hasData) continue;
+
+    if (!round.opponentDeckName) {
+      throw new Error(`Round ${round.roundNumber}: opponent deck is required.`);
+    }
+
+    if (!round.result) {
+      throw new Error(`Round ${round.roundNumber}: result is required.`);
+    }
+
+    if (matchStructure === "bo3" && !round.matchScore) {
+      throw new Error(`Round ${round.roundNumber}: match score is required.`);
+    }
+
+    completedRounds.push({
+      ...round,
+      opponentDeckName: round.opponentDeckName,
+      result: round.result,
+    });
+  }
+
+  if (completedRounds.length === 0) {
+    throw new Error("Complete at least one event round before saving.");
+  }
+
+  return completedRounds;
 }
 
 function buildRoundMetadata({
@@ -136,6 +229,11 @@ export async function createEvent(
       throw new Error("Add at least one round.");
     }
 
+    const parsedRounds = Array.from({ length: roundCount }, (_, index) =>
+      parseRoundDraft(formData, index, matchStructure)
+    );
+    const completedRounds = validateCompletedRounds(parsedRounds, matchStructure);
+
     const { data: event, error: eventError } = await supabase
       .from("events")
       .insert({
@@ -159,45 +257,27 @@ export async function createEvent(
 
     savedEventId = event.id;
 
-    for (let index = 0; index < roundCount; index += 1) {
-      const roundNumber =
-        Number.parseInt(String(formData.get(`round_${index}_number`) ?? index + 1), 10) ||
-        index + 1;
-      const opponentDeckName = optionalText(formData.get(`round_${index}_opponent`));
-      const result = optionalText(formData.get(`round_${index}_result`));
-      const matchScore = optionalText(formData.get(`round_${index}_score`));
-      const wentFirst = parseWentFirst(
-        optionalText(formData.get(`round_${index}_went_first`))
-      );
-      const roundNotes = optionalText(formData.get(`round_${index}_notes`));
-      const tags = getTags(formData, `round_${index}_tags`);
-
-      if (!opponentDeckName) {
-        throw new Error(`Round ${roundNumber}: opponent deck is required.`);
-      }
-
-      if (!result || !isMatchResult(result)) {
-        throw new Error(`Round ${roundNumber}: result is required.`);
-      }
-
+    for (const completedRound of completedRounds) {
       const { data: round, error: roundError } = await supabase
         .from("event_rounds")
         .insert({
           event_id: event.id,
           user_id: user.id,
-          round_number: roundNumber,
-          opponent_deck_name: opponentDeckName,
-          result,
-          match_score: matchScore,
-          went_first: wentFirst,
-          tags,
-          notes: roundNotes,
+          round_number: completedRound.roundNumber,
+          opponent_deck_name: completedRound.opponentDeckName,
+          result: completedRound.result,
+          match_score: completedRound.matchScore,
+          went_first: completedRound.wentFirst,
+          tags: completedRound.tags,
+          notes: completedRound.roundNotes,
         })
         .select("id")
         .single();
 
       if (roundError || !round) {
-        throw new Error(roundError?.message ?? `Could not save round ${roundNumber}.`);
+        throw new Error(
+          roundError?.message ?? `Could not save round ${completedRound.roundNumber}.`
+        );
       }
 
       const metadata = buildRoundMetadata({
@@ -206,19 +286,19 @@ export async function createEvent(
         eventType,
         matchStructure,
         roundId: round.id,
-        roundNumber,
-        result,
-        matchScore,
-        tags,
+        roundNumber: completedRound.roundNumber,
+        result: completedRound.result,
+        matchScore: completedRound.matchScore,
+        tags: completedRound.tags,
       });
       const match = await createMatchWithTags(supabase, {
         userId: user.id,
         deckVersionId,
-        opponentArchetype: opponentDeckName,
-        result,
-        wentFirst,
+        opponentArchetype: completedRound.opponentDeckName,
+        result: completedRound.result,
+        wentFirst: completedRound.wentFirst,
         eventType: normalizeEventMatchType(eventType),
-        notes: roundNotes,
+        notes: completedRound.roundNotes,
         metadata,
         playedAt: `${eventDate}T12:00:00.000Z`,
       });
