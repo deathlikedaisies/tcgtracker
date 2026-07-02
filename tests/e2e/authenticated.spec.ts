@@ -1364,8 +1364,8 @@ test.describe("authenticated routes", () => {
 
     await page.getByRole("button", { name: "Add next round" }).last().click();
     await expect(page.getByRole("heading", { name: /^Event Round/ })).toHaveCount(2);
-    await page.locator("article").nth(1).getByPlaceholder("Search opponent deck...").fill("Gholdengo");
-    await page.locator("article").nth(1).getByRole("button", { name: "Gholdengo", exact: true }).click();
+    await page.locator("article").nth(1).getByPlaceholder("Search opponent deck...").fill("Mega Lucario Dudunsparce");
+    await page.locator("article").nth(1).getByRole("button", { name: "Mega Lucario Dudunsparce", exact: true }).click();
     await page.locator('input[name="round_1_result"][value="loss"]').check({ force: true });
     await page.locator("article").nth(1).getByRole("button", { name: "1-2", exact: true }).click();
     await page.locator("article").nth(1).getByText(/^Tags/).click();
@@ -1394,10 +1394,11 @@ test.describe("authenticated routes", () => {
     await expect(page.locator("body")).toContainText("Wins logged");
     await expect(page.locator("body")).toContainText("Suggested next test");
     await expect(page.getByTestId("problem-matchup-sprites")).toBeVisible();
+    await expect(page.getByTestId("event-review-problem-matchup")).toContainText("Mega Lucario Dudunsparce: 0-1");
     await expect(page.getByTestId("suggested-next-test-matchup")).toBeVisible();
-    await expect(page.locator("body")).toContainText("into Gholdengo for 5 games");
+    await expect(page.locator("body")).toContainText("into Mega Lucario Dudunsparce for 5 games");
     await expect(page.locator("body")).not.toContainText("5-game testing block");
-    await expect(page.locator("body")).toContainText("Gholdengo");
+    await expect(page.locator("body")).toContainText("Mega Lucario Dudunsparce");
     await expect(page.locator("body")).toContainText("Raging Bolt");
     await expect(page.locator("body")).toContainText("Random rogue deck");
     await expect(page.locator("body")).toContainText("Slow start");
@@ -1409,7 +1410,7 @@ test.describe("authenticated routes", () => {
     await expect(page.locator("body")).toContainText("1-1-1");
     await expect(page.locator("body")).toContainText("Top issue");
 
-    for (const opponent of ["Gholdengo", "Raging Bolt", "Random rogue deck"]) {
+    for (const opponent of ["Mega Lucario Dudunsparce", "Raging Bolt", "Random rogue deck"]) {
       await page.goto(`/matches?opponent_archetype=${encodeURIComponent(opponent)}`);
       await expect(page.locator("body")).toContainText(`Event: ${eventName}`);
       await expect(page.locator("body")).toContainText(opponent);

@@ -118,12 +118,12 @@ export default async function EventsPage() {
       <section className={appFrame}>
         <AppSidebar
           current="events"
-            insight={{
-              label: "Events",
-              value: `${events.length} logged`,
-              helper: totalRounds
-                ? `${totalRounds} event rounds linked to matches`
-                : "Event rounds feed analytics",
+          insight={{
+            label: "Events",
+            value: `${events.length} logged`,
+            helper: totalRounds
+              ? `${totalRounds} event rounds linked to matches`
+              : "Event rounds feed analytics",
           }}
         />
         <div className={`${appMain} mx-auto w-full max-w-7xl`}>
@@ -265,7 +265,7 @@ export default async function EventsPage() {
                       href={`/events/${event.id}`}
                       className={`${interactiveTile} block rounded-[22px] p-4 sm:p-5`}
                     >
-                          <div className="flex min-w-0 gap-3">
+                      <div className="flex min-w-0 gap-3">
                         <ArchetypeSprites
                           archetype={deck?.archetype ?? deck?.name ?? null}
                         />
@@ -288,7 +288,7 @@ export default async function EventsPage() {
                           <p className="mt-1 truncate text-sm text-[#94A3B8]">
                             {getEventDeckLabel(deck?.name, version?.name)}
                           </p>
-                          <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                          <div className="mt-4 grid gap-2 sm:grid-cols-2">
                             <div className={premiumInset + " px-3 py-2"}>
                               <p className="text-[0.65rem] uppercase tracking-[0.16em] text-[#94A3B8]">
                                 Record
@@ -303,28 +303,33 @@ export default async function EventsPage() {
                                 {rounds.length}
                               </p>
                             </div>
-                            <div className={premiumInset + " px-3 py-2"}>
-                              <p className="text-[0.65rem] uppercase tracking-[0.16em] text-[#94A3B8]">
-                                {eventSignal.label}
-                              </p>
-                              <div
-                                className="mt-1 flex min-w-0 items-center gap-2 font-semibold text-[#F8FAFC]"
-                                data-testid={
-                                  eventSignal.label === "Problem matchup"
-                                    ? "event-card-problem-matchup"
-                                    : undefined
-                                }
-                              >
-                                {eventSignal.archetype ? (
-                                  <ArchetypeSprites
-                                    archetype={eventSignal.archetype}
-                                    size="sm"
-                                  />
-                                ) : null}
-                                <span className="min-w-0 truncate">
-                                  {eventSignal.value}
-                                </span>
-                              </div>
+                          </div>
+                          <div
+                            className={`${premiumInset} mt-2 min-w-0 px-3 py-2`}
+                            data-testid="event-card-signal"
+                          >
+                            <p className="text-[0.65rem] uppercase tracking-[0.16em] text-[#94A3B8]">
+                              {eventSignal.label}
+                            </p>
+                            <div
+                              className="mt-1 flex min-w-0 items-start gap-2 font-semibold leading-5 text-[#F8FAFC]"
+                              data-testid={
+                                eventSignal.label === "Problem matchup"
+                                  ? "event-card-problem-matchup"
+                                  : undefined
+                              }
+                              title={eventSignal.value}
+                            >
+                              {eventSignal.archetype ? (
+                                <ArchetypeSprites
+                                  archetype={eventSignal.archetype}
+                                  size="sm"
+                                  className="shrink-0"
+                                />
+                              ) : null}
+                              <span className="min-w-0 whitespace-normal break-words">
+                                {eventSignal.value}
+                              </span>
                             </div>
                           </div>
                           <div className="mt-4 rounded-2xl bg-[#07111F]/50 px-3 py-2">

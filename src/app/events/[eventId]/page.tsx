@@ -136,18 +136,28 @@ function MatchupSpriteLabel({
   archetype,
   children,
   testId,
+  wrap = false,
 }: {
   archetype: string | null | undefined;
   children: ReactNode;
   testId?: string;
+  wrap?: boolean;
 }) {
   return (
     <span
-      className="inline-flex min-w-0 items-center gap-2"
+      className={`inline-flex min-w-0 items-start gap-2 ${wrap ? "whitespace-normal" : ""}`}
       data-testid={testId}
     >
-      <ArchetypeSprites archetype={archetype} size="sm" />
-      <span className="min-w-0 truncate">{children}</span>
+      <ArchetypeSprites archetype={archetype} size="sm" className="shrink-0" />
+      <span
+        className={
+          wrap
+            ? "min-w-0 whitespace-normal break-words"
+            : "min-w-0 truncate"
+        }
+      >
+        {children}
+      </span>
     </span>
   );
 }
@@ -283,8 +293,8 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                 </p>
               </div>
             </div>
-            <div className="mt-5 grid gap-3 lg:grid-cols-4">
-              <div className={`${premiumInset} px-3 py-3`}>
+            <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+              <div className={`${premiumInset} min-w-0 px-3 py-3`}>
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#94A3B8]">
                   Best matchup
                 </p>
@@ -296,6 +306,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                     <MatchupSpriteLabel
                       archetype={review.bestMatchup}
                       testId="best-matchup-sprites"
+                      wrap
                     >
                       {review.bestMatchup}: {review.bestMatchupRecord}
                     </MatchupSpriteLabel>
@@ -323,18 +334,20 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                   </>
                 )}
               </div>
-              <div className={`${premiumInset} px-3 py-3`}>
+              <div className={`${premiumInset} min-w-0 px-3 py-3`}>
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#94A3B8]">
                   Problem matchup
                 </p>
                 <p
-                  className="mt-2 text-lg font-semibold leading-6 text-[#F8FAFC]"
+                  className="mt-2 min-w-0 whitespace-normal break-words text-lg font-semibold leading-6 text-[#F8FAFC]"
                   title={review.problemMatchupLabel ?? undefined}
+                  data-testid="event-review-problem-matchup"
                 >
                   {review.problemMatchup && review.problemMatchupLabel ? (
                     <MatchupSpriteLabel
                       archetype={review.problemMatchup}
                       testId="problem-matchup-sprites"
+                      wrap
                     >
                       {review.problemMatchupLabel}
                     </MatchupSpriteLabel>
@@ -343,15 +356,15 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                   )}
                 </p>
               </div>
-              <div className={`${premiumInset} px-3 py-3`}>
+              <div className={`${premiumInset} min-w-0 px-3 py-3`}>
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#94A3B8]">
                   Common tags
                 </p>
-                <p className="mt-1 text-lg font-semibold leading-6 text-[#F8FAFC]">
+                <p className="mt-1 min-w-0 break-words text-lg font-semibold leading-6 text-[#F8FAFC]">
                   {review.commonTagsLabel}
                 </p>
               </div>
-              <div className={`${premiumInset} px-3 py-3`}>
+              <div className={`${premiumInset} min-w-0 px-3 py-3`}>
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#94A3B8]">
                   Version record
                 </p>
