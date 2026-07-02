@@ -9,6 +9,10 @@ import {
 } from "@/lib/match-options";
 import { resolveCurrentDeckScope } from "@/lib/current-deck-scope";
 import { buildDeckLabSummary } from "@/lib/deck-lab";
+import {
+  buildEventReviewSummary,
+  getEventDeckLabel,
+} from "@/lib/events";
 import type { SessionCoachInsight } from "@/lib/session-coach";
 import {
   isValidTcgLivePlayerName,
@@ -642,6 +646,49 @@ test.describe("TCG Live log parser", () => {
       expect(parsed.winnerName).toBe(winnerCase.expectedWinner);
       expect(parsed.result).toBe(winnerCase.expectedResult);
     }
+  });
+});
+
+test.describe("event review summary", () => {
+  test("avoids duplicated deck-version labels", async () => {
+    expect(getEventDeckLabel("Mega Lucario Duns", "Mega Lucario Duns")).toBe(
+      "Mega Lucario Duns"
+    );
+    expect(getEventDeckLabel("Mega Lucario Duns", "v2")).toBe(
+      "Mega Lucario Duns · v2"
+    );
+  });
+
+  test("suggests testing into the loss opponent, not the user's deck", async () => {
+    const review = buildEventReviewSummary({
+      deckName: "Mega Lucario Duns",
+      rounds: [
+        {
+          opponent_deck_name: "Dragapult Dusknoir",
+          result: "win",
+          tags: [],
+        },
+        {
+          opponent_deck_name: "Mega Greninja",
+          result: "win",
+          tags: [],
+        },
+        {
+          opponent_deck_name: "Mega Lucario Dudunsparce",
+          result: "loss",
+          tags: [],
+        },
+      ],
+    });
+
+    expect(review.problemMatchupLabel).toBe("Mega Lucario Dudunsparce: 0-1");
+    expect(review.suggestedNextTest).toContain(
+      "with Mega Lucario Duns into Mega Lucario Dudunsparce"
+    );
+    expect(review.suggestedNextTest).not.toContain(
+      "into Mega Lucario Duns."
+    );
+    expect(review.commonTagsLabel).toBe("No tags logged");
   });
 });
 

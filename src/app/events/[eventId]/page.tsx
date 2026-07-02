@@ -18,6 +18,7 @@ import {
 } from "@/components/brand-styles";
 import {
   buildEventReviewSummary,
+  getEventDeckLabel,
   getEventRecord,
   getMatchStructureLabel,
   parseEventTags,
@@ -120,6 +121,14 @@ function turnOrderLabel(value: boolean | null) {
   return value ? "Went first" : "Went second";
 }
 
+function getRoundScoreLabel(
+  score: string | null,
+  matchStructure: string | null
+) {
+  if (score) return score;
+  return matchStructure === "bo3" ? "Not logged" : "BO1";
+}
+
 export default async function EventDetailPage({ params }: EventDetailPageProps) {
   const { eventId } = await params;
   const supabase = await createServerSupabaseClient();
@@ -166,6 +175,10 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
     rounds: summaryRounds,
   });
   const record = getEventRecord(summaryRounds);
+  const eventDeckLabel = getEventDeckLabel(deck?.name, version?.name);
+  const winningMatchupLine = review.winningMatchups.length
+    ? `Wins into ${review.winningMatchups.join(" and ")}`
+    : "Log wins to identify favorable reads.";
 
   return (
     <main className={appShell}>
@@ -211,7 +224,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                   ) : null}
                 </div>
                 <h2 className="mt-3 truncate text-2xl font-semibold text-[#F8FAFC]">
-                  {deck?.name ?? "No deck"} {version ? `- ${version.name}` : ""}
+                  {eventDeckLabel}
                 </h2>
                 {event.notes ? (
                   <p className="mt-2 max-w-3xl text-sm leading-6 text-[#94A3B8]">
@@ -247,24 +260,37 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#94A3B8]">
                   Best matchup
                 </p>
-                <p className="mt-1 truncate text-lg font-semibold text-[#F8FAFC]">
-                  {review.bestMatchup ?? "No repeat win yet"}
+                <p
+                  className="mt-1 text-lg font-semibold leading-6 text-[#F8FAFC]"
+                  title={review.bestMatchup ?? winningMatchupLine}
+                >
+                  {review.bestMatchup && review.bestMatchupRecord
+                    ? `${review.bestMatchup}: ${review.bestMatchupRecord}`
+                    : "No repeat win yet"}
                 </p>
+                {!review.bestMatchup ? (
+                  <p className="mt-1 text-xs leading-5 text-[#94A3B8]">
+                    {winningMatchupLine}
+                  </p>
+                ) : null}
               </div>
               <div className={`${premiumInset} px-3 py-3`}>
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#94A3B8]">
                   Problem matchup
                 </p>
-                <p className="mt-1 truncate text-lg font-semibold text-[#F8FAFC]">
-                  {review.problemMatchup ?? "No clear leak"}
+                <p
+                  className="mt-1 text-lg font-semibold leading-6 text-[#F8FAFC]"
+                  title={review.problemMatchupLabel ?? undefined}
+                >
+                  {review.problemMatchupLabel ?? "No clear leak"}
                 </p>
               </div>
               <div className={`${premiumInset} px-3 py-3`}>
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#94A3B8]">
                   Common tags
                 </p>
-                <p className="mt-1 truncate text-lg font-semibold text-[#F8FAFC]">
-                  {review.commonTags.map((item) => item.tag).join(", ") || "None yet"}
+                <p className="mt-1 text-lg font-semibold leading-6 text-[#F8FAFC]">
+                  {review.commonTagsLabel}
                 </p>
               </div>
               <div className={`${premiumInset} px-3 py-3`}>
@@ -283,6 +309,11 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
               <p className="mt-2 text-base font-semibold leading-6 text-[#F8FAFC]">
                 {review.suggestedNextTest}
               </p>
+              {!review.hasLoggedTags ? (
+                <p className="mt-2 text-sm leading-5 text-[#D7E0EF]">
+                  Add tags during event logging to make the review more specific.
+                </p>
+              ) : null}
             </div>
           </section>
 
@@ -337,7 +368,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                           </span>
                         </td>
                         <td className="px-4 py-3 text-[#94A3B8]">
-                          {round.match_score ?? "-"}
+                          {getRoundScoreLabel(round.match_score, event.match_structure)}
                         </td>
                         <td className="px-4 py-3 text-[#94A3B8]">
                           {turnOrderLabel(round.went_first)}
@@ -350,7 +381,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                                     {tag}
                                   </span>
                                 ))
-                              : <span className="text-[#94A3B8]">-</span>}
+                              : <span className="text-[#94A3B8]">No tags</span>}
                           </div>
                         </td>
                         <td className="px-4 py-3 text-[#94A3B8]">
@@ -388,7 +419,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                       </span>
                     </h3>
                     <p className="mt-1 text-sm text-[#94A3B8]">
-                      Score: {round.match_score ?? "Not logged"}
+                      Score: {getRoundScoreLabel(round.match_score, event.match_structure)}
                     </p>
                     {tags.length ? (
                       <div className="mt-3 flex flex-wrap gap-2">
@@ -398,7 +429,9 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                           </span>
                         ))}
                       </div>
-                    ) : null}
+                    ) : (
+                      <p className="mt-3 text-sm text-[#94A3B8]">No tags</p>
+                    )}
                     {round.notes ? (
                       <p className="mt-3 text-sm leading-6 text-[#94A3B8]">
                         {round.notes}

@@ -19,6 +19,7 @@ import {
 } from "@/components/brand-styles";
 import {
   buildEventReviewSummary,
+  getEventDeckLabel,
   getMatchStructureLabel,
   getEventRecord,
   parseEventTags,
@@ -230,7 +231,7 @@ export default async function EventsPage() {
                             {event.name}
                           </h3>
                           <p className="mt-1 truncate text-sm text-[#94A3B8]">
-                            {deck?.name ?? "No deck"} {version ? `- ${version.name}` : ""}
+                            {getEventDeckLabel(deck?.name, version?.name)}
                           </p>
                           <div className="mt-4 grid gap-2 sm:grid-cols-3">
                             <div className={premiumInset + " px-3 py-2"}>

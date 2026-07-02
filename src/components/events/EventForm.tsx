@@ -21,6 +21,7 @@ import {
   EVENT_TYPE_OPTIONS,
   MATCH_SCORE_OPTIONS,
   getDefaultMatchStructure,
+  getEventDeckLabel,
   type EventMatchStructure,
   type EventType,
 } from "@/lib/events";
@@ -399,8 +400,7 @@ export function EventForm({
                   {eventName || "Unnamed event"}
                 </h3>
                 <p className="mt-1 truncate text-sm text-[#94A3B8]">
-                  {selectedDeck?.name ?? "No deck"}{" "}
-                  {selectedVersion ? `- ${selectedVersion.name}` : ""}
+                  {getEventDeckLabel(selectedDeck?.name, selectedVersion?.name)}
                 </p>
               </div>
             </div>
