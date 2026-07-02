@@ -1331,6 +1331,10 @@ test.describe("authenticated routes", () => {
     await page.goto("/events/new");
 
     await expectHeadingVisible(page, "New event");
+    await expect(page.getByLabel("Event name")).toHaveAttribute(
+      "placeholder",
+      "League Cup, locals, testing block..."
+    );
     await expect(page.getByLabel("Best of 1")).toBeChecked();
     await expect(page.locator("body")).toContainText("Each round is a single game.");
     await expect(page.locator('input[name="round_0_score"]')).toHaveCount(0);
@@ -1393,6 +1397,8 @@ test.describe("authenticated routes", () => {
     await expect(page.getByRole("link", { name: "Open Review" })).toHaveCount(0);
     await expect(page.locator("body")).toContainText("Wins logged");
     await expect(page.locator("body")).toContainText("Suggested next test");
+    await expect(page.getByRole("button", { name: "Delete event" })).toBeVisible();
+    await expect(page.locator("body")).not.toContainText("This removes the event, its rounds");
     await expect(page.getByTestId("problem-matchup-sprites")).toBeVisible();
     await expect(page.getByTestId("event-review-problem-matchup")).toContainText("Mega Lucario Dudunsparce: 0-1");
     await expect(page.getByTestId("suggested-next-test-matchup")).toBeVisible();

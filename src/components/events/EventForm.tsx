@@ -373,7 +373,7 @@ export function EventForm({
                   required
                   value={eventName}
                   onChange={(event) => setEventName(event.target.value)}
-                  placeholder="CoreTCG Weekly"
+                  placeholder="League Cup, locals, testing block..."
                   className={inputH10}
                 />
               </div>

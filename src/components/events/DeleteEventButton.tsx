@@ -9,7 +9,7 @@ function DeleteSubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="rounded-full bg-rose-500/12 px-4 py-2 text-sm font-semibold text-rose-100 transition hover:bg-rose-500/18 disabled:cursor-not-allowed disabled:opacity-60"
+      className="rounded-full px-3 py-2 text-sm font-semibold text-rose-200/82 shadow-[inset_0_0_0_1px_rgba(244,63,94,0.22)] transition hover:bg-rose-500/10 hover:text-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
     >
       {pending ? "Deleting event..." : "Delete event"}
     </button>
