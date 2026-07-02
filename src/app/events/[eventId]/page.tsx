@@ -176,8 +176,11 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
   });
   const record = getEventRecord(summaryRounds);
   const eventDeckLabel = getEventDeckLabel(deck?.name, version?.name);
+  const bestMatchupFallbackTitle = review.winningMatchups.length
+    ? "Wins logged"
+    : "No wins logged";
   const winningMatchupLine = review.winningMatchups.length
-    ? `Wins into ${review.winningMatchups.join(" and ")}`
+    ? review.winningMatchups.join(", ")
     : "Log wins to identify favorable reads.";
 
   return (
@@ -251,9 +254,6 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                   SixPrizer reads this event through matchups, tags, and linked match history.
                 </p>
               </div>
-              <Link href="/review" className={secondaryButton}>
-                Open Review
-              </Link>
             </div>
             <div className="mt-5 grid gap-3 lg:grid-cols-4">
               <div className={`${premiumInset} px-3 py-3`}>
@@ -266,7 +266,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                 >
                   {review.bestMatchup && review.bestMatchupRecord
                     ? `${review.bestMatchup}: ${review.bestMatchupRecord}`
-                    : "No repeat win yet"}
+                    : bestMatchupFallbackTitle}
                 </p>
                 {!review.bestMatchup ? (
                   <p className="mt-1 text-xs leading-5 text-[#94A3B8]">

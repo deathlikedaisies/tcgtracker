@@ -683,11 +683,12 @@ test.describe("event review summary", () => {
 
     expect(review.problemMatchupLabel).toBe("Mega Lucario Dudunsparce: 0-1");
     expect(review.suggestedNextTest).toContain(
-      "with Mega Lucario Duns into Mega Lucario Dudunsparce"
+      "Test Mega Lucario Duns into Mega Lucario Dudunsparce for 5 games"
     );
     expect(review.suggestedNextTest).not.toContain(
       "into Mega Lucario Duns."
     );
+    expect(review.suggestedNextTest).not.toContain("5-game testing block");
     expect(review.commonTagsLabel).toBe("No tags logged");
   });
 });
@@ -1350,7 +1351,11 @@ test.describe("authenticated routes", () => {
     await expect(page.locator("body")).toContainText("1-2");
     await expect(page.locator("body")).toContainText("1-1");
     await expect(page.locator("body")).toContainText("Event Review");
+    await expect(page.getByRole("link", { name: "Open Review" })).toHaveCount(0);
+    await expect(page.locator("body")).toContainText("Wins logged");
     await expect(page.locator("body")).toContainText("Suggested next test");
+    await expect(page.locator("body")).toContainText("into Gholdengo for 5 games");
+    await expect(page.locator("body")).not.toContainText("5-game testing block");
     await expect(page.locator("body")).toContainText("Gholdengo");
     await expect(page.locator("body")).toContainText("Raging Bolt");
     await expect(page.locator("body")).toContainText("Random rogue deck");

@@ -262,7 +262,7 @@ export function buildEventReviewSummary({
   );
   const deckLabel = deckName?.trim() || "this deck";
   const issueFocus = commonIssueTags.length
-    ? `Track ${commonIssueTags.map((item) => item.tag).join(", ")} and turn order.`
+    ? `focusing on ${commonIssueTags.map((item) => item.tag).join(", ")}`
     : "Track turn order, setup quality, and first-issue tags.";
   const mostCommonMatchup =
     Array.from(matchupResults.entries()).sort(
@@ -274,10 +274,14 @@ export function buildEventReviewSummary({
     )[0]?.[0] ?? null;
   const suggestedNextTest = problemMatchup && problemRecord?.losses
     ? problemRecord.losses > 1
-      ? `Prioritize a 5-game testing block with ${deckLabel} into ${problemMatchup}. You lost this matchup ${problemRecord.losses} times during the event. ${issueFocus}`
-      : `Play a 5-game testing block with ${deckLabel} into ${problemMatchup}. ${issueFocus}`
+      ? `Prioritize ${problemMatchup}. You lost this matchup ${problemRecord.losses} times during the event. Test ${deckLabel} into it for 5 games.`
+      : commonIssueTags.length
+        ? `Test ${deckLabel} into ${problemMatchup} for 5 games, ${issueFocus}.`
+        : `Test ${deckLabel} into ${problemMatchup} for 5 games. ${issueFocus}`
     : problemMatchup
-      ? `Run a 5-game check with ${deckLabel} into ${problemMatchup}. The event produced a tie or unresolved read there. ${issueFocus}`
+      ? commonIssueTags.length
+        ? `Test ${deckLabel} into ${problemMatchup} for 5 games, ${issueFocus}.`
+        : `Test ${deckLabel} into ${problemMatchup} for 5 games. ${issueFocus}`
     : consistencyIssue
       ? `Run a 5-game testing block with ${deckLabel} focused on opening consistency and sequencing.`
       : rounds.length
