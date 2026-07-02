@@ -12,6 +12,7 @@ import { buildDeckLabSummary } from "@/lib/deck-lab";
 import {
   buildEventReviewSummary,
   getEventDeckLabel,
+  getEventIndexSignal,
 } from "@/lib/events";
 import type { SessionCoachInsight } from "@/lib/session-coach";
 import {
@@ -691,6 +692,41 @@ test.describe("event review summary", () => {
     expect(review.suggestedNextTest).not.toContain("5-game testing block");
     expect(review.commonTagsLabel).toBe("No tags logged");
   });
+
+  test("labels event index signals by source instead of treating matchups as tags", async () => {
+    expect(
+      getEventIndexSignal({
+        issueTag: "Slow start",
+        review: { problemMatchup: "Raging Bolt" },
+      })
+    ).toEqual({
+      label: "Top issue",
+      value: "Slow start",
+      archetype: null,
+    });
+
+    expect(
+      getEventIndexSignal({
+        issueTag: null,
+        review: { problemMatchup: "Mega Lucario Dudunsparce" },
+      })
+    ).toEqual({
+      label: "Problem matchup",
+      value: "Mega Lucario Dudunsparce",
+      archetype: "Mega Lucario Dudunsparce",
+    });
+
+    expect(
+      getEventIndexSignal({
+        issueTag: null,
+        review: { problemMatchup: null },
+      })
+    ).toEqual({
+      label: "Review status",
+      value: "No issues logged",
+      archetype: null,
+    });
+  });
 });
 
 test.describe("current deck scope resolver", () => {
@@ -1357,6 +1393,8 @@ test.describe("authenticated routes", () => {
     await expect(page.getByRole("link", { name: "Open Review" })).toHaveCount(0);
     await expect(page.locator("body")).toContainText("Wins logged");
     await expect(page.locator("body")).toContainText("Suggested next test");
+    await expect(page.getByTestId("problem-matchup-sprites")).toBeVisible();
+    await expect(page.getByTestId("suggested-next-test-matchup")).toBeVisible();
     await expect(page.locator("body")).toContainText("into Gholdengo for 5 games");
     await expect(page.locator("body")).not.toContainText("5-game testing block");
     await expect(page.locator("body")).toContainText("Gholdengo");
@@ -1369,6 +1407,7 @@ test.describe("authenticated routes", () => {
     await expectHeadingVisible(page, "Events");
     await expect(page.locator("body")).toContainText(eventName);
     await expect(page.locator("body")).toContainText("1-1-1");
+    await expect(page.locator("body")).toContainText("Top issue");
 
     for (const opponent of ["Gholdengo", "Raging Bolt", "Random rogue deck"]) {
       await page.goto(`/matches?opponent_archetype=${encodeURIComponent(opponent)}`);

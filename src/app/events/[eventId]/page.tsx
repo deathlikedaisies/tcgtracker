@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import type { ReactNode } from "react";
 import { AppSidebar } from "@/components/AppSidebar";
 import { AuthenticatedPageHeader } from "@/components/AuthenticatedPageHeader";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
@@ -129,6 +130,26 @@ function getRoundScoreLabel(
 ) {
   if (score) return score;
   return matchStructure === "bo3" ? "Not logged" : "BO1";
+}
+
+function MatchupSpriteLabel({
+  archetype,
+  children,
+  testId,
+}: {
+  archetype: string | null | undefined;
+  children: ReactNode;
+  testId?: string;
+}) {
+  return (
+    <span
+      className="inline-flex min-w-0 items-center gap-2"
+      data-testid={testId}
+    >
+      <ArchetypeSprites archetype={archetype} size="sm" />
+      <span className="min-w-0 truncate">{children}</span>
+    </span>
+  );
 }
 
 export default async function EventDetailPage({ params }: EventDetailPageProps) {
@@ -267,29 +288,59 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#94A3B8]">
                   Best matchup
                 </p>
-                <p
-                  className="mt-1 text-lg font-semibold leading-6 text-[#F8FAFC]"
-                  title={review.bestMatchup ?? winningMatchupLine}
-                >
-                  {review.bestMatchup && review.bestMatchupRecord
-                    ? `${review.bestMatchup}: ${review.bestMatchupRecord}`
-                    : bestMatchupFallbackTitle}
-                </p>
-                {!review.bestMatchup ? (
-                  <p className="mt-1 text-xs leading-5 text-[#94A3B8]">
-                    {winningMatchupLine}
+                {review.bestMatchup && review.bestMatchupRecord ? (
+                  <p
+                    className="mt-2 text-lg font-semibold leading-6 text-[#F8FAFC]"
+                    title={`${review.bestMatchup}: ${review.bestMatchupRecord}`}
+                  >
+                    <MatchupSpriteLabel
+                      archetype={review.bestMatchup}
+                      testId="best-matchup-sprites"
+                    >
+                      {review.bestMatchup}: {review.bestMatchupRecord}
+                    </MatchupSpriteLabel>
                   </p>
-                ) : null}
+                ) : (
+                  <>
+                    <p
+                      className="mt-1 text-lg font-semibold leading-6 text-[#F8FAFC]"
+                      title={winningMatchupLine}
+                    >
+                      {bestMatchupFallbackTitle}
+                    </p>
+                    <div className="mt-2 flex flex-wrap gap-2 text-xs leading-5 text-[#94A3B8]">
+                      {review.winningMatchups.length
+                        ? review.winningMatchups.slice(0, 3).map((matchup) => (
+                            <MatchupSpriteLabel
+                              key={matchup}
+                              archetype={matchup}
+                            >
+                              {matchup}
+                            </MatchupSpriteLabel>
+                          ))
+                        : winningMatchupLine}
+                    </div>
+                  </>
+                )}
               </div>
               <div className={`${premiumInset} px-3 py-3`}>
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#94A3B8]">
                   Problem matchup
                 </p>
                 <p
-                  className="mt-1 text-lg font-semibold leading-6 text-[#F8FAFC]"
+                  className="mt-2 text-lg font-semibold leading-6 text-[#F8FAFC]"
                   title={review.problemMatchupLabel ?? undefined}
                 >
-                  {review.problemMatchupLabel ?? "No clear leak"}
+                  {review.problemMatchup && review.problemMatchupLabel ? (
+                    <MatchupSpriteLabel
+                      archetype={review.problemMatchup}
+                      testId="problem-matchup-sprites"
+                    >
+                      {review.problemMatchupLabel}
+                    </MatchupSpriteLabel>
+                  ) : (
+                    "No clear leak"
+                  )}
                 </p>
               </div>
               <div className={`${premiumInset} px-3 py-3`}>
@@ -313,6 +364,22 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#FFE28A]">
                 Suggested next test
               </p>
+              {review.problemMatchup ? (
+                <div
+                  className="mt-3 flex flex-wrap items-center gap-2 rounded-2xl bg-[#07111F]/46 px-3 py-2"
+                  data-testid="suggested-next-test-matchup"
+                >
+                  <MatchupSpriteLabel archetype={deck?.archetype ?? deck?.name}>
+                    {deck?.name ?? "Your deck"}
+                  </MatchupSpriteLabel>
+                  <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#FFE28A]">
+                    vs
+                  </span>
+                  <MatchupSpriteLabel archetype={review.problemMatchup}>
+                    {review.problemMatchup}
+                  </MatchupSpriteLabel>
+                </div>
+              ) : null}
               <p className="mt-2 text-base font-semibold leading-6 text-[#F8FAFC]">
                 {review.suggestedNextTest}
               </p>

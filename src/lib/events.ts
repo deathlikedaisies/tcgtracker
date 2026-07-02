@@ -62,6 +62,12 @@ export type EventReviewSummary = {
   suggestedNextTest: string;
 };
 
+export type EventIndexSignal = {
+  label: "Top issue" | "Problem matchup" | "Review status";
+  value: string;
+  archetype: string | null;
+};
+
 function isOneOf<T extends readonly string[]>(value: string, options: T): value is T[number] {
   return options.includes(value);
 }
@@ -167,6 +173,36 @@ export function getEventRecord(rounds: EventRoundSummaryInput[]) {
   );
 
   return formatMatchRecord(counts.wins, counts.losses, counts.ties);
+}
+
+export function getEventIndexSignal({
+  issueTag,
+  review,
+}: {
+  issueTag: string | null;
+  review: Pick<EventReviewSummary, "problemMatchup">;
+}): EventIndexSignal {
+  if (issueTag) {
+    return {
+      label: "Top issue",
+      value: issueTag,
+      archetype: null,
+    };
+  }
+
+  if (review.problemMatchup) {
+    return {
+      label: "Problem matchup",
+      value: review.problemMatchup,
+      archetype: review.problemMatchup,
+    };
+  }
+
+  return {
+    label: "Review status",
+    value: "No issues logged",
+    archetype: null,
+  };
 }
 
 function topEntries(counts: Map<string, number>, limit = 3) {

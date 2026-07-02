@@ -20,6 +20,7 @@ import {
 import {
   buildEventReviewSummary,
   getEventDeckLabel,
+  getEventIndexSignal,
   getMatchStructureLabel,
   getEventRecord,
   parseEventTags,
@@ -102,6 +103,15 @@ export default async function EventsPage() {
     0
   );
   const recentEvent = events[0];
+  const recentDeck = one(recentEvent?.decks);
+  const recentVersion = one(recentEvent?.deck_versions);
+  const recentRounds = recentEvent?.event_rounds ?? [];
+  const recentSummaryRounds = recentRounds.map((round) => ({
+    opponent_deck_name: round.opponent_deck_name,
+    result: round.result,
+    tags: parseEventTags(round.tags),
+  }));
+  const recentRecord = recentEvent ? getEventRecord(recentSummaryRounds) : null;
 
   return (
     <main className={appShell}>
@@ -142,7 +152,7 @@ export default async function EventsPage() {
             <div className="grid gap-3 sm:grid-cols-3">
               <div className={`${premiumInset} px-3 py-3`}>
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#94A3B8]">
-                  Events
+                  Events logged
                 </p>
                 <p className="mt-1 text-2xl font-semibold text-[#F8FAFC]">
                   {events.length}
@@ -153,7 +163,7 @@ export default async function EventsPage() {
               </div>
               <div className={`${premiumInset} px-3 py-3`}>
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#94A3B8]">
-                  Rounds
+                  Event rounds
                 </p>
                 <p className="mt-1 text-2xl font-semibold text-[#F8FAFC]">
                   {totalRounds}
@@ -164,7 +174,7 @@ export default async function EventsPage() {
               </div>
               <div className={`${premiumInset} px-3 py-3`}>
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#94A3B8]">
-                  Latest
+                  Latest run
                 </p>
                 <p className="mt-1 truncate text-lg font-semibold text-[#F8FAFC]">
                   {recentEvent ? recentEvent.name : "None yet"}
@@ -175,6 +185,41 @@ export default async function EventsPage() {
               </div>
             </div>
           </section>
+
+          {recentEvent ? (
+            <section className={`${cardLarge} overflow-hidden`}>
+              <div className="grid gap-4 lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:items-center">
+                <ArchetypeSprites
+                  archetype={recentDeck?.archetype ?? recentDeck?.name ?? null}
+                  size="lg"
+                />
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className={subtlePill}>Recent run</span>
+                    <span className={subtlePill}>{recentEvent.event_type}</span>
+                    <span className={subtlePill}>
+                      {getMatchStructureLabel(recentEvent.match_structure)}
+                    </span>
+                    <span className={subtlePill}>
+                      {formatDate(recentEvent.event_date)}
+                    </span>
+                  </div>
+                  <h2 className="mt-3 truncate text-2xl font-semibold text-[#F8FAFC]">
+                    {recentEvent.name}
+                  </h2>
+                  <p className="mt-1 truncate text-sm text-[#94A3B8]">
+                    {getEventDeckLabel(recentDeck?.name, recentVersion?.name)}
+                  </p>
+                </div>
+                <Link
+                  href={`/events/${recentEvent.id}`}
+                  className={`${secondaryButton} justify-center`}
+                >
+                  Review {recentRecord ?? "event"}
+                </Link>
+              </div>
+            </section>
+          ) : null}
 
           {events.length ? (
             <section className={`${cardLarge} overflow-hidden`}>
@@ -189,6 +234,10 @@ export default async function EventsPage() {
                   Add another event
                 </Link>
               </div>
+              <p className="mt-2 text-sm text-[#94A3B8]">
+                Testing blocks work well for focused matchup practice between
+                tournaments.
+              </p>
               <div className="mt-5 grid gap-3 lg:grid-cols-2">
                 {events.map((event) => {
                   const deck = one(event.decks);
@@ -205,6 +254,10 @@ export default async function EventsPage() {
                     deckName: deck?.name,
                     rounds: summaryRounds,
                   });
+                  const eventSignal = getEventIndexSignal({
+                    issueTag,
+                    review,
+                  });
 
                   return (
                     <Link
@@ -212,8 +265,10 @@ export default async function EventsPage() {
                       href={`/events/${event.id}`}
                       className={`${interactiveTile} block rounded-[22px] p-4 sm:p-5`}
                     >
-                      <div className="flex min-w-0 gap-3">
-                        <ArchetypeSprites archetype={deck?.archetype ?? deck?.name ?? null} />
+                          <div className="flex min-w-0 gap-3">
+                        <ArchetypeSprites
+                          archetype={deck?.archetype ?? deck?.name ?? null}
+                        />
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-2">
                             <span className={subtlePill}>{event.event_type}</span>
@@ -250,11 +305,26 @@ export default async function EventsPage() {
                             </div>
                             <div className={premiumInset + " px-3 py-2"}>
                               <p className="text-[0.65rem] uppercase tracking-[0.16em] text-[#94A3B8]">
-                                Top issue
+                                {eventSignal.label}
                               </p>
-                              <p className="mt-1 truncate font-semibold text-[#F8FAFC]">
-                                {issueTag ?? review.problemMatchup ?? "No issue yet"}
-                              </p>
+                              <div
+                                className="mt-1 flex min-w-0 items-center gap-2 font-semibold text-[#F8FAFC]"
+                                data-testid={
+                                  eventSignal.label === "Problem matchup"
+                                    ? "event-card-problem-matchup"
+                                    : undefined
+                                }
+                              >
+                                {eventSignal.archetype ? (
+                                  <ArchetypeSprites
+                                    archetype={eventSignal.archetype}
+                                    size="sm"
+                                  />
+                                ) : null}
+                                <span className="min-w-0 truncate">
+                                  {eventSignal.value}
+                                </span>
+                              </div>
                             </div>
                           </div>
                           <div className="mt-4 rounded-2xl bg-[#07111F]/50 px-3 py-2">
