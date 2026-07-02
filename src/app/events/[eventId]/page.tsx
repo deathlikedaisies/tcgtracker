@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { AppSidebar } from "@/components/AppSidebar";
 import { AuthenticatedPageHeader } from "@/components/AuthenticatedPageHeader";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
+import { DeleteEventButton } from "@/components/events/DeleteEventButton";
 import {
   appFrame,
   appMain,
@@ -29,6 +30,7 @@ import {
   type MatchResult,
 } from "@/lib/match-types";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
+import { deleteEvent } from "../actions";
 
 type EventDetailPageProps = {
   params: Promise<{
@@ -203,9 +205,14 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
             subtitle="Review the event, inspect round patterns, and decide what to test next."
             userEmail={user.email ?? "Unknown email"}
             actions={
-              <Link href="/events/new" className={primaryButton}>
-                Log another event
-              </Link>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <Link href={`/events/${event.id}/edit`} className={secondaryButton}>
+                  Edit event
+                </Link>
+                <Link href="/events/new" className={primaryButton}>
+                  Log another event
+                </Link>
+              </div>
             }
           />
 
@@ -440,6 +447,21 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                   </article>
                 );
               })}
+            </div>
+          </section>
+
+          <section className="rounded-[22px] bg-rose-950/18 p-4 shadow-[inset_0_0_0_1px_rgba(244,63,94,0.18)] sm:p-5">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-rose-50">
+                  Delete event
+                </h2>
+                <p className="mt-1 max-w-2xl text-sm leading-6 text-rose-100/76">
+                  This removes the event, its rounds, and the linked Match
+                  history entries created from those rounds.
+                </p>
+              </div>
+              <DeleteEventButton action={deleteEvent.bind(null, event.id)} />
             </div>
           </section>
         </div>

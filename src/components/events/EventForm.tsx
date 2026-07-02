@@ -48,10 +48,36 @@ type EventFormProps = {
   ) => Promise<CreateEventState>;
   decks: DeckOption[];
   initialEventType?: string;
+  initialEvent?: EventFormInitialValue;
+  mode?: "create" | "edit";
+  submitLabel?: string;
+};
+
+export type EventFormInitialValue = {
+  name: string;
+  eventDate: string;
+  eventType: string;
+  format: string;
+  matchStructure: EventMatchStructure;
+  deckId: string;
+  deckVersionId: string;
+  placement: string | null;
+  notes: string | null;
+  rounds: {
+    id: string;
+    roundNumber: number;
+    opponent: string;
+    result: "win" | "loss" | "tie";
+    score: string | null;
+    wentFirst: "unknown" | "true" | "false";
+    tags: string[];
+    notes: string | null;
+  }[];
 };
 
 type RoundDraft = {
   id: string;
+  persistedId: string | null;
   opponent: string;
   result: "win" | "loss" | "tie" | "";
   score: string;
@@ -80,12 +106,18 @@ const presetScoreOptions = MATCH_SCORE_OPTIONS.filter(
   (score) => score !== "Other"
 );
 
-function SubmitButton({ disabled }: { disabled: boolean }) {
+function SubmitButton({
+  disabled,
+  label,
+}: {
+  disabled: boolean;
+  label: string;
+}) {
   const { pending } = useFormStatus();
 
   return (
     <button type="submit" disabled={pending || disabled} className={primaryButton}>
-      {pending ? "Saving event..." : "Save event"}
+      {pending ? "Saving event..." : label}
     </button>
   );
 }
@@ -100,15 +132,18 @@ function getInitialEventType(value: string | undefined): EventType {
     : "Local";
 }
 
-function createRoundDraft(): RoundDraft {
+function createRoundDraft(
+  initial?: Partial<Omit<RoundDraft, "id">> & { id?: string }
+): RoundDraft {
   return {
-    id: crypto.randomUUID(),
-    opponent: "",
-    result: "",
-    score: "2-0",
-    wentFirst: "unknown",
-    tags: [],
-    notes: "",
+    id: initial?.id ?? crypto.randomUUID(),
+    persistedId: initial?.persistedId ?? null,
+    opponent: initial?.opponent ?? "",
+    result: initial?.result ?? "",
+    score: initial?.score ?? "2-0",
+    wentFirst: initial?.wentFirst ?? "unknown",
+    tags: initial?.tags ?? [],
+    notes: initial?.notes ?? "",
   };
 }
 
@@ -201,23 +236,50 @@ export function EventForm({
   action,
   decks,
   initialEventType,
+  initialEvent,
+  mode = "create",
+  submitLabel = "Save event",
 }: EventFormProps) {
-  const startingEventType = getInitialEventType(initialEventType);
-  const initialDeck = decks[0];
+  const startingEventType = getInitialEventType(
+    initialEvent?.eventType ?? initialEventType
+  );
+  const initialDeck =
+    decks.find((deck) => deck.id === initialEvent?.deckId) ?? decks[0];
   const initialVersion =
+    initialDeck?.versions.find(
+      (version) => version.id === initialEvent?.deckVersionId
+    ) ??
     initialDeck?.versions.find((version) => version.isActive) ??
     initialDeck?.versions[0];
   const [state, formAction] = useActionState(action, { error: null });
-  const [eventName, setEventName] = useState("");
+  const [eventName, setEventName] = useState(initialEvent?.name ?? "");
   const [eventType, setEventType] = useState<EventType>(startingEventType);
   const [matchStructure, setMatchStructure] = useState<EventMatchStructure>(
-    getDefaultMatchStructure(startingEventType)
+    initialEvent?.matchStructure ?? getDefaultMatchStructure(startingEventType)
   );
   const [selectedDeckId, setSelectedDeckId] = useState(initialDeck?.id ?? "");
   const [selectedVersionId, setSelectedVersionId] = useState(
     initialVersion?.id ?? ""
   );
-  const [rounds, setRounds] = useState<RoundDraft[]>([createRoundDraft()]);
+  const [rounds, setRounds] = useState<RoundDraft[]>(
+    initialEvent?.rounds.length
+      ? initialEvent.rounds
+          .slice()
+          .sort((first, second) => first.roundNumber - second.roundNumber)
+          .map((round) =>
+            createRoundDraft({
+              id: round.id,
+              persistedId: round.id,
+              opponent: round.opponent,
+              result: round.result,
+              score: round.score ?? "2-0",
+              wentFirst: round.wentFirst,
+              tags: round.tags,
+              notes: round.notes ?? "",
+            })
+          )
+      : [createRoundDraft()]
+  );
   const [activeRoundId, setActiveRoundId] = useState(rounds[0]?.id ?? "");
   const selectedDeck = decks.find((deck) => deck.id === selectedDeckId);
   const visibleVersions = selectedDeck?.versions ?? [];
@@ -287,14 +349,17 @@ export function EventForm({
         <div className="relative grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#4F8CFF]">
-              Build your event run
+              {mode === "edit" ? "Edit event run" : "Build your event run"}
             </p>
             <h2 className="mt-1 text-2xl font-semibold tracking-tight text-[#F8FAFC]">
-              Log every event round once.
+              {mode === "edit"
+                ? "Correct the event and linked matches."
+                : "Log every event round once."}
             </h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-[#94A3B8]">
-              Add one card per tournament round. SixPrizer turns the run into
-              matchup data, deck-version stats, and a post-event review.
+              {mode === "edit"
+                ? "Changes here update Event Review and the event-linked Match history entries."
+                : "Add one card per tournament round. SixPrizer turns the run into matchup data, deck-version stats, and a post-event review."}
             </p>
 
             <div className="mt-4 grid gap-3 md:grid-cols-2">
@@ -321,7 +386,7 @@ export function EventForm({
                   name="event_date"
                   type="date"
                   required
-                  defaultValue={todayInputValue()}
+                  defaultValue={initialEvent?.eventDate ?? todayInputValue()}
                   className={inputH10}
                 />
               </div>
@@ -349,7 +414,12 @@ export function EventForm({
                 <label htmlFor="format" className={label}>
                   Format
                 </label>
-                <select id="format" name="format" className={inputH10}>
+                <select
+                  id="format"
+                  name="format"
+                  defaultValue={initialEvent?.format ?? "Standard"}
+                  className={inputH10}
+                >
                   {EVENT_FORMAT_OPTIONS.map((format) => (
                     <option key={format} value={format}>
                       {format}
@@ -508,6 +578,7 @@ export function EventForm({
             <input
               id="placement"
               name="placement"
+              defaultValue={initialEvent?.placement ?? ""}
               placeholder="Top 8, 12th, 3-1 bubble..."
               className={inputH10}
             />
@@ -520,6 +591,7 @@ export function EventForm({
               id="notes"
               name="notes"
               rows={3}
+              defaultValue={initialEvent?.notes ?? ""}
               placeholder="What mattered across the event?"
               className={`mt-3 ${textarea}`}
             />
@@ -594,6 +666,13 @@ export function EventForm({
                   name={`round_${index}_number`}
                   value={index + 1}
                 />
+                {round.persistedId ? (
+                  <input
+                    type="hidden"
+                    name={`round_${index}_id`}
+                    value={round.persistedId}
+                  />
+                ) : null}
                 <div className="mt-4 grid gap-3 xl:grid-cols-[minmax(0,1.45fr)_minmax(180px,0.48fr)_minmax(220px,0.66fr)] xl:items-stretch">
                   <div className="rounded-[20px] bg-[#0B1020]/52 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
                     <OpponentDeckCombobox
@@ -825,7 +904,7 @@ export function EventForm({
             {saveHelperText}
           </p>
         ) : null}
-        <SubmitButton disabled={!canSaveEvent} />
+        <SubmitButton disabled={!canSaveEvent} label={submitLabel} />
       </div>
     </form>
   );

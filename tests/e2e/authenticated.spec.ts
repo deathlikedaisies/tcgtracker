@@ -1289,6 +1289,9 @@ test.describe("authenticated routes", () => {
   test("/events creates match-linked event rounds and event review", async ({
     page,
   }) => {
+    const eventName = `CoreTCG Weekly ${Date.now()}`;
+    const updatedEventName = `${eventName} Updated`;
+
     await page.goto("/events/new");
 
     await expectHeadingVisible(page, "New event");
@@ -1302,7 +1305,7 @@ test.describe("authenticated routes", () => {
     await expect(page.locator('input[name="round_0_result"]:checked')).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Save event" })).toBeDisabled();
 
-    await page.getByLabel("Event name").fill("CoreTCG Weekly");
+    await page.getByLabel("Event name").fill(eventName);
     await page.getByLabel("Event type").selectOption("League Cup");
     await expect(page.getByLabel("Best of 3")).toBeChecked();
     await expect(page.locator('input[name="round_0_score"]')).toHaveValue("2-0");
@@ -1343,7 +1346,7 @@ test.describe("authenticated routes", () => {
     await page.getByRole("button", { name: "Save event" }).click();
     await page.waitForURL(/\/events\/[0-9a-f-]+/, { timeout: 30000 });
 
-    await expectHeadingVisible(page, "CoreTCG Weekly");
+    await expectHeadingVisible(page, eventName);
     await expect(page.locator("body")).toContainText("Final record");
     await expect(page.locator("body")).toContainText("Best of 3");
     await expect(page.locator("body")).toContainText("1-1-1");
@@ -1364,14 +1367,58 @@ test.describe("authenticated routes", () => {
 
     await page.goto("/events");
     await expectHeadingVisible(page, "Events");
-    await expect(page.locator("body")).toContainText("CoreTCG Weekly");
+    await expect(page.locator("body")).toContainText(eventName);
     await expect(page.locator("body")).toContainText("1-1-1");
 
     for (const opponent of ["Gholdengo", "Raging Bolt", "Random rogue deck"]) {
       await page.goto(`/matches?opponent_archetype=${encodeURIComponent(opponent)}`);
-      await expect(page.locator("body")).toContainText("Event: CoreTCG Weekly");
+      await expect(page.locator("body")).toContainText(`Event: ${eventName}`);
       await expect(page.locator("body")).toContainText(opponent);
     }
+
+    await page.goto("/events");
+    await page.getByRole("link", { name: eventName }).first().click();
+    await page.getByRole("link", { name: "Edit event" }).click();
+    await page.waitForURL(/\/events\/[0-9a-f-]+\/edit/, { timeout: 30000 });
+    await expectHeadingVisible(page, "Edit event");
+    await page.getByLabel("Event name").fill(updatedEventName);
+
+    await page.locator("article").nth(1).getByPlaceholder("Search opponent deck...").fill("Starmie");
+    await page.locator("article").nth(1).getByRole("button", { name: "Starmie", exact: true }).click();
+    await page.locator("article").nth(2).getByRole("button", { name: "Remove" }).click();
+    await expect(page.getByRole("heading", { name: /^Event Round/ })).toHaveCount(2);
+
+    await page.getByRole("button", { name: "Add next round" }).last().click();
+    await expect(page.getByRole("heading", { name: /^Event Round/ })).toHaveCount(3);
+    await page.locator("article").nth(2).getByPlaceholder("Search opponent deck...").fill("Miraidon");
+    await page.locator("article").nth(2).getByRole("button", { name: "Miraidon", exact: true }).click();
+    await page.locator('input[name="round_2_result"][value="win"]').check({ force: true });
+
+    await page.getByRole("button", { name: "Save changes" }).click();
+    await page.waitForURL(/\/events\/[0-9a-f-]+$/, { timeout: 30000 });
+    await expectHeadingVisible(page, updatedEventName);
+    await expect(page.locator("body")).toContainText("2-1");
+    await expect(page.locator("body")).toContainText("Starmie");
+    await expect(page.locator("body")).toContainText("Miraidon");
+    await expect(page.locator("body")).not.toContainText("Random rogue deck");
+
+    for (const opponent of ["Starmie", "Raging Bolt", "Miraidon"]) {
+      await page.goto(`/matches?opponent_archetype=${encodeURIComponent(opponent)}`);
+      await expect(page.locator("body")).toContainText(`Event: ${updatedEventName}`);
+      await expect(page.locator("body")).toContainText(opponent);
+    }
+    await page.goto(`/matches?opponent_archetype=${encodeURIComponent("Random rogue deck")}`);
+    await expect(page.locator("body")).not.toContainText(`Event: ${eventName}`);
+    await expect(page.locator("body")).not.toContainText(`Event: ${updatedEventName}`);
+
+    await page.goto("/events");
+    await page.getByRole("link", { name: updatedEventName }).first().click();
+    page.once("dialog", (dialog) => dialog.accept());
+    await page.getByRole("button", { name: "Delete event" }).click();
+    await page.waitForURL(/\/events$/, { timeout: 30000 });
+    await expect(page.locator("body")).not.toContainText(updatedEventName);
+    await page.goto(`/matches?opponent_archetype=${encodeURIComponent("Miraidon")}`);
+    await expect(page.locator("body")).not.toContainText(`Event: ${updatedEventName}`);
     await expectNoAppError(page);
   });
 
