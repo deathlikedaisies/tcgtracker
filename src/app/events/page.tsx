@@ -107,10 +107,12 @@ export default async function EventsPage() {
       <section className={appFrame}>
         <AppSidebar
           current="events"
-          insight={{
-            label: "Events",
-            value: `${events.length} logged`,
-            helper: totalRounds ? `${totalRounds} rounds linked to matches` : "Rounds feed analytics",
+            insight={{
+              label: "Events",
+              value: `${events.length} logged`,
+              helper: totalRounds
+                ? `${totalRounds} event rounds linked to matches`
+                : "Event rounds feed analytics",
           }}
         />
         <div className={`${appMain} mx-auto w-full max-w-7xl`}>
@@ -179,7 +181,7 @@ export default async function EventsPage() {
                 <div>
                   <h2 className={sectionTitle}>Recent events</h2>
                   <p className={sectionCopy}>
-                    Each event round is linked to normal match analytics.
+                    Each tournament round is linked to normal match analytics.
                   </p>
                 </div>
                 <Link href="/events/new" className={secondaryButton}>
@@ -277,8 +279,8 @@ export default async function EventsPage() {
               </h2>
               <p className={`mt-3 max-w-xl ${sectionCopy}`}>
                 Add a local, league cup, online tournament, TCG Live ladder session,
-                or testing block. Rounds will appear in Match history and feed your
-                matchup reads.
+                or testing block. Event rounds will appear in Match history and
+                feed your matchup reads.
               </p>
               <Link href="/events/new" className={`mt-6 ${primaryButton}`}>
                 Create your first event

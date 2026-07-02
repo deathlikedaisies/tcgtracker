@@ -3,6 +3,7 @@
 import { useActionState, useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
+import { OpponentDeckCombobox } from "@/components/events/OpponentDeckCombobox";
 import {
   glassPanel,
   inputH10,
@@ -142,7 +143,7 @@ function formatPreviewRound(
   index: number,
   matchStructure: EventMatchStructure
 ) {
-  const opponent = round.opponent.trim() || "Opponent deck";
+  const opponent = round.opponent.trim() || "Add opponent deck";
   const result = getResultLetter(round.result);
   const score =
     matchStructure === "bo3" && round.score.trim()
@@ -244,11 +245,11 @@ export function EventForm({
               Build your event run
             </p>
             <h2 className="mt-1 text-2xl font-semibold tracking-tight text-[#F8FAFC]">
-              Log every round once.
+              Log every event round once.
             </h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-[#94A3B8]">
-              SixPrizer turns the run into matchup data, deck-version stats,
-              and a post-event review.
+              Add one card per tournament round. SixPrizer turns the run into
+              matchup data, deck-version stats, and a post-event review.
             </p>
 
             <div className="mt-4 grid gap-3 md:grid-cols-2">
@@ -490,7 +491,9 @@ export function EventForm({
               Fast round log
             </h2>
             <p className="mt-1 text-sm text-[#94A3B8]">
-              Opponent, result, turn order first. Add tags only when they help.
+              {matchStructure === "bo3"
+                ? "Add one card for each tournament round. Use the score pills for the match score."
+                : "Add one card for each tournament round. Each round is a single game."}
             </p>
           </div>
           <button type="button" onClick={addRound} className={primaryButton}>
@@ -521,10 +524,12 @@ export function EventForm({
                     </span>
                     <div>
                       <h3 className="font-semibold text-[#F8FAFC]">
-                        Round {index + 1}
+                        Event Round {index + 1}
                       </h3>
                       <p className="text-xs text-[#94A3B8]">
-                        {matchStructure === "bo3" ? "Best-of-3 score matters" : "BO1 result only"}
+                        {matchStructure === "bo3"
+                          ? "Match score decides the round"
+                          : "One game decides the round"}
                       </p>
                     </div>
                   </div>
@@ -545,34 +550,20 @@ export function EventForm({
                 />
                 <div className="mt-4 grid gap-3 xl:grid-cols-[minmax(0,1.45fr)_minmax(180px,0.48fr)_minmax(220px,0.66fr)] xl:items-stretch">
                   <div className="rounded-[20px] bg-[#0B1020]/52 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
-                    <label
-                      htmlFor={`round_${index}_opponent`}
-                      className={label}
-                    >
-                      Opponent deck
-                    </label>
-                    <div className="mt-2 flex min-w-0 items-center gap-3 rounded-2xl bg-[#07111F]/78 px-3 py-2.5 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.12)] transition focus-within:shadow-[inset_0_0_0_1px_rgba(79,140,255,0.46),0_0_0_3px_rgba(79,140,255,0.10)]">
-                      <ArchetypeSprites
-                        archetype={round.opponent}
-                        size="md"
-                        className="shrink-0"
-                      />
-                      <input
-                        id={`round_${index}_opponent`}
-                        name={`round_${index}_opponent`}
-                        required
-                        value={round.opponent}
-                        onChange={(event) =>
-                          setRounds((current) =>
-                            updateRound(current, round.id, {
-                              opponent: event.target.value,
-                            })
-                          )
-                        }
-                        placeholder="Raging Bolt"
-                        className="min-w-0 flex-1 bg-transparent text-sm font-semibold text-[#F8FAFC] outline-none placeholder:text-[#64748B]"
-                      />
-                    </div>
+                    <OpponentDeckCombobox
+                      id={`round_${index}_opponent`}
+                      name={`round_${index}_opponent`}
+                      label="Opponent deck"
+                      required
+                      value={round.opponent}
+                      onValueChange={(nextValue) =>
+                        setRounds((current) =>
+                          updateRound(current, round.id, {
+                            opponent: nextValue,
+                          })
+                        )
+                      }
+                    />
                   </div>
 
                   <fieldset className="rounded-[20px] bg-[#0B1020]/52 p-3 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">

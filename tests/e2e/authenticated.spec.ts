@@ -1245,6 +1245,7 @@ test.describe("authenticated routes", () => {
 
     await expectHeadingVisible(page, "New event");
     await expect(page.getByLabel("Best of 1")).toBeChecked();
+    await expect(page.locator("body")).toContainText("Each round is a single game.");
     await expect(page.locator('input[name="round_0_score"]')).toHaveCount(0);
     await expect(page.getByRole("button", { name: "2-1", exact: true })).toHaveCount(0);
     await page.getByLabel("Event name").fill("CoreTCG Weekly");
@@ -1257,20 +1258,23 @@ test.describe("authenticated routes", () => {
     await expect(page.locator('input[name="round_0_score"]')).toHaveCount(0);
     await page.getByLabel("Event type").selectOption("League Cup");
 
-    await page.locator('input[name="round_0_opponent"]').fill("Gholdengo");
+    await page.locator("article").nth(0).getByPlaceholder("Search opponent deck...").fill("Raging");
+    await expect(page.locator("article").nth(0).getByRole("button", { name: "Raging Bolt", exact: true })).toBeVisible();
+    await page.locator("article").nth(0).getByRole("button", { name: "Raging Bolt", exact: true }).click();
     await page.locator("article").nth(0).getByRole("button", { name: "2-1", exact: true }).click();
-    await expect(page.locator("body")).toContainText("R1: Gholdengo 2-1 W");
+    await expect(page.locator("body")).toContainText("R1: Raging Bolt 2-1 W");
     await page.locator("article").nth(0).getByText(/^Tags/).click();
     await page.locator("article").nth(0).getByLabel("Ahead early").check();
     await expect(page.locator("article").nth(0).getByText("Tags · 1")).toBeVisible();
 
-    await page.locator('input[name="round_1_opponent"]').fill("Raging Bolt");
+    await page.locator("article").nth(1).getByPlaceholder("Search opponent deck...").fill("Gholdengo");
+    await page.locator("article").nth(1).getByRole("button", { name: "Gholdengo", exact: true }).click();
     await page.locator('input[name="round_1_result"][value="loss"]').check({ force: true });
     await page.locator("article").nth(1).getByRole("button", { name: "1-2", exact: true }).click();
     await page.locator("article").nth(1).getByText(/^Tags/).click();
     await page.locator("article").nth(1).getByLabel("Slow start").check();
 
-    await page.locator('input[name="round_2_opponent"]').fill("Dragapult");
+    await page.locator("article").nth(2).getByPlaceholder("Search opponent deck...").fill("Random rogue deck");
     await page.locator('input[name="round_2_result"][value="tie"]').check({ force: true });
     await page.locator("article").nth(2).getByRole("button", { name: "1-1", exact: true }).click();
     await page.locator("article").nth(2).getByText(/^Tags/).click();
@@ -1290,7 +1294,7 @@ test.describe("authenticated routes", () => {
     await expect(page.locator("body")).toContainText("Suggested next test");
     await expect(page.locator("body")).toContainText("Gholdengo");
     await expect(page.locator("body")).toContainText("Raging Bolt");
-    await expect(page.locator("body")).toContainText("Dragapult");
+    await expect(page.locator("body")).toContainText("Random rogue deck");
     await expect(page.locator("body")).toContainText("Slow start");
     await expect(page.locator("body")).toContainText("Poor prizes");
 
@@ -1299,7 +1303,7 @@ test.describe("authenticated routes", () => {
     await expect(page.locator("body")).toContainText("CoreTCG Weekly");
     await expect(page.locator("body")).toContainText("1-1-1");
 
-    for (const opponent of ["Gholdengo", "Raging Bolt", "Dragapult"]) {
+    for (const opponent of ["Gholdengo", "Raging Bolt", "Random rogue deck"]) {
       await page.goto(`/matches?opponent_archetype=${encodeURIComponent(opponent)}`);
       await expect(page.locator("body")).toContainText("Event: CoreTCG Weekly");
       await expect(page.locator("body")).toContainText(opponent);

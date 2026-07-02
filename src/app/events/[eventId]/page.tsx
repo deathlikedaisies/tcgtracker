@@ -176,7 +176,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
           insight={{
             label: "Event record",
             value: record,
-            helper: `${rounds.length} rounds linked`,
+            helper: `${rounds.length} event rounds linked`,
           }}
         />
         <div className={`${appMain} mx-auto w-full max-w-7xl`}>
@@ -291,7 +291,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
               <div>
                 <h2 className={sectionTitle}>Rounds</h2>
                 <p className={sectionCopy}>
-                  Every round below also appears in Match history.
+                  Every event round below also appears in Match history.
                 </p>
               </div>
               <Link href="/matches" className={secondaryButton}>
@@ -303,7 +303,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
               <table className="w-full text-left text-sm">
                 <thead className="bg-[#07111F]/80 text-xs uppercase tracking-[0.14em] text-[#94A3B8]">
                   <tr>
-                    <th className="px-4 py-3">Round</th>
+                    <th className="px-4 py-3">Event round</th>
                     <th className="px-4 py-3">Opponent deck</th>
                     <th className="px-4 py-3">Result</th>
                     <th className="px-4 py-3">Score</th>
@@ -372,7 +372,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                     className="rounded-[18px] bg-[#07111F]/58 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]"
                   >
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className={subtlePill}>Round {round.round_number}</span>
+                      <span className={subtlePill}>Event Round {round.round_number}</span>
                       <span className={`rounded-full px-2.5 py-1 text-xs font-semibold uppercase ${getResultBadgeClass(round.result)}`}>
                         {getRoundResultLabel(round.result)}
                       </span>
