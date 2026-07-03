@@ -68,6 +68,35 @@ export type EventIndexSignal = {
   archetype: string | null;
 };
 
+export type EventsOverviewMetricsInput = {
+  visibleEventCount: number;
+  visibleRoundCount: number;
+  totalEventCount?: number | null;
+  totalRoundCount?: number | null;
+};
+
+export function getEventsOverviewMetrics({
+  visibleEventCount,
+  visibleRoundCount,
+  totalEventCount,
+  totalRoundCount,
+}: EventsOverviewMetricsInput) {
+  const eventCount = totalEventCount ?? visibleEventCount;
+  const roundCount = totalRoundCount ?? visibleRoundCount;
+
+  return {
+    eventCount,
+    roundCount,
+    eventHelper:
+      eventCount > visibleEventCount
+        ? `${visibleEventCount} recent shown`
+        : "Recent event logs",
+    sidebarHelper: roundCount
+      ? `${roundCount} event rounds linked to matches`
+      : "Event rounds feed analytics",
+  };
+}
+
 function isOneOf<T extends readonly string[]>(value: string, options: T): value is T[number] {
   return options.includes(value);
 }

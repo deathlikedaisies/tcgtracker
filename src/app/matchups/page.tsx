@@ -34,6 +34,10 @@ import {
   formatMatchRecord,
   type MatchResult,
 } from "@/lib/match-types";
+import {
+  getHeadlineSignal as getSharedHeadlineSignal,
+  getMatchupCoachLabel as getSharedMatchupCoachLabel,
+} from "@/lib/matchup-labels";
 import { buildSessionCoachInsight } from "@/lib/session-coach";
 import { evaluateMatchupSignal } from "@/lib/session-coach";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
@@ -126,8 +130,10 @@ function getMatchupCoachLabel(matchup: {
   matches: number;
   winRateValue: number;
 }) {
-  if (matchup.matches < 6) {
-    const gamesNeeded = Math.max(6 - matchup.matches, 1);
+  return getSharedMatchupCoachLabel(matchup);
+
+  if (matchup.matches < 10) {
+    const gamesNeeded = Math.max(10 - matchup.matches, 1);
     return {
       label: "Needs more data",
       className: "bg-[#F5C84C]/14 text-[#FFE28A]",
@@ -148,22 +154,38 @@ function getMatchupCoachLabel(matchup: {
 
   if (matchup.winRateValue >= 60) {
     return {
-      label: "Strong matchup",
+      label: "Favorable",
       className: "bg-emerald-500/14 text-emerald-200",
       action: "Good signal. Keep the plan stable and verify after more logged games.",
     };
   }
 
-  if (matchup.winRateValue <= 45) {
+  if (matchup.winRateValue <= 40) {
     return {
-      label: "Priority watchlist",
+      label: "Problem matchup",
       className: "bg-[#F43F5E]/14 text-rose-200",
       action: "When this matchup appears, tag the first thing that breaks. Do not change the list until the pattern is clear.",
     };
   }
 
+  if (matchup.winRateValue >= 45 && matchup.winRateValue <= 55) {
+    return {
+      label: "Even read",
+      className: "bg-sky-500/14 text-sky-200",
+      action: "Close matchup. The sample is large enough to avoid chasing noise, but there is no clear edge yet.",
+    };
+  }
+
+  if (matchup.winRateValue > 55) {
+    return {
+      label: "Slight edge",
+      className: "bg-emerald-500/14 text-emerald-200",
+      action: "Slight positive read. Keep logging cleanly before treating it as favored.",
+    };
+  }
+
   return {
-    label: "Watchlist",
+    label: "Slight concern",
     className: "bg-[#F5C84C]/14 text-[#F5C84C]",
     action: "Pattern unclear — could go either way. Keep logging to see which direction this moves.",
   };
@@ -173,19 +195,7 @@ function getHeadlineSignal(matchup: {
   matches: number;
   winRateValue: number;
 } | null) {
-  if (!matchup) {
-    return "Needs more games";
-  }
-
-  if (matchup.matches < 6) {
-    return "Early warning";
-  }
-
-  if (matchup.matches < 15) {
-    return "Building signal";
-  }
-
-  return matchup.winRateValue <= 45 ? "Priority weakness" : "Needs more games";
+  return getSharedHeadlineSignal(matchup);
 }
 
 function getHeadlineTone(matchup: {

@@ -20,6 +20,7 @@ import {
 import {
   buildEventReviewSummary,
   getEventDeckLabel,
+  getEventsOverviewMetrics,
   getEventIndexSignal,
   getMatchStructureLabel,
   getEventRecord,
@@ -84,24 +85,52 @@ export default async function EventsPage() {
     redirect("/login");
   }
 
-  const { data, error } = await supabase
-    .from("events")
-    .select(
-      "id, name, event_date, event_type, match_structure, placement, decks(name, archetype), deck_versions(name), event_rounds(opponent_deck_name, result, tags)"
-    )
-    .eq("user_id", user.id)
-    .order("event_date", { ascending: false })
-    .limit(20);
+  const [
+    { data, error },
+    { count: totalEventCount, error: totalEventCountError },
+    { count: totalRoundCount, error: totalRoundCountError },
+  ] = await Promise.all([
+    supabase
+      .from("events")
+      .select(
+        "id, name, event_date, event_type, match_structure, placement, decks(name, archetype), deck_versions(name), event_rounds(opponent_deck_name, result, tags)"
+      )
+      .eq("user_id", user.id)
+      .order("event_date", { ascending: false })
+      .limit(20),
+    supabase
+      .from("events")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id),
+    supabase
+      .from("event_rounds")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id),
+  ]);
 
   if (error) {
     throw new Error(error.message);
   }
 
+  if (totalEventCountError) {
+    throw new Error(totalEventCountError.message);
+  }
+
+  if (totalRoundCountError) {
+    throw new Error(totalRoundCountError.message);
+  }
+
   const events = (data ?? []) as unknown as EventRow[];
-  const totalRounds = events.reduce(
+  const visibleRounds = events.reduce(
     (sum, event) => sum + (event.event_rounds?.length ?? 0),
     0
   );
+  const overviewMetrics = getEventsOverviewMetrics({
+    visibleEventCount: events.length,
+    visibleRoundCount: visibleRounds,
+    totalEventCount,
+    totalRoundCount,
+  });
   const recentEvent = events[0];
   const recentDeck = one(recentEvent?.decks);
   const recentVersion = one(recentEvent?.deck_versions);
@@ -120,10 +149,8 @@ export default async function EventsPage() {
           current="events"
           insight={{
             label: "Events",
-            value: `${events.length} logged`,
-            helper: totalRounds
-              ? `${totalRounds} event rounds linked to matches`
-              : "Event rounds feed analytics",
+            value: `${overviewMetrics.eventCount} logged`,
+            helper: overviewMetrics.sidebarHelper,
           }}
         />
         <div className={`${appMain} mx-auto w-full max-w-7xl`}>
@@ -155,10 +182,10 @@ export default async function EventsPage() {
                   Events logged
                 </p>
                 <p className="mt-1 text-2xl font-semibold text-[#F8FAFC]">
-                  {events.length}
+                  {overviewMetrics.eventCount}
                 </p>
                 <p className="mt-1 text-xs text-[#94A3B8]">
-                  Recent event logs
+                  {overviewMetrics.eventHelper}
                 </p>
               </div>
               <div className={`${premiumInset} px-3 py-3`}>
@@ -166,7 +193,7 @@ export default async function EventsPage() {
                   Event rounds
                 </p>
                 <p className="mt-1 text-2xl font-semibold text-[#F8FAFC]">
-                  {totalRounds}
+                  {overviewMetrics.roundCount}
                 </p>
                 <p className="mt-1 text-xs text-[#94A3B8]">
                   Feeding Match history

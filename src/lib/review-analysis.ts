@@ -801,10 +801,18 @@ function buildVersionSignalCard(
     return null;
   }
 
+  const improvedButStillLosing = best.isActive && best.winRate < 50;
+  const title = improvedButStillLosing
+    ? "Improved vs baseline, but still losing overall"
+    : `${best.name} is stronger so far than ${worst.name}`;
+  const explanation = improvedButStillLosing
+    ? `${best.name} is ahead of ${worst.name}, but it is still below a 50% win rate. Keep comparing starts, sequencing, and matchup spread before locking the list.`
+    : `${best.name} is stronger so far than ${worst.name}, but the sample is still version testing, not proof. Keep comparing starts, sequencing, and matchup spread before locking the list.`;
+
   return {
     key: "version-signal",
-    title: `${best.name} is stronger so far than ${worst.name}`,
-    explanation: `${best.name} is stronger so far than ${worst.name}, but the sample is still version testing, not proof. Keep comparing starts, sequencing, and matchup spread before locking the list.`,
+    title,
+    explanation,
     evidence: `${best.name}: ${formatMatchRecord(
       best.record.wins,
       best.record.losses,

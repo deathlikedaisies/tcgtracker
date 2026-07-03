@@ -12,13 +12,19 @@ import { buildDeckLabSummary } from "@/lib/deck-lab";
 import {
   buildEventReviewSummary,
   getEventDeckLabel,
+  getEventsOverviewMetrics,
   getEventIndexSignal,
 } from "@/lib/events";
+import { buildReviewAnalysis, type ReviewMatch } from "@/lib/review-analysis";
 import type { SessionCoachInsight } from "@/lib/session-coach";
 import {
   isValidTcgLivePlayerName,
   parseTcgLiveLog,
 } from "@/lib/tcg-live-log-parser";
+import {
+  getHeadlineSignal,
+  getMatchupCoachLabel,
+} from "@/lib/matchup-labels";
 
 const authRoutes = [
   { path: "/dashboard", heading: "Overview" },
@@ -726,6 +732,92 @@ test.describe("event review summary", () => {
       value: "No issues logged",
       archetype: null,
     });
+  });
+});
+
+test.describe("coach interpretation copy", () => {
+  test("labels high-sample near-even matchups as even instead of needing more games", async () => {
+    expect(getHeadlineSignal({ matches: 316, winRateValue: 51 })).toBe(
+      "Even read"
+    );
+    expect(getMatchupCoachLabel({ matches: 316, winRateValue: 51 }).label).toBe(
+      "Even read"
+    );
+    expect(getMatchupCoachLabel({ matches: 6, winRateValue: 50 }).label).toBe(
+      "Needs more data"
+    );
+  });
+
+  test("calls out improved active versions that are still losing overall", async () => {
+    const makeVersionMatches = ({
+      versionId,
+      versionName,
+      isActive,
+      wins,
+      losses,
+    }: {
+      versionId: string;
+      versionName: string;
+      isActive: boolean;
+      wins: number;
+      losses: number;
+    }): ReviewMatch[] => {
+      const results = [
+        ...Array.from({ length: wins }, () => "win" as const),
+        ...Array.from({ length: losses }, () => "loss" as const),
+      ];
+
+      return results.map((result, index) => ({
+        id: `${versionId}-${index}`,
+        deckId: "deck-1",
+        deckName: "Mega Lucario Duns",
+        deckVersionId: versionId,
+        deckVersionName: versionName,
+        deckVersionIsActive: isActive,
+        opponentArchetype: "Raging Bolt",
+        result,
+        wentFirst: index % 2 === 0,
+        playedAt: `2026-07-${String(index + 1).padStart(2, "0")}T12:00:00.000Z`,
+        metadata: {},
+      }));
+    };
+
+    const analysis = buildReviewAnalysis(
+      [
+        ...makeVersionMatches({
+          versionId: "baseline",
+          versionName: "Baseline",
+          isActive: false,
+          wins: 1,
+          losses: 9,
+        }),
+        ...makeVersionMatches({
+          versionId: "current",
+          versionName: "Current test",
+          isActive: true,
+          wins: 4,
+          losses: 6,
+        }),
+      ],
+      { deckId: "deck-1", deckName: "Mega Lucario Duns" }
+    );
+
+    expect(analysis.cards.some((card) =>
+      card.title.includes("Improved vs baseline, but still losing overall")
+    )).toBe(true);
+  });
+
+  test("uses true event totals separately from the recent event list", async () => {
+    const metrics = getEventsOverviewMetrics({
+      visibleEventCount: 20,
+      visibleRoundCount: 80,
+      totalEventCount: 61,
+      totalRoundCount: 250,
+    });
+
+    expect(metrics.eventCount).toBe(61);
+    expect(metrics.roundCount).toBe(250);
+    expect(metrics.eventHelper).toBe("20 recent shown");
   });
 });
 
@@ -1685,7 +1777,7 @@ test.describe("authenticated routes", () => {
     await expect(deckFilter).not.toHaveValue("all");
     await expect(page.locator("body")).toContainText(/Showing insights for:/i);
     await expect(coachHero).toContainText(
-      /Item Lock|missed setup|Mega Greninja|supporter drought|version|stronger so far/i
+      /Item Lock|missed setup|Mega Greninja|supporter drought|version|stronger so far|Quick game|positive pattern/i
     );
     await expect(coachHero).toContainText(/What to do next/i);
     await expect(coachHero).toContainText(/Evidence|Confidence/i);
@@ -1780,7 +1872,9 @@ test.describe("authenticated routes", () => {
       /Version read|Version comparison|Testing discipline|Meta watchlist/i
     );
     await expect(page.locator("body")).toContainText(/Version evidence|Version signal/i);
-    await expect(page.locator("body")).toContainText(/v1|v2|v3/i);
+    await expect(page.locator("body")).toContainText(
+      /v1|v2|v3|Current test|Baseline/i
+    );
     await expect(page.locator("body")).toContainText(
       /Opening quality|Sequencing quality|Best current signal/i
     );
