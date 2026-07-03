@@ -7,6 +7,7 @@ import {
   Trophy,
   Zap,
 } from "lucide-react";
+import { BrandLogo } from "@/components/BrandLogo";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -27,7 +28,7 @@ const resourceLinks = [
   { href: "https://limitlesstcg.com", label: "Limitless TCG" },
   { href: "https://www.trainerhill.com", label: "Trainer Hill" },
   { href: "https://rk9.gg", label: "RK9.gg" },
-  { href: "https://tcg.pokemon.com/en-us/tcgl/", label: "Pokemon TCG Live" },
+  { href: "https://tcg.pokemon.com/en-us/tcgl/", label: "Pokémon TCG Live" },
 ] as const;
 
 const iconItems = [
@@ -53,13 +54,15 @@ export function SiteFooter() {
             href="/"
             className="inline-flex items-center gap-2 text-lg font-black tracking-tight text-[#F8FAFC] transition hover:text-[#F5C84C]"
           >
-            <span className="inline-flex size-9 items-center justify-center rounded-[14px] bg-[#F5C84C]/12 text-[#F5C84C] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.18)]">
-              6
-            </span>
+            <BrandLogo
+              variant="icon"
+              size="sm"
+              className="rounded-[14px] bg-[#07111F] shadow-[0_0_20px_rgba(79,140,255,0.14),inset_0_0_0_1px_rgba(79,140,255,0.24)]"
+            />
             SixPrizer
           </Link>
           <p className="mt-4 max-w-sm text-sm leading-6 text-[#C7D2E5]/82">
-            Competitive Pokemon TCG testing, match logging, and event review.
+            Competitive Pokémon TCG testing, match logging, and event review.
           </p>
           <div className="mt-5 flex flex-wrap gap-2">
             {iconItems.map((item) => {
@@ -142,7 +145,7 @@ export function SiteFooter() {
           />
           <p>
             © 2026 SixPrizer. Fan-made testing tool. Not affiliated with
-            Nintendo, Creatures, Game Freak, or The Pokemon Company.
+            Nintendo, Creatures, Game Freak, or The Pokémon Company.
           </p>
         </div>
         <nav aria-label="Legal" className="flex flex-wrap gap-x-4 gap-y-2">

@@ -40,7 +40,7 @@ export default function TermsPage() {
               <h2 className="text-lg font-bold text-[#F8FAFC]">Use during beta</h2>
               <p className="mt-2">
                 SixPrizer is provided as a beta testing tool for competitive
-                Pokemon TCG players. Features, copy, and analysis may change as
+                Pokémon TCG players. Features, copy, and analysis may change as
                 the product improves.
               </p>
             </section>
@@ -56,7 +56,7 @@ export default function TermsPage() {
               <h2 className="text-lg font-bold text-[#F8FAFC]">Fan-made tool</h2>
               <p className="mt-2">
                 SixPrizer is a fan-made testing tool and is not affiliated with
-                Nintendo, Creatures, Game Freak, or The Pokemon Company.
+                Nintendo, Creatures, Game Freak, or The Pokémon Company.
               </p>
             </section>
           </div>

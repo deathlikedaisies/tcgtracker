@@ -43,6 +43,9 @@ test.describe("public routes", () => {
     await expect(page.getByRole("contentinfo")).toContainText(
       /Fan-made testing tool\. Not affiliated/i
     );
+    await expect(page.getByRole("contentinfo")).toContainText(
+      /The Pokémon Company/i
+    );
     await expect(
       page.getByRole("contentinfo").getByRole("link", { name: "Demo" })
     ).toHaveAttribute("href", "/demo");

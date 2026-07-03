@@ -295,7 +295,7 @@ export default async function Home() {
             <div className="relative">
               <p className="inline-flex items-center gap-2 rounded-full bg-[#4F8CFF]/12 px-3 py-1.5 text-sm font-semibold text-[#B8D1FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.22)]">
                 <Sparkles className="size-4" aria-hidden="true" />
-                Built for competitive Pokemon TCG testing
+                Built for competitive Pokémon TCG testing
               </p>
               <h1 className="mt-5 max-w-[11.5ch] text-4xl font-black leading-[0.96] tracking-tight text-[#F8FAFC] min-[390px]:text-5xl sm:text-6xl xl:text-[3.75rem] 2xl:text-[4.5rem]">
                 <span className="block">From testing games to</span>
