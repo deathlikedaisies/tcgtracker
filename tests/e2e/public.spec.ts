@@ -39,6 +39,31 @@ test.describe("public routes", () => {
     await expect(page.locator("body")).toContainText(/Current focus/i);
     await expect(page.locator("body")).toContainText(/Fast logging/i);
     await expect(page.locator("body")).toContainText(/Matchup signal/i);
+    await expect(page.getByRole("contentinfo")).toContainText("SixPrizer");
+    await expect(page.getByRole("contentinfo")).toContainText(
+      /Fan-made testing tool\. Not affiliated/i
+    );
+    await expect(
+      page.getByRole("contentinfo").getByRole("link", { name: "Demo" })
+    ).toHaveAttribute("href", "/demo");
+    await expect(
+      page.getByRole("contentinfo").getByRole("link", { name: "Feedback" })
+    ).toHaveAttribute("href", "/feedback");
+    await expect(
+      page.getByRole("link", { name: /Limitless TCG/i })
+    ).toHaveAttribute("href", "https://limitlesstcg.com");
+    await expectNoAppError(page);
+  });
+
+  test("privacy and terms pages load from footer links", async ({ page }) => {
+    await page.goto("/privacy");
+    await expectHeadingVisible(page, "SixPrizer privacy notes");
+    await expect(page.getByRole("contentinfo")).toContainText(/Fan-made testing tool/i);
+    await expectNoAppError(page);
+
+    await page.goto("/terms");
+    await expectHeadingVisible(page, "SixPrizer beta terms");
+    await expect(page.getByRole("contentinfo")).toContainText(/Fan-made testing tool/i);
     await expectNoAppError(page);
   });
 

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { ArrowRight, ClipboardList, Layers3, Sparkles, Target, TrendingUp } from "lucide-react";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
 import { BrandLogo } from "@/components/BrandLogo";
+import { SiteFooter } from "@/components/layout/SiteFooter";
 import {
   cardLarge,
   marketingShell,
@@ -390,6 +391,7 @@ export default async function Home() {
           </div>
         </div>
       </section>
+      <SiteFooter />
     </main>
   );
 }

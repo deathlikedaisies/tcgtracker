@@ -8,6 +8,7 @@ import {
   PlusCircle,
 } from "lucide-react";
 import { DemoBadge } from "@/components/demo/DemoBadge";
+import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SixPrizerLogo } from "@/components/SixPrizerLogo";
 import {
   appFrame,
@@ -124,6 +125,7 @@ export function DemoShell({ current, children }: DemoShellProps) {
           {children}
         </section>
       </div>
+      <SiteFooter />
     </main>
   );
 }

@@ -11,6 +11,8 @@ const publicRoutes = [
   { path: "/demo", assertion: () => ({ role: "heading" as const, name: "Explore a realistic testing workspace." }) },
   { path: "/login", assertion: () => ({ role: "heading" as const, name: "Log in to SixPrizer" }) },
   { path: "/signup", assertion: () => ({ role: "heading" as const, name: "Create your SixPrizer account" }) },
+  { path: "/privacy", assertion: () => ({ role: "heading" as const, name: "SixPrizer privacy notes" }) },
+  { path: "/terms", assertion: () => ({ role: "heading" as const, name: "SixPrizer beta terms" }) },
   { path: "/demo/matches/new", assertion: () => ({ role: "heading" as const, name: "Log a demo game" }) },
   { path: "/u/sixprizer-missing-profile", assertion: () => ({ role: "heading" as const, name: "Profile unavailable" }) },
 ];
@@ -20,6 +22,7 @@ const authenticatedRoutes = [
   { path: "/matches/new", heading: "Log a game" },
   { path: "/review", heading: "Review" },
   { path: "/matches", heading: "Match history" },
+  { path: "/events", heading: "Events" },
   { path: "/decks", heading: "Deck Experiments" },
   { path: "/matchups", heading: "Matchup Intelligence" },
   { path: "/profile", heading: /Profile|Create your profile/i },

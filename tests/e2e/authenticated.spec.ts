@@ -1777,7 +1777,7 @@ test.describe("authenticated routes", () => {
     await expect(deckFilter).not.toHaveValue("all");
     await expect(page.locator("body")).toContainText(/Showing insights for:/i);
     await expect(coachHero).toContainText(
-      /Item Lock|missed setup|Mega Greninja|supporter drought|version|stronger so far|Quick game|positive pattern/i
+      /Item Lock|missed setup|Mega Greninja|supporter drought|version|stronger so far|Quick game|positive pattern|Dead drew|failure pattern/i
     );
     await expect(coachHero).toContainText(/What to do next/i);
     await expect(coachHero).toContainText(/Evidence|Confidence/i);
