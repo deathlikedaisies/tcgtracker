@@ -17,9 +17,11 @@ import {
   sectionCopy,
   sectionTitle,
 } from "@/components/brand-styles";
+import { startDevTimer } from "@/lib/dev-timing";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 
 export default async function FeedbackPage() {
+  const endTiming = startDevTimer("route:/feedback");
   const supabase = await createServerSupabaseClient();
   const {
     data: { user },
@@ -28,6 +30,8 @@ export default async function FeedbackPage() {
   if (!user) {
     redirect("/login");
   }
+
+  endTiming();
 
   return (
     <main className={appShell}>

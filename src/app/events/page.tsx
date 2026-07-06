@@ -26,6 +26,7 @@ import {
   getEventRecord,
   parseEventTags,
 } from "@/lib/events";
+import { startDevTimer } from "@/lib/dev-timing";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import type { MatchResult } from "@/lib/match-types";
 
@@ -76,6 +77,7 @@ function topIssueTag(rounds: EventRoundRow[]) {
 }
 
 export default async function EventsPage() {
+  const endTiming = startDevTimer("route:/events");
   const supabase = await createServerSupabaseClient();
   const {
     data: { user },
@@ -141,6 +143,8 @@ export default async function EventsPage() {
     tags: parseEventTags(round.tags),
   }));
   const recentRecord = recentEvent ? getEventRecord(recentSummaryRounds) : null;
+
+  endTiming();
 
   return (
     <main className={appShell}>

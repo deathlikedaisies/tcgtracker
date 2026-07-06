@@ -9,6 +9,7 @@ import {
   countMatchResults,
   type MatchResult,
 } from "@/lib/match-types";
+import { startDevTimer } from "@/lib/dev-timing";
 import type { CoachMatch } from "@/lib/session-coach";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
@@ -81,6 +82,7 @@ function getDeckVersionName(match: MatchRow) {
 }
 
 export default async function DashboardPage() {
+  const endTiming = startDevTimer("route:/dashboard");
   const supabase = await createServerSupabaseClient();
   const {
     data: { user },
@@ -177,6 +179,8 @@ export default async function DashboardPage() {
     result: match.result,
     eventType: match.event_type,
   }));
+
+  endTiming();
 
   return (
     <DashboardContent

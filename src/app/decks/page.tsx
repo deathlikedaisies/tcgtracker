@@ -29,6 +29,7 @@ import {
 } from "@/components/brand-styles";
 import { getArchetypeOptions } from "@/lib/archetypes";
 import { resolveCurrentDeckScope } from "@/lib/current-deck-scope";
+import { startDevTimer } from "@/lib/dev-timing";
 import {
   analyzeDeckList,
   getDecklistHealth,
@@ -215,6 +216,7 @@ function getTrendTone(total: number, winRate: number) {
 }
 
 export default async function DecksPage() {
+  const endTiming = startDevTimer("route:/decks");
   const supabase = await createServerSupabaseClient();
   const {
     data: { user },
@@ -399,6 +401,8 @@ export default async function DecksPage() {
 
       return right.performance.total - left.performance.total;
     })[0];
+
+  endTiming();
 
   return (
     <main className={appShell}>

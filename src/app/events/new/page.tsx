@@ -11,6 +11,7 @@ import {
   primaryButton,
   sectionCopy,
 } from "@/components/brand-styles";
+import { startDevTimer } from "@/lib/dev-timing";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { createEvent } from "../actions";
 
@@ -32,6 +33,7 @@ type NewEventPageProps = {
 };
 
 export default async function NewEventPage({ searchParams }: NewEventPageProps) {
+  const endTiming = startDevTimer("route:/events/new");
   const resolvedSearchParams = await searchParams;
   const supabase = await createServerSupabaseClient();
   const {
@@ -68,6 +70,8 @@ export default async function NewEventPage({ searchParams }: NewEventPageProps) 
       })),
     }))
     .filter((deck) => deck.versions.length > 0);
+
+  endTiming();
 
   return (
     <main className={appShell}>

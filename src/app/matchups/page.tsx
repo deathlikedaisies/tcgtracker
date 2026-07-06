@@ -29,6 +29,7 @@ import { SessionCoachPanel } from "@/components/SessionCoachPanel";
 import { ShareReportButton, type ShareReport } from "@/components/ShareReportButton";
 import { createMatchupSharedReportAction } from "@/app/community/actions";
 import { getArchetypeOptions } from "@/lib/archetypes";
+import { startDevTimer } from "@/lib/dev-timing";
 import {
   countMatchResults,
   formatMatchRecord,
@@ -239,6 +240,7 @@ function getSignalProgressClass(matchup: {
 export default async function MatchupsPage({
   searchParams,
 }: MatchupsPageProps) {
+  const endTiming = startDevTimer("route:/matchups");
   const params = await searchParams;
   const supabase = await createServerSupabaseClient();
   const {
@@ -529,6 +531,8 @@ export default async function MatchupsPage({
     selectedVersion?.name ??
     selectedDeck?.name ??
     (activeFilterCount ? "Filtered matchup map" : "All decks");
+
+  endTiming();
 
   return (
     <main className={appShell}>

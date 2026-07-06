@@ -13,6 +13,7 @@ import {
 } from "@/components/brand-styles";
 import { MatchLogForm } from "@/components/matches/MatchLogForm";
 import { getArchetypeOptions } from "@/lib/archetypes";
+import { startDevTimer } from "@/lib/dev-timing";
 import {
   analyzeDeckList,
   isClearArchetypeSuggestion,
@@ -51,6 +52,7 @@ type NewMatchPageProps = {
 export default async function NewMatchPage({
   searchParams,
 }: NewMatchPageProps) {
+  const endTiming = startDevTimer("route:/matches/new");
   const {
     event,
     opponent,
@@ -132,6 +134,8 @@ export default async function NewMatchPage({
     ...userDecks.map((deck) => deck.archetype),
   ]);
   const privateSettings = await getOwnUserPrivateSettings(user.id);
+
+  endTiming();
 
   return (
     <main className={appShell}>

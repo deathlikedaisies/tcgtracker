@@ -24,6 +24,7 @@ import {
   subtlePill,
 } from "@/components/brand-styles";
 import { getArchetypeOptions } from "@/lib/archetypes";
+import { startDevTimer } from "@/lib/dev-timing";
 import {
   buildSessionCoachInsight,
   matchCountsTowardMission,
@@ -219,6 +220,7 @@ function buildMatchesPageHref(
 }
 
 export default async function MatchesPage({ searchParams }: MatchesPageProps) {
+  const endTiming = startDevTimer("route:/matches");
   const params = await searchParams;
   const supabase = await createServerSupabaseClient();
   const {
@@ -400,6 +402,8 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
     selectedVersion?.name ??
     selectedDeck?.name ??
     (activeFilterCount ? "Filtered view" : "All logged games");
+
+  endTiming();
 
   return (
     <main className={appShell}>
@@ -767,7 +771,9 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                             </span>
                           ) : null}
                           {metadata.event_name ? (
-                            <span className={subtlePill}>{metadata.event_name}</span>
+                            <span className={subtlePill}>
+                              Event: {metadata.event_name}
+                            </span>
                           ) : null}
                           {metadata.testing_session_name ? (
                             <span className={subtlePill}>

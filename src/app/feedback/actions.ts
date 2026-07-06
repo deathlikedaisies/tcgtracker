@@ -106,7 +106,7 @@ export async function submitFeedbackAction(
   revalidatePath("/feedback");
 
   return {
-    success: "Thanks. Your feedback was saved.",
+    success: "Feedback saved. Thanks, this helps improve the beta.",
     error: null,
     fieldErrors: {},
     submittedAt: new Date().toISOString(),

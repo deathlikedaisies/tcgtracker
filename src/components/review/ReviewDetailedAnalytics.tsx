@@ -1,11 +1,10 @@
 "use client";
 
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import {
   CartesianGrid,
   Line,
   LineChart,
-  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
@@ -169,6 +168,95 @@ function SectionFrame({
   );
 }
 
+function TrendChart({ data }: { data: TrendPoint[] }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [size, setSize] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    const element = containerRef.current;
+
+    if (!element) {
+      return;
+    }
+
+    const updateSize = () => {
+      const rect = element.getBoundingClientRect();
+      setSize({
+        width: Math.floor(rect.width),
+        height: Math.floor(rect.height),
+      });
+    };
+
+    updateSize();
+
+    const observer = new ResizeObserver(updateSize);
+    observer.observe(element);
+
+    return () => observer.disconnect();
+  }, []);
+
+  const canRenderChart = size.width > 0 && size.height > 0;
+
+  return (
+    <div
+      ref={containerRef}
+      className="mt-3 h-52 min-h-[208px] min-w-0 max-w-full sm:mt-4 sm:h-64 sm:min-h-[256px]"
+    >
+      {canRenderChart ? (
+        <LineChart width={size.width} height={size.height} data={data}>
+          <CartesianGrid
+            stroke="rgba(148,163,184,0.22)"
+            vertical={false}
+          />
+          <XAxis
+            dataKey="label"
+            tick={{ fill: "#94A3B8", fontSize: 12 }}
+            tickLine={false}
+            axisLine={false}
+          />
+          <YAxis
+            allowDecimals={false}
+            tick={{ fill: "#94A3B8", fontSize: 12 }}
+            tickLine={false}
+            axisLine={false}
+          />
+          <Tooltip
+            contentStyle={{
+              background: "#0B1020",
+              border: "1px solid rgba(148,163,184,0.18)",
+              borderRadius: 12,
+              color: "#F8FAFC",
+            }}
+          />
+          <Line
+            type="monotone"
+            dataKey="wins"
+            stroke="#22C55E"
+            strokeWidth={2}
+            dot={false}
+          />
+          <Line
+            type="monotone"
+            dataKey="losses"
+            stroke="#F43F5E"
+            strokeWidth={2}
+            dot={false}
+          />
+          <Line
+            type="monotone"
+            dataKey="ties"
+            stroke="#F5C84C"
+            strokeWidth={2}
+            dot={false}
+          />
+        </LineChart>
+      ) : (
+        <div className="h-full rounded-[18px] bg-[#10192B]/64" />
+      )}
+    </div>
+  );
+}
+
 export function ReviewDetailedAnalytics({
   recentMatches,
   trendData,
@@ -260,57 +348,7 @@ export function ReviewDetailedAnalytics({
               <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
                 Result trend
               </p>
-              <div className="mt-3 h-52 min-h-[208px] min-w-0 sm:mt-4 sm:h-64 sm:min-h-[256px]">
-                <ResponsiveContainer width="100%" height="100%" minHeight={180}>
-                  <LineChart data={trendData}>
-                    <CartesianGrid
-                      stroke="rgba(148,163,184,0.22)"
-                      vertical={false}
-                    />
-                    <XAxis
-                      dataKey="label"
-                      tick={{ fill: "#94A3B8", fontSize: 12 }}
-                      tickLine={false}
-                      axisLine={false}
-                    />
-                    <YAxis
-                      allowDecimals={false}
-                      tick={{ fill: "#94A3B8", fontSize: 12 }}
-                      tickLine={false}
-                      axisLine={false}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        background: "#0B1020",
-                        border: "1px solid rgba(148,163,184,0.18)",
-                        borderRadius: 12,
-                        color: "#F8FAFC",
-                      }}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="wins"
-                      stroke="#22C55E"
-                      strokeWidth={2}
-                      dot={false}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="losses"
-                      stroke="#F43F5E"
-                      strokeWidth={2}
-                      dot={false}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="ties"
-                      stroke="#F5C84C"
-                      strokeWidth={2}
-                      dot={false}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
+              <TrendChart data={trendData} />
             </div>
           </div>
         </SectionFrame>

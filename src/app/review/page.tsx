@@ -27,6 +27,7 @@ import {
   type ReviewMatch,
 } from "@/lib/review-analysis";
 import { resolveCurrentDeckScope } from "@/lib/current-deck-scope";
+import { startDevTimer } from "@/lib/dev-timing";
 import {
   countMatchResults,
   formatMatchRecord,
@@ -161,6 +162,7 @@ function getTopTags(
 }
 
 export default async function ReviewPage({ searchParams }: ReviewPageProps) {
+  const endTiming = startDevTimer("route:/review");
   const params = await searchParams;
   const supabase = await createServerSupabaseClient();
   const {
@@ -568,6 +570,8 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
     title: string;
     content: ReactNode;
   }[];
+
+  endTiming();
 
   return (
     <main className={appShell}>
