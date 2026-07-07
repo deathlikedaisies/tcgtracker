@@ -320,9 +320,9 @@ export default async function Home() {
                 <Sparkles className="size-4" aria-hidden="true" />
                 Built for competitive Pokémon TCG testing
               </p>
-              <h1 className="mt-5 max-w-[14.5ch] text-4xl font-black leading-[0.96] tracking-tight text-[#F8FAFC] min-[390px]:text-5xl sm:text-6xl xl:text-[3.75rem] 2xl:text-[4.35rem]">
-                <span className="block">A testing tracker</span>
-                <span className="block">for players who want to know</span>
+              <h1 className="mt-5 max-w-[16ch] text-4xl font-black leading-[0.98] tracking-tight text-[#F8FAFC] min-[390px]:text-5xl sm:text-[3.45rem] sm:leading-[0.97] xl:text-[3.45rem] 2xl:text-[4rem]">
+                <span className="block">A testing tracker for players</span>
+                <span className="block">who want to know</span>
                 <span className="block text-[#F5C84C] drop-shadow-[0_0_12px_rgba(245,200,76,0.12)]">
                   what to test next.
                 </span>
@@ -330,6 +330,24 @@ export default async function Home() {
               <p className="mt-5 max-w-[44rem] text-base leading-7 text-[#C7D2E5] sm:text-lg sm:leading-8">
                 Log games, import TCG Live battle logs, compare deck versions, and review the patterns behind your wins and losses.
               </p>
+              <div className="mt-4 grid gap-3 rounded-[22px] bg-[#0B1020]/48 p-3 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.18),inset_0_1px_0_rgba(255,255,255,0.025)] sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+                <div className="flex min-w-0 items-start gap-3">
+                  <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-[14px] bg-[#4F8CFF]/12 text-[#B8D1FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.22)]">
+                    <ClipboardList className="size-5" aria-hidden="true" />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold text-[#F8FAFC]">
+                      Paste a TCG Live battle log
+                    </p>
+                    <p className="mt-1 text-xs leading-5 text-[#94A3B8]/78">
+                      SixPrizer turns it into structured matchup data.
+                    </p>
+                  </div>
+                </div>
+                <p className="rounded-full bg-[#F5C84C]/12 px-3 py-1.5 text-xs font-semibold text-[#FFE28A] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
+                  Battle log → Matchup record → Next test
+                </p>
+              </div>
               <p className="mt-3 text-sm font-medium text-[#94A3B8]/82">
                 Private by default. Raw logs, notes, and testing data stay private unless you choose to share.
               </p>
