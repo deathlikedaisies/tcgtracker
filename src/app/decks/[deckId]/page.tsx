@@ -693,6 +693,105 @@ export default async function DeckDetailPage({
             </div>
           ) : null}
 
+          {needsFirstVersionSetup ? (
+            <section id="versions" className="grid gap-4 scroll-mt-8">
+              <div className={`p-5 sm:p-6 ${glassPanelStrong}`}>
+                <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-start">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="rounded-full bg-[#F5C84C]/12 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#FFE28A] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
+                        No versions yet
+                      </span>
+                      <span className="rounded-full bg-[#4F8CFF]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.14)]">
+                        First setup
+                      </span>
+                    </div>
+                    <h2 className="mt-3 text-2xl font-semibold tracking-tight text-[#F8FAFC] sm:text-3xl">
+                      Create your first deck version
+                    </h2>
+                    <p className="mt-2 max-w-2xl text-sm leading-6 text-[#94A3B8]/78">
+                      Paste the exact list you want to test first. Once saved,
+                      SixPrizer can track games, compare future versions, and
+                      surface matchup insights.
+                    </p>
+                  </div>
+
+                  <div className={`${premiumInset} grid gap-3 p-4`}>
+                    {[
+                      {
+                        title: "Paste your current 60",
+                        copy: "Save the list exactly as you want to test it.",
+                      },
+                      {
+                        title: "Log games on this version",
+                        copy: "Every match attaches to the saved build.",
+                      },
+                      {
+                        title: "Create a new version when you change cards",
+                        copy: "Future builds can be compared against this baseline.",
+                      },
+                    ].map((step, index) => (
+                      <div key={step.title} className="flex gap-3">
+                        <span className="mt-0.5 inline-flex size-7 shrink-0 items-center justify-center rounded-full bg-[#F5C84C]/12 text-xs font-bold text-[#FFE28A] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
+                          {index + 1}
+                        </span>
+                        <div>
+                          <p className="text-sm font-semibold text-[#F8FAFC]">
+                            {step.title}
+                          </p>
+                          <p className="mt-1 text-xs leading-5 text-[#94A3B8]/72">
+                            {step.copy}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-5">
+                  <DeckVersionForm
+                    action={createVersion}
+                    deckHref={`/decks/${deck.id}`}
+                    title="Create your first deck version"
+                    description="Paste the exact 60-card list you want to use as your first test sample."
+                    submitLabel="Create first version"
+                    notesPlaceholder="What are you testing with this first build?"
+                    className="border-white/8 bg-[linear-gradient(180deg,rgba(15,26,45,0.96),rgba(7,17,31,0.92))] p-0 shadow-none"
+                  />
+                </div>
+              </div>
+
+              <details className={`p-4 ${glassPanel}`}>
+                <summary className="cursor-pointer list-none text-sm font-semibold text-[#DCE8FF] marker:hidden">
+                  Deck identity settings
+                </summary>
+                <form
+                  id="manual-archetype"
+                  action={setDeckArchetype}
+                  className="mt-4 flex flex-col gap-4"
+                >
+                  <p className={sectionCopy}>
+                    Manual archetype is optional setup context. Creating version 1 is
+                    the main step.
+                  </p>
+                  <ArchetypePicker
+                    id="deck-archetype"
+                    name="archetype"
+                    label="Manual archetype"
+                    options={archetypeOptions}
+                    defaultValue={deckArchetype}
+                    customOptionPrefix="Use custom deck archetype"
+                    required
+                  />
+                  <button type="submit" className={secondaryButton}>
+                    Save manual archetype
+                  </button>
+                </form>
+              </details>
+            </section>
+          ) : null}
+
+          {!needsFirstVersionSetup ? (
           <section className={`p-4 sm:p-5 ${glassPanel}`}>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0">
@@ -933,6 +1032,7 @@ export default async function DeckDetailPage({
               </article>
             </div>
           </section>
+          ) : null}
 
           {sessionCoach && hasDeckGames ? (
             <section className={`p-4 ${glassPanel}`}>
@@ -955,6 +1055,7 @@ export default async function DeckDetailPage({
             </section>
           ) : null}
 
+          {!needsFirstVersionSetup ? (
           <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-start">
             <section id="versions" className="grid gap-4 scroll-mt-8">
               <div className={`p-4 ${glassPanel}`}>
@@ -1698,6 +1799,7 @@ export default async function DeckDetailPage({
               </div>
             </aside>
           </div>
+          ) : null}
         </div>
       </section>
     </main>
