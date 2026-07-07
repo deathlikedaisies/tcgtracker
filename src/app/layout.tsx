@@ -19,7 +19,7 @@ const geistMono = localFont({
 });
 
 const siteDescription =
-  "SixPrizer helps competitive Pokémon TCG players log games, spot matchup patterns, compare deck versions, and decide what to test next.";
+  "SixPrizer helps competitive Pokémon TCG players import TCG Live logs, compare deck versions, review event rounds, and decide what to test next.";
 
 const ogImageUrl = "https://sixprizer.com/og/sixprizer-og.png";
 

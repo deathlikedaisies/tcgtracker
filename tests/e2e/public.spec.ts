@@ -31,14 +31,18 @@ test.describe("public routes", () => {
   test("landing page shows the main SixPrizer CTAs", async ({ page }) => {
     await page.goto("/");
 
-    await expectHeadingVisible(page, "From testing games to six-prize turns.");
+    await expectHeadingVisible(
+      page,
+      "A testing tracker for players who want to know what to test next."
+    );
     await expect(page.getByRole("link", { name: "Start tracking games" }).first()).toBeVisible();
     await expect(page.getByRole("link", { name: "Preview demo" }).first()).toBeVisible();
     await expect(page.locator("body")).toContainText("SixPrizer");
-    await expect(page.locator("body")).toContainText(/Mega Greninja matchup/i);
-    await expect(page.locator("body")).toContainText(/Current focus/i);
-    await expect(page.locator("body")).toContainText(/Fast logging/i);
-    await expect(page.locator("body")).toContainText(/Matchup signal/i);
+    await expect(page.locator("body")).toContainText(/TCG Live/i);
+    await expect(page.locator("body")).toContainText(/Built for testing, not just records/i);
+    await expect(page.locator("body")).toContainText(/Compare deck versions/i);
+    await expect(page.locator("body")).toContainText(/Review event rounds/i);
+    await expect(page.locator("body")).toContainText(/Private by default/i);
     await expect(page.getByRole("contentinfo")).toContainText("SixPrizer");
     await expect(page.getByRole("contentinfo")).toContainText(
       /Fan-made testing tool\. Not affiliated/i

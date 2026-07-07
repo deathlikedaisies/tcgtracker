@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowRight, ClipboardList, Layers3, Sparkles, Target, TrendingUp } from "lucide-react";
+import { ArrowRight, CalendarDays, ClipboardList, Layers3, Sparkles, Target, TrendingUp } from "lucide-react";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
 import { BrandLogo } from "@/components/BrandLogo";
 import { SiteFooter } from "@/components/layout/SiteFooter";
@@ -17,27 +17,50 @@ const heroSteps = [
   {
     step: "1",
     icon: ClipboardList,
-    title: "Log the game",
-    copy: "Capture the matchup, result, turn order, and what mattered before the next queue.",
+    title: "Import or log",
+    copy: "Paste TCG Live battle logs or enter games manually with result, turn order, and matchup context.",
   },
   {
     step: "2",
     icon: Sparkles,
-    title: "Build signal",
-    copy: "SixPrizer groups your games into matchup reads, repeated leaks, and deck-version evidence.",
+    title: "Review the pattern",
+    copy: "Connect wins and losses to tags, event rounds, deck versions, and repeated testing issues.",
   },
   {
     step: "3",
     icon: Target,
-    title: "Test next",
-    copy: "Get a priority watchlist or focused test instead of guessing what to review or change.",
+    title: "Decide what to test",
+    copy: "Turn matchup records and loss reasons into the next focused testing block.",
   },
 ] as const;
 
 const featureChips = [
-  ["Fast logging", ClipboardList],
-  ["Matchup signal", Target],
+  ["TCG Live import", ClipboardList],
+  ["Testing review", Target],
   ["Deck versions", Layers3],
+] as const;
+
+const differentiationCards = [
+  {
+    title: "Import TCG Live logs",
+    copy: "Paste battle logs and turn ladder games into structured testing data.",
+    icon: ClipboardList,
+  },
+  {
+    title: "Compare deck versions",
+    copy: "See whether the new list is actually improving your matchups.",
+    icon: Layers3,
+  },
+  {
+    title: "Review event rounds",
+    copy: "Log locals, online events, or testing blocks and connect every round to your analytics.",
+    icon: CalendarDays,
+  },
+  {
+    title: "Find what to test next",
+    copy: "Use matchup records, tags, and loss patterns to focus your next testing block.",
+    icon: Target,
+  },
 ] as const;
 
 const recordCards = [
@@ -76,10 +99,10 @@ function ProductPreview() {
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#4F8CFF]">
-              Current focus
+              Testing review
             </p>
             <h2 className="mt-1 text-2xl font-black tracking-tight text-[#F8FAFC] sm:text-3xl">
-              Mega Greninja matchup
+              What to test next
             </h2>
           </div>
           <span className="rounded-full bg-[#4F8CFF]/12 px-3 py-1 text-xs font-semibold text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.18)]">
@@ -99,7 +122,7 @@ function ProductPreview() {
               />
             </div>
             <p className="mt-4 text-sm font-semibold text-[#F8FAFC]">Mega Greninja</p>
-            <p className="mt-1 text-xs text-[#94A3B8]/76">Priority watchlist</p>
+            <p className="mt-1 text-xs text-[#94A3B8]/76">Matchup signal</p>
           </div>
 
           <div className="grid gap-4">
@@ -297,17 +320,18 @@ export default async function Home() {
                 <Sparkles className="size-4" aria-hidden="true" />
                 Built for competitive Pokémon TCG testing
               </p>
-              <h1 className="mt-5 max-w-[11.5ch] text-4xl font-black leading-[0.96] tracking-tight text-[#F8FAFC] min-[390px]:text-5xl sm:text-6xl xl:text-[3.75rem] 2xl:text-[4.5rem]">
-                <span className="block">From testing games to</span>
-                <span className="block max-w-[9.8ch] text-[#F5C84C] drop-shadow-[0_0_12px_rgba(245,200,76,0.12)] min-[1440px]:max-w-none 2xl:whitespace-nowrap">
-                  six-prize turns.
+              <h1 className="mt-5 max-w-[14.5ch] text-4xl font-black leading-[0.96] tracking-tight text-[#F8FAFC] min-[390px]:text-5xl sm:text-6xl xl:text-[3.75rem] 2xl:text-[4.35rem]">
+                <span className="block">A testing tracker</span>
+                <span className="block">for players who want to know</span>
+                <span className="block text-[#F5C84C] drop-shadow-[0_0_12px_rgba(245,200,76,0.12)]">
+                  what to test next.
                 </span>
               </h1>
               <p className="mt-5 max-w-[44rem] text-base leading-7 text-[#C7D2E5] sm:text-lg sm:leading-8">
-                Log games fast, spot the matchups costing you wins, and know what to test next.
+                Log games, import TCG Live battle logs, compare deck versions, and review the patterns behind your wins and losses.
               </p>
               <p className="mt-3 text-sm font-medium text-[#94A3B8]/82">
-                Stop changing lists based on vibes.
+                Private by default. Raw logs, notes, and testing data stay private unless you choose to share.
               </p>
 
               <div className="mt-7 flex flex-col gap-3 sm:flex-row">
@@ -370,15 +394,50 @@ export default async function Home() {
       </section>
 
       <section className="relative px-4 pb-16 sm:px-6 sm:pb-20">
+        <div className="mx-auto max-w-7xl">
+          <div className="max-w-3xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#F5C84C]/82">
+              Testing review
+            </p>
+            <h2 className="mt-2 text-2xl font-bold tracking-tight text-[#F8FAFC] sm:text-3xl">
+              Built for testing, not just records
+            </h2>
+            <p className={`mt-3 ${sectionCopy}`}>
+              Most tools help you remember what happened. SixPrizer helps you understand what to do next.
+            </p>
+          </div>
+
+          <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {differentiationCards.map((item) => {
+              const Icon = item.icon;
+
+              return (
+                <article key={item.title} className={`${cardLarge} relative overflow-hidden`}>
+                  <div className="pointer-events-none absolute -right-10 -top-10 size-24 rounded-full bg-[#4F8CFF]/10 blur-2xl" />
+                  <div className="relative">
+                    <span className="inline-flex size-10 items-center justify-center rounded-[14px] bg-[#4F8CFF]/12 text-[#B8D1FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.18)]">
+                      <Icon className="size-5" aria-hidden="true" />
+                    </span>
+                    <h3 className="mt-4 text-lg font-bold text-[#F8FAFC]">{item.title}</h3>
+                    <p className="mt-2 text-sm leading-6 text-[#94A3B8]/78">{item.copy}</p>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      <section className="relative px-4 pb-16 sm:px-6 sm:pb-20">
         <div className={`mx-auto max-w-7xl ${cardLarge}`}>
           <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#F5C84C]/82">
-            Built for competitive testing
+            Private testing notes
           </p>
           <h2 className="mt-2 text-2xl font-bold tracking-tight text-[#F8FAFC] sm:text-3xl">
-            Built for the games between events, where lists are tuned and matchups are learned.
+            Ready to turn testing games into better decisions?
           </h2>
           <p className={`mt-4 max-w-3xl ${sectionCopy}`}>
-            Every log should answer a testing question, not disappear into a spreadsheet.
+            Import logs, review event rounds, compare versions, and keep your raw testing notes private by default.
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <Link href="/signup" className={`${primaryButton} h-12 px-6`}>
