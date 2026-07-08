@@ -63,27 +63,27 @@ const differentiationCards = [
   },
 ] as const;
 
-const recordCards = [
+const previewMetrics = [
   {
-    label: "Wins",
-    value: "5",
-    support: "19%",
-    className:
-      "bg-emerald-500/10 text-emerald-200 shadow-[inset_0_0_0_1px_rgba(34,197,94,0.16)]",
+    label: "Record",
+    value: "5W / 19L / 2T",
+    support: "26 focused games",
+    icon: ClipboardList,
+    className: "text-[#F8FAFC]",
   },
   {
-    label: "Losses",
-    value: "19",
-    support: "73%",
-    className:
-      "bg-[#F43F5E]/10 text-rose-200 shadow-[inset_0_0_0_1px_rgba(244,63,94,0.18)]",
+    label: "Focused games",
+    value: "4 / 5",
+    support: "1 more for a stronger read",
+    icon: Target,
+    className: "text-[#FFE28A]",
   },
   {
-    label: "Ties",
-    value: "2",
-    support: "8%",
-    className:
-      "bg-[#F5C84C]/12 text-[#FFE28A] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.18)]",
+    label: "Deck signal",
+    value: "v3 improved",
+    support: "opening hands are cleaner",
+    icon: TrendingUp,
+    className: "text-emerald-200",
   },
 ] as const;
 
@@ -110,69 +110,58 @@ function ProductPreview() {
           </span>
         </div>
 
-        <div className="mt-5 grid gap-4 xl:grid-cols-[170px_minmax(0,1fr)] 2xl:grid-cols-[184px_minmax(0,1fr)]">
-          <div className="flex flex-col items-center justify-center rounded-[24px] bg-[linear-gradient(180deg,rgba(11,18,32,0.80),rgba(8,15,28,0.90))] p-4 text-center shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08),inset_0_1px_0_rgba(255,255,255,0.02)]">
-            <div className="flex size-28 items-center justify-center rounded-full bg-[radial-gradient(circle_at_center,rgba(79,140,255,0.16),transparent_54%),radial-gradient(circle_at_50%_42%,rgba(255,255,255,0.04),transparent_64%),rgba(7,17,31,0.92)] shadow-[0_0_24px_rgba(79,140,255,0.10),inset_0_0_0_1px_rgba(79,140,255,0.20)] sm:size-32 xl:size-32">
-              <ArchetypeSprites
-                archetype="Mega Greninja"
-                size="lg"
-                variant="bare"
-                className="overflow-visible"
-                imageClassName="size-20 scale-[1.12] min-[390px]:size-[5.25rem] sm:size-24 sm:scale-[1.16]"
-              />
-            </div>
-            <p className="mt-4 text-sm font-semibold text-[#F8FAFC]">Mega Greninja</p>
-            <p className="mt-1 text-xs text-[#94A3B8]/76">Matchup signal</p>
-          </div>
-
-          <div className="grid min-w-0 gap-4">
-            <div className="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_132px]">
-              <div className="grid gap-4">
-                <div className="grid gap-3 min-[430px]:grid-cols-3">
-                  {recordCards.map((item) => (
-                    <div
-                      key={item.label}
-                      className={`rounded-[18px] px-4 py-3 ${item.className}`}
-                    >
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.1em] opacity-80">
-                        {item.label}
-                      </p>
-                      <p className="mt-2 text-3xl font-black tracking-tight">{item.value}</p>
-                      <p className="mt-1 text-xs font-semibold opacity-80">{item.support}</p>
-                    </div>
-                  ))}
+        <div className="mt-5 grid gap-4">
+          <div className="relative overflow-hidden rounded-[26px] bg-[linear-gradient(135deg,rgba(15,26,45,0.94),rgba(8,15,28,0.96))] p-4 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.14),inset_0_1px_0_rgba(255,255,255,0.03)] sm:p-5">
+            <div className="pointer-events-none absolute -right-8 -top-10 size-28 rounded-full bg-[#4F8CFF]/10 blur-3xl" />
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
+              <div className="flex shrink-0 items-center gap-4">
+                <div className="flex size-24 items-center justify-center rounded-[28px] bg-[radial-gradient(circle_at_center,rgba(79,140,255,0.18),transparent_56%),rgba(7,17,31,0.94)] shadow-[0_0_26px_rgba(79,140,255,0.13),inset_0_0_0_1px_rgba(79,140,255,0.22)] sm:size-28">
+                  <ArchetypeSprites
+                    archetype="Mega Greninja"
+                    size="lg"
+                    variant="bare"
+                    className="overflow-visible"
+                    imageClassName="size-20 scale-[1.12] sm:size-24 sm:scale-[1.16]"
+                  />
                 </div>
-
-                <div className="rounded-[20px] bg-[#0F1A2D]/82 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.09),inset_0_1px_0_rgba(255,255,255,0.02)]">
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#94A3B8]/72">
-                      Record
-                    </p>
-                    <p className="text-sm font-semibold text-[#F8FAFC]">5W / 19L / 2T</p>
-                  </div>
-                  <div className="mt-3 flex h-3 overflow-hidden rounded-full bg-[#1A2238]">
-                    <div className="h-full bg-emerald-400" style={{ width: "19%" }} />
-                    <div className="h-full bg-[#F43F5E]" style={{ width: "73%" }} />
-                    <div className="h-full bg-[#F5C84C]" style={{ width: "8%" }} />
-                  </div>
-                  <div className="mt-3 flex flex-wrap items-center gap-3 text-xs font-semibold">
-                    <span className="text-emerald-200">19% wins</span>
-                    <span className="text-rose-200">73% losses</span>
-                    <span className="text-[#FFE28A]">8% ties</span>
-                  </div>
+                <div className="sm:hidden">
+                  <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#94A3B8]/72">
+                    Matchup
+                  </p>
+                  <p className="mt-1 text-xl font-black tracking-tight text-[#F8FAFC]">
+                    Mega Greninja
+                  </p>
                 </div>
               </div>
 
-              <div className="hidden flex-col items-center justify-center rounded-[22px] bg-[#0F1A2D]/82 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.09),inset_0_1px_0_rgba(255,255,255,0.02)] 2xl:flex">
-                <div
-                  className="relative flex size-28 items-center justify-center rounded-full"
-                  style={{
-                    background:
-                      "conic-gradient(#F43F5E 0 19%, rgba(26,34,56,0.95) 19% 100%)",
-                  }}
-                >
-                  <div className="flex size-[92px] flex-col items-center justify-center rounded-full bg-[#07111F] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
-                    <p className="text-3xl font-black tracking-tight text-[#F8FAFC]">19%</p>
+              <div className="min-w-0 flex-1">
+                <div className="hidden sm:block">
+                  <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#94A3B8]/72">
+                    Matchup
+                  </p>
+                  <p className="mt-1 text-2xl font-black tracking-tight text-[#F8FAFC]">
+                    Mega Greninja
+                  </p>
+                </div>
+                <div className="mt-0 flex flex-wrap items-center gap-2 sm:mt-3">
+                  <span className="rounded-full bg-[#F43F5E]/12 px-3 py-1.5 text-xs font-bold text-rose-200 shadow-[inset_0_0_0_1px_rgba(244,63,94,0.18)]">
+                    Problem matchup
+                  </span>
+                  <span className="rounded-full bg-[#0B1020]/55 px-3 py-1.5 text-xs font-semibold text-[#C7D2E5] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]">
+                    19% win rate
+                  </span>
+                </div>
+                <div className="mt-4 grid gap-3 min-[430px]:grid-cols-[1fr_auto] min-[430px]:items-end">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#94A3B8]/72">
+                      Record
+                    </p>
+                    <p className="mt-1 text-2xl font-black tracking-tight text-[#F8FAFC]">
+                      5W / 19L / 2T
+                    </p>
+                  </div>
+                  <div className="min-w-[7.5rem] rounded-[18px] bg-[#07111F]/72 px-4 py-3 text-center shadow-[inset_0_0_0_1px_rgba(244,63,94,0.16)]">
+                    <p className="text-3xl font-black tracking-tight text-rose-200">19%</p>
                     <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]/72">
                       Win rate
                     </p>
@@ -180,66 +169,51 @@ function ProductPreview() {
                 </div>
               </div>
             </div>
+          </div>
 
-            <div className="grid gap-3 min-[430px]:grid-cols-2">
-              <div className="rounded-[18px] bg-[#0F1A2D]/82 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.09),inset_0_1px_0_rgba(255,255,255,0.02)]">
-                <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#94A3B8]/72">
-                  Focused games
+          <div className="rounded-[24px] bg-[#0F1A2D]/82 p-4 shadow-[inset_0_0_0_1px_rgba(245,200,76,0.12),inset_0_1px_0_rgba(255,255,255,0.02)] sm:p-5">
+            <div className="flex items-start gap-3">
+              <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-[14px] bg-[#F5C84C]/12 text-[#FFE28A] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.18)]">
+                <Target className="size-5" aria-hidden="true" />
+              </span>
+              <div className="min-w-0">
+                <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#F5C84C]/82">
+                  Next test
                 </p>
-                <p className="mt-2 text-2xl font-black tracking-tight text-[#F8FAFC]">4 / 5</p>
-                <div className="mt-3 flex items-center gap-1.5">
-                  {[true, true, true, true, false].map((filled, index) => (
-                    <span
-                      key={index}
-                      className={`h-3 w-6 rounded-full ${
-                        filled ? "bg-[#F5C84C]" : "bg-[#1A2238]"
-                      }`}
-                    />
-                  ))}
-                </div>
-                <p className="mt-3 text-xs leading-5 text-[#94A3B8]/72">
-                  1 more to unlock next insight
+                <p className="mt-2 text-xl font-black tracking-tight text-[#F8FAFC]">
+                  Play 5 focused games into Mega Greninja.
                 </p>
-              </div>
-
-              <div className="rounded-[18px] bg-[#0F1A2D]/82 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.09),inset_0_1px_0_rgba(255,255,255,0.02)]">
-                <div className="flex items-center gap-2 text-[#4F8CFF]">
-                  <Target className="size-4" aria-hidden="true" />
-                  <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#94A3B8]/72">
-                    Next watch
-                  </p>
-                </div>
-                <p className="mt-3 text-sm leading-6 text-[#F8FAFC]">
-                  Keep logging. When Mega Greninja appears, track bench pressure.
+                <p className="mt-2 text-sm leading-6 text-[#C7D2E5]">
+                  Track bench pressure and opening hands before changing the list again.
                 </p>
-              </div>
-
-              <div className="rounded-[18px] bg-[#0F1A2D]/82 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.09),inset_0_1px_0_rgba(255,255,255,0.02)]">
-                <div className="flex items-center gap-2 text-emerald-300">
-                  <TrendingUp className="size-4" aria-hidden="true" />
-                  <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#94A3B8]/72">
-                    Deck signal
-                  </p>
-                </div>
-                <p className="mt-3 text-sm leading-6 text-emerald-200">
-                  v3 improved opening hands
-                </p>
-                <svg
-                  viewBox="0 0 100 24"
-                  className="mt-3 h-8 w-full"
-                  aria-hidden="true"
-                >
-                  <polyline
-                    fill="none"
-                    stroke="#34D399"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    points="4,18 24,16 42,14 62,10 82,8 96,5"
-                  />
-                </svg>
               </div>
             </div>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-3">
+            {previewMetrics.map((item) => {
+              const Icon = item.icon;
+
+              return (
+                <div
+                  key={item.label}
+                  className="rounded-[18px] bg-[#0F1A2D]/82 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.09),inset_0_1px_0_rgba(255,255,255,0.02)]"
+                >
+                  <div className="flex items-center gap-2">
+                    <Icon className="size-4 text-[#4F8CFF]" aria-hidden="true" />
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#94A3B8]/72">
+                      {item.label}
+                    </p>
+                  </div>
+                  <p className={`mt-3 text-lg font-black tracking-tight ${item.className}`}>
+                    {item.value}
+                  </p>
+                  <p className="mt-2 text-xs leading-5 text-[#94A3B8]/72">
+                    {item.support}
+                  </p>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
