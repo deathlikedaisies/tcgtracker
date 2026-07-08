@@ -89,13 +89,13 @@ const recordCards = [
 
 function ProductPreview() {
   return (
-    <div className="relative min-w-0 overflow-hidden rounded-[30px] bg-[linear-gradient(180deg,rgba(15,25,44,0.96),rgba(8,17,31,0.92))] p-5 shadow-[0_24px_62px_rgba(0,0,0,0.30),inset_0_0_0_1px_rgba(148,163,184,0.12),inset_0_1px_0_rgba(255,255,255,0.03)] backdrop-blur sm:p-6">
+    <div className="relative flex min-w-0 overflow-hidden rounded-[30px] bg-[linear-gradient(180deg,rgba(15,25,44,0.96),rgba(8,17,31,0.92))] p-5 shadow-[0_24px_62px_rgba(0,0,0,0.30),inset_0_0_0_1px_rgba(148,163,184,0.12),inset_0_1px_0_rgba(255,255,255,0.03)] backdrop-blur sm:p-6 lg:min-h-full xl:p-7">
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.045),transparent_24%,rgba(245,200,76,0.035)_56%,transparent_78%)]" />
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,rgba(79,140,255,0.22),rgba(255,255,255,0.08),rgba(245,200,76,0.16))]" />
       <div className="pointer-events-none absolute -right-10 top-2 size-32 rounded-full bg-[#4F8CFF]/10 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-12 right-12 size-32 rounded-full bg-[#F5C84C]/[0.05] blur-3xl" />
 
-      <div className="relative">
+      <div className="relative flex min-h-full w-full flex-col">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#4F8CFF]">
@@ -110,22 +110,22 @@ function ProductPreview() {
           </span>
         </div>
 
-        <div className="mt-6 grid gap-5 xl:grid-cols-[172px_minmax(0,1fr)] 2xl:grid-cols-[180px_minmax(0,1fr)]">
-          <div className="flex flex-col items-center justify-center rounded-[24px] bg-[linear-gradient(180deg,rgba(11,18,32,0.80),rgba(8,15,28,0.90))] p-5 text-center shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08),inset_0_1px_0_rgba(255,255,255,0.02)]">
-            <div className="flex size-28 items-center justify-center rounded-full bg-[radial-gradient(circle_at_center,rgba(79,140,255,0.16),transparent_54%),radial-gradient(circle_at_50%_42%,rgba(255,255,255,0.04),transparent_64%),rgba(7,17,31,0.92)] shadow-[0_0_24px_rgba(79,140,255,0.10),inset_0_0_0_1px_rgba(79,140,255,0.20)] sm:size-32">
+        <div className="mt-6 grid flex-1 gap-5 xl:grid-cols-[190px_minmax(0,1fr)] 2xl:grid-cols-[210px_minmax(0,1fr)]">
+          <div className="flex flex-col items-center justify-center rounded-[24px] bg-[linear-gradient(180deg,rgba(11,18,32,0.80),rgba(8,15,28,0.90))] p-5 text-center shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08),inset_0_1px_0_rgba(255,255,255,0.02)] xl:p-6">
+            <div className="flex size-28 items-center justify-center rounded-full bg-[radial-gradient(circle_at_center,rgba(79,140,255,0.16),transparent_54%),radial-gradient(circle_at_50%_42%,rgba(255,255,255,0.04),transparent_64%),rgba(7,17,31,0.92)] shadow-[0_0_24px_rgba(79,140,255,0.10),inset_0_0_0_1px_rgba(79,140,255,0.20)] sm:size-32 xl:size-36">
               <ArchetypeSprites
                 archetype="Mega Greninja"
                 size="lg"
                 variant="bare"
                 className="overflow-visible"
-                imageClassName="size-20 scale-[1.12] min-[390px]:size-[5.25rem] sm:size-24 sm:scale-[1.16]"
+                imageClassName="size-20 scale-[1.12] min-[390px]:size-[5.25rem] sm:size-24 sm:scale-[1.16] xl:size-28"
               />
             </div>
             <p className="mt-4 text-sm font-semibold text-[#F8FAFC]">Mega Greninja</p>
             <p className="mt-1 text-xs text-[#94A3B8]/76">Matchup signal</p>
           </div>
 
-          <div className="grid gap-4">
+          <div className="grid min-w-0 content-between gap-4">
             <div className="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_132px]">
               <div className="grid gap-4">
                 <div className="grid gap-3 min-[430px]:grid-cols-3">
@@ -308,8 +308,8 @@ export default async function Home() {
       </header>
 
       <section className="relative px-4 pb-12 pt-9 sm:px-6 sm:pb-16 sm:pt-10">
-        <div className="mx-auto grid max-w-[1400px] gap-8 xl:gap-9 2xl:gap-10 lg:grid-cols-[1fr_1fr] lg:items-start">
-          <div className="relative min-w-0 overflow-hidden rounded-[30px] bg-[linear-gradient(180deg,rgba(16,26,45,0.95),rgba(8,17,31,0.90))] p-5 shadow-[0_24px_62px_rgba(0,0,0,0.28),inset_0_0_0_1px_rgba(148,163,184,0.12),inset_0_1px_0_rgba(255,255,255,0.03)] backdrop-blur sm:p-6 lg:p-8 xl:p-9">
+        <div className="mx-auto grid max-w-[1400px] gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-stretch xl:gap-9 2xl:gap-10">
+          <div className="relative min-w-0 overflow-hidden rounded-[30px] bg-[linear-gradient(180deg,rgba(16,26,45,0.95),rgba(8,17,31,0.90))] p-5 shadow-[0_24px_62px_rgba(0,0,0,0.28),inset_0_0_0_1px_rgba(148,163,184,0.12),inset_0_1px_0_rgba(255,255,255,0.03)] backdrop-blur sm:p-6 lg:p-7 xl:p-8">
             <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.05),transparent_22%,rgba(79,140,255,0.04)_46%,rgba(245,200,76,0.035)_68%,transparent_84%)]" />
             <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,rgba(79,140,255,0.28),rgba(255,255,255,0.08),rgba(245,200,76,0.22))]" />
             <div className="pointer-events-none absolute -left-10 -top-10 size-36 rounded-full bg-[#4F8CFF]/[0.12] blur-3xl" />
@@ -320,14 +320,14 @@ export default async function Home() {
                 <Sparkles className="size-4" aria-hidden="true" />
                 Built for competitive Pokémon TCG testing
               </p>
-              <h1 className="mt-5 max-w-[16ch] text-4xl font-black leading-[0.98] tracking-tight text-[#F8FAFC] min-[390px]:text-5xl sm:text-[3.45rem] sm:leading-[0.97] xl:text-[3.45rem] 2xl:text-[4rem]">
+              <h1 className="mt-5 max-w-[16ch] text-4xl font-black leading-[0.98] tracking-tight text-[#F8FAFC] min-[390px]:text-5xl sm:text-[3.35rem] sm:leading-[0.97] xl:text-[3.35rem] 2xl:text-[3.85rem]">
                 <span className="block">A testing tracker for players</span>
                 <span className="block">who want to know</span>
                 <span className="block text-[#F5C84C] drop-shadow-[0_0_12px_rgba(245,200,76,0.12)]">
                   what to test next.
                 </span>
               </h1>
-              <p className="mt-5 max-w-[44rem] text-base leading-7 text-[#C7D2E5] sm:text-lg sm:leading-8">
+              <p className="mt-4 max-w-[42rem] text-base leading-7 text-[#C7D2E5] sm:text-lg sm:leading-8">
                 Log games, import TCG Live battle logs, compare deck versions, and review the patterns behind your wins and losses.
               </p>
               <div className="mt-4 grid gap-3 rounded-[22px] bg-[#0B1020]/48 p-3 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.18),inset_0_1px_0_rgba(255,255,255,0.025)] sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
@@ -352,7 +352,7 @@ export default async function Home() {
                 Private by default. Raw logs, notes, and testing data stay private unless you choose to share.
               </p>
 
-              <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                 <Link
                   href="/signup"
                   className={`${primaryButton} min-h-12 px-7 text-base shadow-[0_18px_44px_rgba(245,200,76,0.30),0_0_0_1px_rgba(245,200,76,0.22)]`}
@@ -367,11 +367,11 @@ export default async function Home() {
                   Preview demo
                 </Link>
               </div>
-              <p className="mt-4 text-sm leading-6 text-[#94A3B8]/82">
+              <p className="mt-3 text-sm leading-6 text-[#94A3B8]/82">
                 No account needed to preview demo data.
               </p>
 
-              <div className="mt-8 flex flex-wrap gap-2.5">
+              <div className="mt-6 flex flex-wrap gap-2.5">
                 {featureChips.map(([label, Icon]) => (
                   <div
                     key={label}
