@@ -88,6 +88,12 @@ const previewMetrics = [
 ] as const;
 
 function ProductPreview() {
+  const ringSegments = [
+    { color: "#22C55E", dash: "19 81", offset: "0" },
+    { color: "#F43F5E", dash: "73 27", offset: "-19" },
+    { color: "#F5C84C", dash: "8 92", offset: "-92" },
+  ] as const;
+
   return (
     <div className="relative flex min-w-0 overflow-hidden rounded-[30px] bg-[linear-gradient(180deg,rgba(15,25,44,0.96),rgba(8,17,31,0.92))] p-5 shadow-[0_24px_62px_rgba(0,0,0,0.30),inset_0_0_0_1px_rgba(148,163,184,0.12),inset_0_1px_0_rgba(255,255,255,0.03)] backdrop-blur sm:p-6 lg:mx-auto lg:w-full lg:max-w-[650px] xl:p-6 2xl:max-w-[680px]">
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.045),transparent_24%,rgba(245,200,76,0.035)_56%,transparent_78%)]" />
@@ -113,7 +119,7 @@ function ProductPreview() {
         <div className="mt-5 grid gap-4">
           <div className="relative overflow-hidden rounded-[26px] bg-[linear-gradient(135deg,rgba(15,26,45,0.94),rgba(8,15,28,0.96))] p-4 shadow-[inset_0_0_0_1px_rgba(79,140,255,0.14),inset_0_1px_0_rgba(255,255,255,0.03)] sm:p-5">
             <div className="pointer-events-none absolute -right-8 -top-10 size-28 rounded-full bg-[#4F8CFF]/10 blur-3xl" />
-            <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
+            <div className="grid gap-5 sm:grid-cols-[auto_minmax(0,1fr)_112px] sm:items-center">
               <div className="flex shrink-0 items-center gap-4">
                 <div className="flex size-24 items-center justify-center rounded-[28px] bg-[radial-gradient(circle_at_center,rgba(79,140,255,0.18),transparent_56%),rgba(7,17,31,0.94)] shadow-[0_0_26px_rgba(79,140,255,0.13),inset_0_0_0_1px_rgba(79,140,255,0.22)] sm:size-28">
                   <ArchetypeSprites
@@ -134,7 +140,7 @@ function ProductPreview() {
                 </div>
               </div>
 
-              <div className="min-w-0 flex-1">
+              <div className="min-w-0">
                 <div className="hidden sm:block">
                   <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#94A3B8]/72">
                     Matchup
@@ -151,19 +157,54 @@ function ProductPreview() {
                     19% win rate
                   </span>
                 </div>
-                <div className="mt-4 grid gap-3 min-[430px]:grid-cols-[1fr_auto] min-[430px]:items-end">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#94A3B8]/72">
-                      Record
-                    </p>
-                    <p className="mt-1 text-2xl font-black tracking-tight text-[#F8FAFC]">
-                      5W / 19L / 2T
-                    </p>
-                  </div>
-                  <div className="min-w-[7.5rem] rounded-[18px] bg-[#07111F]/72 px-4 py-3 text-center shadow-[inset_0_0_0_1px_rgba(244,63,94,0.16)]">
-                    <p className="text-3xl font-black tracking-tight text-rose-200">19%</p>
-                    <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]/72">
-                      Win rate
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <span className="rounded-[14px] bg-emerald-500/10 px-3 py-2 text-sm font-black text-emerald-200 shadow-[inset_0_0_0_1px_rgba(34,197,94,0.16)]">
+                    5W
+                  </span>
+                  <span className="rounded-[14px] bg-[#F43F5E]/10 px-3 py-2 text-sm font-black text-rose-200 shadow-[inset_0_0_0_1px_rgba(244,63,94,0.18)]">
+                    19L
+                  </span>
+                  <span className="rounded-[14px] bg-[#F5C84C]/12 px-3 py-2 text-sm font-black text-[#FFE28A] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.18)]">
+                    2T
+                  </span>
+                </div>
+                <div className="mt-4 flex h-2.5 overflow-hidden rounded-full bg-[#07111F]/82 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                  <div className="h-full bg-emerald-400" style={{ width: "19%" }} />
+                  <div className="h-full bg-[#F43F5E]" style={{ width: "73%" }} />
+                  <div className="h-full bg-[#F5C84C]" style={{ width: "8%" }} />
+                </div>
+              </div>
+
+              <div className="mx-auto flex size-28 shrink-0 items-center justify-center rounded-full bg-[#07111F]/72 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]">
+                <div className="relative size-24">
+                  <svg className="size-24 -rotate-90" viewBox="0 0 36 36" aria-hidden="true">
+                    <circle
+                      cx="18"
+                      cy="18"
+                      r="15.915"
+                      fill="none"
+                      stroke="rgba(26,34,56,0.95)"
+                      strokeWidth="4"
+                    />
+                    {ringSegments.map((segment) => (
+                      <circle
+                        key={`${segment.color}-${segment.offset}`}
+                        cx="18"
+                        cy="18"
+                        r="15.915"
+                        fill="none"
+                        stroke={segment.color}
+                        strokeDasharray={segment.dash}
+                        strokeDashoffset={segment.offset}
+                        strokeLinecap="round"
+                        strokeWidth="4"
+                      />
+                    ))}
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <p className="text-2xl font-black tracking-tight text-rose-200">19%</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]/72">
+                      wins
                     </p>
                   </div>
                 </div>
