@@ -89,13 +89,13 @@ const recordCards = [
 
 function ProductPreview() {
   return (
-    <div className="relative flex min-w-0 overflow-hidden rounded-[30px] bg-[linear-gradient(180deg,rgba(15,25,44,0.96),rgba(8,17,31,0.92))] p-5 shadow-[0_24px_62px_rgba(0,0,0,0.30),inset_0_0_0_1px_rgba(148,163,184,0.12),inset_0_1px_0_rgba(255,255,255,0.03)] backdrop-blur sm:p-6 lg:min-h-full xl:p-7">
+    <div className="relative flex min-w-0 overflow-hidden rounded-[30px] bg-[linear-gradient(180deg,rgba(15,25,44,0.96),rgba(8,17,31,0.92))] p-5 shadow-[0_24px_62px_rgba(0,0,0,0.30),inset_0_0_0_1px_rgba(148,163,184,0.12),inset_0_1px_0_rgba(255,255,255,0.03)] backdrop-blur sm:p-6 lg:mx-auto lg:w-full lg:max-w-[650px] xl:p-6 2xl:max-w-[680px]">
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.045),transparent_24%,rgba(245,200,76,0.035)_56%,transparent_78%)]" />
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,rgba(79,140,255,0.22),rgba(255,255,255,0.08),rgba(245,200,76,0.16))]" />
       <div className="pointer-events-none absolute -right-10 top-2 size-32 rounded-full bg-[#4F8CFF]/10 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-12 right-12 size-32 rounded-full bg-[#F5C84C]/[0.05] blur-3xl" />
 
-      <div className="relative flex min-h-full w-full flex-col">
+      <div className="relative w-full">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#4F8CFF]">
@@ -110,22 +110,22 @@ function ProductPreview() {
           </span>
         </div>
 
-        <div className="mt-6 grid flex-1 gap-5 xl:grid-cols-[190px_minmax(0,1fr)] 2xl:grid-cols-[210px_minmax(0,1fr)]">
-          <div className="flex flex-col items-center justify-center rounded-[24px] bg-[linear-gradient(180deg,rgba(11,18,32,0.80),rgba(8,15,28,0.90))] p-5 text-center shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08),inset_0_1px_0_rgba(255,255,255,0.02)] xl:p-6">
-            <div className="flex size-28 items-center justify-center rounded-full bg-[radial-gradient(circle_at_center,rgba(79,140,255,0.16),transparent_54%),radial-gradient(circle_at_50%_42%,rgba(255,255,255,0.04),transparent_64%),rgba(7,17,31,0.92)] shadow-[0_0_24px_rgba(79,140,255,0.10),inset_0_0_0_1px_rgba(79,140,255,0.20)] sm:size-32 xl:size-36">
+        <div className="mt-5 grid gap-4 xl:grid-cols-[170px_minmax(0,1fr)] 2xl:grid-cols-[184px_minmax(0,1fr)]">
+          <div className="flex flex-col items-center justify-center rounded-[24px] bg-[linear-gradient(180deg,rgba(11,18,32,0.80),rgba(8,15,28,0.90))] p-4 text-center shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08),inset_0_1px_0_rgba(255,255,255,0.02)]">
+            <div className="flex size-28 items-center justify-center rounded-full bg-[radial-gradient(circle_at_center,rgba(79,140,255,0.16),transparent_54%),radial-gradient(circle_at_50%_42%,rgba(255,255,255,0.04),transparent_64%),rgba(7,17,31,0.92)] shadow-[0_0_24px_rgba(79,140,255,0.10),inset_0_0_0_1px_rgba(79,140,255,0.20)] sm:size-32 xl:size-32">
               <ArchetypeSprites
                 archetype="Mega Greninja"
                 size="lg"
                 variant="bare"
                 className="overflow-visible"
-                imageClassName="size-20 scale-[1.12] min-[390px]:size-[5.25rem] sm:size-24 sm:scale-[1.16] xl:size-28"
+                imageClassName="size-20 scale-[1.12] min-[390px]:size-[5.25rem] sm:size-24 sm:scale-[1.16]"
               />
             </div>
             <p className="mt-4 text-sm font-semibold text-[#F8FAFC]">Mega Greninja</p>
             <p className="mt-1 text-xs text-[#94A3B8]/76">Matchup signal</p>
           </div>
 
-          <div className="grid min-w-0 content-between gap-4">
+          <div className="grid min-w-0 gap-4">
             <div className="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_132px]">
               <div className="grid gap-4">
                 <div className="grid gap-3 min-[430px]:grid-cols-3">
@@ -163,7 +163,7 @@ function ProductPreview() {
                 </div>
               </div>
 
-              <div className="flex flex-col items-center justify-center rounded-[22px] bg-[#0F1A2D]/82 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.09),inset_0_1px_0_rgba(255,255,255,0.02)]">
+              <div className="hidden flex-col items-center justify-center rounded-[22px] bg-[#0F1A2D]/82 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.09),inset_0_1px_0_rgba(255,255,255,0.02)] 2xl:flex">
                 <div
                   className="relative flex size-28 items-center justify-center rounded-full"
                   style={{
@@ -181,7 +181,7 @@ function ProductPreview() {
               </div>
             </div>
 
-            <div className="grid gap-3 min-[430px]:grid-cols-2 2xl:grid-cols-3">
+            <div className="grid gap-3 min-[430px]:grid-cols-2">
               <div className="rounded-[18px] bg-[#0F1A2D]/82 p-4 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.09),inset_0_1px_0_rgba(255,255,255,0.02)]">
                 <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#94A3B8]/72">
                   Focused games
@@ -308,7 +308,7 @@ export default async function Home() {
       </header>
 
       <section className="relative px-4 pb-12 pt-9 sm:px-6 sm:pb-16 sm:pt-10">
-        <div className="mx-auto grid max-w-[1400px] gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-stretch xl:gap-9 2xl:gap-10">
+        <div className="mx-auto grid max-w-[1320px] gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(430px,0.92fr)] lg:items-center xl:gap-9 2xl:gap-10">
           <div className="relative min-w-0 overflow-hidden rounded-[30px] bg-[linear-gradient(180deg,rgba(16,26,45,0.95),rgba(8,17,31,0.90))] p-5 shadow-[0_24px_62px_rgba(0,0,0,0.28),inset_0_0_0_1px_rgba(148,163,184,0.12),inset_0_1px_0_rgba(255,255,255,0.03)] backdrop-blur sm:p-6 lg:p-7 xl:p-8">
             <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.05),transparent_22%,rgba(79,140,255,0.04)_46%,rgba(245,200,76,0.035)_68%,transparent_84%)]" />
             <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,rgba(79,140,255,0.28),rgba(255,255,255,0.08),rgba(245,200,76,0.22))]" />
