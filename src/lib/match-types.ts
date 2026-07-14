@@ -12,6 +12,7 @@ export type MatchMetadata = {
   round_number?: string;
   testing_session_name?: string;
   focus_matchup?: string;
+  source?: "manual" | "tcg_live_import" | "event_round";
   start_quality?: MatchStartQuality;
   opening_hand_quality?: MatchOpeningHandQuality;
   sequencing_quality?: MatchSequencingQuality;
@@ -19,6 +20,9 @@ export type MatchMetadata = {
   positive_tags?: string[];
   cards_shined?: string[];
   cards_failed?: string[];
+  tcg_live_cards_seen?: string[];
+  tcg_live_cards_used?: string[];
+  tcg_live_cards_discarded?: string[];
 };
 
 export type MatchResultCounts = {
@@ -57,6 +61,7 @@ const KNOWN_METADATA_KEYS = [
   "round_number",
   "testing_session_name",
   "focus_matchup",
+  "source",
   "start_quality",
   "opening_hand_quality",
   "sequencing_quality",
@@ -64,6 +69,9 @@ const KNOWN_METADATA_KEYS = [
   "positive_tags",
   "cards_shined",
   "cards_failed",
+  "tcg_live_cards_seen",
+  "tcg_live_cards_used",
+  "tcg_live_cards_discarded",
 ] as const satisfies readonly (keyof MatchMetadata)[];
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -161,6 +169,14 @@ export function parseMatchMetadata(value: unknown): MatchMetadata {
   metadata.testing_session_name = cleanText(value.testing_session_name);
   metadata.focus_matchup = cleanText(value.focus_matchup);
 
+  if (
+    value.source === "manual" ||
+    value.source === "tcg_live_import" ||
+    value.source === "event_round"
+  ) {
+    metadata.source = value.source;
+  }
+
   if (isOneOf(value.start_quality, MATCH_START_QUALITY_OPTIONS)) {
     metadata.start_quality = value.start_quality;
   }
@@ -177,6 +193,11 @@ export function parseMatchMetadata(value: unknown): MatchMetadata {
   metadata.positive_tags = cleanStringArray(value.positive_tags);
   metadata.cards_shined = cleanStringArray(value.cards_shined);
   metadata.cards_failed = cleanStringArray(value.cards_failed);
+  metadata.tcg_live_cards_seen = cleanStringArray(value.tcg_live_cards_seen);
+  metadata.tcg_live_cards_used = cleanStringArray(value.tcg_live_cards_used);
+  metadata.tcg_live_cards_discarded = cleanStringArray(
+    value.tcg_live_cards_discarded
+  );
 
   return metadata;
 }

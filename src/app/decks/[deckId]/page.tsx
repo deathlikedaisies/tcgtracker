@@ -35,6 +35,10 @@ import {
 import { SixPrizerLogo } from "@/components/SixPrizerLogo";
 import { getArchetypeOptions } from "@/lib/archetypes";
 import {
+  buildCardReviewRows,
+  type CardReviewSignalLabel,
+} from "@/lib/card-review";
+import {
   analyzeDeckList,
   getDecklistHealth,
   type DecklistAnalysis,
@@ -281,6 +285,22 @@ function getVersionImpactToneClass(tone: "blue" | "gold" | "emerald" | "rose") {
   }[tone];
 }
 
+function getCardReviewSignalToneClass(signalLabel: CardReviewSignalLabel) {
+  if (signalLabel === "Core card" || signalLabel === "Often used") {
+    return "bg-emerald-500/10 text-emerald-200 shadow-[inset_0_0_0_1px_rgba(34,197,94,0.16)]";
+  }
+
+  if (signalLabel === "Review candidate" || signalLabel === "Rarely used") {
+    return "bg-[#F5C84C]/12 text-[#FFE28A] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]";
+  }
+
+  return "bg-[#4F8CFF]/10 text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.14)]";
+}
+
+function formatUseRate(value: number | null) {
+  return value === null ? "N/A" : `${Math.round(value * 100)}%`;
+}
+
 export default async function DeckDetailPage({
   params,
   searchParams,
@@ -516,6 +536,13 @@ export default async function DeckDetailPage({
           previousIssueTagCount: previousVersionInsight
             ? getIssueTagMentionCount(previousVersionInsight.versionMatches)
             : null,
+        })
+      : null;
+  const activeCardReview =
+    activeVersion && activeVersionInsight
+      ? buildCardReviewRows({
+          decklist: activeVersion.decklist,
+          matches: activeVersionInsight.versionMatches,
         })
       : null;
   const primaryDeckActionHref = !deckVersions.length
@@ -1301,6 +1328,149 @@ export default async function DeckDetailPage({
                   </p>
                 </article>
               </div>
+            </section>
+          ) : null}
+
+          {!needsFirstVersionSetup && activeVersion && activeCardReview ? (
+            <section className={`p-4 sm:p-5 ${glassPanelStrong}`}>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4F8CFF]">
+                    Card Review
+                  </p>
+                  <h2 className="mt-2 text-xl font-semibold text-[#F8FAFC]">
+                    Which cards deserve a closer look?
+                  </h2>
+                  <p className="mt-1 max-w-3xl text-sm leading-6 text-[#94A3B8]/72">
+                    Card review uses imported TCG Live logs. Treat this as a signal, not proof.
+                  </p>
+                </div>
+                <span className="w-fit rounded-full bg-[#0B1020]/62 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]">
+                  {activeCardReview.importedLogCount} imported{" "}
+                  {activeCardReview.importedLogCount === 1 ? "log" : "logs"}
+                </span>
+              </div>
+
+              {!activeCardReview.hasDecklist ? (
+                <div className={`${premiumInset} mt-4 p-4`}>
+                  <p className="text-sm font-semibold text-[#F8FAFC]">
+                    Paste a decklist to unlock card review.
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-[#94A3B8]/72">
+                    Once this version has a list, SixPrizer can compare imported log activity against the cards you are testing.
+                  </p>
+                </div>
+              ) : activeCardReview.importedLogCount === 0 ? (
+                <div className={`${premiumInset} mt-4 p-4`}>
+                  <p className="text-sm font-semibold text-[#F8FAFC]">
+                    Import TCG Live logs to start card review.
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-[#94A3B8]/72">
+                    Manual logs still count for matchups and Review. Card Review starts once imported logs include reliable card activity.
+                  </p>
+                  <Link
+                    href={`/matches/new?deck_version_id=${activeVersion.id}`}
+                    className={`mt-4 inline-flex w-fit ${secondaryButton}`}
+                  >
+                    Import a log
+                  </Link>
+                </div>
+              ) : (
+                <div className="mt-4 grid gap-4">
+                  {activeCardReview.importedLogCount <
+                  activeCardReview.minimumUsefulLogs ? (
+                    <div className="rounded-[22px] bg-[#F5C84C]/10 p-4 text-sm leading-6 text-[#FFE28A] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
+                      Log at least 5 imported games before judging card usage.
+                    </div>
+                  ) : null}
+
+                  {!activeCardReview.trackedFields.seen &&
+                  !activeCardReview.trackedFields.used &&
+                  !activeCardReview.trackedFields.discarded ? (
+                    <div className={`${premiumInset} p-4`}>
+                      <p className="text-sm font-semibold text-[#F8FAFC]">
+                        Card activity is not tracked yet for these imported logs.
+                      </p>
+                      <p className="mt-2 text-sm leading-6 text-[#94A3B8]/72">
+                        Import fresh TCG Live logs with this version to populate played, used, and discarded signals.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="grid gap-3 lg:grid-cols-2">
+                      {activeCardReview.rows.map((row) => (
+                        <article
+                          key={row.cardName}
+                          className={`${statCard} min-w-0 p-4`}
+                        >
+                          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                            <div className="min-w-0">
+                              <p className="break-words text-sm font-semibold text-[#F8FAFC]">
+                                {row.cardName}
+                              </p>
+                              <p className="mt-1 text-xs text-[#94A3B8]/72">
+                                {row.countInDeck} in list · {row.importedLogSampleSize} imported{" "}
+                                {row.importedLogSampleSize === 1 ? "log" : "logs"}
+                              </p>
+                            </div>
+                            <span
+                              className={`w-fit shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${getCardReviewSignalToneClass(
+                                row.signalLabel
+                              )}`}
+                            >
+                              {row.signalLabel}
+                            </span>
+                          </div>
+
+                          <div className="mt-3 grid gap-2 sm:grid-cols-4">
+                            {activeCardReview.trackedFields.seen ? (
+                              <div className="rounded-2xl bg-[#07111F]/58 px-3 py-2 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                                <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                                  Seen
+                                </p>
+                                <p className="mt-1 text-sm font-semibold text-[#F8FAFC]">
+                                  {row.seenCount}
+                                </p>
+                              </div>
+                            ) : null}
+                            {activeCardReview.trackedFields.used ? (
+                              <div className="rounded-2xl bg-[#07111F]/58 px-3 py-2 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                                <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                                  Used
+                                </p>
+                                <p className="mt-1 text-sm font-semibold text-[#F8FAFC]">
+                                  {row.usedCount}
+                                </p>
+                              </div>
+                            ) : null}
+                            {activeCardReview.trackedFields.discarded ? (
+                              <div className="rounded-2xl bg-[#07111F]/58 px-3 py-2 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                                <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                                  Discarded
+                                </p>
+                                <p className="mt-1 text-sm font-semibold text-[#F8FAFC]">
+                                  {row.discardedCount}
+                                </p>
+                              </div>
+                            ) : null}
+                            <div className="rounded-2xl bg-[#07111F]/58 px-3 py-2 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+                              <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                                Use rate
+                              </p>
+                              <p className="mt-1 text-sm font-semibold text-[#F8FAFC]">
+                                {formatUseRate(row.useRate)}
+                              </p>
+                            </div>
+                          </div>
+
+                          <p className="mt-3 text-sm leading-6 text-[#D6E0F0]/82">
+                            {row.coachingText}
+                          </p>
+                        </article>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </section>
           ) : null}
 

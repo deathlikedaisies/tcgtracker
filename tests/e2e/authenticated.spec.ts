@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import { login, getMissingAuthEnvReason } from "./helpers/auth";
 import { expectHeadingVisible, expectNoAppError } from "./helpers/assertions";
 import { buildPostSaveFocusSummary } from "@/lib/match-log-reward";
+import { buildCardReviewRows } from "@/lib/card-review";
 import {
   MATCH_ISSUE_TAG_OPTIONS,
   MATCH_POSITIVE_TAG_OPTIONS,
@@ -339,6 +340,10 @@ test.describe("TCG Live log parser", () => {
     expect(parsed.notes).toContain("Detected result: win");
     expect(parsed.notes).toContain("Detected turn order: first");
     expect(parsed.notes).toContain("Detected opponent: AlfonsoLarsen");
+    expect(parsed.cardReview?.cardsUsed).toEqual(
+      expect.arrayContaining(["Dreepy", "Dragapult ex", "Blaziken ex"])
+    );
+    expect(parsed.cardReview?.cardsUsed).not.toContain("Teal Mask Ogerpon ex");
   });
 
   test("does not map sentence glue like and as the opponent name", async () => {
@@ -787,6 +792,100 @@ test.describe("TCG Live log parser", () => {
       expect(parsed.winnerName).toBe(winnerCase.expectedWinner);
       expect(parsed.result).toBe(winnerCase.expectedResult);
     }
+  });
+});
+
+test.describe("card review signals", () => {
+  const decklist = [
+    "Pokémon: 7",
+    "4 Charmander",
+    "2 Charizard ex",
+    "Trainer: 8",
+    "4 Rare Candy",
+    "2 Super Rod",
+    "2 Nest Ball",
+  ].join("\n");
+
+  function importedLog({
+    seen = [],
+    used = [],
+    discarded = [],
+  }: {
+    seen?: string[];
+    used?: string[];
+    discarded?: string[];
+  }) {
+    return {
+      metadata: {
+        source: "tcg_live_import" as const,
+        tcg_live_cards_seen: seen,
+        tcg_live_cards_used: used,
+        tcg_live_cards_discarded: discarded,
+      },
+    };
+  }
+
+  test("keeps low imported-log samples cautious", async () => {
+    const review = buildCardReviewRows({
+      decklist,
+      matches: [
+        importedLog({
+          seen: ["Charmander", "Rare Candy"],
+          used: ["Charmander", "Rare Candy"],
+        }),
+        importedLog({
+          seen: ["Charmander"],
+          used: ["Charmander"],
+        }),
+      ],
+    });
+
+    expect(review.importedLogCount).toBe(2);
+    expect(review.rows.find((row) => row.cardName === "Charmander")?.signalLabel).toBe(
+      "Not enough logs"
+    );
+    expect(review.rows.find((row) => row.cardName === "Super Rod")?.signalLabel).toBe(
+      "Not observed yet"
+    );
+  });
+
+  test("labels frequently used cards as core or often used", async () => {
+    const review = buildCardReviewRows({
+      decklist,
+      matches: Array.from({ length: 6 }, (_, index) =>
+        importedLog({
+          seen: ["Charmander", "Rare Candy", index < 4 ? "Nest Ball" : ""].filter(Boolean),
+          used: ["Charmander", "Rare Candy", index < 4 ? "Nest Ball" : ""].filter(Boolean),
+        })
+      ),
+    });
+
+    expect(review.rows.find((row) => row.cardName === "Charmander")?.signalLabel).toBe(
+      "Core card"
+    );
+    expect(review.rows.find((row) => row.cardName === "Rare Candy")?.signalLabel).toBe(
+      "Core card"
+    );
+    expect(review.rows.find((row) => row.cardName === "Nest Ball")?.signalLabel).toBe(
+      "Often used"
+    );
+  });
+
+  test("labels unobserved cards across enough imported logs as review candidates", async () => {
+    const review = buildCardReviewRows({
+      decklist,
+      matches: Array.from({ length: 6 }, () =>
+        importedLog({
+          seen: ["Charmander", "Rare Candy"],
+          used: ["Charmander", "Rare Candy"],
+        })
+      ),
+    });
+
+    const superRod = review.rows.find((row) => row.cardName === "Super Rod");
+
+    expect(superRod?.signalLabel).toBe("Review candidate");
+    expect(superRod?.coachingText).toMatch(/Not observed/i);
   });
 });
 
@@ -2173,6 +2272,10 @@ test.describe("authenticated routes", () => {
     );
     await expect(page.locator("body")).toContainText(/Version impact/i);
     await expect(page.locator("body")).toContainText(/What to do next/i);
+    await expect(page.locator("body")).toContainText(/Card Review/i);
+    await expect(page.locator("body")).toContainText(
+      /Card review uses imported TCG Live logs/i
+    );
     await expect(page.locator("body")).toContainText(
       /Version read|Version comparison|Testing discipline|Meta watchlist/i
     );

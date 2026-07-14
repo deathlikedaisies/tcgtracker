@@ -10,6 +10,11 @@ export type TcgLiveLogParseResult = {
   firstPlayerName?: string;
   opponentDeckGuess?: string;
   opponentEvidenceCards?: string[];
+  cardReview?: {
+    cardsSeen: string[];
+    cardsUsed: string[];
+    cardsDiscarded: string[];
+  };
   confidence?: "high" | "medium" | "low";
   notes: string[];
 };
@@ -581,6 +586,164 @@ function isSafeEvidenceCardName(value: string) {
   );
 }
 
+function cleanCardReviewName(value: string) {
+  return value
+    .trim()
+    .replace(/[.!?]+$/g, "")
+    .replace(/^\ba\b\s+/i, "")
+    .replace(/^\ban\b\s+/i, "")
+    .replace(/^\bthe\b\s+/i, "")
+    .replace(/\s+(?:from|with|for)\b.*$/i, "")
+    .trim();
+}
+
+function isSafeCardReviewName(value: string) {
+  const normalizedValue = normalize(value);
+
+  return Boolean(
+    normalizedValue &&
+      !/^(a|an|the|card|cards|deck|hand|bench|active spot|prize card|prize cards|damage counter|damage counters)$/i.test(
+        normalizedValue
+      ) &&
+      !/\b(?:damage counter|prize card|opening hand|active spot)\b/i.test(
+        normalizedValue
+      )
+  );
+}
+
+function extractUserCardReviewFromSegment(
+  segment: string,
+  userName: string
+) {
+  const trimmed = segment.trim();
+  const user = escapeRegex(userName);
+  const cardsSeen: string[] = [];
+  const cardsUsed: string[] = [];
+  const cardsDiscarded: string[] = [];
+
+  const addSeen = (value: string | undefined) => {
+    const cardName = cleanCardReviewName(value ?? "");
+
+    if (isSafeCardReviewName(cardName)) {
+      cardsSeen.push(cardName);
+    }
+  };
+
+  const addUsed = (value: string | undefined) => {
+    const cardName = cleanCardReviewName(value ?? "");
+
+    if (isSafeCardReviewName(cardName)) {
+      cardsSeen.push(cardName);
+      cardsUsed.push(cardName);
+    }
+  };
+
+  const addDiscarded = (value: string | undefined) => {
+    const cardName = cleanCardReviewName(value ?? "");
+
+    if (isSafeCardReviewName(cardName)) {
+      cardsSeen.push(cardName);
+      cardsDiscarded.push(cardName);
+    }
+  };
+
+  const actorPokemonMatch = trimmed.match(
+    new RegExp(`^${user}'s\\s+(.+?)\\s+used\\b`, "i")
+  );
+
+  if (actorPokemonMatch?.[1]) {
+    addUsed(actorPokemonMatch[1]);
+  }
+
+  const playedCardMatch = trimmed.match(
+    new RegExp(
+      `^${user}\\s+played\\s+(.+?)(?:\\s+to the (?:Active Spot|Bench))?\\.?$`,
+      "i"
+    )
+  );
+
+  if (playedCardMatch?.[1]) {
+    addUsed(playedCardMatch[1]);
+  }
+
+  const evolvedCardMatch = trimmed.match(
+    new RegExp(
+      `^${user}\\s+evolved\\s+(.+?)\\s+to\\s+(.+?)(?:\\s+on the (?:Active Spot|Bench))?\\.?$`,
+      "i"
+    )
+  );
+
+  if (evolvedCardMatch?.[1] || evolvedCardMatch?.[2]) {
+    addSeen(evolvedCardMatch?.[1]);
+    addUsed(evolvedCardMatch?.[2]);
+  }
+
+  const attachedCardMatch = trimmed.match(
+    new RegExp(`^${user}\\s+attached\\s+(.+?)\\s+to\\s+.+?\\.?$`, "i")
+  );
+
+  if (attachedCardMatch?.[1]) {
+    addUsed(attachedCardMatch[1]);
+  }
+
+  const discardedCardMatch = trimmed.match(
+    new RegExp(`^${user}\\s+discarded\\s+(.+?)(?:\\s+from\\b.*)?\\.?$`, "i")
+  );
+
+  if (discardedCardMatch?.[1]) {
+    addDiscarded(discardedCardMatch[1]);
+  }
+
+  return {
+    cardsSeen,
+    cardsUsed,
+    cardsDiscarded,
+  };
+}
+
+function extractUserCardReview(
+  lines: string[],
+  userName: string | undefined,
+  opponentName: string | undefined
+) {
+  if (!userName) {
+    return {
+      cardsSeen: [] as string[],
+      cardsUsed: [] as string[],
+      cardsDiscarded: [] as string[],
+    };
+  }
+
+  const cardReview = lines.reduce(
+    (summary, line) => {
+      const trimmed = line.trim();
+
+      if (getSegmentOwner(trimmed, opponentName, userName) !== "user") {
+        return summary;
+      }
+
+      const extracted = extractUserCardReviewFromSegment(trimmed, userName);
+
+      summary.cardsSeen.push(...extracted.cardsSeen);
+      summary.cardsUsed.push(...extracted.cardsUsed);
+      summary.cardsDiscarded.push(...extracted.cardsDiscarded);
+
+      return summary;
+    },
+    {
+      cardsSeen: [] as string[],
+      cardsUsed: [] as string[],
+      cardsDiscarded: [] as string[],
+    }
+  );
+
+  return {
+    cardsSeen: dedupe(cardReview.cardsSeen),
+    cardsUsed: dedupe(cardReview.cardsUsed),
+    cardsDiscarded: dedupe(cardReview.cardsDiscarded),
+  };
+}
+
 function extractOpponentEvidenceFromSegment(
   segment: string,
   opponentName: string,
@@ -771,6 +934,11 @@ export function parseTcgLiveLog(
     resolvedPlayers.userPlayerName,
     options.archetypeOptions ?? []
   );
+  const cardReview = extractUserCardReview(
+    lines,
+    resolvedPlayers.userPlayerName,
+    safeOpponentName
+  );
 
   const notes = dedupe(
     [
@@ -792,6 +960,7 @@ export function parseTcgLiveLog(
     firstPlayerName: turnInfo.firstPlayerName,
     opponentDeckGuess: opponentDeck.opponentDeckGuess,
     opponentEvidenceCards: opponentDeck.opponentEvidenceCards,
+    cardReview,
     confidence: opponentDeck.confidence,
     notes,
   };

@@ -113,6 +113,11 @@ type MatchLogFormProps = {
 type StepResultValue = MatchResult | "";
 type StepWentFirstValue = "true" | "false" | "unknown" | "";
 type SelectionTone = "blue" | "gold" | "emerald" | "rose";
+type TcgLiveCardReviewPayload = {
+  cardsSeen: string[];
+  cardsUsed: string[];
+  cardsDiscarded: string[];
+};
 
 const sessionKeys = {
   deckVersionId: "tcgtracker.matchLog.deckVersionId",
@@ -811,6 +816,8 @@ export function MatchLogForm({
   const [tcgLivePlayerNameError, setTcgLivePlayerNameError] = useState("");
   const [rememberTcgLiveName, setRememberTcgLiveName] = useState(false);
   const [importExpanded, setImportExpanded] = useState(false);
+  const [tcgLiveCardReview, setTcgLiveCardReview] =
+    useState<TcgLiveCardReviewPayload | null>(null);
   const importPointerHandledRef = useRef(false);
   const [isChangingDeck, setIsChangingDeck] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
@@ -1167,12 +1174,14 @@ export function MatchLogForm({
     if (!log) {
       setImportStatus(["Paste a TCG Live log first."]);
       setTcgLivePlayerNameError("");
+      setTcgLiveCardReview(null);
       return;
     }
 
     if (!playerName) {
       setTcgLivePlayerNameError("Add your TCG Live name to autofill this log.");
       setImportStatus([]);
+      setTcgLiveCardReview(null);
       return;
     }
 
@@ -1198,6 +1207,11 @@ export function MatchLogForm({
             : wentFirst;
     const nextOpponentArchetype =
       parsed.opponentDeckGuess ?? opponentArchetype;
+    const parsedCardReview = parsed.cardReview ?? {
+      cardsSeen: [],
+      cardsUsed: [],
+      cardsDiscarded: [],
+    };
 
     if (parsed.result) {
       setResult(parsed.result);
@@ -1227,6 +1241,18 @@ export function MatchLogForm({
       parsed.notes,
       parsed.opponentName
     );
+    const detectedCardActivityCount = new Set([
+      ...parsedCardReview.cardsSeen,
+      ...parsedCardReview.cardsUsed,
+      ...parsedCardReview.cardsDiscarded,
+    ]).size;
+
+    if (detectedCardActivityCount > 0) {
+      nextImportStatus = [
+        ...nextImportStatus,
+        `Detected card activity for Card Review: ${detectedCardActivityCount} cards.`,
+      ];
+    }
 
     if (rememberTcgLiveName && rememberTcgLiveUsernameAction) {
       const rememberResult = await rememberTcgLiveUsernameAction(playerName);
@@ -1238,6 +1264,7 @@ export function MatchLogForm({
       ];
     }
 
+    setTcgLiveCardReview(parsedCardReview);
     setImportStatus(nextImportStatus);
   }
 
@@ -1264,6 +1291,7 @@ export function MatchLogForm({
     setTcgLiveLog("");
     setImportStatus([]);
     setTcgLivePlayerNameError("");
+    setTcgLiveCardReview(null);
   }
 
   const progressPercent = ((currentStep + 1) / stepOrder.length) * 100;
@@ -1443,6 +1471,35 @@ export function MatchLogForm({
             value={tag}
           />
         ))}
+        {tcgLiveCardReview ? (
+          <>
+            <input type="hidden" name="source" value="tcg_live_import" />
+            {tcgLiveCardReview.cardsSeen.map((card) => (
+              <input
+                key={`tcg-seen-${card}`}
+                type="hidden"
+                name="tcg_live_cards_seen"
+                value={card}
+              />
+            ))}
+            {tcgLiveCardReview.cardsUsed.map((card) => (
+              <input
+                key={`tcg-used-${card}`}
+                type="hidden"
+                name="tcg_live_cards_used"
+                value={card}
+              />
+            ))}
+            {tcgLiveCardReview.cardsDiscarded.map((card) => (
+              <input
+                key={`tcg-discarded-${card}`}
+                type="hidden"
+                name="tcg_live_cards_discarded"
+                value={card}
+              />
+            ))}
+          </>
+        ) : null}
 
         <div className="grid gap-3.5 sm:gap-4">
           {actionState.error ? (

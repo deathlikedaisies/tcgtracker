@@ -81,6 +81,7 @@ export function buildMatchMetadataFromFormData(formData: FormData): MatchMetadat
   const roundNumber = optionalText(formData.get("round_number"));
   const testingSessionName = optionalText(formData.get("testing_session_name"));
   const focusMatchup = optionalText(formData.get("focus_matchup"));
+  const source = optionalText(formData.get("source"));
 
   if (eventName) {
     metadata.event_name = eventName;
@@ -96,6 +97,14 @@ export function buildMatchMetadataFromFormData(formData: FormData): MatchMetadat
 
   if (focusMatchup) {
     metadata.focus_matchup = focusMatchup;
+  }
+
+  if (
+    source === "manual" ||
+    source === "tcg_live_import" ||
+    source === "event_round"
+  ) {
+    metadata.source = source;
   }
 
   if (isOneOf(startQualityValue, MATCH_START_QUALITY_OPTIONS)) {
@@ -114,6 +123,12 @@ export function buildMatchMetadataFromFormData(formData: FormData): MatchMetadat
   const positiveTags = optionalArray(formData, "positive_tags");
   const cardsShined = optionalArray(formData, "cards_shined");
   const cardsFailed = optionalArray(formData, "cards_failed");
+  const tcgLiveCardsSeen = optionalArray(formData, "tcg_live_cards_seen");
+  const tcgLiveCardsUsed = optionalArray(formData, "tcg_live_cards_used");
+  const tcgLiveCardsDiscarded = optionalArray(
+    formData,
+    "tcg_live_cards_discarded"
+  );
 
   if (issueTags) {
     metadata.issue_tags = issueTags;
@@ -129,6 +144,18 @@ export function buildMatchMetadataFromFormData(formData: FormData): MatchMetadat
 
   if (cardsFailed) {
     metadata.cards_failed = cardsFailed;
+  }
+
+  if (tcgLiveCardsSeen) {
+    metadata.tcg_live_cards_seen = tcgLiveCardsSeen;
+  }
+
+  if (tcgLiveCardsUsed) {
+    metadata.tcg_live_cards_used = tcgLiveCardsUsed;
+  }
+
+  if (tcgLiveCardsDiscarded) {
+    metadata.tcg_live_cards_discarded = tcgLiveCardsDiscarded;
   }
 
   return metadata;
