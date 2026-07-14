@@ -35,6 +35,7 @@ import {
   getNextStepCheckInContent,
   getNextStepCheckInCounts,
 } from "@/lib/next-step-check-in";
+import { getActiveTestingBlockCheckIn } from "@/lib/testing-blocks";
 import {
   countMatchResults,
   formatMatchRecord,
@@ -44,6 +45,7 @@ import {
   getHeadlineSignal as getSharedHeadlineSignal,
   getMatchupCoachLabel as getSharedMatchupCoachLabel,
 } from "@/lib/matchup-labels";
+import { getMatchupHeatmapRead } from "@/lib/matchup-heatmap";
 import { buildSessionCoachInsight } from "@/lib/session-coach";
 import { evaluateMatchupSignal } from "@/lib/session-coach";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
@@ -242,6 +244,68 @@ function getSignalProgressClass(matchup: {
   return "bg-[#4F8CFF]";
 }
 
+function getHeatmapToneClasses(tone: ReturnType<typeof getMatchupHeatmapRead>["tone"]) {
+  if (tone === "problem") {
+    return {
+      card: "bg-[linear-gradient(180deg,rgba(45,18,30,0.82),rgba(15,18,32,0.80))] shadow-[inset_0_0_0_1px_rgba(244,63,94,0.22)]",
+      badge: "bg-[#F43F5E]/14 text-rose-200",
+      value: "text-[#F43F5E]",
+      bar: "bg-[#F43F5E]",
+    };
+  }
+
+  if (tone === "favored") {
+    return {
+      card: "bg-[linear-gradient(180deg,rgba(15,42,33,0.76),rgba(10,24,31,0.78))] shadow-[inset_0_0_0_1px_rgba(34,197,94,0.20)]",
+      badge: "bg-[#22C55E]/14 text-emerald-200",
+      value: "text-[#22C55E]",
+      bar: "bg-[#22C55E]",
+    };
+  }
+
+  if (tone === "even") {
+    return {
+      card: "bg-[linear-gradient(180deg,rgba(42,33,16,0.72),rgba(14,20,32,0.78))] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.18)]",
+      badge: "bg-[#F5C84C]/14 text-[#FFE28A]",
+      value: "text-[#FFE28A]",
+      bar: "bg-[#F5C84C]",
+    };
+  }
+
+  return {
+    card: "bg-[linear-gradient(180deg,rgba(13,22,38,0.78),rgba(8,14,26,0.70))] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]",
+    badge: "bg-[#94A3B8]/10 text-[#C7D2E5]",
+    value: "text-[#C7D2E5]",
+    bar: "bg-[#94A3B8]",
+  };
+}
+
+function buildTestingBlockHref({
+  matchup,
+  deckId,
+  deckVersionId,
+}: {
+  matchup: string;
+  deckId: string;
+  deckVersionId: string;
+}) {
+  const query = new URLSearchParams({
+    matchup,
+    target_games: "5",
+    notes: `Focused test into ${matchup}. Track turn order, setup quality, and first-issue tags.`,
+  });
+
+  if (deckId) {
+    query.set("deck_id", deckId);
+  }
+
+  if (deckVersionId) {
+    query.set("deck_version_id", deckVersionId);
+  }
+
+  return `/testing?${query.toString()}`;
+}
+
 export default async function MatchupsPage({
   searchParams,
 }: MatchupsPageProps) {
@@ -260,6 +324,7 @@ export default async function MatchupsPage({
     { data: decks, error: decksError },
     { data: matches, error: matchesError },
     { data: notes, error: notesError },
+    activeTestingBlock,
   ] = await Promise.all([
     supabase
       .from("decks")
@@ -285,6 +350,7 @@ export default async function MatchupsPage({
       .select("id, your_archetype, opponent_archetype, notes, updated_at")
       .eq("user_id", user.id)
       .order("updated_at", { ascending: false }),
+    getActiveTestingBlockCheckIn(supabase, user.id),
   ]);
 
   if (decksError) {
@@ -301,7 +367,10 @@ export default async function MatchupsPage({
 
   const userDecks = (decks ?? []) as DeckWithVersions[];
   const nextStepCheckIn = getNextStepCheckInContent(
-    getNextStepCheckInCounts(userDecks, (matches ?? []) as MatchRow[])
+    {
+      ...getNextStepCheckInCounts(userDecks, (matches ?? []) as MatchRow[]),
+      activeTestingBlock,
+    }
   );
   const allVersions = userDecks.flatMap((deck) =>
     deck.deck_versions.map((version) => ({
@@ -741,6 +810,100 @@ export default async function MatchupsPage({
           </section>
         ) : sessionCoach ? (
           <SessionCoachPanel insight={sessionCoach} />
+        ) : null}
+
+        {hasFilteredMatches ? (
+          <section className={cardLarge}>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#4F8CFF]">
+                  Matchup heatmap
+                </p>
+                <h2 className={sectionTitle}>Scan your matchup map by signal quality.</h2>
+                <p className={sectionCopy}>
+                  Color shows interpretation. Confidence shows whether the sample
+                  is worth acting on.
+                </p>
+              </div>
+              <span className="w-fit rounded-full bg-[#07111F]/58 px-2.5 py-1 text-xs font-semibold text-[#94A3B8] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.10)]">
+                Ordered by current sort
+              </span>
+            </div>
+
+            <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              {matchupSummary.map((matchup) => {
+                const heatmapRead = getMatchupHeatmapRead({
+                  matches: matchup.matches,
+                  winRateValue: matchup.winRateValue,
+                });
+                const tone = getHeatmapToneClasses(heatmapRead.tone);
+                const testingBlockHref = buildTestingBlockHref({
+                  matchup: matchup.opponentArchetype,
+                  deckId: selectedDeckId,
+                  deckVersionId: selectedVersionId,
+                });
+
+                return (
+                  <article
+                    key={`heatmap-${matchup.opponentArchetype}`}
+                    className={`min-w-0 rounded-[20px] p-3.5 ${tone.card}`}
+                  >
+                    <div className="flex min-w-0 items-start justify-between gap-3">
+                      <div className="flex min-w-0 items-center gap-2.5">
+                        <ArchetypeSprites archetype={matchup.opponentArchetype} />
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold text-[#F8FAFC]">
+                            {matchup.opponentArchetype}
+                          </p>
+                          <p className="mt-0.5 text-xs text-[#94A3B8]/76">
+                            {formatMatchRecord(matchup.wins, matchup.losses, matchup.ties)}
+                          </p>
+                        </div>
+                      </div>
+                      <span className={`shrink-0 rounded-full px-2 py-1 text-[11px] font-semibold ${tone.badge}`}>
+                        {heatmapRead.confidenceLabel}
+                      </span>
+                    </div>
+
+                    <div className="mt-4 grid grid-cols-[auto_minmax(0,1fr)] items-end gap-3">
+                      <div>
+                        <p className={`text-3xl font-black tracking-tight ${tone.value}`}>
+                          {matchup.winRate}
+                        </p>
+                        <p className="mt-1 text-xs text-[#94A3B8]/70">
+                          {matchup.matches} game{matchup.matches === 1 ? "" : "s"}
+                        </p>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-right text-xs font-semibold text-[#F8FAFC]">
+                          {heatmapRead.interpretationLabel}
+                        </p>
+                        <div className="mt-2 h-2 overflow-hidden rounded-full bg-[#07111F]/76">
+                          <div
+                            className={`h-full rounded-full ${tone.bar}`}
+                            style={{ width: `${Math.max(matchup.winRateValue, 4)}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <p className="mt-3 min-h-10 text-xs leading-5 text-[#C7D2E5]/82">
+                      {heatmapRead.summary}
+                    </p>
+
+                    {heatmapRead.isActionableProblem ? (
+                      <Link
+                        href={testingBlockHref}
+                        className="mt-3 inline-flex h-9 items-center justify-center rounded-[12px] bg-[#F5C84C]/14 px-3 text-xs font-semibold text-[#FFE28A] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.18)] transition hover:bg-[#F5C84C]/20"
+                      >
+                        Start focused test
+                      </Link>
+                    ) : null}
+                  </article>
+                );
+              })}
+            </div>
+          </section>
         ) : null}
 
         <form action="/matchups" className={`${glassPanel} overflow-visible p-3 sm:p-4`}>

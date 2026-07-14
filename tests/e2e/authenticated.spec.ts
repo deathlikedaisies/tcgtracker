@@ -29,6 +29,7 @@ import {
   getHeadlineSignal,
   getMatchupCoachLabel,
 } from "@/lib/matchup-labels";
+import { getMatchupHeatmapRead } from "@/lib/matchup-heatmap";
 import { getNextStepCheckInContent } from "@/lib/next-step-check-in";
 import { buildTestingBlockSummary } from "@/lib/testing-blocks";
 
@@ -881,6 +882,45 @@ test.describe("coach interpretation copy", () => {
     );
   });
 
+  test("classifies matchup heatmap confidence and interpretation", async () => {
+    expect(getMatchupHeatmapRead({ matches: 0, winRateValue: 0 })).toMatchObject({
+      confidenceLabel: "No data",
+      interpretationLabel: "No data",
+      tone: "empty",
+      isActionableProblem: false,
+    });
+    expect(getMatchupHeatmapRead({ matches: 4, winRateValue: 25 })).toMatchObject({
+      confidenceLabel: "Low sample",
+      interpretationLabel: "Do not overreact yet",
+      tone: "low",
+      isActionableProblem: false,
+    });
+    expect(getMatchupHeatmapRead({ matches: 8, winRateValue: 25 })).toMatchObject({
+      confidenceLabel: "Developing read",
+      interpretationLabel: "Keep testing",
+      tone: "developing",
+      isActionableProblem: false,
+    });
+    expect(getMatchupHeatmapRead({ matches: 16, winRateValue: 35 })).toMatchObject({
+      confidenceLabel: "Useful sample",
+      interpretationLabel: "Problem matchup",
+      tone: "problem",
+      isActionableProblem: true,
+    });
+    expect(getMatchupHeatmapRead({ matches: 22, winRateValue: 51 })).toMatchObject({
+      confidenceLabel: "Strong read",
+      interpretationLabel: "Even read",
+      tone: "even",
+      isActionableProblem: false,
+    });
+    expect(getMatchupHeatmapRead({ matches: 22, winRateValue: 65 })).toMatchObject({
+      confidenceLabel: "Strong read",
+      interpretationLabel: "Favored read",
+      tone: "favored",
+      isActionableProblem: false,
+    });
+  });
+
   test("calls out improved active versions that are still losing overall", async () => {
     const makeVersionMatches = ({
       versionId,
@@ -1531,6 +1571,16 @@ test.describe("authenticated routes", () => {
       await expectNoAppError(page);
     });
   }
+
+  test("/matchups renders the coaching heatmap", async ({ page }) => {
+    await page.goto("/matchups");
+
+    await expectHeadingVisible(page, "Matchup Intelligence");
+    await expect(page.locator("body")).toContainText("Matchup heatmap");
+    await expect(page.locator("body")).toContainText(/Low sample|Developing read|Useful sample|Strong read/i);
+    await expect(page.locator("body")).toContainText(/Problem matchup|Even read|Favored read|Keep testing|Do not overreact yet/i);
+    await expectNoAppError(page);
+  });
 
   test("/matches/new requires quality before reason and reason before save", async ({
     page,
