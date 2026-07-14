@@ -383,7 +383,11 @@ export default async function Home() {
                 </Link>
               </div>
               <p className="mt-3 text-sm leading-6 text-[#94A3B8]/82">
-                No account needed to preview demo data.
+                No account needed.{" "}
+                <Link href="/demo" className="font-semibold text-[#B8D1FF] hover:text-[#F8FAFC]">
+                  Start demo with sample data
+                </Link>
+                .
               </p>
 
               <div className="mt-6 flex flex-wrap gap-2.5">

@@ -14,7 +14,13 @@ import {
   premiumInsetStrong,
   primaryButton,
 } from "@/components/brand-styles";
-import { demoDecks, demoMatches, formatDemoDate, type DemoMatch } from "@/lib/demo-data";
+import {
+  demoDecks,
+  demoMatches,
+  formatDemoDate,
+  getDemoTestingBlock,
+  type DemoMatch,
+} from "@/lib/demo-data";
 import { getMatchResultLabel } from "@/lib/match-types";
 
 type DemoMatchesReviewProps = {
@@ -112,6 +118,7 @@ export function DemoMatchesReview({
   const missionLosses = missionGames.filter((match) => match.result === "loss");
   const missedSetupCount = missionGames.filter((match) => match.tags.includes("missed setup")).length;
   const benchPressureCount = missionGames.filter((match) => match.tags.includes("bench pressure")).length;
+  const demoTestingBlock = getDemoTestingBlock();
 
   function toggleFilter(filter: FilterKey) {
     setActiveFilters((current) =>
@@ -232,6 +239,28 @@ export function DemoMatchesReview({
           </button>
         </article>
       </section>
+
+      {isReviewMode && demoTestingBlock ? (
+        <section className={cardLarge}>
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div className="min-w-0">
+              <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#F5C84C]">
+                Recommended focused testing block
+              </p>
+              <h2 className="mt-2 text-xl font-bold text-[#F8FAFC]">
+                Play 5 focused games into {demoTestingBlock.targetMatchup}.
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-[#94A3B8]/78">
+                Track bench pressure and opening hands before changing the list
+                again. This is how SixPrizer turns review into a concrete testing plan.
+              </p>
+            </div>
+            <Link href="/demo/testing" className={`${primaryButton} h-12 shrink-0`}>
+              Open demo testing block
+            </Link>
+          </div>
+        </section>
+      ) : null}
 
       <section className={cardLarge}>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">

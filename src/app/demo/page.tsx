@@ -1,6 +1,8 @@
 import Link from "next/link";
 import {
   ArrowRight,
+  Beaker,
+  CalendarDays,
   ClipboardList,
   Layers3,
   Swords,
@@ -26,7 +28,9 @@ import {
 } from "@/components/brand-styles";
 import {
   demoDecks,
+  demoEvents,
   demoMatches,
+  demoTestingBlocks,
   formatDemoDate,
   getConfidenceLabel,
   getConfidenceTone,
@@ -116,6 +120,7 @@ export default function DemoPage() {
         {[
           [Layers3, "Decks", String(demoDecks.length), "One current test deck"],
           [ClipboardList, "Match history", String(demoMatches.length), "Seeded local archive"],
+          [CalendarDays, "Events", String(demoEvents.length), "Rounds linked to analytics"],
           [Trophy, "Current deck win rate", `${getWinRate(currentDeckMatches)}%`, activeVersion.name],
           [
             Target,
@@ -131,6 +136,66 @@ export default function DemoPage() {
             <p className="mt-1 text-xs text-[#94A3B8]/64">{helper as string}</p>
           </article>
         ))}
+      </section>
+
+      <section className={cardLarge}>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#F5C84C]">
+              Guided demo loop
+            </p>
+            <h2 className={sectionTitle}>Follow the full smart-coaching workflow.</h2>
+            <p className={sectionCopy}>
+              Deck versions create the baseline, logged games reveal the problem,
+              review starts the block, and events feed the next test.
+            </p>
+          </div>
+          <span className="w-fit rounded-full bg-[#4F8CFF]/12 px-2.5 py-1 text-xs font-semibold text-[#B8D1FF]">
+            Sample data only
+          </span>
+        </div>
+        <div className="mt-4 grid gap-3 md:grid-cols-4">
+          {[
+            {
+              href: `/demo/decks/${currentDeck.id}`,
+              icon: Layers3,
+              title: "1. Compare versions",
+              copy: `${activeVersion.name} has a cleaner setup read.`,
+            },
+            {
+              href: "/demo/review",
+              icon: ClipboardList,
+              title: "2. Review losses",
+              copy: "Mega Greninja games show repeated bench pressure.",
+            },
+            {
+              href: "/demo/testing",
+              icon: Beaker,
+              title: "3. Start the block",
+              copy: `${demoTestingBlocks[0]?.targetGames ?? 5}-game focused test into Mega Greninja.`,
+            },
+            {
+              href: "/demo/events",
+              icon: CalendarDays,
+              title: "4. Review an event",
+              copy: "Round logs become an event takeaway and next test.",
+            },
+          ].map((item) => {
+            const Icon = item.icon;
+
+            return (
+              <Link key={item.href} href={item.href} className={`${interactiveTile} p-3`}>
+                <Icon className="size-5 text-[#F5C84C]" aria-hidden="true" />
+                <h3 className="mt-3 text-sm font-semibold text-[#F8FAFC]">
+                  {item.title}
+                </h3>
+                <p className="mt-2 text-xs leading-5 text-[#94A3B8]/76">
+                  {item.copy}
+                </p>
+              </Link>
+            );
+          })}
+        </div>
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">

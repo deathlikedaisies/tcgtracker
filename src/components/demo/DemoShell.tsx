@@ -2,10 +2,12 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import {
   BarChart3,
+  CalendarDays,
   ClipboardList,
   Gauge,
   Layers3,
   PlusCircle,
+  Target,
 } from "lucide-react";
 import { DemoBadge } from "@/components/demo/DemoBadge";
 import { SiteFooter } from "@/components/layout/SiteFooter";
@@ -22,7 +24,15 @@ import {
   pageHeaderCard,
 } from "@/components/brand-styles";
 
-type DemoSection = "dashboard" | "decks" | "review" | "matches" | "log" | "matchups";
+type DemoSection =
+  | "dashboard"
+  | "decks"
+  | "review"
+  | "matches"
+  | "log"
+  | "matchups"
+  | "testing"
+  | "events";
 
 type DemoShellProps = {
   current: DemoSection;
@@ -33,6 +43,8 @@ const navItems = [
   { href: "/demo", label: "Overview", section: "dashboard" as const, icon: Gauge },
   { href: "/demo/matches/new", label: "Log game", section: "log" as const, icon: PlusCircle },
   { href: "/demo/review", label: "Review", section: "review" as const, icon: ClipboardList },
+  { href: "/demo/testing", label: "Testing block", section: "testing" as const, icon: Target },
+  { href: "/demo/events", label: "Events", section: "events" as const, icon: CalendarDays },
   { href: "/demo/matches", label: "Match history", section: "matches" as const, icon: ClipboardList },
   { href: "/demo/decks", label: "Decks", section: "decks" as const, icon: Layers3 },
   { href: "/demo/matchups", label: "Matchups", section: "matchups" as const, icon: BarChart3 },
@@ -96,7 +108,7 @@ export function DemoShell({ current, children }: DemoShellProps) {
               <SixPrizerLogo {...logoOnDark} />
               <DemoBadge />
             </div>
-            <nav className={`grid grid-cols-3 gap-1 p-1 ${premiumInset}`}>
+            <nav className={`grid grid-cols-4 gap-1 p-1 ${premiumInset}`}>
               {navItems.map((item) => {
                 const active = item.section === current;
 
@@ -122,6 +134,20 @@ export function DemoShell({ current, children }: DemoShellProps) {
               })}
             </nav>
           </header>
+          <div className="rounded-[18px] bg-[linear-gradient(180deg,rgba(245,200,76,0.10),rgba(79,140,255,0.06))] p-3 shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm leading-6 text-[#F8FAFC]">
+                <span className="font-semibold text-[#F5C84C]">Demo Mode:</span>{" "}
+                You are viewing sample SixPrizer testing data.
+              </p>
+              <Link
+                href="/"
+                className="text-sm font-semibold text-[#B8D1FF] hover:text-[#F8FAFC]"
+              >
+                Exit demo
+              </Link>
+            </div>
+          </div>
           {children}
         </section>
       </div>

@@ -14,6 +14,8 @@ const publicRoutes = [
   { path: "/privacy", assertion: () => ({ role: "heading" as const, name: "SixPrizer privacy notes" }) },
   { path: "/terms", assertion: () => ({ role: "heading" as const, name: "SixPrizer beta terms" }) },
   { path: "/demo/matches/new", assertion: () => ({ role: "heading" as const, name: "Log a demo game" }) },
+  { path: "/demo/testing", assertion: () => ({ role: "heading" as const, name: "Focused testing demo" }) },
+  { path: "/demo/events", assertion: () => ({ role: "heading" as const, name: "Sample event run" }) },
   { path: "/u/sixprizer-missing-profile", assertion: () => ({ role: "heading" as const, name: "Profile unavailable" }) },
 ];
 
@@ -124,11 +126,13 @@ test.describe("mobile layout", () => {
       await page.goto("/demo");
 
       await expectHeadingVisible(page, "Explore a realistic testing workspace.");
-      await expect(page.locator("body")).toContainText(/Current test deck/i);
-      await expect(page.locator("body")).toContainText(/Deck Lab/i);
-      await expect(page.locator("body")).toContainText(/Match history/i);
-      await expectNoAppError(page);
-      await expectNoHorizontalOverflow(page);
-    });
+    await expect(page.locator("body")).toContainText(/Current test deck/i);
+    await expect(page.locator("body")).toContainText(/Deck Lab/i);
+    await expect(page.locator("body")).toContainText(/Guided demo loop/i);
+    await expect(page.locator("body")).toContainText(/Testing block/i);
+    await expect(page.locator("body")).toContainText(/Match history/i);
+    await expectNoAppError(page);
+    await expectNoHorizontalOverflow(page);
+  });
   });
 });

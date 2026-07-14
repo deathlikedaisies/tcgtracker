@@ -37,6 +37,10 @@ test.describe("public routes", () => {
     );
     await expect(page.getByRole("link", { name: "Start tracking games" }).first()).toBeVisible();
     await expect(page.getByRole("link", { name: "Preview demo" }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: /Start demo with sample data/i })).toHaveAttribute(
+      "href",
+      "/demo"
+    );
     await expect(page.locator("body")).toContainText("SixPrizer");
     await expect(page.locator("body")).toContainText(/TCG Live/i);
     await expect(page.locator("body")).toContainText(/Built for testing, not just records/i);
@@ -78,13 +82,21 @@ test.describe("public routes", () => {
     await page.goto("/demo");
 
     await expectHeadingVisible(page, "Explore a realistic testing workspace.");
+    await expect(page.locator("body")).toContainText(
+      "You are viewing sample SixPrizer testing data"
+    );
     await expect(page.locator("body")).toContainText("SixPrizer");
     await expect(page.locator("body")).toContainText(/Current test deck/i);
     await expect(page.locator("body")).toContainText(/Deck Lab/i);
+    await expect(page.locator("body")).toContainText(/Guided demo loop/i);
     await expect(
       page.getByRole("link", { name: /^Create your workspace$/ }).first()
     ).toBeVisible();
     await expect(page.locator("body")).toContainText(/Match history/i);
+    await expect(page.getByRole("link", { name: /Exit demo/i }).first()).toHaveAttribute(
+      "href",
+      "/"
+    );
     await expect(page.locator("body")).not.toContainText(/^Logs$/m);
     await expectNoAppError(page);
   });
@@ -94,6 +106,31 @@ test.describe("public routes", () => {
 
     await expectHeadingVisible(page, "Demo review");
     await expect(page.locator("body")).toContainText(/Current deck signal|Review queue/i);
+    await expect(page.locator("body")).toContainText(/Recommended focused testing block/i);
+    await expect(page.locator("body")).toContainText(/Play 5 focused games into Mega Greninja/i);
+    await expect(page.getByRole("link", { name: /Open demo testing block/i })).toBeVisible();
+    await expectNoAppError(page);
+  });
+
+  test("demo testing block route shows the focused testing plan", async ({ page }) => {
+    await page.goto("/demo/testing");
+
+    await expectHeadingVisible(page, "Focused testing demo");
+    await expect(page.locator("body")).toContainText(/Active demo block/i);
+    await expect(page.locator("body")).toContainText(/Mega Greninja/i);
+    await expect(page.locator("body")).toContainText(/3 \/ 5 games/i);
+    await expect(page.locator("body")).toContainText(/bench pressure/i);
+    await expectNoAppError(page);
+  });
+
+  test("demo event route shows event review and next test", async ({ page }) => {
+    await page.goto("/demo/events");
+
+    await expectHeadingVisible(page, "Sample event run");
+    await expect(page.locator("body")).toContainText(/League Cup Prep Night/i);
+    await expect(page.locator("body")).toContainText(/Event Review/i);
+    await expect(page.locator("body")).toContainText(/Suggested next test/i);
+    await expect(page.locator("body")).toContainText(/Mega Greninja/i);
     await expectNoAppError(page);
   });
 

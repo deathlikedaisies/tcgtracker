@@ -41,6 +41,45 @@ export type DemoMatch = {
   metadata: MatchMetadata;
 };
 
+export type DemoTestingBlock = {
+  id: string;
+  deckId: string;
+  deckVersionId: string;
+  targetMatchup: string;
+  focusTags: string[];
+  targetGames: number;
+  notes: string;
+  status: "active" | "completed" | "archived";
+  linkedMatchIds: string[];
+  sourceReviewReason: string;
+};
+
+export type DemoEventRound = {
+  id: string;
+  roundNumber: number;
+  opponentDeck: string;
+  result: MatchResult;
+  matchScore: string;
+  wentFirst: boolean | null;
+  tags: string[];
+  notes: string;
+  matchId: string | null;
+};
+
+export type DemoEvent = {
+  id: string;
+  name: string;
+  eventDate: string;
+  eventType: string;
+  format: string;
+  matchStructure: "bo1" | "bo3";
+  deckId: string;
+  deckVersionId: string;
+  placement: string;
+  notes: string;
+  rounds: DemoEventRound[];
+};
+
 export type DemoMatchup = {
   archetype: string;
   games: DemoMatch[];
@@ -735,6 +774,85 @@ export const demoMatches: DemoMatch[] = demoMatchSeeds
   }))
   .sort((left, right) => right.playedAt.localeCompare(left.playedAt));
 
+export const demoTestingBlocks: DemoTestingBlock[] = [
+  {
+    id: "demo-block-greninja",
+    deckId: "dragapult-lab",
+    deckVersionId: "dragapult-v3",
+    targetMatchup: "Mega Greninja",
+    focusTags: ["bench pressure", "slow start", "opening hands"],
+    targetGames: 5,
+    notes:
+      "Play 5 focused games into Mega Greninja. Track bench pressure and opening hands before changing the list again.",
+    status: "active",
+    linkedMatchIds: ["demo-match-01", "demo-match-02", "demo-match-11"],
+    sourceReviewReason:
+      "Review found repeated going-second losses into Mega Greninja with setup and bench-pressure tags.",
+  },
+];
+
+export const demoEvents: DemoEvent[] = [
+  {
+    id: "demo-event-weekly",
+    name: "League Cup Prep Night",
+    eventDate: "2026-06-23",
+    eventType: "Local",
+    format: "Standard",
+    matchStructure: "bo1",
+    deckId: "dragapult-lab",
+    deckVersionId: "dragapult-v3",
+    placement: "2nd of 12",
+    notes:
+      "A compact local run used to check whether the current version is ready for a larger event.",
+    rounds: [
+      {
+        id: "demo-event-round-1",
+        roundNumber: 1,
+        opponentDeck: "Ogerpon Meganium Hydrapple",
+        result: "win",
+        matchScore: "BO1",
+        wentFirst: true,
+        tags: ["ahead early", "strong setup"],
+        notes: "Opened cleanly and stayed ahead after the first prize.",
+        matchId: "demo-match-14",
+      },
+      {
+        id: "demo-event-round-2",
+        roundNumber: 2,
+        opponentDeck: "Mega Greninja",
+        result: "loss",
+        matchScore: "BO1",
+        wentFirst: false,
+        tags: ["bench pressure", "slow start"],
+        notes: "Fell behind after a slow start and exposed bench damage.",
+        matchId: "demo-match-11",
+      },
+      {
+        id: "demo-event-round-3",
+        roundNumber: 3,
+        opponentDeck: "Dragapult Dusknoir",
+        result: "win",
+        matchScore: "BO1",
+        wentFirst: true,
+        tags: ["clean sequencing"],
+        notes: "Sequenced the mirror cleanly and protected the second attacker.",
+        matchId: "demo-match-16",
+      },
+      {
+        id: "demo-event-round-4",
+        roundNumber: 4,
+        opponentDeck: "Mega Lucario",
+        result: "tie",
+        matchScore: "BO1",
+        wentFirst: null,
+        tags: ["quick game", "poor prizes"],
+        notes: "Prize map got awkward and the game ended without a clear read.",
+        matchId: null,
+      },
+    ],
+  },
+];
+
 export function getDemoDeck(deckId: string) {
   return demoDecks.find((deck) => deck.id === deckId) ?? null;
 }
@@ -883,4 +1001,18 @@ export function formatDemoDate(value: string) {
     month: "short",
     day: "numeric",
   }).format(new Date(value));
+}
+
+export function getDemoTestingBlock(blockId = "demo-block-greninja") {
+  return demoTestingBlocks.find((block) => block.id === blockId) ?? null;
+}
+
+export function getDemoTestingBlockMatches(block: DemoTestingBlock) {
+  const linked = new Set(block.linkedMatchIds);
+
+  return demoMatches.filter((match) => linked.has(match.id));
+}
+
+export function getDemoEvent(eventId = "demo-event-weekly") {
+  return demoEvents.find((event) => event.id === eventId) ?? null;
 }
