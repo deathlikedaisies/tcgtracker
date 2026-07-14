@@ -69,6 +69,7 @@ export async function logMatch(
 
   try {
     const deckVersionId = String(formData.get("deck_version_id") ?? "").trim();
+    const testingBlockId = optionalText(formData.get("testing_block_id"));
     opponentArchetype = String(
       formData.get("opponent_archetype") ?? ""
     ).trim();
@@ -127,6 +128,20 @@ export async function logMatch(
       throw new Error("Deck version not found.");
     }
 
+    if (testingBlockId) {
+      const { data: ownedBlock, error: blockError } = await supabase
+        .from("testing_blocks")
+        .select("id")
+        .eq("id", testingBlockId)
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .single();
+
+      if (blockError || !ownedBlock) {
+        throw new Error("Testing block not found.");
+      }
+    }
+
     const { data: match, error: matchError } = await supabase
       .from("matches")
       .insert({
@@ -140,6 +155,7 @@ export async function logMatch(
         format: LATEST_FORMAT,
         notes: optionalText(formData.get("notes")),
         metadata,
+        ...(testingBlockId ? { testing_block_id: testingBlockId } : {}),
       })
       .select("id")
       .single();
@@ -177,6 +193,7 @@ export async function logMatch(
   revalidatePath("/matchups");
   revalidatePath("/review");
   revalidatePath("/matches/new");
+  revalidatePath("/testing");
   redirect(
     `/matches/new?success=1&opponent=${encodeURIComponent(
       opponentArchetype

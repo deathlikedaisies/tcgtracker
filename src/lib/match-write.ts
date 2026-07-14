@@ -35,6 +35,7 @@ export type CreateMatchInput = {
   metadata: MatchMetadata & Record<string, unknown>;
   playedAt?: string;
   format?: string | null;
+  testingBlockId?: string | null;
 };
 
 export async function createMatchWithTags(
@@ -66,6 +67,7 @@ export async function createMatchWithTags(
       format: input.format ?? LATEST_FORMAT,
       notes: input.notes ?? null,
       metadata: input.metadata,
+      ...(input.testingBlockId ? { testing_block_id: input.testingBlockId } : {}),
       ...(input.playedAt ? { played_at: input.playedAt } : {}),
     })
     .select("id")

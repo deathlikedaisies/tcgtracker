@@ -3,6 +3,7 @@ export type AppSection =
   | "decks"
   | "matches"
   | "log"
+  | "testing"
   | "events"
   | "matchups"
   | "review"

@@ -15,6 +15,7 @@ const navItems: {
   { href: "/dashboard", label: "Overview", mobileLabel: "Overview", section: "dashboard" },
   { href: "/matches/new", label: "Log game", mobileLabel: "Log game", section: "log" },
   { href: "/review", label: "Review", mobileLabel: "Review", section: "review" },
+  { href: "/testing", label: "Testing", mobileLabel: "Testing", section: "testing" },
   { href: "/matches", label: "Match history", mobileLabel: "Match history", section: "matches" },
   { href: "/events", label: "Events", mobileLabel: "Events", section: "events" },
   { href: "/decks", label: "Decks", mobileLabel: "Decks", section: "decks" },

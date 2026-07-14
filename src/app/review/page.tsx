@@ -33,6 +33,7 @@ import {
   getNextStepCheckInContent,
   getNextStepCheckInCounts,
 } from "@/lib/next-step-check-in";
+import { getActiveTestingBlockCheckIn } from "@/lib/testing-blocks";
 import {
   countMatchResults,
   formatMatchRecord,
@@ -166,6 +167,32 @@ function getTopTags(
     }));
 }
 
+function buildTestingBlockHref({
+  deckId,
+  deckVersionId,
+  targetMatchup,
+  focusTags,
+  notes,
+}: {
+  deckId: string | null;
+  deckVersionId: string | null;
+  targetMatchup: string | null;
+  focusTags: string[];
+  notes: string;
+}) {
+  const query = new URLSearchParams({
+    target_games: "5",
+  });
+
+  if (deckId) query.set("deck_id", deckId);
+  if (deckVersionId) query.set("deck_version_id", deckVersionId);
+  if (targetMatchup) query.set("matchup", targetMatchup);
+  if (notes) query.set("notes", notes);
+  focusTags.slice(0, 3).forEach((tag) => query.append("focus_tags", tag));
+
+  return `/testing?${query.toString()}`;
+}
+
 export default async function ReviewPage({ searchParams }: ReviewPageProps) {
   const endTiming = startDevTimer("route:/review");
   const params = await searchParams;
@@ -181,6 +208,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
   const [
     { data: decks, error: decksError },
     { data: matches, error: matchesError },
+    activeTestingBlock,
   ] = await Promise.all([
     supabase
       .from("decks")
@@ -202,6 +230,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
       )
       .eq("user_id", user.id)
       .order("played_at", { ascending: false }),
+    getActiveTestingBlockCheckIn(supabase, user.id),
   ]);
 
   if (decksError) {
@@ -215,7 +244,10 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
   const userDecks = (decks ?? []) as DeckWithVersions[];
   const allMatches = (matches ?? []) as MatchRow[];
   const nextStepCheckIn = getNextStepCheckInContent(
-    getNextStepCheckInCounts(userDecks, allMatches)
+    {
+      ...getNextStepCheckInCounts(userDecks, allMatches),
+      activeTestingBlock,
+    }
   );
   const requestedDeckId = params.deck_id ?? params.deckId ?? null;
   const deckScope = resolveCurrentDeckScope({
@@ -394,6 +426,40 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
     filteredMatches.filter((match) => match.result === "loss"),
     (match) => match.metadata.issue_tags ?? []
   );
+  const problemMatchups = Array.from(
+    filteredMatches
+      .filter((match) => match.result === "loss" || match.result === "tie")
+      .reduce((summary, match) => {
+        const grouped = summary.get(match.opponentArchetype) ?? [];
+        grouped.push(match);
+        summary.set(match.opponentArchetype, grouped);
+        return summary;
+      }, new Map<string, ReviewMatch[]>())
+  )
+    .map(([opponent, groupedMatches]) => {
+      const record = countMatchResults(groupedMatches);
+      return {
+        opponent,
+        lossesAndTies: record.losses + record.ties,
+        total: record.total,
+      };
+    })
+    .sort(
+      (left, right) =>
+        right.lossesAndTies - left.lossesAndTies || right.total - left.total
+    );
+  const focusedTestingHref = analysis.cards[0]
+    ? buildTestingBlockHref({
+        deckId: showAllDecks ? null : selectedDeck?.id ?? null,
+        deckVersionId:
+          selectedVersionFilter === "active"
+            ? activeVersionId
+            : selectedVersion?.id ?? null,
+        targetMatchup: problemMatchups[0]?.opponent ?? null,
+        focusTags: lossTags.map((tag) => tag.tag),
+        notes: analysis.cards[0].recommendation,
+      })
+    : "/testing";
   const versionRows = Array.from(
     filteredMatches.reduce((summary, match) => {
       const current = summary.get(match.deckVersionId) ?? [];
@@ -772,6 +838,9 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
                         className="inline-flex h-11 items-center justify-center rounded-[14px] bg-[#F5C84C] px-5 text-sm font-bold text-[#0B1020] shadow-[0_12px_28px_rgba(245,200,76,0.20)] transition hover:-translate-y-0.5 hover:bg-[#ffd85f] active:translate-y-0"
                       >
                         {analysis.cards[0].ctaLabel}
+                      </Link>
+                      <Link href={focusedTestingHref} className={secondaryButton}>
+                        Start focused testing block
                       </Link>
                     </div>
                   </div>

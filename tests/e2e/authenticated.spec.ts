@@ -30,11 +30,13 @@ import {
   getMatchupCoachLabel,
 } from "@/lib/matchup-labels";
 import { getNextStepCheckInContent } from "@/lib/next-step-check-in";
+import { buildTestingBlockSummary } from "@/lib/testing-blocks";
 
 const authRoutes = [
   { path: "/dashboard", heading: "Overview" },
   { path: "/matches/new", heading: "Log a game" },
   { path: "/review", heading: "Review" },
+  { path: "/testing", heading: "Focused Testing" },
   { path: "/matches", heading: "Match history" },
   { path: "/events", heading: "Events" },
   { path: "/decks", heading: "Deck Experiments" },
@@ -979,6 +981,68 @@ test.describe("next step check-in", () => {
         issueTaggedMatchCount: 3,
       }).primaryLabel
     ).toBe("Open review");
+
+    const activeBlock = getNextStepCheckInContent({
+      deckCount: 1,
+      matchCount: 6,
+      taggedMatchCount: 4,
+      issueTaggedMatchCount: 3,
+      activeTestingBlock: {
+        id: "block-1",
+        targetMatchup: "Mega Greninja",
+      },
+    });
+
+    expect(activeBlock.title).toBe("Active testing block");
+    expect(activeBlock.question).toContain("Mega Greninja");
+    expect(activeBlock.primaryHref).toContain("testing_block_id=block-1");
+  });
+});
+
+test.describe("focused testing blocks", () => {
+  test("summarizes linked match progress, record, and issue tags", async () => {
+    const summary = buildTestingBlockSummary(
+      {
+        id: "block-1",
+        deck_id: "deck-1",
+        deck_version_id: "version-1",
+        target_matchup: "Mega Greninja",
+        focus_tags: ["Slow start"],
+        target_games: 5,
+        notes: "Track opening hands.",
+        status: "active",
+        source_review_reason: null,
+        created_at: "2026-07-01T00:00:00.000Z",
+        completed_at: null,
+        deck: { name: "Dragapult Dusknoir", archetype: "Dragapult" },
+        deck_version: { name: "v3" },
+      },
+      [
+        {
+          id: "match-1",
+          testing_block_id: "block-1",
+          opponent_archetype: "Mega Greninja",
+          result: "loss",
+          metadata: { issue_tags: ["Slow start"] },
+          played_at: "2026-07-01T01:00:00.000Z",
+          match_tags: [{ tag: "Slow start" }],
+        },
+        {
+          id: "match-2",
+          testing_block_id: "block-1",
+          opponent_archetype: "Mega Greninja",
+          result: "win",
+          metadata: { positive_tags: ["Ahead early"] },
+          played_at: "2026-07-01T02:00:00.000Z",
+          match_tags: [{ tag: "Ahead early" }],
+        },
+      ]
+    );
+
+    expect(summary.progressLabel).toBe("2 / 5 games");
+    expect(summary.record).toBe("1-1");
+    expect(summary.commonIssueTags[0]).toEqual({ tag: "Slow start", count: 1 });
+    expect(summary.deckLabel).toBe("Dragapult Dusknoir · v3");
   });
 });
 

@@ -22,6 +22,7 @@ import { LATEST_FORMAT } from "@/lib/formats";
 import { type MatchResult } from "@/lib/match-types";
 import { buildSessionCoachInsight } from "@/lib/session-coach";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
+import { isTestingBlocksMissingError } from "@/lib/testing-blocks";
 import { getOwnUserPrivateSettings } from "@/lib/user-private-settings";
 import { logMatch, rememberPokemonTcgLiveUsername } from "./actions";
 
@@ -45,6 +46,7 @@ type NewMatchPageProps = {
     opponent?: string;
     result?: string;
     success?: string;
+    testing_block_id?: string;
     went_first?: string;
   }>;
 };
@@ -58,6 +60,7 @@ export default async function NewMatchPage({
     opponent,
     result,
     success,
+    testing_block_id: testingBlockId,
     deck_version_id: deckVersionId,
     went_first: wentFirst,
   } = await searchParams;
@@ -100,6 +103,34 @@ export default async function NewMatchPage({
     throw new Error(previousMatchesError.message);
   }
 
+  const [
+    { data: activeBlocks, error: activeBlocksError },
+    { data: testingBlockMatches, error: testingBlockMatchesError },
+  ] = await Promise.all([
+    supabase
+      .from("testing_blocks")
+      .select("id, target_matchup, target_games")
+      .eq("user_id", user.id)
+      .eq("status", "active")
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("matches")
+      .select("id, testing_block_id")
+      .eq("user_id", user.id)
+      .not("testing_block_id", "is", null),
+  ]);
+
+  if (activeBlocksError && !isTestingBlocksMissingError(activeBlocksError)) {
+    throw new Error(activeBlocksError.message);
+  }
+
+  if (
+    testingBlockMatchesError &&
+    !isTestingBlocksMissingError(testingBlockMatchesError)
+  ) {
+    throw new Error(testingBlockMatchesError.message);
+  }
+
   const userDecks = (decks ?? []) as DeckWithVersions[];
   const previousOpponentArchetypes = (
     (previousMatches ?? []) as { opponent_archetype: string }[]
@@ -134,6 +165,33 @@ export default async function NewMatchPage({
     ...userDecks.map((deck) => deck.archetype),
   ]);
   const privateSettings = await getOwnUserPrivateSettings(user.id);
+  const blockMatchCounts = new Map<string, number>();
+  ((testingBlockMatches ?? []) as { testing_block_id: string | null }[]).forEach(
+    (match) => {
+      if (!match.testing_block_id) return;
+      blockMatchCounts.set(
+        match.testing_block_id,
+        (blockMatchCounts.get(match.testing_block_id) ?? 0) + 1
+      );
+    }
+  );
+  const activeTestingBlocks = activeBlocksError
+    ? []
+    : ((activeBlocks ?? []) as {
+        id: string;
+        target_matchup: string | null;
+        target_games: number | null;
+      }[]).map((block) => {
+        const progress = blockMatchCounts.get(block.id) ?? 0;
+        const target = Math.max(block.target_games ?? 5, 1);
+
+        return {
+          id: block.id,
+          label: block.target_matchup ?? "Focused testing block",
+          targetMatchup: block.target_matchup,
+          progressLabel: `${progress} / ${target}`,
+        };
+      });
 
   endTiming();
 
@@ -161,9 +219,11 @@ export default async function NewMatchPage({
               initialOpponentArchetype={opponent}
               initialResult={result}
               initialWentFirst={wentFirst}
+              initialTestingBlockId={testingBlockId}
               initialTcgLivePlayerName={
                 privateSettings?.pokemon_tcg_live_username ?? null
               }
+              activeTestingBlocks={activeTestingBlocks}
               rememberTcgLiveUsernameAction={rememberPokemonTcgLiveUsername}
               sessionCoach={sessionCoach}
               wasSuccessful={success === "1"}

@@ -2,13 +2,18 @@ export type NextStepCheckInState =
   | "no_deck"
   | "no_matches"
   | "needs_tags"
-  | "ready_for_review";
+  | "ready_for_review"
+  | "active_testing_block";
 
 export type NextStepCheckInCounts = {
   deckCount: number;
   matchCount: number;
   taggedMatchCount?: number;
   issueTaggedMatchCount?: number;
+  activeTestingBlock?: {
+    id: string;
+    targetMatchup?: string | null;
+  } | null;
 };
 
 export type NextStepCheckInContent = {
@@ -26,7 +31,31 @@ export function getNextStepCheckInContent({
   matchCount,
   taggedMatchCount = 0,
   issueTaggedMatchCount = 0,
+  activeTestingBlock = null,
 }: NextStepCheckInCounts): NextStepCheckInContent {
+  if (activeTestingBlock) {
+    const target = activeTestingBlock.targetMatchup?.trim();
+    const query = new URLSearchParams({
+      testing_block_id: activeTestingBlock.id,
+    });
+
+    if (target) {
+      query.set("opponent", target);
+    }
+
+    return {
+      state: "active_testing_block",
+      title: "Active testing block",
+      question: target
+        ? `Continue your focused test into ${target}?`
+        : "Continue your focused testing block?",
+      primaryLabel: "Log next game",
+      primaryHref: `/matches/new?${query.toString()}`,
+      secondaryLabel: "Open testing block",
+      secondaryHref: "/testing",
+    };
+  }
+
   if (deckCount <= 0) {
     return {
       state: "no_deck",

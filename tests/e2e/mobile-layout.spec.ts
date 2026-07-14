@@ -21,6 +21,7 @@ const authenticatedRoutes = [
   { path: "/dashboard", heading: "Overview" },
   { path: "/matches/new", heading: "Log a game" },
   { path: "/review", heading: "Review" },
+  { path: "/testing", heading: "Focused Testing" },
   { path: "/matches", heading: "Match history" },
   { path: "/events", heading: "Events" },
   { path: "/decks", heading: "Deck Experiments" },

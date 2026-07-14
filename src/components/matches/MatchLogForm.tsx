@@ -74,6 +74,13 @@ type DeckOption = {
   suggestedArchetype: string | null;
 };
 
+type TestingBlockOption = {
+  id: string;
+  label: string;
+  targetMatchup: string | null;
+  progressLabel: string;
+};
+
 type MatchLogFormProps = {
   action: (
     state: { error: string | null },
@@ -87,11 +94,13 @@ type MatchLogFormProps = {
   initialOpponentVariant?: string;
   initialResult?: string;
   initialWentFirst?: string;
+  initialTestingBlockId?: string;
   initialTcgLivePlayerName?: string | null;
   initialNotes?: string;
   initialTags?: string[];
   initialMetadata?: MatchMetadata | null;
   sessionCoach?: SessionCoachInsight | null;
+  activeTestingBlocks?: TestingBlockOption[];
   secondaryHref?: string;
   secondaryLabel?: string;
   submitLabel?: string;
@@ -563,11 +572,13 @@ export function MatchLogForm({
   initialOpponentVariant,
   initialResult,
   initialWentFirst,
+  initialTestingBlockId,
   initialTcgLivePlayerName,
   initialNotes,
   initialTags = [],
   initialMetadata,
   sessionCoach,
+  activeTestingBlocks = [],
   secondaryHref = "/matches",
   secondaryLabel = "Match history",
   submitLabel = "Save game",
@@ -772,6 +783,16 @@ export function MatchLogForm({
     metadata.cards_failed ?? []
   );
   const [notes, setNotes] = useState(initialNotes ?? "");
+  const [testingBlockId, setTestingBlockId] = useState(() => {
+    if (
+      initialTestingBlockId &&
+      activeTestingBlocks.some((block) => block.id === initialTestingBlockId)
+    ) {
+      return initialTestingBlockId;
+    }
+
+    return "";
+  });
   const [tcgLiveLog, setTcgLiveLog] = useState("");
   const tcgLiveLogRef = useRef<HTMLTextAreaElement>(null);
   const [tcgLivePlayerName, setTcgLivePlayerName] = useState(() => {
@@ -1381,6 +1402,7 @@ export function MatchLogForm({
         className={`w-full max-w-full min-w-0 overflow-x-hidden p-2 sm:p-3.5 ${glassPanelStrong}`}
       >
         <input type="hidden" name="deck_version_id" value={deckVersionId} />
+        <input type="hidden" name="testing_block_id" value={testingBlockId} />
         <input
           type="hidden"
           name="opponent_archetype"
@@ -1999,6 +2021,34 @@ export function MatchLogForm({
                           </p>
                         ) : null}
                       </div>
+
+                      {activeTestingBlocks.length ? (
+                        <div className={subCardClass}>
+                          <div className="flex flex-col gap-2">
+                            <label htmlFor="testing_block_select" className={label}>
+                              Focused testing block
+                            </label>
+                            <select
+                              id="testing_block_select"
+                              value={testingBlockId}
+                              onChange={(event) =>
+                                setTestingBlockId(event.target.value)
+                              }
+                              className={inputH11}
+                            >
+                              <option value="">Do not attach to a block</option>
+                              {activeTestingBlocks.map((block) => (
+                                <option key={block.id} value={block.id}>
+                                  {block.label} - {block.progressLabel}
+                                </option>
+                              ))}
+                            </select>
+                            <p className="text-xs leading-5 text-[#94A3B8]/76">
+                              Attach this game when it is part of a focused test.
+                            </p>
+                          </div>
+                        </div>
+                      ) : null}
                     </div>
                   ) : null}
 
