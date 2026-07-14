@@ -10,6 +10,10 @@ import {
 import { resolveCurrentDeckScope } from "@/lib/current-deck-scope";
 import { buildDeckLabSummary } from "@/lib/deck-lab";
 import {
+  buildDeckVersionImpactRead,
+  compareDeckLists,
+} from "@/lib/deck-version-diff";
+import {
   buildEventReviewSummary,
   getEventDeckLabel,
   getEventsOverviewMetrics,
@@ -146,6 +150,132 @@ test.describe("match log tag options", () => {
         "Ahead early",
       ])
     );
+  });
+});
+
+test.describe("deck version diff", () => {
+  test("classifies added, removed, and count-changed cards", async () => {
+    const previousList = [
+      "Pokemon: 8",
+      "4 Dreepy",
+      "3 Drakloak",
+      "2 Dragapult ex",
+      "1 Lumineon V",
+      "Trainer: 8",
+      "4 Rare Candy",
+      "4 Nest Ball",
+      "Energy: 4",
+      "4 Fire Energy",
+    ].join("\n");
+    const currentList = [
+      "Pokemon: 9",
+      "4 Dreepy",
+      "2 Drakloak",
+      "3 Dragapult ex",
+      "1 Fezandipiti ex",
+      "Trainer: 8",
+      "3 Rare Candy",
+      "4 Nest Ball",
+      "1 Counter Catcher",
+      "Energy: 4",
+      "4 Fire Energy",
+    ].join("\n");
+
+    const diff = compareDeckLists(previousList, currentList);
+
+    expect(diff.added).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          cardName: "Counter Catcher",
+          previousCount: 0,
+          currentCount: 1,
+          delta: 1,
+          changeType: "added",
+        }),
+        expect.objectContaining({
+          cardName: "Fezandipiti ex",
+          previousCount: 0,
+          currentCount: 1,
+          delta: 1,
+          changeType: "added",
+        }),
+      ])
+    );
+    expect(diff.removed).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          cardName: "Lumineon V",
+          previousCount: 1,
+          currentCount: 0,
+          delta: -1,
+          changeType: "removed",
+        }),
+      ])
+    );
+    expect(diff.countChanged).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          cardName: "Dragapult ex",
+          previousCount: 2,
+          currentCount: 3,
+          delta: 1,
+          changeType: "count_changed",
+        }),
+        expect.objectContaining({
+          cardName: "Drakloak",
+          previousCount: 3,
+          currentCount: 2,
+          delta: -1,
+          changeType: "count_changed",
+        }),
+        expect.objectContaining({
+          cardName: "Rare Candy",
+          previousCount: 4,
+          currentCount: 3,
+          delta: -1,
+          changeType: "count_changed",
+        }),
+      ])
+    );
+    expect(diff.unchanged).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ cardName: "Dreepy", count: 4 }),
+        expect.objectContaining({ cardName: "Nest Ball", count: 4 }),
+      ])
+    );
+    expect(diff.summary).toEqual({
+      added: 2,
+      removed: 1,
+      countChanged: 3,
+    });
+  });
+
+  test("keeps version impact honest with no games or losing improvements", async () => {
+    const noGames = buildDeckVersionImpactRead({
+      currentName: "v2",
+      previousName: "v1",
+      currentPerformance: { wins: 0, losses: 0, ties: 0, total: 0 },
+      previousPerformance: { wins: 4, losses: 6, ties: 0, total: 10 },
+      currentIssueTagCount: 0,
+      previousIssueTagCount: 3,
+    });
+
+    expect(noGames.label).toBe("No games logged yet");
+    expect(noGames.summary).toContain("no games yet");
+    expect(noGames.next).toContain("Play 5 games");
+
+    const improvedButLosing = buildDeckVersionImpactRead({
+      currentName: "v2",
+      previousName: "v1",
+      currentPerformance: { wins: 4, losses: 6, ties: 0, total: 10 },
+      previousPerformance: { wins: 2, losses: 8, ties: 0, total: 10 },
+      currentIssueTagCount: 1,
+      previousIssueTagCount: 4,
+    });
+
+    expect(improvedButLosing.label).toBe("Improved, still losing");
+    expect(improvedButLosing.summary).toContain("still losing overall");
+    expect(improvedButLosing.next).toContain("Issue tags are appearing less often");
   });
 });
 
@@ -1868,6 +1998,15 @@ test.describe("authenticated routes", () => {
     await page.waitForURL(/\/decks\//, { timeout: 20000 });
 
     await expect(page.locator("body")).toContainText(/Deck Lab/i);
+    await expect(page.locator("body")).toContainText(/Compare versions/i);
+    await expect(page.locator("body")).toContainText(
+      /What changed, and did it help\?/i
+    );
+    await expect(page.locator("body")).toContainText(
+      /Added cards|Removed cards|Count changes/i
+    );
+    await expect(page.locator("body")).toContainText(/Version impact/i);
+    await expect(page.locator("body")).toContainText(/What to do next/i);
     await expect(page.locator("body")).toContainText(
       /Version read|Version comparison|Testing discipline|Meta watchlist/i
     );

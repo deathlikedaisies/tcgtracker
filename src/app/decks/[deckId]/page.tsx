@@ -41,6 +41,10 @@ import {
   isClearArchetypeSuggestion,
 } from "@/lib/decklist";
 import {
+  buildDeckVersionImpactRead,
+  compareDeckLists,
+} from "@/lib/deck-version-diff";
+import {
   buildDeckLabSummary,
   getDeckLabToneClasses,
 } from "@/lib/deck-lab";
@@ -51,6 +55,7 @@ import {
   parseMatchMetadata,
   type MatchMetadata,
   type MatchResult,
+  type MatchResultCounts,
 } from "@/lib/match-types";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import {
@@ -222,6 +227,58 @@ function getSuggestionBadgeTone(confidence: "high" | "medium" | "low" | "none") 
   return confidence === "high"
     ? "bg-emerald-500/14 text-emerald-200"
     : "bg-[#F5C84C]/14 text-[#F5C84C]";
+}
+
+function getWinRateLabel(performance: MatchResultCounts) {
+  return performance.total
+    ? `${Math.round((performance.wins / performance.total) * 100)}%`
+    : "N/A";
+}
+
+function getIssueTagMentionCount(
+  matches: { result: MatchResult; match_tags: { tag: string }[] | null }[]
+) {
+  return matches
+    .filter((match) => match.result === "loss")
+    .reduce((count, match) => count + (match.match_tags?.length ?? 0), 0);
+}
+
+function getComparablePreviousVersion(
+  versions: DeckVersion[],
+  activeVersion: DeckVersion | null
+) {
+  if (!activeVersion) {
+    return null;
+  }
+
+  const byCreatedDesc = [...versions].sort(
+    (left, right) =>
+      new Date(right.created_at).getTime() - new Date(left.created_at).getTime()
+  );
+  const activeCreated = new Date(activeVersion.created_at).getTime();
+
+  return (
+    byCreatedDesc.find(
+      (version) =>
+        version.id !== activeVersion.id &&
+        new Date(version.created_at).getTime() < activeCreated
+    ) ??
+    byCreatedDesc.find((version) => version.id !== activeVersion.id) ??
+    null
+  );
+}
+
+function getVersionImpactToneClass(tone: "blue" | "gold" | "emerald" | "rose") {
+  return {
+    blue:
+      "bg-[#4F8CFF]/10 text-[#DCE8FF] shadow-[inset_0_0_0_1px_rgba(79,140,255,0.14)]",
+    gold:
+      "bg-[#F5C84C]/12 text-[#FFE28A] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]",
+    emerald:
+      "bg-emerald-500/10 text-emerald-200 shadow-[inset_0_0_0_1px_rgba(34,197,94,0.16)]",
+    rose:
+      "bg-[#F43F5E]/10 text-rose-200 shadow-[inset_0_0_0_1px_rgba(244,63,94,0.16)]",
+  }[tone];
 }
 
 export default async function DeckDetailPage({
@@ -427,6 +484,40 @@ export default async function DeckDetailPage({
   const activeVersionName = activeVersion
     ? safeText(activeVersion.name, "Untitled version")
     : "No active version";
+  const previousVersionForComparison = getComparablePreviousVersion(
+    deckVersions,
+    activeVersion
+  );
+  const activeVersionInsight = activeVersion
+    ? versionInsightById.get(activeVersion.id) ?? null
+    : null;
+  const previousVersionInsight = previousVersionForComparison
+    ? versionInsightById.get(previousVersionForComparison.id) ?? null
+    : null;
+  const versionDiff =
+    activeVersion && previousVersionForComparison
+      ? compareDeckLists(
+          previousVersionForComparison.decklist,
+          activeVersion.decklist
+        )
+      : null;
+  const versionImpactRead =
+    activeVersion && activeVersionInsight
+      ? buildDeckVersionImpactRead({
+          currentName: activeVersionName,
+          previousName: previousVersionForComparison
+            ? safeText(previousVersionForComparison.name, "Previous version")
+            : null,
+          currentPerformance: activeVersionInsight.performance,
+          previousPerformance: previousVersionInsight?.performance ?? null,
+          currentIssueTagCount: getIssueTagMentionCount(
+            activeVersionInsight.versionMatches
+          ),
+          previousIssueTagCount: previousVersionInsight
+            ? getIssueTagMentionCount(previousVersionInsight.versionMatches)
+            : null,
+        })
+      : null;
   const primaryDeckActionHref = !deckVersions.length
     ? "#versions"
     : activeVersion
@@ -1032,6 +1123,185 @@ export default async function DeckDetailPage({
               </article>
             </div>
           </section>
+          ) : null}
+
+          {!needsFirstVersionSetup && activeVersion && previousVersionForComparison && versionDiff ? (
+            <section className={`p-4 sm:p-5 ${glassPanelStrong}`}>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#F5C84C]">
+                    Compare versions
+                  </p>
+                  <h2 className="mt-2 text-xl font-semibold text-[#F8FAFC]">
+                    What changed, and did it help?
+                  </h2>
+                  <p className="mt-1 text-sm leading-6 text-[#94A3B8]/72">
+                    Comparing {activeVersionName} against{" "}
+                    {safeText(previousVersionForComparison.name, "Previous version")}.
+                  </p>
+                </div>
+                {versionImpactRead ? (
+                  <span
+                    className={`w-fit rounded-full px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] ${getVersionImpactToneClass(
+                      versionImpactRead.tone
+                    )}`}
+                  >
+                    {versionImpactRead.label}
+                  </span>
+                ) : null}
+              </div>
+
+              <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.05fr)_minmax(320px,0.95fr)]">
+                <article className={`${premiumInset} min-w-0 p-4`}>
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    {[
+                      {
+                        label: "Added",
+                        value: versionDiff.summary.added,
+                        className: "text-emerald-200",
+                      },
+                      {
+                        label: "Removed",
+                        value: versionDiff.summary.removed,
+                        className: "text-rose-200",
+                      },
+                      {
+                        label: "Count changed",
+                        value: versionDiff.summary.countChanged,
+                        className: "text-[#FFE28A]",
+                      },
+                    ].map((stat) => (
+                      <div key={stat.label} className={`${statCard} p-3`}>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                          {stat.label}
+                        </p>
+                        <p className={`mt-2 text-2xl font-black ${stat.className}`}>
+                          {stat.value}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-4 grid gap-3">
+                    {[
+                      {
+                        label: "Added cards",
+                        empty: "No new cards added.",
+                        changes: versionDiff.added,
+                        tone:
+                          "bg-emerald-500/10 text-emerald-200 shadow-[inset_0_0_0_1px_rgba(34,197,94,0.16)]",
+                      },
+                      {
+                        label: "Removed cards",
+                        empty: "No cards removed.",
+                        changes: versionDiff.removed,
+                        tone:
+                          "bg-[#F43F5E]/10 text-rose-200 shadow-[inset_0_0_0_1px_rgba(244,63,94,0.16)]",
+                      },
+                      {
+                        label: "Count changes",
+                        empty: "No counts changed.",
+                        changes: versionDiff.countChanged,
+                        tone:
+                          "bg-[#F5C84C]/12 text-[#FFE28A] shadow-[inset_0_0_0_1px_rgba(245,200,76,0.16)]",
+                      },
+                    ].map((group) => (
+                      <div key={group.label} className={`${statCard} min-w-0 p-3`}>
+                        <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                          {group.label}
+                        </p>
+                        {group.changes.length ? (
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {group.changes.map((change) => (
+                              <span
+                                key={`${change.changeType}-${change.cardName}`}
+                                className={`max-w-full break-words rounded-2xl px-3 py-2 text-xs font-semibold leading-5 ${group.tone}`}
+                              >
+                                {change.changeType === "count_changed"
+                                  ? `${change.cardName}: ${change.previousCount} -> ${change.currentCount}`
+                                  : `${change.delta > 0 ? "+" : ""}${change.delta} ${change.cardName}`}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="mt-2 text-sm leading-6 text-[#94A3B8]/72">
+                            {group.empty}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </article>
+
+                <article className={`${premiumInset} min-w-0 p-4`}>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-sm font-semibold text-[#F8FAFC]">
+                      Version impact
+                    </p>
+                    {versionImpactRead ? (
+                      <span
+                        className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${getVersionImpactToneClass(
+                          versionImpactRead.tone
+                        )}`}
+                      >
+                        {versionImpactRead.label}
+                      </span>
+                    ) : null}
+                  </div>
+
+                  <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                    <div className={`${statCard} p-3`}>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                        Current record
+                      </p>
+                      <p className="mt-2 text-sm font-semibold text-[#F8FAFC]">
+                        {activeVersionInsight
+                          ? `${activeVersionInsight.performance.wins}W ${activeVersionInsight.performance.losses}L ${activeVersionInsight.performance.ties}T`
+                          : "N/A"}
+                      </p>
+                    </div>
+                    <div className={`${statCard} p-3`}>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                        Win rate
+                      </p>
+                      <p className="mt-2 text-sm font-semibold text-[#F8FAFC]">
+                        {activeVersionInsight
+                          ? getWinRateLabel(activeVersionInsight.performance)
+                          : "N/A"}
+                      </p>
+                    </div>
+                    <div className={`${statCard} p-3`}>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                        Matches
+                      </p>
+                      <p className="mt-2 text-sm font-semibold text-[#F8FAFC]">
+                        {activeVersionInsight?.performance.total ?? 0}
+                      </p>
+                    </div>
+                  </div>
+
+                  <p className="mt-4 text-sm leading-6 text-[#D6E0F0]/86">
+                    {versionImpactRead?.summary ??
+                      "Log games with this version before judging whether the change helped."}
+                  </p>
+                  <div className="mt-4 rounded-[22px] bg-[#0B1020]/58 p-4 shadow-[inset_0_0_0_1px_rgba(245,200,76,0.12)]">
+                    <div className="flex items-center gap-2">
+                      <Target className="size-4 text-[#F5C84C]" aria-hidden="true" />
+                      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#F5C84C]">
+                        What to do next
+                      </p>
+                    </div>
+                    <p className="mt-2 text-sm leading-6 text-[#F8FAFC]">
+                      {versionImpactRead?.next ??
+                        "Log 5 more games with this version before changing the list again."}
+                    </p>
+                  </div>
+                  <p className="mt-3 text-xs leading-5 text-[#94A3B8]/70">
+                    SixPrizer treats deck changes as testing hypotheses. The diff shows what changed; the match data decides whether the read is strong enough.
+                  </p>
+                </article>
+              </div>
+            </section>
           ) : null}
 
           {sessionCoach && hasDeckGames ? (
