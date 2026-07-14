@@ -29,6 +29,7 @@ import {
   getHeadlineSignal,
   getMatchupCoachLabel,
 } from "@/lib/matchup-labels";
+import { getNextStepCheckInContent } from "@/lib/next-step-check-in";
 
 const authRoutes = [
   { path: "/dashboard", heading: "Overview" },
@@ -948,6 +949,36 @@ test.describe("coach interpretation copy", () => {
     expect(metrics.eventCount).toBe(61);
     expect(metrics.roundCount).toBe(250);
     expect(metrics.eventHelper).toBe("20 recent shown");
+  });
+});
+
+test.describe("next step check-in", () => {
+  test("selects the right onboarding state from deck, match, and tag counts", async () => {
+    expect(
+      getNextStepCheckInContent({ deckCount: 0, matchCount: 0 }).primaryLabel
+    ).toBe("Import a deck");
+
+    expect(
+      getNextStepCheckInContent({ deckCount: 1, matchCount: 0 }).primaryLabel
+    ).toBe("Import a log");
+
+    expect(
+      getNextStepCheckInContent({
+        deckCount: 1,
+        matchCount: 4,
+        taggedMatchCount: 1,
+        issueTaggedMatchCount: 0,
+      }).primaryLabel
+    ).toBe("Review matches");
+
+    expect(
+      getNextStepCheckInContent({
+        deckCount: 1,
+        matchCount: 6,
+        taggedMatchCount: 4,
+        issueTaggedMatchCount: 3,
+      }).primaryLabel
+    ).toBe("Open review");
   });
 });
 
@@ -1898,6 +1929,12 @@ test.describe("authenticated routes", () => {
   test("/review surfaces a specific seeded coaching signal", async ({ page }) => {
     await page.goto("/review");
 
+    const checkIn = page.getByTestId("next-step-check-in");
+    if ((await checkIn.count()) > 0) {
+      await checkIn.getByRole("button", { name: "Not now" }).click();
+      await expect(checkIn).toHaveCount(0);
+    }
+
     const coachHero = page
       .getByText(/Top coach read|What to do next/i)
       .first()
@@ -1949,6 +1986,21 @@ test.describe("authenticated routes", () => {
       nextBestActionCard.getByRole("link", { name: /^Open review$/ })
     ).toHaveCount(1);
     await expectNoAppError(page);
+  });
+
+  test("/dashboard shows and dismisses the next step check-in", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.localStorage.removeItem("sixprizer-next-step-dismissed");
+    });
+    await page.goto("/dashboard");
+    await expectHeadingVisible(page, "Overview");
+
+    const checkIn = page.getByTestId("next-step-check-in");
+    await expect(checkIn).toBeVisible();
+    await expect(checkIn.getByRole("link").first()).toBeVisible();
+
+    await checkIn.getByRole("button", { name: "Not now" }).click();
+    await expect(checkIn).toHaveCount(0);
   });
 
   test("/dashboard opens Review with the same current-deck scope", async ({ page }) => {

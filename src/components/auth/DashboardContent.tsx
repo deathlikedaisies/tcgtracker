@@ -20,6 +20,7 @@ import {
 import { AuthenticatedPageHeader } from "@/components/AuthenticatedPageHeader";
 import { AppSidebar } from "@/components/AppSidebar";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
+import { NextStepCheckIn } from "@/components/NextStepCheckIn";
 import {
   appFrame,
   appMain,
@@ -44,6 +45,7 @@ import type {
   TrainingProgressSummary,
 } from "@/lib/session-coach";
 import { evaluateMatchupSignal } from "@/lib/session-coach";
+import type { NextStepCheckInContent } from "@/lib/next-step-check-in";
 
 type DeckSummary = {
   id: string;
@@ -107,6 +109,7 @@ type DashboardContentProps = {
   matchupSummary: MatchupSummary[];
   sessionCoach: SessionCoachInsight | null;
   trainingProgress: TrainingProgressSummary;
+  nextStepCheckIn: NextStepCheckInContent;
 };
 
 type Tone = "blue" | "gold" | "green" | "rose";
@@ -810,6 +813,7 @@ export function DashboardContent({
   matchupSummary,
   sessionCoach,
   trainingProgress,
+  nextStepCheckIn,
 }: DashboardContentProps) {
   const sampledMatchups = matchupSummary.filter((matchup) => matchup.matches >= 3);
   const actionableMatchups = sampledMatchups.filter((matchup) => {
@@ -1036,6 +1040,8 @@ export function DashboardContent({
             userEmail={email}
             className={!hasAnyMatches ? "xl:py-4" : ""}
           />
+
+          <NextStepCheckIn content={nextStepCheckIn} />
 
           {!hasAnyMatches ? (
             <SetupChecklist

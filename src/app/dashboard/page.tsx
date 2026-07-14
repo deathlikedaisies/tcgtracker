@@ -10,6 +10,10 @@ import {
   type MatchResult,
 } from "@/lib/match-types";
 import { startDevTimer } from "@/lib/dev-timing";
+import {
+  getNextStepCheckInContent,
+  getNextStepCheckInCounts,
+} from "@/lib/next-step-check-in";
 import type { CoachMatch } from "@/lib/session-coach";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
@@ -122,6 +126,9 @@ export default async function DashboardPage() {
 
   const matchRows = (matches ?? []) as unknown as MatchRow[];
   const deckRows = (decks ?? []) as unknown as DeckRow[];
+  const nextStepCheckIn = getNextStepCheckInContent(
+    getNextStepCheckInCounts(deckRows, matchRows)
+  );
   const deckScope = resolveCurrentDeckScope({
     decks: deckRows,
     matches: matchRows,
@@ -212,6 +219,7 @@ export default async function DashboardPage() {
       matchupSummary={matchupSummary}
       sessionCoach={sessionCoach}
       trainingProgress={trainingProgress}
+      nextStepCheckIn={nextStepCheckIn}
       hasProfile={Boolean(ownProfile)}
       profileIsPrivate={ownProfile?.profile_visibility === "private"}
     />

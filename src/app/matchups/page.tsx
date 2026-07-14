@@ -5,6 +5,7 @@ import { AuthenticatedPageHeader } from "@/components/AuthenticatedPageHeader";
 import { AppSidebar } from "@/components/AppSidebar";
 import { ArchetypePicker } from "@/components/ArchetypePicker";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
+import { NextStepCheckIn } from "@/components/NextStepCheckIn";
 import { MatchStrip } from "@/components/MatchStrip";
 import {
   appFrame,
@@ -30,6 +31,10 @@ import { ShareReportButton, type ShareReport } from "@/components/ShareReportBut
 import { createMatchupSharedReportAction } from "@/app/community/actions";
 import { getArchetypeOptions } from "@/lib/archetypes";
 import { startDevTimer } from "@/lib/dev-timing";
+import {
+  getNextStepCheckInContent,
+  getNextStepCheckInCounts,
+} from "@/lib/next-step-check-in";
 import {
   countMatchResults,
   formatMatchRecord,
@@ -295,6 +300,9 @@ export default async function MatchupsPage({
   }
 
   const userDecks = (decks ?? []) as DeckWithVersions[];
+  const nextStepCheckIn = getNextStepCheckInContent(
+    getNextStepCheckInCounts(userDecks, (matches ?? []) as MatchRow[])
+  );
   const allVersions = userDecks.flatMap((deck) =>
     deck.deck_versions.map((version) => ({
       ...version,
@@ -577,6 +585,8 @@ export default async function MatchupsPage({
             ) : null
           }
         />
+
+        <NextStepCheckIn content={nextStepCheckIn} />
 
         {params.share_error ? (
           <section className="rounded-[18px] border border-rose-400/18 bg-[linear-gradient(180deg,rgba(68,12,26,0.74),rgba(20,10,18,0.82))] px-4 py-3 text-sm font-medium text-rose-100 shadow-[0_18px_38px_rgba(0,0,0,0.24)]">

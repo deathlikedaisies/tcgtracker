@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { type ReactNode } from "react";
 import { AuthenticatedPageHeader } from "@/components/AuthenticatedPageHeader";
 import { AppSidebar } from "@/components/AppSidebar";
+import { NextStepCheckIn } from "@/components/NextStepCheckIn";
 import { ReviewDetailedAnalytics } from "@/components/review/ReviewDetailedAnalytics";
 import {
   appFrame,
@@ -28,6 +29,10 @@ import {
 } from "@/lib/review-analysis";
 import { resolveCurrentDeckScope } from "@/lib/current-deck-scope";
 import { startDevTimer } from "@/lib/dev-timing";
+import {
+  getNextStepCheckInContent,
+  getNextStepCheckInCounts,
+} from "@/lib/next-step-check-in";
 import {
   countMatchResults,
   formatMatchRecord,
@@ -209,6 +214,9 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
 
   const userDecks = (decks ?? []) as DeckWithVersions[];
   const allMatches = (matches ?? []) as MatchRow[];
+  const nextStepCheckIn = getNextStepCheckInContent(
+    getNextStepCheckInCounts(userDecks, allMatches)
+  );
   const requestedDeckId = params.deck_id ?? params.deckId ?? null;
   const deckScope = resolveCurrentDeckScope({
     decks: userDecks,
@@ -593,6 +601,8 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
             subtitle="See what your recent games are actually telling you, then decide the next test."
             userEmail={user.email ?? "Unknown email"}
           />
+
+          <NextStepCheckIn content={nextStepCheckIn} />
 
           <form action="/review" className={`p-3.5 sm:p-4 ${glassPanel}`}>
             <div className="grid gap-3 min-[430px]:grid-cols-2 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_auto]">

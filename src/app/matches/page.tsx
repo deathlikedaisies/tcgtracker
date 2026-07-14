@@ -5,6 +5,7 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { ArchetypePicker } from "@/components/ArchetypePicker";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
 import { ConfirmSubmitButton } from "@/components/ConfirmSubmitButton";
+import { NextStepCheckIn } from "@/components/NextStepCheckIn";
 import {
   appFrame,
   appMain,
@@ -25,6 +26,10 @@ import {
 } from "@/components/brand-styles";
 import { getArchetypeOptions } from "@/lib/archetypes";
 import { startDevTimer } from "@/lib/dev-timing";
+import {
+  getNextStepCheckInContent,
+  getNextStepCheckInCounts,
+} from "@/lib/next-step-check-in";
 import {
   buildSessionCoachInsight,
   matchCountsTowardMission,
@@ -267,6 +272,9 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
 
   const userDecks = (decks ?? []) as DeckWithVersions[];
   const coachMatchRows = (allMatchRowsForCoach ?? []) as unknown as MatchFilterBaseRow[];
+  const nextStepCheckIn = getNextStepCheckInContent(
+    getNextStepCheckInCounts(userDecks, coachMatchRows)
+  );
   const sessionCoach = buildSessionCoachInsight(coachMatchRows);
   const allVersions = userDecks.flatMap((deck) =>
     deck.deck_versions.map((version) => ({
@@ -423,6 +431,8 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
           subtitle="Review your logged games, spot patterns, and clean up entries."
           userEmail={user.email ?? "Unknown email"}
         />
+
+        <NextStepCheckIn content={nextStepCheckIn} />
 
         {params.updated === "1" ? (
           <div className="rounded-[14px] bg-emerald-500/10 px-4 py-3 text-sm font-medium text-emerald-200">
