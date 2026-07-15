@@ -23,6 +23,23 @@ export type MatchMetadata = {
   tcg_live_cards_seen?: string[];
   tcg_live_cards_used?: string[];
   tcg_live_cards_discarded?: string[];
+  prizeRace?: MatchPrizeRace;
+};
+
+export type MatchPrizeRaceEvent = {
+  actor: "user" | "opponent";
+  prizesTaken: number;
+  userTotal: number;
+  opponentTotal: number;
+  rawText?: string;
+};
+
+export type MatchPrizeRace = {
+  events: MatchPrizeRaceEvent[];
+  userTotal: number;
+  opponentTotal: number;
+  endedByConcession?: boolean;
+  summary?: string;
 };
 
 export type MatchResultCounts = {
@@ -72,6 +89,7 @@ const KNOWN_METADATA_KEYS = [
   "tcg_live_cards_seen",
   "tcg_live_cards_used",
   "tcg_live_cards_discarded",
+  "prizeRace",
 ] as const satisfies readonly (keyof MatchMetadata)[];
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -101,6 +119,70 @@ function cleanStringArray(value: unknown) {
   );
 
   return values.length ? values : undefined;
+}
+
+function cleanPrizeRaceActor(value: unknown) {
+  return value === "user" || value === "opponent" ? value : undefined;
+}
+
+function cleanPrizeCount(value: unknown) {
+  const count = typeof value === "number" ? value : Number(value);
+
+  return Number.isInteger(count) && count >= 0 && count <= 6
+    ? count
+    : undefined;
+}
+
+export function parseMatchPrizeRace(value: unknown): MatchPrizeRace | undefined {
+  if (!isRecord(value)) {
+    return undefined;
+  }
+
+  const events = Array.isArray(value.events)
+    ? value.events
+        .map((event): MatchPrizeRaceEvent | null => {
+          if (!isRecord(event)) {
+            return null;
+          }
+
+          const actor = cleanPrizeRaceActor(event.actor);
+          const prizesTaken = cleanPrizeCount(event.prizesTaken);
+          const userTotal = cleanPrizeCount(event.userTotal);
+          const opponentTotal = cleanPrizeCount(event.opponentTotal);
+
+          if (!actor || !prizesTaken || userTotal === undefined || opponentTotal === undefined) {
+            return null;
+          }
+
+          return {
+            actor,
+            prizesTaken,
+            userTotal,
+            opponentTotal,
+            rawText: cleanText(event.rawText),
+          };
+        })
+        .filter((event): event is MatchPrizeRaceEvent => Boolean(event))
+    : [];
+  const userTotal = cleanPrizeCount(value.userTotal) ?? events.at(-1)?.userTotal ?? 0;
+  const opponentTotal =
+    cleanPrizeCount(value.opponentTotal) ?? events.at(-1)?.opponentTotal ?? 0;
+  const summary = cleanText(value.summary);
+
+  if (!events.length && !value.endedByConcession && !summary) {
+    return undefined;
+  }
+
+  return {
+    events,
+    userTotal,
+    opponentTotal,
+    endedByConcession:
+      typeof value.endedByConcession === "boolean"
+        ? value.endedByConcession
+        : undefined,
+    summary,
+  };
 }
 
 export function isMatchResult(
@@ -198,6 +280,7 @@ export function parseMatchMetadata(value: unknown): MatchMetadata {
   metadata.tcg_live_cards_discarded = cleanStringArray(
     value.tcg_live_cards_discarded
   );
+  metadata.prizeRace = parseMatchPrizeRace(value.prizeRace);
 
   return metadata;
 }

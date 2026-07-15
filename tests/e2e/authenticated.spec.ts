@@ -33,6 +33,8 @@ import {
 import { getMatchupHeatmapRead } from "@/lib/matchup-heatmap";
 import { getNextStepCheckInContent } from "@/lib/next-step-check-in";
 import { buildTestingBlockSummary } from "@/lib/testing-blocks";
+import { buildMatchMetadataFromFormData } from "@/lib/match-form";
+import { parseMatchMetadata } from "@/lib/match-types";
 
 const authRoutes = [
   { path: "/dashboard", heading: "Overview" },
@@ -792,6 +794,135 @@ test.describe("TCG Live log parser", () => {
       expect(parsed.winnerName).toBe(winnerCase.expectedWinner);
       expect(parsed.result).toBe(winnerCase.expectedResult);
     }
+  });
+
+  test("extracts prize race events with cumulative totals", async () => {
+    const parsed = parseTcgLiveLog(
+      [
+        "DommitronNL chose heads for the opening coin flip.",
+        "DommitronNL won the coin toss.",
+        "DommitronNL decided to go first.",
+        "DommitronNL drew 7 cards for the opening hand.",
+        "AlfonsoLarsen drew 7 cards for the opening hand.",
+        "AlfonsoLarsen took a Prize card.",
+        "DommitronNL took 2 Prize cards.",
+        "AlfonsoLarsen took 2 Prize cards.",
+        "DommitronNL took a Prize card.",
+        "Opponent took all of their Prize cards. AlfonsoLarsen wins.",
+      ].join("\n"),
+      {
+        archetypeOptions: ["Ogerpon Meganium"],
+        playerName: "DommitronNL",
+      }
+    );
+
+    expect(parsed.result).toBe("loss");
+    expect(parsed.prizeRace?.events).toEqual([
+      expect.objectContaining({
+        actor: "opponent",
+        prizesTaken: 1,
+        userTotal: 0,
+        opponentTotal: 1,
+      }),
+      expect.objectContaining({
+        actor: "user",
+        prizesTaken: 2,
+        userTotal: 2,
+        opponentTotal: 1,
+      }),
+      expect.objectContaining({
+        actor: "opponent",
+        prizesTaken: 2,
+        userTotal: 2,
+        opponentTotal: 3,
+      }),
+      expect.objectContaining({
+        actor: "user",
+        prizesTaken: 1,
+        userTotal: 3,
+        opponentTotal: 3,
+      }),
+    ]);
+    expect(parsed.prizeRace?.userTotal).toBe(3);
+    expect(parsed.prizeRace?.opponentTotal).toBe(6);
+    expect(parsed.prizeRace?.summary).toMatch(/fell behind early/i);
+  });
+
+  test("detects concession endings without inventing prize events", async () => {
+    const parsed = parseTcgLiveLog(
+      [
+        "DommitronNL decided to go first.",
+        "DommitronNL took 2 Prize cards.",
+        "CarlosX2 took a Prize card.",
+        "Opponent conceded. DommitronNL wins.",
+      ].join("\n"),
+      {
+        archetypeOptions: ["Dark Poison"],
+        playerName: "DommitronNL",
+      }
+    );
+
+    expect(parsed.result).toBe("win");
+    expect(parsed.prizeRace?.endedByConcession).toBe(true);
+    expect(parsed.prizeRace?.events).toHaveLength(2);
+    expect(parsed.prizeRace?.userTotal).toBe(2);
+    expect(parsed.prizeRace?.opponentTotal).toBe(1);
+    expect(parsed.prizeRace?.summary).toMatch(/ahead before the concession/i);
+  });
+
+  test("does not create fake prize race events from ambiguous prize text", async () => {
+    const parsed = parseTcgLiveLog(
+      [
+        "DommitronNL decided to go first.",
+        "DommitronNL checked Prize cards.",
+        "Two Prize cards remained.",
+        "All Prize cards taken. DommitronNL wins.",
+      ].join("\n"),
+      {
+        archetypeOptions: ["Dragapult"],
+        playerName: "DommitronNL",
+      }
+    );
+
+    expect(parsed.result).toBe("win");
+    expect(parsed.prizeRace).toBeUndefined();
+  });
+
+  test("round-trips prize race metadata from the match form safely", async () => {
+    const formData = new FormData();
+    const prizeRace = {
+      events: [
+        {
+          actor: "user",
+          prizesTaken: 2,
+          userTotal: 2,
+          opponentTotal: 0,
+          rawText: "DommitronNL took 2 Prize cards.",
+        },
+      ],
+      userTotal: 2,
+      opponentTotal: 0,
+      summary: "You took the first prize in the race.",
+    };
+
+    formData.set("source", "tcg_live_import");
+    formData.set("prizeRace", JSON.stringify(prizeRace));
+
+    const metadata = buildMatchMetadataFromFormData(formData);
+    const parsedMetadata = parseMatchMetadata(metadata);
+
+    expect(parsedMetadata.source).toBe("tcg_live_import");
+    expect(parsedMetadata.prizeRace?.events).toEqual([
+      expect.objectContaining({
+        actor: "user",
+        prizesTaken: 2,
+        userTotal: 2,
+        opponentTotal: 0,
+      }),
+    ]);
+    expect(parsedMetadata.prizeRace?.summary).toBe(
+      "You took the first prize in the race."
+    );
   });
 });
 

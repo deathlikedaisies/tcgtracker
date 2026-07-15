@@ -50,6 +50,7 @@ import {
   type MatchGameContext,
   type MatchMetadata,
   type MatchOpeningHandQuality,
+  type MatchPrizeRace,
   type MatchResult,
   type MatchSequencingQuality,
   type MatchStartQuality,
@@ -818,6 +819,8 @@ export function MatchLogForm({
   const [importExpanded, setImportExpanded] = useState(false);
   const [tcgLiveCardReview, setTcgLiveCardReview] =
     useState<TcgLiveCardReviewPayload | null>(null);
+  const [tcgLivePrizeRace, setTcgLivePrizeRace] =
+    useState<MatchPrizeRace | null>(null);
   const importPointerHandledRef = useRef(false);
   const [isChangingDeck, setIsChangingDeck] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
@@ -1175,6 +1178,7 @@ export function MatchLogForm({
       setImportStatus(["Paste a TCG Live log first."]);
       setTcgLivePlayerNameError("");
       setTcgLiveCardReview(null);
+      setTcgLivePrizeRace(null);
       return;
     }
 
@@ -1182,6 +1186,7 @@ export function MatchLogForm({
       setTcgLivePlayerNameError("Add your TCG Live name to autofill this log.");
       setImportStatus([]);
       setTcgLiveCardReview(null);
+      setTcgLivePrizeRace(null);
       return;
     }
 
@@ -1254,6 +1259,13 @@ export function MatchLogForm({
       ];
     }
 
+    if (parsed.prizeRace?.events.length) {
+      nextImportStatus = [
+        ...nextImportStatus,
+        `Detected prize race: you ${parsed.prizeRace.userTotal}, opponent ${parsed.prizeRace.opponentTotal}.`,
+      ];
+    }
+
     if (rememberTcgLiveName && rememberTcgLiveUsernameAction) {
       const rememberResult = await rememberTcgLiveUsernameAction(playerName);
       nextImportStatus = [
@@ -1265,6 +1277,7 @@ export function MatchLogForm({
     }
 
     setTcgLiveCardReview(parsedCardReview);
+    setTcgLivePrizeRace(parsed.prizeRace ?? null);
     setImportStatus(nextImportStatus);
   }
 
@@ -1292,6 +1305,7 @@ export function MatchLogForm({
     setImportStatus([]);
     setTcgLivePlayerNameError("");
     setTcgLiveCardReview(null);
+    setTcgLivePrizeRace(null);
   }
 
   const progressPercent = ((currentStep + 1) / stepOrder.length) * 100;
@@ -1499,6 +1513,13 @@ export function MatchLogForm({
               />
             ))}
           </>
+        ) : null}
+        {tcgLivePrizeRace ? (
+          <input
+            type="hidden"
+            name="prizeRace"
+            value={JSON.stringify(tcgLivePrizeRace)}
+          />
         ) : null}
 
         <div className="grid gap-3.5 sm:gap-4">

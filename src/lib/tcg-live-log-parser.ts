@@ -1,5 +1,6 @@
 import { OTHER_ARCHETYPE } from "@/lib/archetypes";
 import { suggestArchetypeFromLogText } from "@/lib/decklist";
+import type { MatchPrizeRace } from "@/lib/match-types";
 
 export type TcgLiveLogParseResult = {
   result?: "win" | "loss" | "tie";
@@ -15,6 +16,7 @@ export type TcgLiveLogParseResult = {
     cardsUsed: string[];
     cardsDiscarded: string[];
   };
+  prizeRace?: MatchPrizeRace;
   confidence?: "high" | "medium" | "low";
   notes: string[];
 };
@@ -744,6 +746,194 @@ function extractUserCardReview(
   };
 }
 
+function parsePrizeCount(value: string) {
+  if (/^a$/i.test(value)) {
+    return 1;
+  }
+
+  const count = Number.parseInt(value, 10);
+
+  return Number.isInteger(count) && count >= 1 && count <= 6
+    ? count
+    : undefined;
+}
+
+function resolvePrizeActor(
+  actorText: string,
+  resolvedPlayers: ResolvedPlayers
+) {
+  const normalizedActor = normalize(actorText);
+
+  if (/^(you)$/i.test(actorText)) {
+    return "user" as const;
+  }
+
+  if (/^(opponent|your opponent)$/i.test(actorText)) {
+    return "opponent" as const;
+  }
+
+  if (
+    resolvedPlayers.userPlayerName &&
+    normalizedActor === normalize(resolvedPlayers.userPlayerName)
+  ) {
+    return "user" as const;
+  }
+
+  if (
+    resolvedPlayers.opponentPlayerName &&
+    normalizedActor === normalize(resolvedPlayers.opponentPlayerName)
+  ) {
+    return "opponent" as const;
+  }
+
+  return undefined;
+}
+
+function getPrizeRaceSummary({
+  events,
+  userTotal,
+  opponentTotal,
+  endedByConcession,
+}: Pick<MatchPrizeRace, "events" | "userTotal" | "opponentTotal" | "endedByConcession">) {
+  if (!events.length) {
+    if (userTotal === 6) {
+      return "Final prize state detected: you took all Prize cards, but the sequence was not reconstructed.";
+    }
+
+    if (opponentTotal === 6) {
+      return "Final prize state detected: opponent took all Prize cards, but the sequence was not reconstructed.";
+    }
+
+    return "Prize race could not be reconstructed from this log.";
+  }
+
+  const firstEvent = events[0];
+
+  if (endedByConcession) {
+    if (userTotal > opponentTotal) {
+      return "You were ahead before the concession.";
+    }
+
+    if (userTotal < opponentTotal) {
+      return "You were behind before the concession.";
+    }
+
+    return "The prize race was even before the concession.";
+  }
+
+  if (firstEvent.actor === "opponent") {
+    return "You fell behind early in the prize race.";
+  }
+
+  if (events.every((event) => Math.abs(event.userTotal - event.opponentTotal) <= 1)) {
+    return "You stayed close through the prize race.";
+  }
+
+  if (userTotal > opponentTotal) {
+    return "You finished ahead in the prize race.";
+  }
+
+  if (userTotal < opponentTotal) {
+    return "You fell behind in the prize race.";
+  }
+
+  return "You stayed even until the final exchange.";
+}
+
+function extractPrizeRace(
+  lines: string[],
+  resolvedPlayers: ResolvedPlayers
+): MatchPrizeRace | undefined {
+  let userTotal = 0;
+  let opponentTotal = 0;
+  let finalUserTotal: number | undefined;
+  let finalOpponentTotal: number | undefined;
+  let endedByConcession = false;
+  const events: MatchPrizeRace["events"] = [];
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    const prizeMatch = trimmed.match(
+      new RegExp(
+        `^(You|Opponent|Your opponent|${playerTokenPattern})\\s+took\\s+(a|[1-6])\\s+Prize cards?\\.?$`,
+        "i"
+      )
+    );
+
+    if (prizeMatch?.[1] && prizeMatch?.[2]) {
+      const actor = resolvePrizeActor(prizeMatch[1], resolvedPlayers);
+      const prizesTaken = parsePrizeCount(prizeMatch[2]);
+
+      if (!actor || !prizesTaken) {
+        continue;
+      }
+
+      if (actor === "user") {
+        userTotal = Math.min(6, userTotal + prizesTaken);
+      } else {
+        opponentTotal = Math.min(6, opponentTotal + prizesTaken);
+      }
+
+      events.push({
+        actor,
+        prizesTaken,
+        userTotal,
+        opponentTotal,
+        rawText: trimmed,
+      });
+      continue;
+    }
+
+    const allPrizesMatch = trimmed.match(
+      new RegExp(
+        `^(You|Opponent|Your opponent|${playerTokenPattern})\\s+took all\\b.*\\bPrize cards\\b`,
+        "i"
+      )
+    );
+
+    if (allPrizesMatch?.[1]) {
+      const actor =
+        /^all prize cards taken$/i.test(allPrizesMatch[1])
+          ? undefined
+          : resolvePrizeActor(allPrizesMatch[1], resolvedPlayers);
+
+      if (actor === "user") {
+        finalUserTotal = 6;
+      } else if (actor === "opponent") {
+        finalOpponentTotal = 6;
+      }
+    }
+
+    if (/\bconceded\b/i.test(trimmed)) {
+      endedByConcession = true;
+    }
+  }
+
+  userTotal = Math.max(userTotal, finalUserTotal ?? 0);
+  opponentTotal = Math.max(opponentTotal, finalOpponentTotal ?? 0);
+
+  if (
+    !events.length &&
+    !endedByConcession &&
+    finalUserTotal === undefined &&
+    finalOpponentTotal === undefined
+  ) {
+    return undefined;
+  }
+
+  const prizeRace = {
+    events,
+    userTotal,
+    opponentTotal,
+    endedByConcession: endedByConcession || undefined,
+  } satisfies Omit<MatchPrizeRace, "summary">;
+
+  return {
+    ...prizeRace,
+    summary: getPrizeRaceSummary(prizeRace),
+  };
+}
+
 function extractOpponentEvidenceFromSegment(
   segment: string,
   opponentName: string,
@@ -939,6 +1129,10 @@ export function parseTcgLiveLog(
     resolvedPlayers.userPlayerName,
     safeOpponentName
   );
+  const prizeRace = extractPrizeRace(lines, {
+    ...resolvedPlayers,
+    opponentPlayerName: safeOpponentName,
+  });
 
   const notes = dedupe(
     [
@@ -961,6 +1155,7 @@ export function parseTcgLiveLog(
     opponentDeckGuess: opponentDeck.opponentDeckGuess,
     opponentEvidenceCards: opponentDeck.opponentEvidenceCards,
     cardReview,
+    prizeRace,
     confidence: opponentDeck.confidence,
     notes,
   };

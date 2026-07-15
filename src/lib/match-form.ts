@@ -6,6 +6,7 @@ import {
   MATCH_OPENING_HAND_OPTIONS,
   MATCH_SEQUENCING_OPTIONS,
   MATCH_START_QUALITY_OPTIONS,
+  parseMatchPrizeRace,
 } from "@/lib/match-types";
 import { parseSelectedTags } from "@/lib/match-options";
 import { isOneOf } from "@/lib/type-guards";
@@ -30,6 +31,20 @@ export function parseWentFirstChoice(value: string | null | undefined) {
 function optionalArray(formData: FormData, fieldName: string) {
   const values = parseSelectedTags(formData.getAll(fieldName));
   return values.length ? values : undefined;
+}
+
+function optionalJson(value: FormDataEntryValue | null) {
+  const text = optionalText(value);
+
+  if (!text) {
+    return undefined;
+  }
+
+  try {
+    return JSON.parse(text) as unknown;
+  } catch {
+    return undefined;
+  }
 }
 
 export function getGameContextEventType(context: MatchGameContext) {
@@ -129,6 +144,7 @@ export function buildMatchMetadataFromFormData(formData: FormData): MatchMetadat
     formData,
     "tcg_live_cards_discarded"
   );
+  const prizeRace = parseMatchPrizeRace(optionalJson(formData.get("prizeRace")));
 
   if (issueTags) {
     metadata.issue_tags = issueTags;
@@ -156,6 +172,10 @@ export function buildMatchMetadataFromFormData(formData: FormData): MatchMetadat
 
   if (tcgLiveCardsDiscarded) {
     metadata.tcg_live_cards_discarded = tcgLiveCardsDiscarded;
+  }
+
+  if (prizeRace) {
+    metadata.prizeRace = prizeRace;
   }
 
   return metadata;

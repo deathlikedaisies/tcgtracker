@@ -30,6 +30,7 @@ import {
   getNextStepCheckInContent,
   getNextStepCheckInCounts,
 } from "@/lib/next-step-check-in";
+import { getActiveTestingBlockCheckIn } from "@/lib/testing-blocks";
 import {
   buildSessionCoachInsight,
   matchCountsTowardMission,
@@ -42,6 +43,7 @@ import {
   isMatchResult,
   parseMatchMetadata,
   type MatchMetadata,
+  type MatchPrizeRace,
   type MatchResult,
 } from "@/lib/match-types";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
@@ -193,6 +195,104 @@ function getDeckName(match: Pick<MatchRow, "deck_versions">) {
   return resolvedDeck?.name ?? "Unknown deck";
 }
 
+function formatPrizePath(
+  prizeRace: MatchPrizeRace,
+  field: "userTotal" | "opponentTotal"
+) {
+  const totals = [0, ...prizeRace.events.map((event) => event[field])];
+  const finalTotal = prizeRace[field];
+
+  if (totals.at(-1) !== finalTotal) {
+    totals.push(finalTotal);
+  }
+
+  return totals.join(" \u2192 ");
+}
+
+function getPrizeRaceTagSuggestions(prizeRace: MatchPrizeRace) {
+  const suggestions: string[] = [];
+  const firstEvent = prizeRace.events[0];
+
+  if (firstEvent?.actor === "user") {
+    suggestions.push("Ahead early");
+  } else if (firstEvent?.actor === "opponent") {
+    suggestions.push("Behind early");
+  }
+
+  if (prizeRace.events.length <= 3 && Math.max(prizeRace.userTotal, prizeRace.opponentTotal) >= 6) {
+    suggestions.push("Quick game");
+  }
+
+  return suggestions;
+}
+
+function PrizeRacePanel({
+  prizeRace,
+}: {
+  prizeRace: MatchPrizeRace | undefined;
+}) {
+  if (!prizeRace?.events.length) {
+    return (
+      <div className={`${premiumInset} mt-3 rounded-[16px] px-3 py-3`}>
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#94A3B8]">
+          Prize race
+        </p>
+        <p className="mt-2 text-sm leading-6 text-[#94A3B8]/78">
+          Prize race could not be reconstructed from this log.
+        </p>
+      </div>
+    );
+  }
+
+  const tagSuggestions = getPrizeRaceTagSuggestions(prizeRace);
+
+  return (
+    <div
+      data-testid="prize-race-panel"
+      className={`${premiumInset} mt-3 rounded-[18px] px-3 py-3`}
+    >
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#4F8CFF]">
+            Prize race
+          </p>
+          <p className="mt-1 text-sm font-semibold text-[#F8FAFC]">
+            {prizeRace.summary ?? "Prize race reconstructed from imported log."}
+          </p>
+        </div>
+        {prizeRace.endedByConcession ? (
+          <span className="w-fit rounded-full bg-[#F5C84C]/12 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#FFE28A]">
+            Concession
+          </span>
+        ) : null}
+      </div>
+      <div className="mt-3 grid gap-2 sm:grid-cols-2">
+        <div className="rounded-2xl bg-[#07111F]/58 px-3 py-2 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#94A3B8]">
+            You
+          </p>
+          <p className="mt-1 break-words text-sm font-semibold text-[#DCE8FF]">
+            {formatPrizePath(prizeRace, "userTotal")}
+          </p>
+        </div>
+        <div className="rounded-2xl bg-[#07111F]/58 px-3 py-2 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#94A3B8]">
+            Opponent
+          </p>
+          <p className="mt-1 break-words text-sm font-semibold text-[#F8FAFC]">
+            {formatPrizePath(prizeRace, "opponentTotal")}
+          </p>
+        </div>
+      </div>
+      {tagSuggestions.length ? (
+        <p className="mt-2 text-xs leading-5 text-[#94A3B8]/72">
+          Suggested tags, not auto-applied: {tagSuggestions.join(", ")}.
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
 function parsePage(value: string | undefined) {
   const parsed = Number.parseInt(value ?? "1", 10);
 
@@ -239,6 +339,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
   const [
     { data: decks, error: decksError },
     { data: allMatchRowsForCoach, error: matchesError },
+    activeTestingBlock,
   ] = await Promise.all([
     supabase
       .from("decks")
@@ -260,6 +361,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
       )
       .eq("user_id", user.id)
       .order("played_at", { ascending: false }),
+    getActiveTestingBlockCheckIn(supabase, user.id),
   ]);
 
   if (decksError) {
@@ -273,7 +375,10 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
   const userDecks = (decks ?? []) as DeckWithVersions[];
   const coachMatchRows = (allMatchRowsForCoach ?? []) as unknown as MatchFilterBaseRow[];
   const nextStepCheckIn = getNextStepCheckInContent(
-    getNextStepCheckInCounts(userDecks, coachMatchRows)
+    {
+      ...getNextStepCheckInCounts(userDecks, coachMatchRows),
+      activeTestingBlock,
+    }
   );
   const sessionCoach = buildSessionCoachInsight(coachMatchRows);
   const allVersions = userDecks.flatMap((deck) =>
@@ -868,6 +973,10 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                               </div>
                             ) : null}
                           </div>
+                        ) : null}
+                        {metadata.prizeRace ||
+                        metadata.source === "tcg_live_import" ? (
+                          <PrizeRacePanel prizeRace={metadata.prizeRace} />
                         ) : null}
                         {match.notes ? (
                           <p className={`mt-3 ${sectionCopy}`}>
