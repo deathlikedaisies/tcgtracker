@@ -3,6 +3,7 @@ import { Beaker, CheckCircle2, Target } from "lucide-react";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
 import { DemoConversionCta } from "@/components/demo/DemoConversionCta";
 import { DemoShell } from "@/components/demo/DemoShell";
+import { BetaFeedbackPrompt } from "@/components/feedback/BetaFeedbackPrompt";
 import {
   cardLarge,
   pageCopy,
@@ -220,6 +221,14 @@ export default function DemoTestingPage() {
           ))}
         </div>
       </section>
+
+      <BetaFeedbackPrompt
+        mode="cta"
+        pageContext="demo-testing"
+        pagePath="/demo/testing"
+        defaultCategory="Demo"
+        question="Did this testing block demo show what to do next?"
+      />
 
       <DemoConversionCta />
     </DemoShell>

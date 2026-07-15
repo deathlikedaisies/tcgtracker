@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { AuthenticatedPageHeader } from "@/components/AuthenticatedPageHeader";
 import { AppSidebar } from "@/components/AppSidebar";
+import { BetaFeedbackPrompt } from "@/components/feedback/BetaFeedbackPrompt";
 import {
   appFrame,
   appMain,
@@ -210,24 +211,32 @@ export default async function NewMatchPage({
           />
 
           {deckOptions.length ? (
-            <MatchLogForm
-              action={logMatch}
-              deckOptions={deckOptions}
-              opponentArchetypeOptions={opponentArchetypeOptions}
-              initialDeckVersionId={deckVersionId}
-              initialEventType={event}
-              initialOpponentArchetype={opponent}
-              initialResult={result}
-              initialWentFirst={wentFirst}
-              initialTestingBlockId={testingBlockId}
-              initialTcgLivePlayerName={
-                privateSettings?.pokemon_tcg_live_username ?? null
-              }
-              activeTestingBlocks={activeTestingBlocks}
-              rememberTcgLiveUsernameAction={rememberPokemonTcgLiveUsername}
-              sessionCoach={sessionCoach}
-              wasSuccessful={success === "1"}
-            />
+            <>
+              <MatchLogForm
+                action={logMatch}
+                deckOptions={deckOptions}
+                opponentArchetypeOptions={opponentArchetypeOptions}
+                initialDeckVersionId={deckVersionId}
+                initialEventType={event}
+                initialOpponentArchetype={opponent}
+                initialResult={result}
+                initialWentFirst={wentFirst}
+                initialTestingBlockId={testingBlockId}
+                initialTcgLivePlayerName={
+                  privateSettings?.pokemon_tcg_live_username ?? null
+                }
+                activeTestingBlocks={activeTestingBlocks}
+                rememberTcgLiveUsernameAction={rememberPokemonTcgLiveUsername}
+                sessionCoach={sessionCoach}
+                wasSuccessful={success === "1"}
+              />
+              <BetaFeedbackPrompt
+                pageContext="matches-new"
+                pagePath="/matches/new"
+                defaultCategory="TCG Live import"
+                question="Did importing or logging this game feel clear?"
+              />
+            </>
           ) : (
             <div className={`mt-8 ${emptyCard}`}>
               <h2 className="text-lg font-semibold text-[#F8FAFC]">

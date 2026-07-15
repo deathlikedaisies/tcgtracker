@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { type ReactNode } from "react";
 import { AuthenticatedPageHeader } from "@/components/AuthenticatedPageHeader";
 import { AppSidebar } from "@/components/AppSidebar";
+import { BetaFeedbackPrompt } from "@/components/feedback/BetaFeedbackPrompt";
 import { NextStepCheckIn } from "@/components/NextStepCheckIn";
 import { ReviewDetailedAnalytics } from "@/components/review/ReviewDetailedAnalytics";
 import {
@@ -953,6 +954,12 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
               />
             </>
           )}
+
+          <BetaFeedbackPrompt
+            pageContext="review"
+            pagePath="/review"
+            defaultCategory="Review/coaching"
+          />
         </div>
       </section>
     </main>

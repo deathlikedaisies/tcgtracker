@@ -3,6 +3,7 @@ import { CalendarDays, ClipboardList, Target, Trophy } from "lucide-react";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
 import { DemoConversionCta } from "@/components/demo/DemoConversionCta";
 import { DemoShell } from "@/components/demo/DemoShell";
+import { BetaFeedbackPrompt } from "@/components/feedback/BetaFeedbackPrompt";
 import {
   cardLarge,
   pageCopy,
@@ -200,6 +201,14 @@ export default function DemoEventsPage() {
           ))}
         </div>
       </section>
+
+      <BetaFeedbackPrompt
+        mode="cta"
+        pageContext="demo-events"
+        pagePath="/demo/events"
+        defaultCategory="Demo"
+        question="Did the event review demo feel useful?"
+      />
 
       <DemoConversionCta />
     </DemoShell>

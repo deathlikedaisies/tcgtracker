@@ -2270,6 +2270,23 @@ test.describe("authenticated routes", () => {
     await expectNoAppError(page);
   });
 
+  test("inline beta feedback prompt submits from dashboard", async ({ page }) => {
+    await page.goto("/dashboard");
+
+    const prompt = page.getByTestId("beta-feedback-prompt");
+    await expect(prompt).toBeVisible();
+    await expect(prompt).toContainText("Help improve SixPrizer");
+    await prompt.getByRole("radio", { name: "Useful", exact: true }).check();
+    await prompt.getByLabel("Category").selectOption("Review/coaching");
+    await prompt
+      .getByRole("textbox", { name: "Feedback" })
+      .fill("The review prompt made the next test clearer.");
+    await prompt.getByRole("button", { name: "Send beta note" }).click();
+
+    await expect(prompt).toContainText("Thanks. This helps improve the beta.");
+    await expectNoAppError(page);
+  });
+
   test("/review surfaces a specific seeded coaching signal", async ({ page }) => {
     await page.goto("/review");
 
@@ -2299,7 +2316,9 @@ test.describe("authenticated routes", () => {
     await expect(page.locator("body")).toContainText(/Matchup samples|Turn-order split|Tag pressure/i);
     await expect(page.locator("body")).toContainText(/Detailed analytics/i);
     await expect(page.locator("body")).toContainText(/Recent form|Trends|Matchups|Turn order|Tags|Deck versions/i);
-    await expect(page.locator("body")).not.toContainText(/What to test next/i);
+    await expect(page.getByTestId("beta-feedback-prompt")).toContainText(
+      /what to test next/i
+    );
     await expect(page.locator("body")).not.toContainText(/this line|sample block|converts with/i);
     await expectNoAppError(page);
   });
@@ -2321,7 +2340,7 @@ test.describe("authenticated routes", () => {
     await expect(page.locator("body")).toContainText(/Review details|Open review/i);
     await expect(page.locator("body")).not.toContainText(/good prize plan.*positive pattern/i);
     await expect(page.locator("body")).not.toContainText(/wins tagged.*losses tagged|3 of 14 wins tagged/i);
-    await expect(page.locator("body")).not.toContainText(/Detailed analytics|Recent form.*Deck versions|Turn-order split.*Tag pressure/i);
+    await expect(page.locator("body")).not.toContainText(/Detailed analytics|Turn-order split.*Tag pressure/i);
     const nextBestActionCard = page
       .getByText(/Next best action/i)
       .first()

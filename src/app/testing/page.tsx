@@ -4,6 +4,7 @@ import { Beaker, CheckCircle2, FlaskConical, Target } from "lucide-react";
 import { AuthenticatedPageHeader } from "@/components/AuthenticatedPageHeader";
 import { AppSidebar } from "@/components/AppSidebar";
 import { ArchetypePicker } from "@/components/ArchetypePicker";
+import { BetaFeedbackPrompt } from "@/components/feedback/BetaFeedbackPrompt";
 import {
   appFrame,
   appMain,
@@ -527,6 +528,13 @@ export default async function TestingPage({ searchParams }: TestingPageProps) {
               })}
             </div>
           </section>
+
+          <BetaFeedbackPrompt
+            pageContext="testing"
+            pagePath="/testing"
+            defaultCategory="Review/coaching"
+            question="Did this testing block help you decide what to test next?"
+          />
         </div>
       </section>
     </main>

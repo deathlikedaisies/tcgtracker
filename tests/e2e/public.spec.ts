@@ -89,6 +89,12 @@ test.describe("public routes", () => {
     await expect(page.locator("body")).toContainText(/Current test deck/i);
     await expect(page.locator("body")).toContainText(/Deck Lab/i);
     await expect(page.locator("body")).toContainText(/Guided demo loop/i);
+    await expect(page.getByTestId("beta-feedback-prompt")).toContainText(
+      "Help improve SixPrizer"
+    );
+    await expect(
+      page.getByRole("link", { name: /Send demo feedback/i })
+    ).toHaveAttribute("href", "/feedback");
     await expect(
       page.getByRole("link", { name: /^Create your workspace$/ }).first()
     ).toBeVisible();
@@ -109,6 +115,9 @@ test.describe("public routes", () => {
     await expect(page.locator("body")).toContainText(/Recommended focused testing block/i);
     await expect(page.locator("body")).toContainText(/Play 5 focused games into Mega Greninja/i);
     await expect(page.getByRole("link", { name: /Open demo testing block/i })).toBeVisible();
+    await expect(page.getByTestId("beta-feedback-prompt")).toContainText(
+      "Help improve SixPrizer"
+    );
     await expectNoAppError(page);
   });
 
@@ -120,6 +129,9 @@ test.describe("public routes", () => {
     await expect(page.locator("body")).toContainText(/Mega Greninja/i);
     await expect(page.locator("body")).toContainText(/3 \/ 5 games/i);
     await expect(page.locator("body")).toContainText(/bench pressure/i);
+    await expect(page.getByTestId("beta-feedback-prompt")).toContainText(
+      "Help improve SixPrizer"
+    );
     await expectNoAppError(page);
   });
 
@@ -131,6 +143,9 @@ test.describe("public routes", () => {
     await expect(page.locator("body")).toContainText(/Event Review/i);
     await expect(page.locator("body")).toContainText(/Suggested next test/i);
     await expect(page.locator("body")).toContainText(/Mega Greninja/i);
+    await expect(page.getByTestId("beta-feedback-prompt")).toContainText(
+      "Help improve SixPrizer"
+    );
     await expectNoAppError(page);
   });
 

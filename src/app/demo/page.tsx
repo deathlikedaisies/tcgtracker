@@ -12,6 +12,7 @@ import {
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
 import { DemoConversionCta } from "@/components/demo/DemoConversionCta";
 import { DemoShell } from "@/components/demo/DemoShell";
+import { BetaFeedbackPrompt } from "@/components/feedback/BetaFeedbackPrompt";
 import {
   card,
   cardLarge,
@@ -483,6 +484,14 @@ export default function DemoPage() {
           </div>
         </article>
       </section>
+
+      <BetaFeedbackPrompt
+        mode="cta"
+        pageContext="demo"
+        pagePath="/demo"
+        defaultCategory="Demo"
+        question="Did this demo make the coaching workflow clear?"
+      />
 
       <DemoConversionCta />
     </DemoShell>
