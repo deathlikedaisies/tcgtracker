@@ -43,6 +43,7 @@ import {
   getNextStepCheckInCounts,
 } from "@/lib/next-step-check-in";
 import { buildSessionCoachInsight } from "@/lib/session-coach";
+import { getActiveTestingBlockCheckIn } from "@/lib/testing-blocks";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { deleteDeck, setActiveDeck } from "./actions";
 
@@ -234,6 +235,7 @@ export default async function DecksPage() {
   const [
     { data: decks, error },
     { data: matches, error: matchesError },
+    activeTestingBlock,
   ] = await Promise.all([
     supabase
       .from("decks")
@@ -249,6 +251,7 @@ export default async function DecksPage() {
       )
       .eq("user_id", user.id)
       .order("played_at", { ascending: false }),
+    getActiveTestingBlockCheckIn(supabase, user.id),
   ]);
 
   if (error) {
@@ -262,7 +265,10 @@ export default async function DecksPage() {
   const userDecks = (decks ?? []) as Deck[];
   const userMatches = (matches ?? []) as MatchRow[];
   const nextStepCheckIn = getNextStepCheckInContent(
-    getNextStepCheckInCounts(userDecks, userMatches)
+    {
+      ...getNextStepCheckInCounts(userDecks, userMatches),
+      activeTestingBlock,
+    }
   );
   const hasNoDecks = userDecks.length === 0;
   const sessionCoach = buildSessionCoachInsight(userMatches);

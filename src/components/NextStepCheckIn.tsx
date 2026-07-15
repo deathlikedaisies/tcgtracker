@@ -54,7 +54,7 @@ export function NextStepCheckIn({ content, className = "" }: NextStepCheckInProp
               {content.question}
             </p>
             <p className="mt-1 max-w-2xl text-sm leading-6 text-[#A8B3CF]">
-              SixPrizer gets sharper when your deck, TCG Live logs, and tags turn into review signal.
+              {content.description}
             </p>
           </div>
         </div>

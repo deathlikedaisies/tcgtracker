@@ -14,6 +14,7 @@ import {
   getNextStepCheckInContent,
   getNextStepCheckInCounts,
 } from "@/lib/next-step-check-in";
+import { getActiveTestingBlockCheckIn } from "@/lib/testing-blocks";
 import type { CoachMatch } from "@/lib/session-coach";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
@@ -100,6 +101,7 @@ export default async function DashboardPage() {
     { data: decks, error: decksError },
     { data: matches, error: matchesError },
     ownProfile,
+    activeTestingBlock,
   ] = await Promise.all([
     supabase
       .from("decks")
@@ -114,6 +116,7 @@ export default async function DashboardPage() {
       .eq("user_id", user.id)
       .order("played_at", { ascending: false }),
     getOwnProfile(user.id),
+    getActiveTestingBlockCheckIn(supabase, user.id),
   ]);
 
   if (decksError) {
@@ -127,7 +130,10 @@ export default async function DashboardPage() {
   const matchRows = (matches ?? []) as unknown as MatchRow[];
   const deckRows = (decks ?? []) as unknown as DeckRow[];
   const nextStepCheckIn = getNextStepCheckInContent(
-    getNextStepCheckInCounts(deckRows, matchRows)
+    {
+      ...getNextStepCheckInCounts(deckRows, matchRows),
+      activeTestingBlock,
+    }
   );
   const deckScope = resolveCurrentDeckScope({
     decks: deckRows,

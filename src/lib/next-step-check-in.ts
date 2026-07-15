@@ -20,6 +20,7 @@ export type NextStepCheckInContent = {
   state: NextStepCheckInState;
   title: string;
   question: string;
+  description: string;
   primaryLabel: string;
   primaryHref: string;
   secondaryLabel: string;
@@ -49,6 +50,7 @@ export function getNextStepCheckInContent({
       question: target
         ? `Continue your focused test into ${target}?`
         : "Continue your focused testing block?",
+      description: "Finish the block before judging the read or changing too many cards.",
       primaryLabel: "Log next game",
       primaryHref: `/matches/new?${query.toString()}`,
       secondaryLabel: "Open testing block",
@@ -61,6 +63,7 @@ export function getNextStepCheckInContent({
       state: "no_deck",
       title: "Quick check-in",
       question: "Have you imported your first deck yet?",
+      description: "Start with the exact list you want to test so every log has context.",
       primaryLabel: "Import a deck",
       primaryHref: "/decks",
       secondaryLabel: "Start demo",
@@ -73,6 +76,7 @@ export function getNextStepCheckInContent({
       state: "no_matches",
       title: "Quick check-in",
       question: "Have you imported a TCG Live battle log yet?",
+      description: "Imported logs unlock objective reads like card activity and prize race.",
       primaryLabel: "Import a log",
       primaryHref: "/matches/new",
       secondaryLabel: "Log manually",
@@ -90,6 +94,7 @@ export function getNextStepCheckInContent({
       state: "needs_tags",
       title: "Quick check-in",
       question: "Have you tagged why your recent games were won or lost?",
+      description: "A few issue and positive tags make Review more useful without adding much friction.",
       primaryLabel: "Review matches",
       primaryHref: "/matches",
       secondaryLabel: "Open review",
@@ -101,6 +106,7 @@ export function getNextStepCheckInContent({
     state: "ready_for_review",
     title: "Next testing step",
     question: "Ready to see what to test next?",
+    description: "Use your logged games to choose the next matchup, issue, or deck version to test.",
     primaryLabel: "Open review",
     primaryHref: "/review",
     secondaryLabel: "View matchups",

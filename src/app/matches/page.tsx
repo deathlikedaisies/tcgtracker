@@ -233,39 +233,46 @@ function PrizeRacePanel({
 }) {
   if (!prizeRace?.events.length) {
     return (
-      <div className={`${premiumInset} mt-3 rounded-[16px] px-3 py-3`}>
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#94A3B8]">
+      <details className={`${premiumInset} mt-3 rounded-[16px] px-3 py-2.5`}>
+        <summary className="cursor-pointer text-xs font-semibold uppercase tracking-[0.14em] text-[#94A3B8] hover:text-[#F8FAFC]">
           Prize race
-        </p>
+        </summary>
         <p className="mt-2 text-sm leading-6 text-[#94A3B8]/78">
           Prize race could not be reconstructed from this log.
         </p>
-      </div>
+      </details>
     );
   }
 
   const tagSuggestions = getPrizeRaceTagSuggestions(prizeRace);
 
   return (
-    <div
+    <details
       data-testid="prize-race-panel"
-      className={`${premiumInset} mt-3 rounded-[18px] px-3 py-3`}
+      className={`${premiumInset} mt-3 rounded-[18px] px-3 py-2.5`}
     >
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#4F8CFF]">
-            Prize race
-          </p>
-          <p className="mt-1 text-sm font-semibold text-[#F8FAFC]">
-            {prizeRace.summary ?? "Prize race reconstructed from imported log."}
-          </p>
+      <summary className="cursor-pointer list-none">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#4F8CFF]">
+              Prize race
+            </p>
+            <p className="mt-1 text-sm font-semibold text-[#F8FAFC]">
+              {prizeRace.summary ?? "Prize race reconstructed from imported log."}
+            </p>
+          </div>
+          <span className="text-xs font-semibold text-[#94A3B8]">
+            You {prizeRace.userTotal} · Opponent {prizeRace.opponentTotal} · View path
+          </span>
         </div>
-        {prizeRace.endedByConcession ? (
+      </summary>
+      {prizeRace.endedByConcession ? (
+        <div className="mt-3 flex flex-wrap items-center gap-2">
           <span className="w-fit rounded-full bg-[#F5C84C]/12 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#FFE28A]">
             Concession
           </span>
-        ) : null}
-      </div>
+        </div>
+      ) : null}
       <div className="mt-3 grid gap-2 sm:grid-cols-2">
         <div className="rounded-2xl bg-[#07111F]/58 px-3 py-2 shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]">
           <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#94A3B8]">
@@ -289,7 +296,7 @@ function PrizeRacePanel({
           Suggested tags, not auto-applied: {tagSuggestions.join(", ")}.
         </p>
       ) : null}
-    </div>
+    </details>
   );
 }
 

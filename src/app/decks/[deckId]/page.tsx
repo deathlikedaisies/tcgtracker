@@ -545,6 +545,8 @@ export default async function DeckDetailPage({
           matches: activeVersionInsight.versionMatches,
         })
       : null;
+  const visibleCardReviewRows = activeCardReview?.rows.slice(0, 8) ?? [];
+  const hiddenCardReviewRows = activeCardReview?.rows.slice(8) ?? [];
   const primaryDeckActionHref = !deckVersions.length
     ? "#versions"
     : activeVersion
@@ -1397,7 +1399,7 @@ export default async function DeckDetailPage({
                     </div>
                   ) : (
                     <div className="grid gap-3 lg:grid-cols-2">
-                      {activeCardReview.rows.map((row) => (
+                      {visibleCardReviewRows.map((row) => (
                         <article
                           key={row.cardName}
                           className={`${statCard} min-w-0 p-4`}
@@ -1469,6 +1471,27 @@ export default async function DeckDetailPage({
                       ))}
                     </div>
                   )}
+                  {(activeCardReview.trackedFields.seen ||
+                    activeCardReview.trackedFields.used ||
+                    activeCardReview.trackedFields.discarded) &&
+                  hiddenCardReviewRows.length ? (
+                    <details className={`${premiumInset} rounded-[18px] px-4 py-3`}>
+                      <summary className="cursor-pointer text-sm font-semibold text-[#DCE8FF] hover:text-[#F8FAFC]">
+                        Show {hiddenCardReviewRows.length} more deck cards
+                      </summary>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {hiddenCardReviewRows.map((row) => (
+                          <span
+                            key={`hidden-card-review-${row.cardName}`}
+                            className="max-w-full break-words rounded-full bg-[#07111F]/70 px-3 py-1.5 text-xs font-semibold text-[#A8B5C8] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.08)]"
+                            title={row.coachingText}
+                          >
+                            {row.cardName} · {row.signalLabel}
+                          </span>
+                        ))}
+                      </div>
+                    </details>
+                  ) : null}
                 </div>
               )}
             </section>
