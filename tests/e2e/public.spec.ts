@@ -61,6 +61,21 @@ test.describe("public routes", () => {
       page.getByRole("contentinfo").getByRole("link", { name: "Feedback" })
     ).toHaveAttribute("href", "/feedback");
     await expect(
+      page.getByRole("contentinfo").getByRole("link", { name: "Match logging" })
+    ).toHaveAttribute("href", "/demo/matches/new");
+    await expect(
+      page.getByRole("contentinfo").getByRole("link", { name: "TCG Live import" })
+    ).toHaveAttribute("href", "/demo/matches/new");
+    await expect(
+      page.getByRole("contentinfo").getByRole("link", { name: "Event review" })
+    ).toHaveAttribute("href", "/demo/events");
+    await expect(
+      page.getByRole("contentinfo").getByRole("link", { name: "Deck versions" })
+    ).toHaveAttribute("href", "/demo");
+    await expect(
+      page.getByRole("contentinfo").getByRole("link", { name: "Matchup insights" })
+    ).toHaveAttribute("href", "/demo/matchups");
+    await expect(
       page.getByRole("link", { name: /Limitless TCG/i })
     ).toHaveAttribute("href", "https://limitlesstcg.com");
     await expectNoAppError(page);
@@ -128,7 +143,9 @@ test.describe("public routes", () => {
     await expect(page.locator("body")).toContainText(/Active demo block/i);
     await expect(page.locator("body")).toContainText(/Mega Greninja/i);
     await expect(page.locator("body")).toContainText(/3 \/ 5 games/i);
+    await expect(page.locator("body")).toContainText(/0W \/ 3L/i);
     await expect(page.locator("body")).toContainText(/bench pressure/i);
+    await expect(page.locator("body")).not.toContainText(/PROGRE\.\.\.|b\.\.\./i);
     await expect(page.getByTestId("beta-feedback-prompt")).toContainText(
       "Help improve SixPrizer"
     );

@@ -17,11 +17,11 @@ const navLinks = [
 ] as const;
 
 const productLinks = [
-  "Match logging",
-  "TCG Live import",
-  "Event review",
-  "Deck versions",
-  "Matchup insights",
+  { href: "/demo/matches/new", label: "Match logging" },
+  { href: "/demo/matches/new", label: "TCG Live import" },
+  { href: "/demo/events", label: "Event review" },
+  { href: "/demo", label: "Deck versions" },
+  { href: "/demo/matchups", label: "Matchup insights" },
 ] as const;
 
 const resourceLinks = [
@@ -107,9 +107,14 @@ export function SiteFooter() {
             Product
           </h2>
           <ul className="mt-4 grid gap-2.5 text-sm">
-            {productLinks.map((label) => (
-              <li key={label} className="text-[#94A3B8]">
-                {label}
+            {productLinks.map((link) => (
+              <li key={link.label}>
+                <Link
+                  href={link.href}
+                  className="transition hover:text-[#F8FAFC]"
+                >
+                  {link.label}
+                </Link>
               </li>
             ))}
           </ul>
