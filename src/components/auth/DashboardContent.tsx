@@ -20,6 +20,7 @@ import {
 import { AuthenticatedPageHeader } from "@/components/AuthenticatedPageHeader";
 import { AppSidebar } from "@/components/AppSidebar";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
+import { BetaFeedbackPrompt } from "@/components/feedback/BetaFeedbackPrompt";
 import { NextStepCheckIn } from "@/components/NextStepCheckIn";
 import {
   appFrame,
@@ -1143,6 +1144,12 @@ export function DashboardContent({
               ) : null}
             </div>
           )}
+
+          <BetaFeedbackPrompt
+            pageContext="dashboard"
+            pagePath="/dashboard"
+            defaultCategory="Review/coaching"
+          />
         </div>
       </section>
     </main>

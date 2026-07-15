@@ -23,7 +23,7 @@ import {
   getDemoTestingBlock,
   getDemoTestingBlockMatches,
 } from "@/lib/demo-data";
-import { countMatchResults, formatMatchRecord, getMatchResultLabel } from "@/lib/match-types";
+import { countMatchResults, getMatchResultLabel } from "@/lib/match-types";
 
 function getIssueTags(matches: ReturnType<typeof getDemoTestingBlockMatches>) {
   const counts = new Map<string, number>();
@@ -45,6 +45,13 @@ export default function DemoTestingPage() {
   const resultCounts = countMatchResults(matches);
   const issueTags = getIssueTags(matches);
   const progress = block ? `${matches.length} / ${block.targetGames} games` : "0 / 5 games";
+  const blockRecord =
+    resultCounts.ties > 0
+      ? `${resultCounts.wins}W / ${resultCounts.losses}L / ${resultCounts.ties}T`
+      : `${resultCounts.wins}W / ${resultCounts.losses}L`;
+  const topIssue = issueTags[0]
+    ? `${issueTags[0].tag} (${issueTags[0].count})`
+    : "No tags yet";
 
   return (
     <DemoShell current="testing">
@@ -65,54 +72,54 @@ export default function DemoTestingPage() {
       {block && deck ? (
         <section className="grid gap-4 xl:grid-cols-[1.08fr_0.92fr]">
           <article className={cardLarge}>
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="rounded-full bg-[#F5C84C]/12 px-2.5 py-1 text-xs font-semibold text-[#F5C84C]">
-                    Active demo block
-                  </span>
-                  <span className="rounded-full bg-[#4F8CFF]/12 px-2.5 py-1 text-xs font-semibold text-[#B8D1FF]">
-                    Review-generated plan
-                  </span>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="rounded-full bg-[#F5C84C]/12 px-2.5 py-1 text-xs font-semibold text-[#F5C84C]">
+                  Active demo block
+                </span>
+                <span className="rounded-full bg-[#4F8CFF]/12 px-2.5 py-1 text-xs font-semibold text-[#B8D1FF]">
+                  Review-generated plan
+                </span>
+              </div>
+              <div className="mt-4 flex min-w-0 items-center gap-3">
+                <div className={`${premiumInsetStrong} shrink-0 p-2.5`}>
+                  <ArchetypeSprites archetype={block.targetMatchup} size="md" />
                 </div>
-                <div className="mt-4 flex min-w-0 items-center gap-3">
-                  <div className={`${premiumInsetStrong} shrink-0 p-2.5`}>
-                    <ArchetypeSprites archetype={block.targetMatchup} size="md" />
-                  </div>
-                  <div className="min-w-0">
-                    <h2 className="text-2xl font-bold tracking-tight text-[#F8FAFC]">
-                      {block.targetMatchup}
-                    </h2>
-                    <p className="mt-1 text-sm leading-6 text-[#94A3B8]/78">
-                      {block.notes}
-                    </p>
-                  </div>
+                <div className="min-w-0">
+                  <h2 className="text-2xl font-bold tracking-tight text-[#F8FAFC]">
+                    {block.targetMatchup}
+                  </h2>
+                  <p className="mt-1 max-w-3xl text-sm leading-6 text-[#94A3B8]/78">
+                    {block.notes}
+                  </p>
                 </div>
               </div>
+            </div>
 
-              <div className="grid min-w-0 gap-2 sm:grid-cols-3 lg:w-[420px]">
-                <div className={`${premiumInsetStrong} p-3`}>
-                  <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
-                    Progress
-                  </p>
-                  <p className="mt-1 text-xl font-bold text-[#F8FAFC]">{progress}</p>
-                </div>
-                <div className={`${premiumInset} p-3`}>
-                  <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
-                    Block record
-                  </p>
-                  <p className="mt-1 text-xl font-bold text-[#F8FAFC]">
-                    {formatMatchRecord(resultCounts.wins, resultCounts.losses, resultCounts.ties)}
-                  </p>
-                </div>
-                <div className={`${premiumInset} p-3`}>
-                  <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
-                    Top issue
-                  </p>
-                  <p className="mt-1 truncate text-sm font-semibold text-[#FFE28A]">
-                    {issueTags[0] ? `${issueTags[0].tag} (${issueTags[0].count})` : "No tags yet"}
-                  </p>
-                </div>
+            <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              <div className={`${premiumInsetStrong} min-w-0 p-4`}>
+                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                  Progress
+                </p>
+                <p className="mt-2 text-2xl font-bold text-[#F8FAFC]">
+                  {progress}
+                </p>
+              </div>
+              <div className={`${premiumInset} min-w-0 p-4`}>
+                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                  Block record
+                </p>
+                <p className="mt-2 text-2xl font-bold text-[#F8FAFC]">
+                  {blockRecord}
+                </p>
+              </div>
+              <div className={`${premiumInset} min-w-0 p-4 sm:col-span-2 xl:col-span-1`}>
+                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                  Top issue
+                </p>
+                <p className="mt-2 text-lg font-bold leading-7 text-[#FFE28A] sm:text-xl">
+                  {topIssue}
+                </p>
               </div>
             </div>
 

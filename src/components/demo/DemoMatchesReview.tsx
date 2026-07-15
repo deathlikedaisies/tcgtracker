@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { ArchetypeSprites } from "@/components/ArchetypeSprites";
 import { DemoConversionCta } from "@/components/demo/DemoConversionCta";
+import { BetaFeedbackPrompt } from "@/components/feedback/BetaFeedbackPrompt";
 import {
   cardLarge,
   glassPanelStrong,
@@ -346,6 +347,17 @@ export function DemoMatchesReview({
           })}
         </div>
       </section>
+
+      {isReviewMode ? (
+        <BetaFeedbackPrompt
+          mode="cta"
+          pageContext="demo-review"
+          pagePath="/demo/review"
+          defaultCategory="Demo"
+          question="Did this demo review make the next test clear?"
+        />
+      ) : null}
+
       <DemoConversionCta />
     </>
   );
